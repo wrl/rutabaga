@@ -55,8 +55,9 @@ void rtb_text_object_update(rtb_text_object_t *self, const wchar_t *text)
 	if (!len)
 		return;
 
-	x = 0.f;
-	y = ceilf(font->height / 2.f) - font->descender + 1.f;
+	x  = 0.f;
+	x1 = 0.f;
+	y  = ceilf(font->height / 2.f) - font->descender + 1.f;
 
 	for (i = 0; i < len; i++) {
 		texture_glyph_t *glyph;

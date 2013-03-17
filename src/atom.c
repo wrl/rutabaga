@@ -109,8 +109,8 @@ static struct rtb_atom_descriptor_type *alloc_type_descriptor(
 {
 	struct rtb_atom_descriptor_type *ret, **cursor;
 	size_t need = sizeof(*ret), name_start;
+	int supertypes = 0;
 	char *name;
-	int supertypes;
 
 	if (supertype)
 		for (cursor = supertype->super, supertypes = 1;
