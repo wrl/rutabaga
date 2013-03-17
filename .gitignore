@@ -1,0 +1,10 @@
+# waf stuff
+.lock-waf*
+.waf*
+
+# build stuff
+build/
+
+# temporary stuff
+*.swp
+*~

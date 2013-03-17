@@ -1,0 +1,223 @@
+/**
+ * rutabaga: an OpenGL widget toolkit
+ * Copyright (c) 2013 William Light.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include <assert.h>
+
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <wchar.h>
+#include <time.h>
+
+#include "rutabaga/rutabaga.h"
+#include "rutabaga/container.h"
+#include "rutabaga/window.h"
+#include "rutabaga/layout.h"
+#include "rutabaga/keyboard.h"
+
+#include "rutabaga/widgets/button.h"
+#include "rutabaga/widgets/knob.h"
+
+#define ARRAY_LENGTH(a) (sizeof(a) / sizeof(*a))
+
+wchar_t *labels[] = {
+	L"hello",
+	L"we are",
+	L"buttons",
+	L"rendered",
+	L"in",
+	L"opengl"
+};
+
+wchar_t *rlabels[] = {
+	L"i'm",
+	L"gonna",
+	L"pop",
+	L"some",
+	L"taaaags",
+	L"only got",
+	L"20 dollars",
+	L"in my pocket",
+	L"i i i'm huntin",
+	L"looking for a come-up",
+	L"this is fucking awesome"
+};
+
+rtb_knob_t *knob;
+
+int print_streeng(rtb_obj_t *victim, const rtb_ev_t *e, void *ctx)
+{
+	rtb_ev_mouse_t *mv = RTB_EV_MOUSE_T(e);
+	int i;
+
+	printf("(%f, %f) click!\n", mv->cursor.x, mv->cursor.y);
+
+	i = rand() % (ARRAY_LENGTH(rlabels));
+	rtb_button_set_label(RTB_BUTTON_T(victim), rlabels[i]);
+	return 0;
+}
+
+int knob_value(rtb_obj_t *victim, const rtb_ev_t *e, void *unused)
+{
+	if (victim != RTB_OBJ_T(knob)) {
+		knob = RTB_KNOB_T(victim);
+		printf("\n");
+	}
+
+	printf(" :: value: %f\n", RTB_EV_KNOB_T(e)->value);
+	return 0;
+}
+
+int report(rtb_obj_t *victim, const rtb_ev_t *e, void *user_data)
+{
+	puts("calc");
+	return 0;
+}
+
+void distribute_demo(rtb_container_t *root)
+{
+	int i, j;
+	rtb_container_t *containers[10];
+
+	for (i = 0; i < ARRAY_LENGTH(containers); i++) {
+		containers[i] = rtb_container_new();
+
+		rtb_obj_set_size_cb(containers[i], rtb_size_hfill);
+		rtb_obj_set_layout(containers[i], rtb_layout_hdistribute);
+
+		/* XXX: lol memory leak */
+		for (j = 0; j < i + 1; j++) {
+			knob = rtb_knob_new();
+
+			knob->origin = .7f;
+			knob->min = -1.f;
+			knob->max = 1.f;
+
+			rtb_attach(knob, KNOB_VALUE_CHANGE, knob_value, NULL);
+			rtb_container_add(containers[i], knob);
+		}
+
+		knob = NULL;
+
+		rtb_container_add(root, containers[i]);
+	}
+}
+
+void setup_ui(rtb_container_t *root)
+{
+	rtb_container_t *upper, *lower;
+	rtb_button_t *buttons[6];
+	int i;
+
+	upper = rtb_container_new();
+	lower = rtb_container_new();
+
+	rtb_obj_set_layout(upper, rtb_layout_hpack_center);
+	rtb_obj_set_size_cb(upper, rtb_size_hfill);
+
+	rtb_obj_set_layout(lower, rtb_layout_hpack_right);
+	rtb_obj_set_size_cb(lower, rtb_size_hfill);
+
+	upper->outer_pad.x =
+		upper->outer_pad.y =
+		lower->outer_pad.x =
+		lower->outer_pad.y = 5.f;
+
+	for (i = 0; i < sizeof(buttons) / sizeof(*buttons); i++) {
+		buttons[i] = rtb_button_new(NULL);
+		rtb_button_set_label(buttons[i], labels[i]);
+
+		rtb_attach(buttons[i], BUTTON_CLICK, print_streeng, NULL);
+	}
+
+	rtb_container_add(upper, buttons[0]);
+	rtb_container_add(upper, buttons[1]);
+	rtb_container_add(upper, buttons[2]);
+
+	rtb_container_add(lower, buttons[3]);
+	rtb_container_add(lower, buttons[4]);
+	rtb_container_add(lower, buttons[5]);
+
+	rtb_container_add(root, upper);
+	rtb_container_add(root, lower);
+}
+
+static int handle_key_press(struct rtb_object *victim,
+		const struct rtb_event *e, void *ctx)
+{
+	struct rtb_event_key *ev = RTB_EV_KEY(e);
+
+	switch (ev->keycode) {
+	case RTB_KEY_NUMPAD:
+		printf("numpad: %lc\n", ev->character);
+
+		if (ev->character == L'-')
+			rtb_stop_event_loop((rtb_t *) ctx);
+
+		break;
+
+	case RTB_KEY_NORMAL:
+		printf("normal: %lc\n", ev->character);
+		break;
+
+	case RTB_KEY_UP:    puts("^"); break;
+	case RTB_KEY_LEFT:  puts("<"); break;
+	case RTB_KEY_DOWN:  puts("v"); break;
+	case RTB_KEY_RIGHT: puts(">"); break;
+
+	default:
+		break;
+	}
+
+	return 1;
+}
+
+int main(int argc, char **argv)
+{
+	rtb_t *delicious;
+	rtb_win_t *win;
+
+	srand(time(NULL));
+
+	assert(delicious = rtb_init());
+	assert((win = rtb_window_open(delicious, 450, 600, "~delicious~")));
+
+	win->outer_pad.x = 5.f;
+	win->outer_pad.y = 5.f;
+
+	rtb_obj_set_size_cb(win, rtb_size_hfit_children);
+	rtb_obj_set_layout(win, rtb_layout_vpack_bottom);
+
+	rtb_attach(win, RTB_KEY_PRESS, handle_key_press, delicious);
+
+	distribute_demo(RTB_CONTAINER_T(delicious->win));
+	setup_ui(RTB_CONTAINER_T(delicious->win));
+
+	rtb_event_loop(delicious);
+
+	rtb_window_close(delicious->win);
+	rtb_destroy(delicious);
+}

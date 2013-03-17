@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+
+top = ".."
+
+def build(bld):
+	bld.program(
+		source="test.c",
+
+		lib=['jack', 'm'],
+		use=["public",
+			 "librutabaga",
+			 "X11",
+			 "X11-XCB",
+			 "XCB"],
+
+		target="test")
+
+	if bld.env.LIB_JACK:
+		bld.program(
+			source="cabbage_patch.c",
+
+			lib=['jack', 'pthread', 'm'],
+			use=["public",
+				"librutabaga",
+				"X11",
+				"X11-XCB",
+				"XCB"],
+
+			target="cabbage_patch")

@@ -1,0 +1,139 @@
+#!/usr/bin/env python
+
+top = ".."
+
+def write_shader_header(outfile, infiles):
+	output = ""
+
+	shname = outfile.name
+	shname = shname[:shname.find(".glsl.h")].replace("-", "_").upper()
+
+	for file in infiles:
+		if file.name.find("vert") > 0:
+			shtype = "VERT"
+		elif file.name.find("frag") > 0:
+			shtype = "FRAG"
+		else:
+			raise Exception("i have no idea what kind of shader \"{0}\" is.".format(file.name))
+
+		output += "static const char *{0}_{1}_SHADER = ".format(shname, shtype)
+
+		f = open(file.abspath())
+		for line in f:
+			line = line.rstrip()
+
+			if len(line) == 0:
+				output += "\n"
+			else:
+				output += "\n\t\"{0}\\n\"".format(line.replace("\"", '\\\"'))
+
+		output += ";\n\n"
+
+	# get rid of the last newline
+	output = output[:len(output) - 1]
+	outfile.write(output)
+
+def shader_header(bld, dest):
+	def shader(task):
+		write_shader_header(task.outputs[0], task.inputs)
+
+	bld(
+		rule=shader,
+		source=["shaders/{0}.{1}.glsl".format(dest, kind) for kind in ("vert", "frag")],
+		target="shaders/{0}.glsl.h".format(dest),
+		name="shaders",
+		export_includes=".",
+		update_outputs=True)
+
+def build(bld):
+	bld(export_includes="../third-party/gl3w ../third-party .", name="private")
+	bld(export_includes="../include", name="public")
+
+	objs = []
+	obj = lambda src: objs.append(src)
+	shader = lambda dest: shader_header(bld, dest)
+
+	#
+	# platform
+	#
+
+	obj("platform/x11-xcb/event.c")
+	obj("platform/x11-xcb/window.c")
+	obj("platform/x11-xcb/keysym2ucs.c")
+
+	# common
+
+	obj("rutabaga.c")
+	obj("atom.c")
+
+	obj("object.c")
+	obj("surface.c")
+	obj("window.c")
+
+	obj("shader.c")
+	obj("render.c")
+	obj("mat4.c")
+
+	obj("event.c")
+	obj("mouse.c")
+
+	obj("targa.c")
+
+	obj("font-manager.c")
+	obj("text-object.c")
+
+	obj("layout.c")
+
+	if bld.env.RTB_LAYOUT_DEBUG:
+		obj("devtools/layout-debug.c")
+
+	# widgets
+
+	obj("container.c")
+
+	obj("widgets/label.c")
+	obj("widgets/button.c")
+	obj("widgets/knob.c")
+
+	obj("widgets/patchbay/canvas.c")
+	obj("widgets/patchbay/node.c")
+	obj("widgets/patchbay/port.c")
+
+	# third party
+
+	obj("../third-party/freetype-gl/texture-font.c")
+	obj("../third-party/freetype-gl/texture-atlas.c")
+	obj("../third-party/freetype-gl/vector.c")
+
+	obj("../third-party/freetype-gl/vertex-buffer.c")
+	obj("../third-party/freetype-gl/vertex-attribute.c")
+
+	obj("../third-party/glloadgen/gl_core.3.0.c")
+
+	# shaders
+
+	shader("default")
+	shader("surface")
+	shader("text-alpha")
+	shader("patchbay-canvas")
+
+	# outputs
+
+	bld.stlib(
+		source=objs,
+
+		lib=['m'],
+		use=[
+			"private",
+			"shaders",
+			"public",
+			"GL",
+			"FREETYPE2",
+			"X11",
+			"XCB",
+			"XCB-KEYSYMS",
+			"XCB-ICCCM"],
+
+		target="rutabaga",
+		name="librutabaga",
+		vnum=bld.env.VERSION)
