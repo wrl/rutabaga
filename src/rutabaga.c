@@ -44,7 +44,7 @@ rtb_t *rtb_init()
 {
 	rtb_t *self = window_impl_rtb_alloc();
 
-	RTB_DICT_INIT(&self->type_dict);
+	RTB_DICT_INIT(&self->atoms.type);
 
 	return self;
 }

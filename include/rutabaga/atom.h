@@ -30,17 +30,25 @@
 #include "rutabaga/dict.h"
 
 typedef struct rtb_atom rtb_atom_t;
+typedef struct rtb_type_atom rtb_type_atom_t;
+
 typedef struct rtb_atom_descriptor rtb_atom_descriptor_t;
+typedef struct rtb_type_atom_descriptor rtb_type_atom_descriptor_t;
+
 typedef enum {
-	RTB_ATOM_TYPE
+	RTB_TYPE_ATOM
 } rtb_atom_metatype_t;
 
 struct rtb_atom {
-	rtb_atom_descriptor_t *type;
+	rtb_atom_metatype_t metatype;
+};
+
+struct rtb_type_atom {
+	rtb_atom_t;
+	rtb_type_atom_descriptor_t *type;
 };
 
 struct rtb_atom_descriptor {
-	rtb_atom_metatype_t metatype;
 	const char *name;
 	int ref_count;
 
@@ -48,19 +56,19 @@ struct rtb_atom_descriptor {
 	RTB_DICT_ENTRY(rtb_atom_descriptor) dict_entry;
 };
 
-struct rtb_atom_descriptor_type {
+struct rtb_type_atom_descriptor {
 	rtb_atom_descriptor_t;
-	struct rtb_atom_descriptor_type *super[0];
+	rtb_type_atom_descriptor_t *super[0];
 };
 
 /**
  * public API
  */
 
-struct rtb_atom_descriptor_type *rtb_type_lookup(
+rtb_type_atom_descriptor_t *rtb_type_lookup(
 		rtb_t *rtb, const char *type_name);
-int rtb_is_type(rtb_atom_descriptor_t *desc, rtb_atom_t *atom);
+int rtb_is_type(rtb_type_atom_descriptor_t *desc, rtb_type_atom_t *atom);
 
-struct rtb_atom_descriptor_type *rtb_type_ref(rtb_t *rtb,
-		rtb_atom_descriptor_t *super, const char *type_name);
-int rtb_type_unref(rtb_atom_descriptor_t *type);
+rtb_type_atom_descriptor_t *rtb_type_ref(rtb_t *rtb,
+		rtb_type_atom_descriptor_t *super, const char *type_name);
+int rtb_type_unref(rtb_type_atom_descriptor_t *type);

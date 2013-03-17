@@ -86,28 +86,28 @@ static size_t dict_key_func(const struct rtb_atom_descriptor *node)
 	return node->dict_entry.hash;
 }
 
-NEDTRIE_GENERATE(static, rtb_atom_type, rtb_atom_descriptor,
-		dict_entry.trie_entry, dict_key_func, NEDTRIE_NOBBLEZEROS(rtb_atom_type));
+NEDTRIE_GENERATE(static, rtb_atom_dict, rtb_atom_descriptor,
+		dict_entry.trie_entry, dict_key_func, NEDTRIE_NOBBLEZEROS(rtb_atom_dict));
 
-static struct rtb_atom_descriptor_type *find_type_descriptor(
-		struct rtb_atom_type *dict,
+static rtb_type_atom_descriptor_t *find_type_descriptor(
+		struct rtb_atom_dict *dict,
 		uint_t hash, const char *type_name, size_t len)
 {
 	rtb_atom_descriptor_t needle = {.dict_entry.hash = hash}, *ret;
 
-	ret = NEDTRIE_FIND(rtb_atom_type, dict, &needle);
+	ret = NEDTRIE_FIND(rtb_atom_dict, dict, &needle);
 
 	while (ret && strcmp(type_name, ret->name))
-		ret = NEDTRIE_NEXTLEAF(rtb_atom_type, ret);
+		ret = NEDTRIE_NEXTLEAF(rtb_atom_dict, ret);
 
-	return (struct rtb_atom_descriptor_type *) ret;
+	return (struct rtb_type_atom_descriptor *) ret;
 }
 
-static struct rtb_atom_descriptor_type *alloc_type_descriptor(
+static struct rtb_type_atom_descriptor *alloc_type_descriptor(
 		uint_t hash, const char *type_name, size_t len,
-		struct rtb_atom_descriptor_type *supertype)
+		struct rtb_type_atom_descriptor *supertype)
 {
-	struct rtb_atom_descriptor_type *ret, **cursor;
+	struct rtb_type_atom_descriptor *ret, **cursor;
 	size_t need = sizeof(*ret), name_start;
 	int supertypes = 0;
 	char *name;
@@ -122,7 +122,6 @@ static struct rtb_atom_descriptor_type *alloc_type_descriptor(
 	need += len + 1;
 	ret = calloc(1, need);
 
-	ret->metatype = RTB_ATOM_TYPE;
 	ret->dict_entry.hash = hash;
 	ret->ref_count = 0;
 	ret->name = name = ((char *) ret) + name_start;
@@ -148,7 +147,7 @@ static struct rtb_atom_descriptor_type *alloc_type_descriptor(
  * RTB_ATOM_TYPE public API
  */
 
-struct rtb_atom_descriptor_type *rtb_type_lookup(
+struct rtb_type_atom_descriptor *rtb_type_lookup(
 		rtb_t *rtb, const char *type_name)
 {
 	uint_t hash;
@@ -157,17 +156,15 @@ struct rtb_atom_descriptor_type *rtb_type_lookup(
 	len = strlen(type_name);
 	hash = HASH(type_name, len);
 
-	return find_type_descriptor(&rtb->type_dict, hash, type_name, len);
+	return find_type_descriptor(&rtb->atoms.type, hash, type_name, len);
 }
 
-int rtb_is_type(rtb_atom_descriptor_t *desc, rtb_atom_t *atom)
+int rtb_is_type(rtb_type_atom_descriptor_t *desc, rtb_type_atom_t *atom)
 {
-	struct rtb_atom_descriptor_type *type_a, *type_b;
+	struct rtb_type_atom_descriptor *type_a, *type_b;
 
-	assert(desc->metatype == RTB_ATOM_TYPE);
-	assert(atom->type->metatype == RTB_ATOM_TYPE);
-	type_a = (struct rtb_atom_descriptor_type *) desc;
-	type_b = (struct rtb_atom_descriptor_type *) atom->type;
+	type_a = desc;
+	type_b = atom->type;
 
 	do {
 		if (type_a == type_b)
@@ -177,48 +174,41 @@ int rtb_is_type(rtb_atom_descriptor_t *desc, rtb_atom_t *atom)
 	return 0;
 }
 
-struct rtb_atom_descriptor_type *rtb_type_ref(rtb_t *rtb,
-		rtb_atom_descriptor_t *super, const char *type_name)
+rtb_type_atom_descriptor_t *rtb_type_ref(rtb_t *rtb,
+		rtb_type_atom_descriptor_t *super, const char *type_name)
 {
-	struct rtb_atom_descriptor_type *type, *supertype;
+	struct rtb_type_atom_descriptor *type, *supertype;
 	uint_t hash;
 	int len;
 
-	if (super)
-		assert(super->metatype == RTB_ATOM_TYPE);
-	supertype = (struct rtb_atom_descriptor_type *) super;
+	supertype = (struct rtb_type_atom_descriptor *) super;
 
 	len = strlen(type_name);
 	hash = HASH(type_name, len);
 
-	type = find_type_descriptor(&rtb->type_dict, hash, type_name, len);
+	type = find_type_descriptor(&rtb->atoms.type, hash, type_name, len);
 
 	if (!type) {
 		if (!(type = alloc_type_descriptor(hash, type_name, len, supertype)))
 			return NULL;
 
-		type->dict = &rtb->type_dict;
-		NEDTRIE_INSERT(rtb_atom_type, &rtb->type_dict, type);
+		type->dict = &rtb->atoms.type;
+		NEDTRIE_INSERT(rtb_atom_dict, &rtb->atoms.type, type);
 	}
 
 	type->ref_count++;
 	return type;
 }
 
-int rtb_type_unref(rtb_atom_descriptor_t *desc)
+int rtb_type_unref(rtb_type_atom_descriptor_t *type)
 {
-	struct rtb_atom_descriptor_type *type;
-
-	if (!desc)
+	if (!type)
 		return -1;
-
-	assert(desc->metatype == RTB_ATOM_TYPE);
-	type = (struct rtb_atom_descriptor_type *) desc;
 
 	rtb_type_unref(type->super[0]);
 
 	if (!--type->ref_count) {
-		NEDTRIE_REMOVE(rtb_atom_type, type->dict, type);
+		NEDTRIE_REMOVE(rtb_atom_dict, type->dict, type);
 		free(type);
 		return 0;
 	}

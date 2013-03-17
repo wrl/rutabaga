@@ -47,7 +47,9 @@ struct rutabaga {
 	rtb_win_t *win;
 	int run_event_loop;
 
-	RTB_DICT(rtb_atom_type, rtb_atom_descriptor) type_dict;
+	struct {
+		RTB_DICT(rtb_atom_dict, rtb_atom_descriptor) type;
+	} atoms;
 };
 
 void rtb_stop_event_loop(rtb_t *self);

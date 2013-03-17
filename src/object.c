@@ -321,6 +321,8 @@ int rtb_obj_init(rtb_obj_t *self, struct rtb_object_implementation *impl)
 
 	(*impl) = default_impl;
 
+	self->metatype    = RTB_TYPE_ATOM;
+
 	self->outer_pad.x = RTB_DEFAULT_OUTER_XPAD;
 	self->outer_pad.y = RTB_DEFAULT_OUTER_YPAD;
 

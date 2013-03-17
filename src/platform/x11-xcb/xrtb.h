@@ -37,7 +37,7 @@
 #define RTB_XCB_WIN(x) ((struct xcb_window *) x)
 
 struct xcb_rutabaga {
-	rtb_t;
+	rtb_t rtb;
 
 	Display *dpy;
 	xcb_connection_t *xcb_conn;

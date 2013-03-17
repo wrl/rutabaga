@@ -92,7 +92,7 @@ rtb_t *window_impl_rtb_alloc()
 	INTERN_ATOM(wm_delete_window, "WM_DELETE_WINDOW");
 #undef INTERN_ATOM
 
-	return xrtb;
+	return (rtb_t *) xrtb;
 
 err_get_conn:
 	XCloseDisplay(xrtb->dpy);

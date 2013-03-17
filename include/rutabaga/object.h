@@ -49,7 +49,7 @@ struct rtb_object_implementation {
 };
 
 struct rtb_object {
-	rtb_atom_t;
+	rtb_type_atom_t;
 
 	/* public *********************************/
 	rtb_pt_t;        /* provides x, y */
