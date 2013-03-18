@@ -23,8 +23,6 @@ def separator():
 
 def check_plan9_extensions(conf):
 	code = """
-		#include <assert.h>
-
 		struct parent {
 			int type;
 		};
@@ -41,8 +39,7 @@ def check_plan9_extensions(conf):
 		int main(int argc, char **argv)
 		{
 			struct child c = {.type = 42};
-			assert(return_type(&c) == 42);
-			return 0;
+			return (return_type(&c) == 42 ? 0 : 1);
 		}"""
 
 	try_flags = ["", "-fplan9-extensions"]
@@ -154,10 +151,6 @@ def configure(conf):
 	conf.load("compiler_c")
 	conf.load("gnu_dirs")
 
-	conf.env.append_unique("CFLAGS", [
-		"-std=c99", "-ggdb", "-Wall", "-Werror",
-		"-ffunction-sections", "-fdata-sections"])
-
 	# conf checks
 
 	separator()
@@ -181,6 +174,10 @@ def configure(conf):
 
 	conf.env.VERSION = VERSION
 	conf.define("_GNU_SOURCE", "")
+	conf.env.append_unique("CFLAGS", [
+		"-std=c99", "-ggdb", "-Wall", "-Werror",
+		"-ffunction-sections", "-fdata-sections"])
+
 	if conf.options.debug_layout:
 		conf.env.RTB_LAYOUT_DEBUG = True
 		conf.define("RTB_LAYOUT_DEBUG", True)
