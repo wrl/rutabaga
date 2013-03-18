@@ -141,7 +141,7 @@ static void realize(rtb_obj_t *self, rtb_obj_t *parent,
 {
 	rtb_obj_t *iter;
 
-	self->type = rtb_type_ref(window->rtb, NULL, "net.illest.rutabaga.object");
+	self->type = rtb_type_ref(window, NULL, "net.illest.rutabaga.object");
 
 	self->layout_cb(self);
 

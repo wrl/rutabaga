@@ -352,7 +352,7 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
 	SELF_FROM(obj);
 
 	super.realize_cb(obj, parent, window);
-	self->type = rtb_type_ref(window->rtb, self->type,
+	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.patchbay");
 
 	cache_to_vbo(self);

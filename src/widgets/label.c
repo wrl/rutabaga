@@ -59,7 +59,7 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
 	self->outer_pad.y = self->tobj->ypad;
 
 	super.realize_cb(obj, parent, window);
-	self->type = rtb_type_ref(window->rtb, self->type,
+	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.label");
 }
 

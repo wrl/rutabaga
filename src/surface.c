@@ -167,7 +167,7 @@ static void realize(rtb_obj_t *self, rtb_obj_t *parent,
 		rtb_win_t *window)
 {
 	super.realize_cb(self, parent, window);
-	self->type = rtb_type_ref(window->rtb, self->type,
+	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.surface");
 }
 

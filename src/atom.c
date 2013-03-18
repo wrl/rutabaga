@@ -29,6 +29,7 @@
 #include <stdio.h>
 
 #include "rutabaga/rutabaga.h"
+#include "rutabaga/window.h"
 #include "rutabaga/dict.h"
 #include "rutabaga/atom.h"
 
@@ -147,8 +148,8 @@ static struct rtb_type_atom_descriptor *alloc_type_descriptor(
  * RTB_ATOM_TYPE public API
  */
 
-struct rtb_type_atom_descriptor *rtb_type_lookup(
-		rtb_t *rtb, const char *type_name)
+rtb_type_atom_descriptor_t *rtb_type_lookup(rtb_win_t *win,
+		const char *type_name)
 {
 	uint_t hash;
 	int len;
@@ -156,7 +157,7 @@ struct rtb_type_atom_descriptor *rtb_type_lookup(
 	len = strlen(type_name);
 	hash = HASH(type_name, len);
 
-	return find_type_descriptor(&rtb->atoms.type, hash, type_name, len);
+	return find_type_descriptor(&win->rtb->atoms.type, hash, type_name, len);
 }
 
 int rtb_is_type(rtb_type_atom_descriptor_t *desc, rtb_type_atom_t *atom)
@@ -174,9 +175,10 @@ int rtb_is_type(rtb_type_atom_descriptor_t *desc, rtb_type_atom_t *atom)
 	return 0;
 }
 
-rtb_type_atom_descriptor_t *rtb_type_ref(rtb_t *rtb,
+rtb_type_atom_descriptor_t *rtb_type_ref(rtb_win_t *win,
 		rtb_type_atom_descriptor_t *super, const char *type_name)
 {
+	struct rtb_atom_dict *dict = &win->rtb->atoms.type;
 	struct rtb_type_atom_descriptor *type, *supertype;
 	uint_t hash;
 	int len;
@@ -186,14 +188,14 @@ rtb_type_atom_descriptor_t *rtb_type_ref(rtb_t *rtb,
 	len = strlen(type_name);
 	hash = HASH(type_name, len);
 
-	type = find_type_descriptor(&rtb->atoms.type, hash, type_name, len);
+	type = find_type_descriptor(dict, hash, type_name, len);
 
 	if (!type) {
 		if (!(type = alloc_type_descriptor(hash, type_name, len, supertype)))
 			return NULL;
 
-		type->dict = &rtb->atoms.type;
-		NEDTRIE_INSERT(rtb_atom_dict, &rtb->atoms.type, type);
+		type->dict = dict;
+		NEDTRIE_INSERT(rtb_atom_dict, dict, type);
 	}
 
 	type->ref_count++;
