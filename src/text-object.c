@@ -28,9 +28,11 @@
 #include <wchar.h>
 
 #include "rutabaga/rutabaga.h"
+#include "rutabaga/object.h"
 #include "rutabaga/window.h"
 #include "rutabaga/render.h"
 #include "rutabaga/shader.h"
+#include "rutabaga/style.h"
 
 #include "rutabaga/text-object.h"
 
@@ -123,8 +125,11 @@ void rtb_text_object_render(rtb_text_object_t *self, rtb_obj_t *parent,
 
 	/* normal */
 	glUniform2f(glGetUniformLocation(program, "offset"), x, y);
-	glUniform4f(glGetUniformLocation(program, "color"),
-			1.f, 1.f, 1.f, 1.f);
+	rtb_render_set_color(parent,
+			parent->style->fg.r,
+			parent->style->fg.g,
+			parent->style->fg.b,
+			parent->style->fg.a);
 
 	vertex_buffer_render(self->vertices, GL_TRIANGLES);
 }

@@ -57,7 +57,9 @@ struct rtb_object {
 	struct rtb_size min_size;
 
 	rtb_obj_impl_t;
+	rtb_style_t *style;
 
+	/* XXX: should this stuff be in rtb_style_t? */
 	rtb_alignment_t align;
 	struct rtb_padding outer_pad;
 	struct rtb_padding inner_pad;

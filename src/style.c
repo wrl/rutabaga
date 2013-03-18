@@ -24,29 +24,28 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdlib.h>
-
 #include "rutabaga/rutabaga.h"
+#include "rutabaga/object.h"
 #include "rutabaga/window.h"
 #include "rutabaga/style.h"
-#include "rutabaga/dict.h"
 
-void rtb_stop_event_loop(rtb_t *self)
+#include "private/default_style.h"
+
+int rtb_style_resolve(rtb_win_t *window, rtb_style_t *style)
 {
-	self->run_event_loop = 0;
+	style->resolved_type = rtb_type_lookup(window, style->for_type);
+	if (style->resolved_type)
+		return 0;
+	return -1;
 }
 
-void rtb_destroy(rtb_t *self)
+rtb_style_t *rtb_style_for_object(rtb_obj_t *obj)
 {
-	window_impl_rtb_free(self);
+	return &obj->window->rtb->default_style[0];
 }
 
-rtb_t *rtb_init()
+int rtb_style_init_default(rtb_t *rtb)
 {
-	rtb_t *self = window_impl_rtb_alloc();
-
-	RTB_DICT_INIT(&self->atoms.type);
-	rtb_style_init_default(self);
-
-	return self;
+	rtb->default_style = default_style;
+	return 0;
 }

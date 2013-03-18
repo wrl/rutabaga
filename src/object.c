@@ -32,12 +32,15 @@
 #include <math.h>
 
 #include "rutabaga/rutabaga.h"
-#include "rutabaga/event.h"
 #include "rutabaga/object.h"
 #include "rutabaga/layout.h"
 #include "rutabaga/window.h"
-#include "rutabaga/mouse.h"
+
+#include "rutabaga/style.h"
 #include "rutabaga/atom.h"
+
+#include "rutabaga/event.h"
+#include "rutabaga/mouse.h"
 
 #include "private/layout-debug.h"
 
@@ -201,6 +204,8 @@ void rtb_obj_realize(rtb_obj_t *self, rtb_obj_t *parent,
 	self->window  = window;
 
 	self->realize_cb(self, parent, window);
+
+	self->style   = rtb_style_for_object(self);
 }
 
 void rtb_obj_trigger_recalc(rtb_obj_t *self, rtb_obj_t *instigator,

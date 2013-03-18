@@ -79,6 +79,8 @@ typedef struct rtb_object  rtb_container_t;
 typedef struct rtb_surface rtb_surface_t;
 typedef struct rtb_window  rtb_win_t;
 
+typedef struct rtb_style   rtb_style_t;
+
 typedef struct rtb_shader_program rtb_shader_program_t;
 
 typedef struct rtb_font_manager rtb_font_manager_t;

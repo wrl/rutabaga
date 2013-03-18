@@ -24,29 +24,19 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdlib.h>
+#pragma once
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/window.h"
 #include "rutabaga/style.h"
-#include "rutabaga/dict.h"
+#include "private/util.h"
 
-void rtb_stop_event_loop(rtb_t *self)
-{
-	self->run_event_loop = 0;
-}
+static struct rtb_style default_style[] = {
+	{"net.illest.rutabaga.object",
+		.fg = {RGB(0xFFFFFF), 1.f},
+		.bg = {RGB(0x404F3C), 1.f}},
 
-void rtb_destroy(rtb_t *self)
-{
-	window_impl_rtb_free(self);
-}
+	{"net.illest.rutabaga.window",
+		.fg = {RGB(0xFFFFFF), 1.f},
+		.bg = {RGB(0x18181C), 1.f}},
 
-rtb_t *rtb_init()
-{
-	rtb_t *self = window_impl_rtb_alloc();
-
-	RTB_DICT_INIT(&self->atoms.type);
-	rtb_style_init_default(self);
-
-	return self;
-}
+	{NULL}
+};

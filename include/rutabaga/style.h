@@ -24,29 +24,24 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdlib.h>
+#pragma once
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/window.h"
-#include "rutabaga/style.h"
-#include "rutabaga/dict.h"
+#include "rutabaga/types.h"
+#include "rutabaga/atom.h"
 
-void rtb_stop_event_loop(rtb_t *self)
-{
-	self->run_event_loop = 0;
-}
+struct rtb_rgb_color {
+	GLfloat r, g, b, a;
+};
 
-void rtb_destroy(rtb_t *self)
-{
-	window_impl_rtb_free(self);
-}
+struct rtb_style {
+	/* public *********************************/
 
-rtb_t *rtb_init()
-{
-	rtb_t *self = window_impl_rtb_alloc();
+	char *for_type;
+	struct rtb_rgb_color fg, bg;
 
-	RTB_DICT_INIT(&self->atoms.type);
-	rtb_style_init_default(self);
+	/* private ********************************/
+	rtb_type_atom_descriptor_t *resolved_type;
+};
 
-	return self;
-}
+rtb_style_t *rtb_style_for_object(rtb_obj_t *obj);
+int rtb_style_init_default(rtb_t *rtb);
