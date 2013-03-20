@@ -97,6 +97,7 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent,
 				unresolved_styles);
 	else
 		printf(" :: %s:realize() no unresolved styles\n", self->type->name);
+	rtb_style_apply_to_tree(self, self->style);
 }
 
 static void mark_dirty(rtb_obj_t *obj)

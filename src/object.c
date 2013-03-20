@@ -204,8 +204,6 @@ void rtb_obj_realize(rtb_obj_t *self, rtb_obj_t *parent,
 	self->window  = window;
 
 	self->realize_cb(self, parent, window);
-
-	self->style   = rtb_style_for_object(self);
 }
 
 void rtb_obj_trigger_recalc(rtb_obj_t *self, rtb_obj_t *instigator,
@@ -327,6 +325,7 @@ int rtb_obj_init(rtb_obj_t *self, struct rtb_object_implementation *impl)
 	(*impl) = default_impl;
 
 	self->metatype    = RTB_TYPE_ATOM;
+	self->style       = NULL;
 
 	self->outer_pad.x = RTB_DEFAULT_OUTER_XPAD;
 	self->outer_pad.y = RTB_DEFAULT_OUTER_YPAD;

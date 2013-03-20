@@ -39,6 +39,16 @@ static int style_resolve(rtb_win_t *window, rtb_style_t *style)
 	return -1;
 }
 
+static rtb_style_t *style_for_type(rtb_type_atom_descriptor_t *type,
+		rtb_style_t *style_list)
+{
+	return &style_list[0];
+}
+
+/**
+ * public API
+ */
+
 int rtb_style_resolve_list(rtb_win_t *win, rtb_style_t *style_list)
 {
 	int unresolved_styles = 0;
@@ -49,6 +59,17 @@ int rtb_style_resolve_list(rtb_win_t *win, rtb_style_t *style_list)
 	}
 
 	return unresolved_styles;
+}
+
+void rtb_style_apply_to_tree(rtb_obj_t *root, rtb_style_t *style_list)
+{
+	rtb_obj_t *iter;
+
+	if (!root->style)
+		root->style = style_for_type(root->type, style_list);
+
+	TAILQ_FOREACH(iter, &root->children, child)
+		rtb_style_apply_to_tree(iter, style_list);
 }
 
 rtb_style_t *rtb_style_for_object(rtb_obj_t *obj)
