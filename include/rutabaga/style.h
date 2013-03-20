@@ -47,4 +47,4 @@ int rtb_style_resolve_list(rtb_win_t *, rtb_style_t *style_list);
 void rtb_style_apply_to_tree(rtb_obj_t *root, rtb_style_t *style_list);
 
 rtb_style_t *rtb_style_for_object(rtb_obj_t *obj);
-int rtb_style_init_default(rtb_win_t *win);
+rtb_style_t *rtb_style_get_defaults(void);

@@ -42,12 +42,12 @@ struct rtb_window {
 
 	/* public *********************************/
 	rtb_shader_program_t default_shader;
+	rtb_style_t *style_list;
 
 	mat4 identity;
 
 	/* private ********************************/
 	rtb_t *rtb;
-	rtb_style_t *default_style;
 	pthread_mutex_t lock;
 	int need_reconfigure;
 	rtb_mouse_t mouse;

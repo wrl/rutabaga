@@ -90,8 +90,7 @@ rtb_style_t *rtb_style_for_object(rtb_obj_t *obj)
 	return &obj->window->style[0];
 }
 
-int rtb_style_init_default(rtb_win_t *win)
+rtb_style_t *rtb_style_get_defaults(void)
 {
-	win->default_style = default_style;
-	return 0;
+	return default_style;
 }

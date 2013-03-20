@@ -91,13 +91,13 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent,
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.window");
 
-	unresolved_styles = rtb_style_resolve_list(self, self->default_style);
+	unresolved_styles = rtb_style_resolve_list(self, self->style_list);
 	if (unresolved_styles)
 		printf(" :: %s:realize() %d unresolved styles\n", self->type->name,
 				unresolved_styles);
 	else
 		printf(" :: %s:realize() no unresolved styles\n", self->type->name);
-	rtb_style_apply_to_tree(self, self->default_style);
+	rtb_style_apply_to_tree(self, self->style_list);
 }
 
 static void mark_dirty(rtb_obj_t *obj)
@@ -157,8 +157,7 @@ rtb_win_t *rtb_window_open(rtb_t *r, int h, int w, const char *title)
 	rtb_surface_init(self, &super);
 	pthread_mutex_init(&self->lock, NULL);
 
-	rtb_style_init_default(self);
-	self->style = self->default_style;
+	self->style_list = rtb_style_get_defaults();
 
 	if (initialize_default_shader(self))
 		goto err_shaders;
