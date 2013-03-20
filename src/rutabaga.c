@@ -28,7 +28,6 @@
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/window.h"
-#include "rutabaga/style.h"
 #include "rutabaga/dict.h"
 
 void rtb_stop_event_loop(rtb_t *self)
@@ -46,7 +45,6 @@ rtb_t *rtb_init()
 	rtb_t *self = window_impl_rtb_alloc();
 
 	RTB_DICT_INIT(&self->atoms.type);
-	rtb_style_init_default(self);
 
 	return self;
 }

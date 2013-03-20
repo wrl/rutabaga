@@ -47,6 +47,7 @@ struct rtb_window {
 
 	/* private ********************************/
 	rtb_t *rtb;
+	rtb_style_t *default_style;
 	pthread_mutex_t lock;
 	int need_reconfigure;
 	rtb_mouse_t mouse;

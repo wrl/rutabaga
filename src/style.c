@@ -31,7 +31,7 @@
 
 #include "private/default_style.h"
 
-int rtb_style_resolve(rtb_win_t *window, rtb_style_t *style)
+static int style_resolve(rtb_win_t *window, rtb_style_t *style)
 {
 	style->resolved_type = rtb_type_lookup(window, style->for_type);
 	if (style->resolved_type)
@@ -39,13 +39,25 @@ int rtb_style_resolve(rtb_win_t *window, rtb_style_t *style)
 	return -1;
 }
 
-rtb_style_t *rtb_style_for_object(rtb_obj_t *obj)
+int rtb_style_resolve_list(rtb_win_t *win, rtb_style_t *style_list)
 {
-	return &obj->window->rtb->default_style[0];
+	int unresolved_styles = 0;
+
+	for (; style_list->for_type; style_list++) {
+		if (style_resolve(win, style_list))
+			unresolved_styles++;
+	}
+
+	return unresolved_styles;
 }
 
-int rtb_style_init_default(rtb_t *rtb)
+rtb_style_t *rtb_style_for_object(rtb_obj_t *obj)
 {
-	rtb->default_style = default_style;
+	return &obj->window->style[0];
+}
+
+int rtb_style_init_default(rtb_win_t *win)
+{
+	win->default_style = default_style;
 	return 0;
 }
