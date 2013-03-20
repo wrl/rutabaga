@@ -30,13 +30,13 @@
 #include "private/util.h"
 
 static struct rtb_style default_style[] = {
-	{"net.illest.rutabaga.object",
-		.fg = {RGB(0xFFFFFF), 1.f},
-		.bg = {RGB(0x404F3C), 1.f}},
-
 	{"net.illest.rutabaga.window",
 		.fg = {RGB(0xFFFFFF), 1.f},
 		.bg = {RGB(0x18181C), 1.f}},
+
+	{"net.illest.rutabaga.object",
+		.fg = {RGB(0xFFFFFF), 1.f},
+		.bg = {RGB(0x404F3C), 1.f}},
 
 	{NULL}
 };

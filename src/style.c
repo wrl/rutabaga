@@ -31,6 +31,13 @@
 
 #include "private/default_style.h"
 
+static rtb_style_t no_style = {
+	.for_type = "couldn't find a style for this object",
+	.fg = {RGB(0x00FF00), 1.f},
+	.bg = {RGB(0xFF0000), 1.f}
+};
+
+
 static int style_resolve(rtb_win_t *window, rtb_style_t *style)
 {
 	style->resolved_type = rtb_type_lookup(window, style->for_type);
@@ -39,10 +46,16 @@ static int style_resolve(rtb_win_t *window, rtb_style_t *style)
 	return -1;
 }
 
-static rtb_style_t *style_for_type(rtb_type_atom_descriptor_t *type,
+static rtb_style_t *style_for_type(rtb_type_atom_t *atom,
 		rtb_style_t *style_list)
 {
-	return &style_list[0];
+	for (; style_list->for_type; style_list++) {
+		if (style_list->resolved_type &&
+				rtb_is_type(style_list->resolved_type, atom))
+			return style_list;
+	}
+
+	return &no_style;
 }
 
 /**
@@ -66,7 +79,7 @@ void rtb_style_apply_to_tree(rtb_obj_t *root, rtb_style_t *style_list)
 	rtb_obj_t *iter;
 
 	if (!root->style)
-		root->style = style_for_type(root->type, style_list);
+		root->style = style_for_type(root, style_list);
 
 	TAILQ_FOREACH(iter, &root->children, child)
 		rtb_style_apply_to_tree(iter, style_list);
