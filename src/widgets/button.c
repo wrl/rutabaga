@@ -47,12 +47,6 @@
 #define BACKGROUND_HOVER	RGB(0x5C704C)
 #define BACKGROUND_FOCUS	RGB(0x364232)
 
-#define OUTLINE_NORMAL		RGB(0x404F3C)
-#define OUTLINE_HOVER		OUTLINE_NORMAL
-#define OUTLINE_FOCUS		BACKGROUND_FOCUS
-
-#define TEXT_NORMAL			RGB(0xFFFFFF)
-
 static struct rtb_object_implementation super;
 
 /**
@@ -95,10 +89,10 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 
 	rtb_render_push(self);
 	rtb_render_set_position(self, 0, 0);
+	rtb_render_apply_style(self, state);
 
 	switch (state) {
 	case RTB_DRAW_NORMAL:
-		rtb_render_set_color(self, BACKGROUND_NORMAL, 1.f);
 		break;
 
 	case RTB_DRAW_HOVER:

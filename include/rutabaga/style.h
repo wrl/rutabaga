@@ -26,47 +26,25 @@
 
 #pragma once
 
-#include <pthread.h>
-
 #include "rutabaga/types.h"
-#include "rutabaga/object.h"
-#include "rutabaga/shader.h"
-#include "rutabaga/surface.h"
-#include "rutabaga/mouse.h"
+#include "rutabaga/atom.h"
 
-#define RTB_WIN_T(x) ((rtb_win_t *) (x))
-
-struct rtb_window {
-	rtb_surface_t;
-	rtb_font_manager_t *font_manager;
-
-	/* public *********************************/
-	rtb_shader_program_t default_shader;
-	rtb_style_t *style_list;
-
-	mat4 identity;
-
-	/* private ********************************/
-	rtb_t *rtb;
-	pthread_mutex_t lock;
-	int need_reconfigure;
-	rtb_mouse_t mouse;
-	rtb_obj_t *focus;
+struct rtb_rgb_color {
+	GLfloat r, g, b, a;
 };
 
-void rtb_window_lock(rtb_win_t *);
-void rtb_window_unlock(rtb_win_t *);
+struct rtb_style {
+	/* public *********************************/
 
-void rtb_window_draw(rtb_win_t *);
-void rtb_window_reinit(rtb_win_t *);
+	char *for_type;
+	struct rtb_rgb_color fg, bg;
 
-rtb_win_t *rtb_window_open(rtb_t *r,
-		int width, int height, const char *title);
-void rtb_window_close(rtb_win_t *);
+	/* private ********************************/
+	rtb_type_atom_descriptor_t *resolved_type;
+};
 
-void window_impl_rtb_free(rtb_t *rtb);
-rtb_t *window_impl_rtb_alloc(void);
-void window_impl_swap_buffers(rtb_win_t *self);
-void window_impl_close(rtb_win_t *self);
-rtb_win_t *window_impl_open(rtb_t *r,
-		int width, int height, const char *title);
+int rtb_style_resolve_list(rtb_win_t *, rtb_style_t *style_list);
+void rtb_style_apply_to_tree(rtb_obj_t *root, rtb_style_t *style_list);
+
+rtb_style_t *rtb_style_for_object(rtb_obj_t *obj);
+rtb_style_t *rtb_style_get_defaults(void);

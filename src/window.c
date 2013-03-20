@@ -39,6 +39,7 @@
 #include "rutabaga/font-manager.h"
 #include "rutabaga/shader.h"
 #include "rutabaga/surface.h"
+#include "rutabaga/style.h"
 #include "rutabaga/mat4.h"
 
 #include "private/util.h"
@@ -80,12 +81,23 @@ static int win_event(rtb_obj_t *obj, const rtb_ev_t *e)
 	return super.event_cb(self, e);
 }
 
-static void realize(rtb_obj_t *self, rtb_obj_t *parent,
+static void realize(rtb_obj_t *obj, rtb_obj_t *parent,
 		rtb_win_t *window)
 {
+	rtb_win_t *self = RTB_WIN_T(obj);
+	int unresolved_styles;
+
 	super.realize_cb(self, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.window");
+
+	unresolved_styles = rtb_style_resolve_list(self, self->style_list);
+	if (unresolved_styles)
+		printf(" :: %s:realize() %d unresolved styles\n", self->type->name,
+				unresolved_styles);
+	else
+		printf(" :: %s:realize() no unresolved styles\n", self->type->name);
+	rtb_style_apply_to_tree(self, self->style_list);
 }
 
 static void mark_dirty(rtb_obj_t *obj)
@@ -99,9 +111,15 @@ static void mark_dirty(rtb_obj_t *obj)
 
 void rtb_window_draw(rtb_win_t *self)
 {
+	rtb_style_t *style = self->style;
+
 	glViewport(0, 0, self->w, self->h);
 
-	glClearColor(RGB(0x18181C), 1.f);
+	glClearColor(
+			style->bg.r,
+			style->bg.g,
+			style->bg.b,
+			style->bg.a);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	self->draw_cb(self, RTB_DRAW_NORMAL);
@@ -138,6 +156,8 @@ rtb_win_t *rtb_window_open(rtb_t *r, int h, int w, const char *title)
 
 	rtb_surface_init(self, &super);
 	pthread_mutex_init(&self->lock, NULL);
+
+	self->style_list = rtb_style_get_defaults();
 
 	if (initialize_default_shader(self))
 		goto err_shaders;

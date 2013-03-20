@@ -134,7 +134,7 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
 	/* background */
-	rtb_render_set_color(self, BACKGROUND_NORMAL, 1.f);
+	rtb_render_apply_style(obj, state);
 
 	glDrawElements(
 			GL_TRIANGLE_FAN, ARRAY_LENGTH(circle_indices),

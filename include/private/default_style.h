@@ -26,47 +26,45 @@
 
 #pragma once
 
-#include <pthread.h>
+#include "rutabaga/style.h"
+#include "private/util.h"
 
-#include "rutabaga/types.h"
-#include "rutabaga/object.h"
-#include "rutabaga/shader.h"
-#include "rutabaga/surface.h"
-#include "rutabaga/mouse.h"
+/**
+ * styles should go from specific to general.
+ * since all objects subclass from net.illest.rutabaga.object,
+ * its rule will match all widgets.
+ */
 
-#define RTB_WIN_T(x) ((rtb_win_t *) (x))
+static struct rtb_style dark_style[] = {
+	/**
+	 * patchbay
+	 */
 
-struct rtb_window {
-	rtb_surface_t;
-	rtb_font_manager_t *font_manager;
+	{"net.illest.rutabaga.widgets.patchbay",
+		.fg = {RGB(0x0D0D0F), 1.f},
+		.bg = {RGB(0x000000), 1.f}},
 
-	/* public *********************************/
-	rtb_shader_program_t default_shader;
-	rtb_style_t *style_list;
+	{"net.illest.rutabaga.widgets.patchbay.node",
+		.fg = {RGB(0xFFFFFF), 1.f},
+		.bg = {RGB(0x18181C), .9f}},
 
-	mat4 identity;
+	{"net.illest.rutabaga.widgets.patchbay.port",
+		.fg = {RGB(0xFFFFFF), 1.f},
+		.bg = {RGB(0x404F3C), 1.f}},
 
-	/* private ********************************/
-	rtb_t *rtb;
-	pthread_mutex_t lock;
-	int need_reconfigure;
-	rtb_mouse_t mouse;
-	rtb_obj_t *focus;
+	/**
+	 * basic stuff
+	 */
+
+	{"net.illest.rutabaga.window",
+		.fg = {RGB(0xFFFFFF), 1.f},
+		.bg = {RGB(0x18181C), 1.f}},
+
+	{"net.illest.rutabaga.object",
+		.fg = {RGB(0xFFFFFF), 1.f},
+		.bg = {RGB(0x404F3C), 1.f}},
+
+	{NULL}
 };
 
-void rtb_window_lock(rtb_win_t *);
-void rtb_window_unlock(rtb_win_t *);
-
-void rtb_window_draw(rtb_win_t *);
-void rtb_window_reinit(rtb_win_t *);
-
-rtb_win_t *rtb_window_open(rtb_t *r,
-		int width, int height, const char *title);
-void rtb_window_close(rtb_win_t *);
-
-void window_impl_rtb_free(rtb_t *rtb);
-rtb_t *window_impl_rtb_alloc(void);
-void window_impl_swap_buffers(rtb_win_t *self);
-void window_impl_close(rtb_win_t *self);
-rtb_win_t *window_impl_open(rtb_t *r,
-		int width, int height, const char *title);
+static struct rtb_style *default_style = dark_style;

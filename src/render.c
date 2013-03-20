@@ -27,8 +27,37 @@
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/window.h"
 #include "rutabaga/render.h"
+#include "rutabaga/style.h"
 
 #define CONTEXT (obj->window->render_ctx)
+
+void rtb_render_set_position(rtb_obj_t *obj, float x, float y)
+{
+	glUniform2f(CONTEXT.shader->offset, x, y);
+}
+
+void rtb_render_set_color(rtb_obj_t *obj,
+		GLfloat r, GLfloat g, GLfloat b, GLfloat a)
+{
+	glUniform4f(CONTEXT.shader->color, r, g, b, a);
+}
+
+void rtb_render_set_modelview(rtb_obj_t *obj, const GLfloat *matrix)
+{
+	glUniformMatrix4fv(CONTEXT.shader->matrices.modelview,
+		1, GL_FALSE, matrix);
+}
+
+void rtb_render_apply_style(rtb_obj_t *obj, rtb_draw_state_t state)
+{
+	struct rtb_rgb_color *color = &obj->style->bg;
+
+	rtb_render_set_color(obj,
+			color->r,
+			color->g,
+			color->b,
+			color->a);
+}
 
 void rtb_render_use_program(rtb_obj_t *obj, rtb_shader_program_t *p)
 {
@@ -46,23 +75,6 @@ void rtb_render_use_program(rtb_obj_t *obj, rtb_shader_program_t *p)
 		1, GL_FALSE, obj->surface->projection.data);
 	glUniformMatrix4fv(p->matrices.modelview,
 		1, GL_FALSE, obj->window->identity.data);
-}
-
-void rtb_render_set_position(rtb_obj_t *obj, float x, float y)
-{
-	glUniform2f(CONTEXT.shader->offset, x, y);
-}
-
-void rtb_render_set_color(rtb_obj_t *obj,
-		GLfloat r, GLfloat g, GLfloat b, GLfloat a)
-{
-	glUniform4f(CONTEXT.shader->color, r, g, b, a);
-}
-
-void rtb_render_set_modelview(rtb_obj_t *obj, const GLfloat *matrix)
-{
-	glUniformMatrix4fv(CONTEXT.shader->matrices.modelview,
-		1, GL_FALSE, matrix);
 }
 
 void rtb_render_push(rtb_obj_t *obj)

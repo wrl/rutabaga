@@ -32,12 +32,15 @@
 #include <math.h>
 
 #include "rutabaga/rutabaga.h"
-#include "rutabaga/event.h"
 #include "rutabaga/object.h"
 #include "rutabaga/layout.h"
 #include "rutabaga/window.h"
-#include "rutabaga/mouse.h"
+
+#include "rutabaga/style.h"
 #include "rutabaga/atom.h"
+
+#include "rutabaga/event.h"
+#include "rutabaga/mouse.h"
 
 #include "private/layout-debug.h"
 
@@ -322,6 +325,7 @@ int rtb_obj_init(rtb_obj_t *self, struct rtb_object_implementation *impl)
 	(*impl) = default_impl;
 
 	self->metatype    = RTB_TYPE_ATOM;
+	self->style       = NULL;
 
 	self->outer_pad.x = RTB_DEFAULT_OUTER_XPAD;
 	self->outer_pad.y = RTB_DEFAULT_OUTER_YPAD;

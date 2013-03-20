@@ -44,6 +44,7 @@ void rtb_render_set_position(rtb_obj_t *, float x, float y);
 void rtb_render_set_color(rtb_obj_t *,
 		GLfloat r, GLfloat g, GLfloat b, GLfloat a);
 void rtb_render_set_modelview(rtb_obj_t *, const GLfloat *matrix);
+void rtb_render_apply_style(rtb_obj_t *, rtb_draw_state_t state);
 
 void rtb_render_use_program(rtb_obj_t *obj, rtb_shader_program_t *p);
 void rtb_render_clear(rtb_obj_t *obj);

@@ -24,49 +24,73 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
-
-#include <pthread.h>
-
-#include "rutabaga/types.h"
+#include "rutabaga/rutabaga.h"
 #include "rutabaga/object.h"
-#include "rutabaga/shader.h"
-#include "rutabaga/surface.h"
-#include "rutabaga/mouse.h"
+#include "rutabaga/window.h"
+#include "rutabaga/style.h"
 
-#define RTB_WIN_T(x) ((rtb_win_t *) (x))
+#include "private/default_style.h"
 
-struct rtb_window {
-	rtb_surface_t;
-	rtb_font_manager_t *font_manager;
-
-	/* public *********************************/
-	rtb_shader_program_t default_shader;
-	rtb_style_t *style_list;
-
-	mat4 identity;
-
-	/* private ********************************/
-	rtb_t *rtb;
-	pthread_mutex_t lock;
-	int need_reconfigure;
-	rtb_mouse_t mouse;
-	rtb_obj_t *focus;
+static rtb_style_t no_style = {
+	.for_type = "couldn't find a style for this object",
+	.fg = {RGB(0x00FF00), 1.f},
+	.bg = {RGB(0xFF0000), 1.f}
 };
 
-void rtb_window_lock(rtb_win_t *);
-void rtb_window_unlock(rtb_win_t *);
 
-void rtb_window_draw(rtb_win_t *);
-void rtb_window_reinit(rtb_win_t *);
+static int style_resolve(rtb_win_t *window, rtb_style_t *style)
+{
+	style->resolved_type = rtb_type_lookup(window, style->for_type);
+	if (style->resolved_type)
+		return 0;
+	return -1;
+}
 
-rtb_win_t *rtb_window_open(rtb_t *r,
-		int width, int height, const char *title);
-void rtb_window_close(rtb_win_t *);
+static rtb_style_t *style_for_type(rtb_type_atom_t *atom,
+		rtb_style_t *style_list)
+{
+	for (; style_list->for_type; style_list++) {
+		if (style_list->resolved_type &&
+				rtb_is_type(style_list->resolved_type, atom))
+			return style_list;
+	}
 
-void window_impl_rtb_free(rtb_t *rtb);
-rtb_t *window_impl_rtb_alloc(void);
-void window_impl_swap_buffers(rtb_win_t *self);
-void window_impl_close(rtb_win_t *self);
-rtb_win_t *window_impl_open(rtb_t *r,
-		int width, int height, const char *title);
+	return &no_style;
+}
+
+/**
+ * public API
+ */
+
+int rtb_style_resolve_list(rtb_win_t *win, rtb_style_t *style_list)
+{
+	int unresolved_styles = 0;
+
+	for (; style_list->for_type; style_list++) {
+		if (style_resolve(win, style_list))
+			unresolved_styles++;
+	}
+
+	return unresolved_styles;
+}
+
+void rtb_style_apply_to_tree(rtb_obj_t *root, rtb_style_t *style_list)
+{
+	rtb_obj_t *iter;
+
+	if (!root->style)
+		root->style = style_for_type(root, style_list);
+
+	TAILQ_FOREACH(iter, &root->children, child)
+		rtb_style_apply_to_tree(iter, style_list);
+}
+
+rtb_style_t *rtb_style_for_object(rtb_obj_t *obj)
+{
+	return &obj->window->style[0];
+}
+
+rtb_style_t *rtb_style_get_defaults(void)
+{
+	return default_style;
+}

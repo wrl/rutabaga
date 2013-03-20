@@ -64,6 +64,7 @@ def build(bld):
 	# common
 
 	obj("rutabaga.c")
+	obj("style.c")
 	obj("atom.c")
 
 	obj("object.c")
