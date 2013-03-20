@@ -97,7 +97,7 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent,
 				unresolved_styles);
 	else
 		printf(" :: %s:realize() no unresolved styles\n", self->type->name);
-	rtb_style_apply_to_tree(self, self->style);
+	rtb_style_apply_to_tree(self, self->default_style);
 }
 
 static void mark_dirty(rtb_obj_t *obj)
@@ -111,9 +111,15 @@ static void mark_dirty(rtb_obj_t *obj)
 
 void rtb_window_draw(rtb_win_t *self)
 {
+	rtb_style_t *style = self->style;
+
 	glViewport(0, 0, self->w, self->h);
 
-	glClearColor(RGB(0x18181C), 1.f);
+	glClearColor(
+			style->bg.r,
+			style->bg.g,
+			style->bg.b,
+			style->bg.a);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	self->draw_cb(self, RTB_DRAW_NORMAL);
