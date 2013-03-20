@@ -38,6 +38,8 @@
 #include "rutabaga/layout.h"
 #include "rutabaga/event.h"
 #include "rutabaga/mouse.h"
+#include "rutabaga/style.h"
+
 #include "rutabaga/widgets/patchbay.h"
 
 #include "private/util.h"
@@ -108,8 +110,8 @@ static void load_tile(rtb_patchbay_t *self)
 			0, GL_BGRA, GL_UNSIGNED_BYTE,
 			tile.data);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
@@ -150,6 +152,8 @@ static void cache_to_vbo(rtb_patchbay_t *self)
 
 static void draw_bg(rtb_patchbay_t *self)
 {
+	rtb_style_t *style = self->style;
+
 	rtb_render_push(self);
 	rtb_render_use_program(self, &shader);
 	rtb_render_set_position(self, 0, 0);
@@ -167,8 +171,17 @@ static void draw_bg(rtb_patchbay_t *self)
 			roundf(self->texture_offset.x),
 			roundf(self->texture_offset.y));
 
-	glUniform4f(shader.uniform.front_color, RGB(0x0D0D0F), 1.f);
-	glUniform4f(shader.uniform.back_color,  RGB(0x000000), 1.f);
+	glUniform4f(shader.uniform.front_color,
+			style->fg.r,
+			style->fg.g,
+			style->fg.b,
+			style->fg.a);
+
+	glUniform4f(shader.uniform.back_color,
+			style->bg.r,
+			style->bg.g,
+			style->bg.b,
+			style->bg.a);
 
 	glDrawElements(
 			GL_TRIANGLE_STRIP, ARRAY_LENGTH(box_indices),

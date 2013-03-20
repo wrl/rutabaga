@@ -38,7 +38,6 @@
 
 #define SELF_FROM(obj) struct rtb_patchbay_node *self = RTB_PATCHBAY_NODE_T(obj)
 
-#define BACKGROUND_NORMAL	RGB(0x18181C)
 #define LABEL_PADDING		15.f
 
 static struct rtb_object_implementation super;
@@ -83,8 +82,7 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 
 	rtb_render_push(self);
 	rtb_render_set_position(self, 0.f, 0.f);
-
-	rtb_render_set_color(self, BACKGROUND_NORMAL, .9f);
+	rtb_render_apply_style(self, state);
 
 	glBindBuffer(GL_ARRAY_BUFFER, self->vbo);
 	glEnableVertexAttribArray(0);
