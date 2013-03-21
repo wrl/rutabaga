@@ -44,7 +44,7 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
 
-	rtb_text_object_render(self->tobj, self, self->x, self->y);
+	rtb_text_object_render(self->tobj, self, self->x, self->y, state);
 	super.draw_cb(obj, state);
 }
 

@@ -125,6 +125,7 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 	SELF_FROM(obj);
 
 	rtb_render_push(self);
+	rtb_render_clear(self);
 	rtb_render_set_position(self,
 			self->x + ((self->w) / 2),
 			self->y + ((self->h) / 2));
@@ -134,14 +135,14 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
 	/* background */
-	rtb_render_apply_style(obj, state);
+	rtb_render_use_style_bg(obj, state);
 
 	glDrawElements(
 			GL_TRIANGLE_FAN, ARRAY_LENGTH(circle_indices),
 			GL_UNSIGNED_SHORT, circle_indices);
 
 	/* indicator */
-	rtb_render_set_color(self, RGB(0x18181C), 1.f);
+	rtb_render_use_style_fg(obj, state);
 
 	glLineWidth(2.5f);
 

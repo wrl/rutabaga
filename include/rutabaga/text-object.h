@@ -44,7 +44,7 @@ struct rutabaga_text_object {
 
 void rtb_text_object_update(rtb_text_object_t *, const wchar_t *text);
 void rtb_text_object_render(rtb_text_object_t *, rtb_obj_t *parent,
-		float x, float y);
+		float x, float y, rtb_draw_state_t state);
 
 rtb_text_object_t *rtb_text_object_new(rtb_font_manager_t *fm,
 		rtb_font_t *font, const wchar_t *text);

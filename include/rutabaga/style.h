@@ -29,15 +29,28 @@
 #include "rutabaga/types.h"
 #include "rutabaga/atom.h"
 
+typedef enum {
+	RTB_STYLE_NORMAL = 1 << RTB_DRAW_NORMAL,
+	RTB_STYLE_FOCUS  = 1 << RTB_DRAW_FOCUS,
+	RTB_STYLE_HOVER  = 1 << RTB_DRAW_HOVER,
+	RTB_STYLE_ACTIVE = 1 << RTB_DRAW_ACTIVE
+} rtb_style_states_t;
+
 struct rtb_rgb_color {
 	GLfloat r, g, b, a;
+};
+
+struct rtb_style_props {
+	struct rtb_rgb_color fg, bg;
 };
 
 struct rtb_style {
 	/* public *********************************/
 
 	char *for_type;
-	struct rtb_rgb_color fg, bg;
+	rtb_style_states_t available_styles;
+
+	struct rtb_style_props states[RTB_DRAW_STATE_MAX + 1];
 
 	/* private ********************************/
 	rtb_type_atom_descriptor_t *resolved_type;

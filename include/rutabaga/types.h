@@ -31,9 +31,12 @@
  */
 
 typedef enum {
-	RTB_DRAW_NORMAL,
-	RTB_DRAW_HOVER,
-	RTB_DRAW_FOCUS
+	RTB_DRAW_NORMAL = 0,
+	RTB_DRAW_FOCUS  = 1,
+	RTB_DRAW_HOVER  = 2,
+	RTB_DRAW_ACTIVE = 3,
+
+	RTB_DRAW_STATE_MAX = RTB_DRAW_ACTIVE
 } rtb_draw_state_t;
 
 typedef enum {
@@ -79,7 +82,8 @@ typedef struct rtb_object  rtb_container_t;
 typedef struct rtb_surface rtb_surface_t;
 typedef struct rtb_window  rtb_win_t;
 
-typedef struct rtb_style   rtb_style_t;
+typedef struct rtb_style       rtb_style_t;
+typedef struct rtb_style_props rtb_style_props_t;
 
 typedef struct rtb_shader_program rtb_shader_program_t;
 

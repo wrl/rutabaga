@@ -45,7 +45,7 @@
 
 #define BACKGROUND_NORMAL	RGB(0x404F3C)
 #define BACKGROUND_HOVER	RGB(0x5C704C)
-#define BACKGROUND_FOCUS	RGB(0x364232)
+#define BACKGROUND_FOCUS	RGB(0x263222)
 
 static struct rtb_object_implementation super;
 
@@ -89,20 +89,8 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 
 	rtb_render_push(self);
 	rtb_render_set_position(self, 0, 0);
-	rtb_render_apply_style(self, state);
 
-	switch (state) {
-	case RTB_DRAW_NORMAL:
-		break;
-
-	case RTB_DRAW_HOVER:
-		rtb_render_set_color(self, BACKGROUND_HOVER, 1.f);
-		break;
-
-	case RTB_DRAW_FOCUS:
-		rtb_render_set_color(self, BACKGROUND_FOCUS, 1.f);
-		break;
-	}
+	rtb_render_use_style_bg(self, state);
 
 	glBindBuffer(GL_ARRAY_BUFFER, self->vbo);
 	glEnableVertexAttribArray(0);

@@ -111,7 +111,7 @@ static void mark_dirty(rtb_obj_t *obj)
 
 void rtb_window_draw(rtb_win_t *self)
 {
-	rtb_style_t *style = self->style;
+	rtb_style_props_t *style = &self->style->states[0];
 
 	glViewport(0, 0, self->w, self->h);
 

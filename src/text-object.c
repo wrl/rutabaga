@@ -110,7 +110,7 @@ void rtb_text_object_update(rtb_text_object_t *self, const wchar_t *text)
 }
 
 void rtb_text_object_render(rtb_text_object_t *self, rtb_obj_t *parent,
-		float x, float y)
+		float x, float y, rtb_draw_state_t state)
 {
 	rtb_font_manager_t *fm = self->fm;
 	GLuint program = fm->shaders.alpha.program;
@@ -125,11 +125,7 @@ void rtb_text_object_render(rtb_text_object_t *self, rtb_obj_t *parent,
 
 	/* normal */
 	glUniform2f(glGetUniformLocation(program, "offset"), x, y);
-	rtb_render_set_color(parent,
-			parent->style->fg.r,
-			parent->style->fg.g,
-			parent->style->fg.b,
-			parent->style->fg.a);
+	rtb_render_use_style_fg(parent, state);
 
 	vertex_buffer_render(self->vertices, GL_TRIANGLES);
 }

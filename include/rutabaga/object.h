@@ -81,11 +81,11 @@ struct rtb_object {
 };
 
 int rtb_obj_deliver_event(rtb_obj_t *, const rtb_ev_t *e);
-void rtb_obj_draw(rtb_obj_t *);
-void rtb_obj_realize(rtb_obj_t *self, rtb_obj_t *parent,
+void rtb_obj_draw(rtb_obj_t *, rtb_draw_state_t state);
+void rtb_obj_realize(rtb_obj_t *, rtb_obj_t *parent,
 		rtb_surface_t *surface, rtb_win_t *window);
 
-void rtb_obj_mark_dirty(rtb_obj_t *self);
+void rtb_obj_mark_dirty(rtb_obj_t *);
 void rtb_obj_trigger_recalc(rtb_obj_t *, rtb_obj_t *instigator,
 		rtb_event_direction_t direction);
 

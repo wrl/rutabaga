@@ -31,6 +31,41 @@
 
 #define CONTEXT (obj->window->render_ctx)
 
+static rtb_style_props_t *get_styleprops(rtb_obj_t *obj,
+		rtb_draw_state_t state)
+{
+	if (obj->style->available_styles & (1 << state))
+		return &obj->style->states[state];
+	else
+		return &obj->style->states[RTB_DRAW_NORMAL];
+}
+
+/**
+ * public API
+ */
+
+void rtb_render_use_style_bg(rtb_obj_t *obj, rtb_draw_state_t state)
+{
+	struct rtb_rgb_color *color = &(get_styleprops(obj, state))->bg;
+
+	rtb_render_set_color(obj,
+			color->r,
+			color->g,
+			color->b,
+			color->a);
+}
+
+void rtb_render_use_style_fg(rtb_obj_t *obj, rtb_draw_state_t state)
+{
+	struct rtb_rgb_color *color = &(get_styleprops(obj, state))->fg;
+
+	rtb_render_set_color(obj,
+			color->r,
+			color->g,
+			color->b,
+			color->a);
+}
+
 void rtb_render_set_position(rtb_obj_t *obj, float x, float y)
 {
 	glUniform2f(CONTEXT.shader->offset, x, y);
@@ -46,17 +81,6 @@ void rtb_render_set_modelview(rtb_obj_t *obj, const GLfloat *matrix)
 {
 	glUniformMatrix4fv(CONTEXT.shader->matrices.modelview,
 		1, GL_FALSE, matrix);
-}
-
-void rtb_render_apply_style(rtb_obj_t *obj, rtb_draw_state_t state)
-{
-	struct rtb_rgb_color *color = &obj->style->bg;
-
-	rtb_render_set_color(obj,
-			color->r,
-			color->g,
-			color->b,
-			color->a);
 }
 
 void rtb_render_use_program(rtb_obj_t *obj, rtb_shader_program_t *p)

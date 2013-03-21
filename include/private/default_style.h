@@ -41,28 +41,74 @@ static struct rtb_style dark_style[] = {
 	 */
 
 	{"net.illest.rutabaga.widgets.patchbay",
-		.fg = {RGB(0x0D0D0F), 1.f},
-		.bg = {RGB(0x000000), 1.f}},
+		RTB_STYLE_NORMAL,
+
+		.states = {
+			[RTB_DRAW_NORMAL] = {
+				.fg = {RGB(0x0D0D0F), 1.f},
+				.bg = {RGB(0x000000), 1.f}}
+		}
+	},
 
 	{"net.illest.rutabaga.widgets.patchbay.node",
-		.fg = {RGB(0xFFFFFF), 1.f},
-		.bg = {RGB(0x18181C), .9f}},
+		RTB_STYLE_NORMAL,
+
+		.states = {
+			[RTB_DRAW_NORMAL] = {
+				.fg = {RGB(0xFFFFFF), 1.f},
+				.bg = {RGB(0x18181C), .9f}}
+		}
+	},
 
 	{"net.illest.rutabaga.widgets.patchbay.port",
-		.fg = {RGB(0xFFFFFF), 1.f},
-		.bg = {RGB(0x404F3C), 1.f}},
+		RTB_STYLE_NORMAL,
+
+		.states = {
+			[RTB_DRAW_NORMAL] = {
+				.fg = {RGB(0xFFFFFF), 1.f},
+				.bg = {RGB(0x404F3C), .9f}}
+		}
+	},
 
 	/**
 	 * basic stuff
 	 */
 
+	{"net.illest.rutabaga.widgets.button",
+		RTB_STYLE_NORMAL | RTB_STYLE_HOVER | RTB_STYLE_FOCUS,
+
+		.states = {
+			[RTB_DRAW_NORMAL] = {
+				.fg = {RGB(0xFFFFFF), 1.f},
+				.bg = {RGB(0x404F3C), 1.f}},
+			[RTB_DRAW_HOVER] = {
+				.fg = {RGB(0xFFFFFF), 1.f},
+				.bg = {RGB(0x5C704C), 1.f}},
+			[RTB_DRAW_FOCUS] = {
+				.fg = {RGB(0xFFFFFF), .7f},
+				.bg = {RGB(0x364232), 1.f}}
+		}
+	},
+
 	{"net.illest.rutabaga.window",
-		.fg = {RGB(0xFFFFFF), 1.f},
-		.bg = {RGB(0x18181C), 1.f}},
+		RTB_STYLE_NORMAL,
+
+		.states = {
+			[RTB_DRAW_NORMAL] = {
+				.fg = {RGB(0xFFFFFF), 1.f},
+				.bg = {RGB(0x18181C), 1.f}}
+		}
+	},
 
 	{"net.illest.rutabaga.object",
-		.fg = {RGB(0xFFFFFF), 1.f},
-		.bg = {RGB(0x404F3C), 1.f}},
+		RTB_STYLE_NORMAL,
+
+		.states = {
+			[RTB_DRAW_NORMAL] = {
+				.fg = {RGB(0xFFFFFF), 1.f},
+				.bg = {RGB(0x404F3C), 1.f}}
+		}
+	},
 
 	{NULL}
 };

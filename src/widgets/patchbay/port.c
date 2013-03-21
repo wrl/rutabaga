@@ -99,7 +99,7 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 	rtb_render_push(self);
 	rtb_render_clear(self);
 	rtb_render_set_position(self, 0.f, 0.f);
-	rtb_render_apply_style(self, state);
+	rtb_render_use_style_bg(self, state);
 
 	glBindBuffer(GL_ARRAY_BUFFER, self->vbo);
 	glEnableVertexAttribArray(0);

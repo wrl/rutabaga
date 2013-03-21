@@ -238,7 +238,7 @@ void rtb_surface_draw_children(rtb_surface_t *self, rtb_draw_state_t state)
 		rtb_render_clear(self);
 
 		TAILQ_FOREACH(iter, &self->children, child)
-			rtb_obj_draw(iter);
+			rtb_obj_draw(iter, RTB_DRAW_NORMAL);
 
 		self->state = RTB_SURFACE_VALID;
 		break;
@@ -250,11 +250,11 @@ void rtb_surface_draw_children(rtb_surface_t *self, rtb_draw_state_t state)
 			iter->render_entry.tqe_next = NULL;
 			iter->render_entry.tqe_prev = NULL;
 
-			rtb_obj_draw(iter);
+			rtb_obj_draw(iter, RTB_DRAW_NORMAL);
 		}
 
 		TAILQ_FOREACH(iter, &ctx->queues.every_frame, render_entry)
-			rtb_obj_draw(iter);
+			rtb_obj_draw(iter, RTB_DRAW_NORMAL);
 
 		break;
 	}

@@ -114,8 +114,15 @@ static void draw(rtb_obj_t *self, rtb_draw_state_t state)
 {
 	rtb_obj_t *iter;
 
-	TAILQ_FOREACH(iter, &self->children, child)
-		rtb_obj_draw(iter);
+	/* if the parent object (`self`, here) has a style defined for this
+	 * draw state, propagate the state to its children. otherwise, don't */
+	if (self->style->available_styles & (1 << state)) {
+		TAILQ_FOREACH(iter, &self->children, child)
+			rtb_obj_draw(iter, state);
+	} else {
+		TAILQ_FOREACH(iter, &self->children, child)
+			rtb_obj_draw(iter, RTB_DRAW_NORMAL);
+	}
 
 	LAYOUT_DEBUG_DRAW_BOX(self);
 }
@@ -179,21 +186,24 @@ int rtb_obj_deliver_event(rtb_obj_t *self, const rtb_ev_t *e)
 	return self->event_cb(self, e);
 }
 
-void rtb_obj_draw(rtb_obj_t *self)
+void rtb_obj_draw(rtb_obj_t *self, rtb_draw_state_t state)
 {
-	rtb_draw_state_t s = RTB_DRAW_NORMAL;
 	rtb_win_t *window = self->window;
 
 	if (self->visibility == RTB_FULLY_OBSCURED)
 		return;
 
-	if (window->focus == self)
-		s = RTB_DRAW_FOCUS;
-	else if (RTB_POINT_IN_RECT(window->mouse, self->rect) &&
-	         !(window->mouse.buttons_down & RTB_MOUSE_BUTTON1_MASK))
-		s = RTB_DRAW_HOVER;
+	/* we do this so that child widgets are drawn with their parent's state
+	 * if their parent has a draw state. */
+	if (state == RTB_DRAW_NORMAL) {
+		if (window->focus == self)
+			state = RTB_DRAW_FOCUS;
+		else if (RTB_POINT_IN_RECT(window->mouse, self->rect) &&
+				!(window->mouse.buttons_down & RTB_MOUSE_BUTTON1_MASK))
+			state = RTB_DRAW_HOVER;
+	}
 
-	self->draw_cb(self, s);
+	self->draw_cb(self, state);
 }
 
 void rtb_obj_realize(rtb_obj_t *self, rtb_obj_t *parent,

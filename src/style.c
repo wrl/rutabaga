@@ -33,8 +33,13 @@
 
 static rtb_style_t no_style = {
 	.for_type = "couldn't find a style for this object",
-	.fg = {RGB(0x00FF00), 1.f},
-	.bg = {RGB(0xFF0000), 1.f}
+	.available_styles = RTB_STYLE_NORMAL,
+
+	.states = {
+		[RTB_DRAW_NORMAL] = {
+			.fg = {RGB(0x00FF00), 1.f},
+			.bg = {RGB(0xFF0000), 1.f}}
+	}
 };
 
 

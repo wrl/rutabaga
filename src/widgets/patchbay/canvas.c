@@ -172,16 +172,16 @@ static void draw_bg(rtb_patchbay_t *self)
 			roundf(self->texture_offset.y));
 
 	glUniform4f(shader.uniform.front_color,
-			style->fg.r,
-			style->fg.g,
-			style->fg.b,
-			style->fg.a);
+			style->states[0].fg.r,
+			style->states[0].fg.g,
+			style->states[0].fg.b,
+			style->states[0].fg.a);
 
 	glUniform4f(shader.uniform.back_color,
-			style->bg.r,
-			style->bg.g,
-			style->bg.b,
-			style->bg.a);
+			style->states[0].bg.r,
+			style->states[0].bg.g,
+			style->states[0].bg.b,
+			style->states[0].bg.a);
 
 	glDrawElements(
 			GL_TRIANGLE_STRIP, ARRAY_LENGTH(box_indices),
