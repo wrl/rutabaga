@@ -37,7 +37,7 @@ uniform vec4 back_color;
 
 void main()
 {
-	vec2 offset_coord = gl_FragCoord.xy + tx_offset;
+	vec2 offset_coord = gl_FragCoord.xy + tx_offset + vec2(0.375, 0.375);
 	vec2 tex_coord = vec2(
 		(offset_coord.x / tx_size.x),
 		(offset_coord.y / tx_size.y));
