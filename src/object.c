@@ -115,7 +115,9 @@ static void draw(rtb_obj_t *self, rtb_draw_state_t state)
 	rtb_obj_t *iter;
 
 	/* if the parent object (`self`, here) has a style defined for this
-	 * draw state, propagate the state to its children. otherwise, don't */
+	 * draw state, propagate the state to its children. otherwise, don't.
+	 *
+	 * XXX: this is kind of a shitty hack and i don't like it. */
 	if (self->style->available_styles & (1 << state)) {
 		TAILQ_FOREACH(iter, &self->children, child)
 			rtb_obj_draw(iter, state);
@@ -183,6 +185,26 @@ static void mark_dirty(rtb_obj_t *self)
 
 int rtb_obj_deliver_event(rtb_obj_t *self, const rtb_ev_t *e)
 {
+	/* events should not receive events before they've had their realize()
+	 * callback called. */
+	if (!self->window)
+		return 0;
+
+	switch (e->type) {
+	case RTB_MOUSE_ENTER:
+	case RTB_MOUSE_LEAVE:
+		if (self->style->available_styles & RTB_STYLE_HOVER)
+			rtb_obj_mark_dirty(self);
+		break;
+
+	case RTB_MOUSE_DOWN:
+	case RTB_MOUSE_UP:
+	case RTB_DRAG_DROP:
+		if (self->style->available_styles & RTB_STYLE_FOCUS)
+			rtb_obj_mark_dirty(self);
+		break;
+	}
+
 	return self->event_cb(self, e);
 }
 

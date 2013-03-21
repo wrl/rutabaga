@@ -58,7 +58,7 @@ int rtb_handle(rtb_obj_t *victim, const rtb_ev_t *ev)
 
 rtb_obj_t *rtb_dispatch_raw(rtb_obj_t *victim, rtb_ev_t *event)
 {
-	while (!victim->event_cb(victim, event) && victim->parent)
+	while (!rtb_obj_deliver_event(victim, event) && victim->parent)
 		victim = victim->parent;
 
 	return victim;

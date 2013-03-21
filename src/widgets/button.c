@@ -129,11 +129,6 @@ static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
 	case RTB_MOUSE_DOWN:
 		/* XXX: HACK */
 		self->window->focus = self;
-	case RTB_MOUSE_ENTER:
-	case RTB_MOUSE_UP:
-	case RTB_MOUSE_LEAVE:
-	case RTB_DRAG_DROP:
-		rtb_obj_mark_dirty(self);
 		break;
 
 	case RTB_DRAG_START:
