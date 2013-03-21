@@ -34,5 +34,5 @@ void main()
 	gl_FragColor = texture2D(texture,
 		vec2(
 			gl_TexCoord[0].x,
-			1.0 - gl_TexCoord[0].y));
+			gl_TexCoord[0].y));
 }

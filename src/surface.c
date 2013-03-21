@@ -91,22 +91,22 @@ static void cache_to_vbo(rtb_surface_t *self)
 	box[0].x = x;
 	box[0].y = y;
 	box[0].s = 0.f;
-	box[0].t = 0.f;
+	box[0].t = 1.f;
 
 	box[1].x = x + w;
 	box[1].y = y;
 	box[1].s = 1.f;
-	box[1].t = 0.f;
+	box[1].t = 1.f;
 
 	box[2].x = x + w;
 	box[2].y = y + h;
 	box[2].s = 1.f;
-	box[2].t = 1.f;
+	box[2].t = 0.f;
 
 	box[3].x = x;
 	box[3].y = y + h;
 	box[3].s = 0.f;
-	box[3].t = 1.f;
+	box[3].t = 0.f;
 
 	glBindBuffer(GL_ARRAY_BUFFER, self->vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(box), box, GL_STATIC_DRAW);
