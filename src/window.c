@@ -85,19 +85,12 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent,
 		rtb_win_t *window)
 {
 	rtb_win_t *self = RTB_WIN_T(obj);
-	int unresolved_styles;
 
 	super.realize_cb(self, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.window");
 
-	unresolved_styles = rtb_style_resolve_list(self, self->style_list);
-	if (unresolved_styles)
-		printf(" :: %s:realize() %d unresolved styles\n", self->type->name,
-				unresolved_styles);
-	else
-		printf(" :: %s:realize() no unresolved styles\n", self->type->name);
-	rtb_style_apply_to_tree(self, self->style_list);
+	rtb_style_resolve_list(self, self->style_list);
 }
 
 static void mark_dirty(rtb_obj_t *obj)

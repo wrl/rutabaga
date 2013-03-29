@@ -90,6 +90,16 @@ static struct rtb_style dark_style[] = {
 		}
 	},
 
+	{"net.illest.rutabaga.widgets.knob",
+		RTB_STYLE_NORMAL,
+
+		.states = {
+			[RTB_DRAW_NORMAL] = {
+				.fg = {RGB(0x18181C), 1.f},
+				.bg = {RGB(0x404F3C), 1.f}}
+		}
+	},
+
 	{"net.illest.rutabaga.window",
 		RTB_STYLE_NORMAL,
 

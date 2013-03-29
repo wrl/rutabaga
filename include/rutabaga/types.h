@@ -40,6 +40,11 @@ typedef enum {
 } rtb_draw_state_t;
 
 typedef enum {
+	RTB_STATE_UNREALIZED = 0,
+	RTB_STATE_REALIZED   = 1
+} rtb_obj_state_t;
+
+typedef enum {
 	RTB_DIRECTION_LEAFWARD,
 	RTB_DIRECTION_ROOTWARD
 } rtb_event_direction_t;

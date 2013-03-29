@@ -89,6 +89,10 @@ static void recalc_leafward(rtb_obj_t *self, rtb_obj_t *instigator,
 static void recalculate(rtb_obj_t *self, rtb_obj_t *instigator,
 		rtb_event_direction_t direction)
 {
+	/* XXX: invariant: self->window->state != RTB_STATE_UNREALIZED */
+	if (!self->style)
+		self->style = rtb_style_for_object(self, self->window->style_list);
+
 	switch (direction) {
 	case RTB_DIRECTION_ROOTWARD:
 		if (!recalc_rootward(self, instigator, RTB_DIRECTION_ROOTWARD))
@@ -159,8 +163,6 @@ static void realize(rtb_obj_t *self, rtb_obj_t *parent,
 
 	TAILQ_FOREACH(iter, &self->children, child)
 		self->attach_child(self, iter);
-
-	self->recalc_cb(self, parent, RTB_DIRECTION_LEAFWARD);
 }
 
 static void attach_child(rtb_obj_t *self, rtb_obj_t *child)
@@ -172,8 +174,8 @@ static void mark_dirty(rtb_obj_t *self)
 {
 	struct rtb_render_context *render_ctx = &self->surface->render_ctx;
 
-	if (!self->surface || self->surface->state == RTB_SURFACE_INVALID ||
-			self->render_entry.tqe_next || self->render_entry.tqe_prev)
+	if (!self->surface || self->surface->surface_state == RTB_SURFACE_INVALID
+			|| self->render_entry.tqe_next || self->render_entry.tqe_prev)
 		return;
 
 	TAILQ_INSERT_TAIL(&render_ctx->queues.next_frame, self, render_entry);
@@ -236,6 +238,11 @@ void rtb_obj_realize(rtb_obj_t *self, rtb_obj_t *parent,
 	self->window  = window;
 
 	self->realize_cb(self, parent, window);
+
+	if (!parent || parent->state != RTB_STATE_UNREALIZED)
+		self->recalc_cb(self, parent, RTB_DIRECTION_LEAFWARD);
+
+	self->state = RTB_STATE_REALIZED;
 }
 
 void rtb_obj_trigger_recalc(rtb_obj_t *self, rtb_obj_t *instigator,
@@ -330,6 +337,9 @@ void rtb_obj_remove_child(rtb_obj_t *self, rtb_obj_t *child)
 	}
 
 	child->parent = NULL;
+	child->style  = NULL;
+	child->state  = RTB_STATE_UNREALIZED;
+
 	self->recalc_cb(self, NULL, RTB_DIRECTION_LEAFWARD);
 }
 
@@ -358,6 +368,7 @@ int rtb_obj_init(rtb_obj_t *self, struct rtb_object_implementation *impl)
 
 	self->metatype    = RTB_TYPE_ATOM;
 	self->style       = NULL;
+	self->state       = RTB_STATE_UNREALIZED;
 
 	self->outer_pad.x = RTB_DEFAULT_OUTER_XPAD;
 	self->outer_pad.y = RTB_DEFAULT_OUTER_YPAD;

@@ -31,6 +31,11 @@
 #include "rutabaga/render.h"
 #include "rutabaga/mat4.h"
 
+typedef enum {
+	RTB_SURFACE_VALID,
+	RTB_SURFACE_INVALID
+} rtb_surface_state_t;
+
 struct rtb_surface {
 	rtb_obj_t;
 
@@ -39,10 +44,7 @@ struct rtb_surface {
 	GLuint texture;
 	GLuint vbo;
 
-	enum {
-		RTB_SURFACE_VALID,
-		RTB_SURFACE_INVALID
-	} state;
+	rtb_surface_state_t surface_state;
 
 	mat4 projection;
 

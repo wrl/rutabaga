@@ -70,6 +70,7 @@ struct rtb_object {
 	int mouse_in;
 	rtb_rect_t rect;
 	rtb_visibility_t visibility;
+	rtb_obj_state_t state;
 
 	rtb_obj_t *parent;
 	rtb_win_t *window;

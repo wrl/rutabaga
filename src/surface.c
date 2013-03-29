@@ -216,7 +216,7 @@ void rtb_surface_draw_children(rtb_surface_t *self, rtb_draw_state_t state)
 	GLint bound_fb;
 	GLint viewport[4];
 
-	if (self->state == RTB_SURFACE_VALID &&
+	if (self->surface_state == RTB_SURFACE_VALID &&
 			(!TAILQ_FIRST(&ctx->queues.next_frame) &&
 			 !TAILQ_FIRST(&ctx->queues.every_frame))) {
 		/* nothing to do. */
@@ -232,7 +232,7 @@ void rtb_surface_draw_children(rtb_surface_t *self, rtb_draw_state_t state)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	switch (self->state) {
+	switch (self->surface_state) {
 	case RTB_SURFACE_INVALID:
 		glDisable(GL_SCISSOR_TEST);
 		rtb_render_clear(self);
@@ -240,7 +240,7 @@ void rtb_surface_draw_children(rtb_surface_t *self, rtb_draw_state_t state)
 		TAILQ_FOREACH(iter, &self->children, child)
 			rtb_obj_draw(iter, RTB_DRAW_NORMAL);
 
-		self->state = RTB_SURFACE_VALID;
+		self->surface_state = RTB_SURFACE_VALID;
 		break;
 
 	case RTB_SURFACE_VALID:
@@ -265,7 +265,7 @@ void rtb_surface_draw_children(rtb_surface_t *self, rtb_draw_state_t state)
 
 void rtb_surface_invalidate(rtb_surface_t *self)
 {
-	self->state = RTB_SURFACE_INVALID;
+	self->surface_state = RTB_SURFACE_INVALID;
 	rtb_obj_mark_dirty(self);
 }
 
@@ -290,7 +290,7 @@ int rtb_surface_init(rtb_surface_t *self,
 	glGenFramebuffers(1, &self->fbo);
 	glGenBuffers(1, &self->vbo);
 
-	self->state = RTB_SURFACE_INVALID;
+	self->surface_state = RTB_SURFACE_INVALID;
 
 	init_shaders();
 
