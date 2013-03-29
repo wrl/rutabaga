@@ -222,7 +222,7 @@ void rtb_obj_draw(rtb_obj_t *self, rtb_draw_state_t state)
 	if (state == RTB_DRAW_NORMAL) {
 		if (window->focus == self)
 			state = RTB_DRAW_FOCUS;
-		else if (RTB_POINT_IN_RECT(window->mouse, self->rect) &&
+		else if (self->mouse_in &&
 				!(window->mouse.buttons_down & RTB_MOUSE_BUTTON1_MASK))
 			state = RTB_DRAW_HOVER;
 	}

@@ -319,7 +319,18 @@ void rtb_mouse_enter_window(rtb_win_t *win, int x, int y)
 
 void rtb_mouse_leave_window(rtb_win_t *win, int x, int y)
 {
-	win->mouse_in = 0;
+	rtb_obj_t *underneath = win->mouse.object_underneath;
+
+	while (underneath) {
+		underneath->mouse_in = 0;
+		dispatch_simple_mouse_event(
+				win, underneath, RTB_MOUSE_LEAVE, -1, x, y);
+
+		if (win->mouse.buttons_down)
+			dispatch_drag_leave(win, underneath, x, y);
+
+		underneath = underneath->parent;
+	}
+
 	win->mouse.object_underneath = NULL;
-	dispatch_simple_mouse_event(win, win, RTB_MOUSE_LEAVE, -1, x, y);
 }
