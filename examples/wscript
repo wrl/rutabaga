@@ -6,7 +6,7 @@ def build(bld):
 	bld.program(
 		source="test.c",
 
-		lib=['jack', 'm'],
+		lib=['m'],
 		use=["public",
 			 "librutabaga",
 			 "X11",
