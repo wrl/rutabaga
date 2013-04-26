@@ -34,7 +34,7 @@
 
 #include "rutabaga/widgets/label.h"
 
-#define RTB_BUTTON_T(x) ((struct rtb_button *) x)
+#define RTB_BUTTON(x) (&(x)->_rtb_button)
 
 typedef struct rtb_button rtb_button_t;
 typedef struct rtb_event_button rtb_ev_button_t;
@@ -44,11 +44,11 @@ typedef enum {
 } rtb_ev_button_type_t;
 
 struct rtb_event_button {
-	rtb_ev_mouse_t;
+	RTB_INHERIT(rtb_event_mouse);
 };
 
 struct rtb_button {
-	rtb_obj_t;
+	RTB_INHERIT(rtb_object);
 
 	/* private ********************************/
 	rtb_label_t label;

@@ -26,8 +26,14 @@
 
 #pragma once
 
+#include "rutabaga/rutabaga.h"
 #include "rutabaga/types.h"
 #include "rutabaga/dict.h"
+
+#define RTB_ATOM(x) (&(x)->_rtb_atom)
+#define RTB_TYPE_ATOM(x) (&(x)->_rtb_type_atom)
+
+#define RTB_ATOM_DESCRIPTOR(x) (&(x)->_rtb_atom_descriptor)
 
 typedef struct rtb_atom rtb_atom_t;
 typedef struct rtb_type_atom rtb_type_atom_t;
@@ -44,7 +50,7 @@ struct rtb_atom {
 };
 
 struct rtb_type_atom {
-	rtb_atom_t;
+	RTB_INHERIT(rtb_atom);
 	rtb_type_atom_descriptor_t *type;
 };
 
@@ -57,7 +63,7 @@ struct rtb_atom_descriptor {
 };
 
 struct rtb_type_atom_descriptor {
-	rtb_atom_descriptor_t;
+	RTB_INHERIT(rtb_atom_descriptor);
 	rtb_type_atom_descriptor_t *super[0];
 };
 

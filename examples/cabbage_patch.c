@@ -63,13 +63,13 @@ struct cabbage_patch_state {
 	jack_client_t *jc;
 
 	struct {
-		rtb_patchbay_node_t;
+		RTB_INHERIT(rtb_patchbay_node);
 		struct jack_client *client;
 	} system_in, system_out;
 } state;
 
 struct jack_client {
-	rtb_patchbay_node_t;
+	RTB_INHERIT(rtb_patchbay_node);
 
 	int nports;
 	int physical;
@@ -81,7 +81,7 @@ struct jack_client {
 };
 
 struct jack_client_port {
-	rtb_patchbay_port_t;
+	RTB_INHERIT(rtb_patchbay_port);
 
 	TAILQ_ENTRY(jack_client_port) port;
 	char name[];
@@ -112,13 +112,13 @@ struct jack_client *client_alloc(const char *name, int len, int physical)
 		state.system_in.client = c;
 		state.system_out.client = c;
 	} else {
-		rtb_patchbay_node_init(c);
-		rtb_patchbay_node_set_name(c, wcs);
+		rtb_patchbay_node_init(RTB_PATCHBAY_NODE(c));
+		rtb_patchbay_node_set_name(RTB_PATCHBAY_NODE(c), wcs);
 
 		c->x = 100.f;
 		c->y = 100.f;
 
-		rtb_obj_add_child(state.cp, c, RTB_ADD_TAIL);
+		rtb_obj_add_child(RTB_OBJECT(state.cp), RTB_OBJECT(c), RTB_ADD_TAIL);
 	}
 
 	return c;
@@ -213,6 +213,7 @@ void client_add_port(struct jack_client *c, const char *name, int len,
 {
 	struct jack_client_port *p;
 	rtb_patchbay_port_type_t type;
+	rtb_patchbay_node_t *node;
 	wchar_t *wcs;
 
 	p = malloc(sizeof(*p) + len + 1);
@@ -230,13 +231,13 @@ void client_add_port(struct jack_client *c, const char *name, int len,
 
 	if (c->physical) {
 		if (type == PORT_TYPE_INPUT)
-			rtb_patchbay_port_init(
-					p, &state.system_in, wcs, type, location);
+			node = RTB_PATCHBAY_NODE(&state.system_in);
 		else
-			rtb_patchbay_port_init(
-					p, &state.system_out, wcs, type, location);
+			node = RTB_PATCHBAY_NODE(&state.system_out);
 	} else
-		rtb_patchbay_port_init(p, c, wcs, type, location);
+		node = RTB_PATCHBAY_NODE(c);
+
+	rtb_patchbay_port_init(RTB_PATCHBAY_PORT(p), node, wcs, type, location);
 
 	TAILQ_INSERT_TAIL(&c->ports, p, port);
 }
@@ -257,7 +258,7 @@ struct jack_client_port *client_get_port(struct jack_client *c,
 void free_port(struct jack_client *client, struct jack_client_port *port)
 {
 	TAILQ_REMOVE(&client->ports, port,port);
-	rtb_patchbay_port_fini(port);
+	rtb_patchbay_port_fini(RTB_PATCHBAY_PORT(port));
 	free(port);
 }
 
@@ -271,7 +272,7 @@ void free_client(struct jack_client *client)
 		free_port(client, port);
 
 	if (!client->physical)
-		rtb_patchbay_node_fini(client);
+		rtb_patchbay_node_fini(RTB_PATCHBAY_NODE(client));
 
 	free(client);
 }
@@ -313,7 +314,9 @@ static void connect(jack_client_t *jc, struct jack_client_port *clp,
 	len = strlen(port_name);
 	other_clp = client_get_port(client, port_name, len);
 
-	rtb_patchbay_connect_ports(state.cp, clp, other_clp);
+	rtb_patchbay_connect_ports(state.cp,
+			RTB_PATCHBAY_PORT(clp),
+			RTB_PATCHBAY_PORT(other_clp));
 }
 
 static void list_ports(jack_client_t *jc)
@@ -459,9 +462,13 @@ static void port_connection(jack_port_id_t a_id, jack_port_id_t b_id, int cxn,
 	rtb_window_lock(state.win);
 
 	if (cxn)
-		rtb_patchbay_connect_ports(state.cp, port_a, port_b);
+		rtb_patchbay_connect_ports(state.cp,
+				RTB_PATCHBAY_PORT(port_a),
+				RTB_PATCHBAY_PORT(port_b));
 	else
-		rtb_patchbay_disconnect_ports(state.cp, port_a, port_b);
+		rtb_patchbay_disconnect_ports(state.cp,
+				RTB_PATCHBAY_PORT(port_a),
+				RTB_PATCHBAY_PORT(port_b));
 
 	rtb_window_unlock(state.win);
 }
@@ -472,7 +479,7 @@ static void port_connection(jack_port_id_t a_id, jack_port_id_t b_id, int cxn,
 
 static int connection(rtb_obj_t *obj, const rtb_ev_t *_ev, void *ctx)
 {
-	const rtb_ev_patchbay_connect_t *ev = RTB_EV_PATCHBAY_CONNECT_T(_ev);
+	const rtb_ev_patchbay_connect_t *ev = (void *) _ev;
 	char *from, *to;
 	int len;
 
@@ -500,9 +507,8 @@ static int connection(rtb_obj_t *obj, const rtb_ev_t *_ev, void *ctx)
 	pthread_mutex_lock(&state.connection_from_gui);
 
 	if (!jack_connect(state.jc, from, to))
-		rtb_patchbay_connect_ports(RTB_PATCHBAY_T(obj),
-				(struct jack_client_port *) ev->from.port,
-				(struct jack_client_port *) ev->to.port);
+		rtb_patchbay_connect_ports((rtb_patchbay_t *) obj,
+				ev->from.port, ev->to.port);
 	else
 		printf(" !! couldn't connect %s to %s\n", from, to);
 
@@ -513,7 +519,7 @@ static int connection(rtb_obj_t *obj, const rtb_ev_t *_ev, void *ctx)
 
 static int disconnection(rtb_obj_t *obj, const rtb_ev_t *_ev, void *ctx)
 {
-	const rtb_ev_patchbay_disconnect_t *ev = RTB_EV_PATCHBAY_DISCONNECT_T(_ev);
+	const rtb_ev_patchbay_disconnect_t *ev = (void *) _ev;
 	char *from, *to;
 	int len;
 
@@ -531,7 +537,7 @@ static int disconnection(rtb_obj_t *obj, const rtb_ev_t *_ev, void *ctx)
 
 	pthread_mutex_lock(&state.connection_from_gui);
 	if (!jack_disconnect(state.jc, from, to))
-		rtb_patchbay_free_patch(RTB_PATCHBAY_T(obj), ev->patch);
+		rtb_patchbay_free_patch((rtb_patchbay_t *) obj, ev->patch);
 	else
 		printf(" !! couldn't disconnect %s from %s\n", from, to);
 	pthread_mutex_unlock(&state.connection_from_gui);
@@ -539,15 +545,17 @@ static int disconnection(rtb_obj_t *obj, const rtb_ev_t *_ev, void *ctx)
 	return 1;
 }
 
-static void init_patchbay(rtb_container_t *parent)
+static void init_patchbay(rtb_obj_t *parent)
 {
 	state.cp = rtb_patchbay_new();
-	rtb_container_add(parent, state.cp);
+	rtb_container_add(parent, RTB_OBJECT(state.cp));
 
-	rtb_obj_set_size_cb(state.cp, rtb_size_fill);
+	rtb_obj_set_size_cb(RTB_OBJECT(state.cp), rtb_size_fill);
 
-	rtb_attach(state.cp, RTB_PATCHBAY_CONNECT, connection, NULL);
-	rtb_attach(state.cp, RTB_PATCHBAY_DISCONNECT, disconnection, NULL);
+	rtb_attach(RTB_OBJECT(state.cp),
+			RTB_PATCHBAY_CONNECT, connection, NULL);
+	rtb_attach(RTB_OBJECT(state.cp),
+			RTB_PATCHBAY_DISCONNECT, disconnection, NULL);
 }
 
 /**
@@ -569,15 +577,17 @@ int main(int argc, char **argv)
 
 	TAILQ_INIT(&clients);
 
-	init_patchbay(RTB_CONTAINER_T(state.win));
+	init_patchbay(RTB_OBJECT(state.win));
 
-	rtb_patchbay_node_init(&state.system_in);
-	rtb_patchbay_node_set_name(&state.system_in, L"system");
-	rtb_patchbay_node_init(&state.system_out);
-	rtb_patchbay_node_set_name(&state.system_out, L"system");
+	rtb_patchbay_node_init(RTB_PATCHBAY_NODE(&state.system_in));
+	rtb_patchbay_node_set_name(RTB_PATCHBAY_NODE(&state.system_in), L"system");
+	rtb_patchbay_node_init(RTB_PATCHBAY_NODE(&state.system_out));
+	rtb_patchbay_node_set_name(RTB_PATCHBAY_NODE(&state.system_out), L"system");
 
-	rtb_obj_add_child(state.cp, &state.system_in, RTB_ADD_TAIL);
-	rtb_obj_add_child(state.cp, &state.system_out, RTB_ADD_TAIL);
+	rtb_obj_add_child(RTB_OBJECT(state.cp),
+			RTB_OBJECT(&state.system_in), RTB_ADD_TAIL);
+	rtb_obj_add_child(RTB_OBJECT(state.cp),
+			RTB_OBJECT(&state.system_out), RTB_ADD_TAIL);
 
 	list_ports(state.jc);
 
@@ -591,8 +601,8 @@ int main(int argc, char **argv)
 
 	rtb_event_loop(state.rtb);
 
-	rtb_patchbay_node_fini(&state.system_out);
-	rtb_patchbay_node_fini(&state.system_in);
+	rtb_patchbay_node_fini(RTB_PATCHBAY_NODE(&state.system_out));
+	rtb_patchbay_node_fini(RTB_PATCHBAY_NODE(&state.system_in));
 
 	free_client_tailq();
 	fini_jack();

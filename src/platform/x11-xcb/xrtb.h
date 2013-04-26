@@ -33,9 +33,6 @@
 
 #define ERR(...) fprintf(stderr, "rutabaga XCB: " __VA_ARGS__)
 
-#define RTB_XCB(x) ((struct xcb_rutabaga *) x)
-#define RTB_XCB_WIN(x) ((struct xcb_window *) x)
-
 struct xcb_rutabaga {
 	rtb_t rtb;
 
@@ -52,7 +49,7 @@ struct xcb_rutabaga {
 };
 
 struct xcb_window {
-	rtb_win_t;
+	RTB_INHERIT(rtb_window);
 
 	struct xcb_rutabaga *xrtb;
 

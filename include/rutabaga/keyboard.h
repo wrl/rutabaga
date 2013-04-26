@@ -111,7 +111,8 @@ typedef enum {
  */
 
 struct rtb_event_key {
-	rtb_ev_t;
+	RTB_INHERIT(rtb_event);
+
 	rtb_keycode_t keycode;
 	wint_t character;
 };

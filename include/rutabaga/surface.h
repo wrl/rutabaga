@@ -26,10 +26,13 @@
 
 #pragma once
 
+#include "rutabaga/rutabaga.h"
 #include "rutabaga/types.h"
 #include "rutabaga/object.h"
 #include "rutabaga/render.h"
 #include "rutabaga/mat4.h"
+
+#define RTB_SURFACE(x) (&(x)->_rtb_surface)
 
 typedef enum {
 	RTB_SURFACE_VALID,
@@ -37,7 +40,7 @@ typedef enum {
 } rtb_surface_state_t;
 
 struct rtb_surface {
-	rtb_obj_t;
+	RTB_INHERIT(rtb_object);
 
 	/* private ********************************/
 	GLuint fbo;

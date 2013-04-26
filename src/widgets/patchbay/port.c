@@ -37,10 +37,8 @@
 
 static struct rtb_object_implementation super;
 
-#define BACKGROUND_NORMAL	RGB(0x404F3C)
-
-#define RTB_PATCHBAY_PORT_T(x) ((rtb_patchbay_port_t *) x)
-#define SELF_FROM(obj) struct rtb_patchbay_port *self = (struct rtb_patchbay_port *) obj
+#define SELF_FROM(obj) \
+	struct rtb_patchbay_port *self = (void *) obj
 
 /**
  * private utility functions
@@ -96,10 +94,10 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
 
-	rtb_render_push(self);
-	rtb_render_clear(self);
-	rtb_render_set_position(self, 0.f, 0.f);
-	rtb_render_use_style_bg(self, state);
+	rtb_render_push(obj);
+	rtb_render_clear(obj);
+	rtb_render_set_position(obj, 0.f, 0.f);
+	rtb_render_use_style_bg(obj, state);
 
 	glBindBuffer(GL_ARRAY_BUFFER, self->vbo);
 	glEnableVertexAttribArray(0);
@@ -112,7 +110,7 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 	glDisableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glUseProgram(0);
+	rtb_render_pop(obj);
 
 	super.draw_cb(obj, state);
 }
@@ -134,7 +132,7 @@ static void dispatch_disconnect(rtb_patchbay_patch_t *patch)
 		.to.port   = patch->to
 	};
 
-	rtb_dispatch_raw(patch->to, RTB_EV_T(&ev));
+	rtb_dispatch_raw(RTB_OBJECT(patch->to), RTB_EVENT(&ev));
 }
 
 static void dispatch_connect(rtb_patchbay_port_t *from,
@@ -149,7 +147,7 @@ static void dispatch_connect(rtb_patchbay_port_t *from,
 		.to.port   = to
 	};
 
-	rtb_dispatch_raw(to, RTB_EV_T(&ev));
+	rtb_dispatch_raw(RTB_OBJECT(to), RTB_EVENT(&ev));
 }
 
 /**
@@ -226,8 +224,8 @@ static int handle_drag(rtb_patchbay_port_t *self, const rtb_ev_drag_t *e)
 				return 1;
 			}
 
-			if (rtb_is_type(self->type, e->target))
-				handle_connection(RTB_PATCHBAY_PORT_T(e->target), self);
+			if (rtb_is_type(self->type, RTB_TYPE_ATOM(e->target)))
+				handle_connection((rtb_patchbay_port_t *) e->target, self);
 
 			return 1;
 
@@ -243,12 +241,12 @@ static int handle_drag(rtb_patchbay_port_t *self, const rtb_ev_drag_t *e)
 
 static int handle_mouse(rtb_patchbay_port_t *self, rtb_ev_mouse_t *e)
 {
-	if (RTB_EV_MOUSE_T(e)->button != RTB_MOUSE_BUTTON1)
+	if (e->button != RTB_MOUSE_BUTTON1)
 		return 0;
 
 	switch (e->type) {
 	case RTB_MOUSE_DOWN:
-		start_patching(self, RTB_EV_MOUSE_T(e));
+		start_patching(self, e);
 		return 1;
 
 	case RTB_MOUSE_UP:
@@ -277,7 +275,7 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
 	SELF_FROM(obj);
 
 	cache_to_vbo(self);
-	super.realize_cb(self, parent, window);
+	super.realize_cb(RTB_OBJECT(self), parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.patchbay.port");
 }
@@ -289,8 +287,8 @@ static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
 	switch (e->type) {
 	case RTB_MOUSE_DOWN:
 	case RTB_MOUSE_UP:
-		if (handle_mouse(self, RTB_EV_MOUSE_T(e))) {
-			rtb_obj_mark_dirty(self->node->patchbay);
+		if (handle_mouse(self, (rtb_ev_mouse_t *) e)) {
+			rtb_obj_mark_dirty(RTB_OBJECT(self->node->patchbay));
 			return 1;
 		}
 
@@ -301,8 +299,8 @@ static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
 	case RTB_DRAG_START:
 	case RTB_DRAG_DROP:
 	case RTB_DRAGGING:
-		if (handle_drag(self, RTB_EV_DRAG_T(e))) {
-			rtb_obj_mark_dirty(self->node->patchbay);
+		if (handle_drag(self, (rtb_ev_drag_t *) e)) {
+			rtb_obj_mark_dirty(RTB_OBJECT(self->node->patchbay));
 			return 1;
 		}
 	}
@@ -343,7 +341,7 @@ void rtb_patchbay_free_patch(rtb_patchbay_t *self,
 	TAILQ_REMOVE(&self->patches, patch, patchbay_patch);
 
 	free(patch);
-	rtb_obj_mark_dirty(self);
+	rtb_obj_mark_dirty(RTB_OBJECT(self));
 }
 
 void rtb_patchbay_disconnect_ports(rtb_patchbay_t *self,
@@ -398,7 +396,7 @@ rtb_patchbay_patch_t *rtb_patchbay_connect_ports(rtb_patchbay_t *self,
 	TAILQ_INSERT_TAIL(&from->patches, patch, from_patch);
 	TAILQ_INSERT_TAIL(&self->patches, patch, patchbay_patch);
 
-	rtb_obj_mark_dirty(self);
+	rtb_obj_mark_dirty(RTB_OBJECT(self));
 	return patch;
 }
 
@@ -406,13 +404,14 @@ int rtb_patchbay_port_init(rtb_patchbay_port_t *self,
 		rtb_patchbay_node_t *node, const wchar_t *name,
 		rtb_patchbay_port_type_t type, rtb_child_add_loc_t location)
 {
-	rtb_obj_init(self, &super);
+	rtb_obj_init(RTB_OBJECT(self), &super);
 	glGenBuffers(1, &self->vbo);
 	TAILQ_INIT(&self->patches);
 
-	rtb_label_init(&self->label, &self->label);
+	rtb_label_init(&self->label, &self->label.impl);
 	rtb_label_set_text(&self->label, name);
-	rtb_obj_add_child(self, &self->label, RTB_ADD_HEAD);
+	rtb_obj_add_child(RTB_OBJECT(self), RTB_OBJECT(&self->label),
+			RTB_ADD_HEAD);
 
 	self->port_type  = type;
 	self->node       = node;
@@ -429,10 +428,10 @@ int rtb_patchbay_port_init(rtb_patchbay_port_t *self,
 
 	if (type == PORT_TYPE_INPUT) {
 		self->align = self->label.align = RTB_ALIGN_LEFT;
-		rtb_obj_add_child(&node->input_ports, self, location);
+		rtb_obj_add_child(&node->input_ports, RTB_OBJECT(self), location);
 	} else {
 		self->align = self->label.align = RTB_ALIGN_RIGHT;
-		rtb_obj_add_child(&node->output_ports, self, location);
+		rtb_obj_add_child(&node->output_ports, RTB_OBJECT(self), location);
 	}
 
 	return 0;
@@ -443,14 +442,14 @@ void rtb_patchbay_port_fini(rtb_patchbay_port_t *self)
 	rtb_patchbay_patch_t *patch;
 
 	if (self->port_type == PORT_TYPE_INPUT)
-		rtb_obj_remove_child(&self->node->input_ports, self);
+		rtb_obj_remove_child(&self->node->input_ports, RTB_OBJECT(self));
 	else
-		rtb_obj_remove_child(&self->node->output_ports, self);
+		rtb_obj_remove_child(&self->node->output_ports, RTB_OBJECT(self));
 
 	while ((patch = TAILQ_FIRST(&self->patches)))
 		rtb_patchbay_free_patch(self->node->patchbay, patch);
 
 	glDeleteBuffers(1, &self->vbo);
 	rtb_label_fini(&self->label);
-	rtb_obj_fini(self);
+	rtb_obj_fini(RTB_OBJECT(self));
 }

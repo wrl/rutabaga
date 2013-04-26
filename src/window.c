@@ -46,7 +46,8 @@
 #include "shaders/default.glsl.h"
 
 #define ERR(...) fprintf(stderr, "rutabaga: " __VA_ARGS__)
-#define SELF_FROM(obj) rtb_win_t *self = (rtb_win_t *) obj
+#define SELF_FROM(obj) \
+	struct rtb_window *self = (void *) obj
 
 static struct rtb_object_implementation super;
 
@@ -64,29 +65,29 @@ static int initialize_default_shader(rtb_win_t *self)
 
 static int win_event(rtb_obj_t *obj, const rtb_ev_t *e)
 {
-	rtb_win_t *self = RTB_WIN_T(obj);
+	SELF_FROM(obj);
 
 	switch (e->type) {
 	case RTB_WINDOW_CLOSE:
-		if (!rtb_handle(self, e))
+		if (!rtb_handle(obj, e))
 			rtb_stop_event_loop(self->rtb);
 		return 1;
 
 	case RTB_KEY_PRESS:
 	case RTB_KEY_RELEASE:
-		if (rtb_handle(self, e))
+		if (rtb_handle(obj, e))
 			return 1;
 	}
 
-	return super.event_cb(self, e);
+	return super.event_cb(obj, e);
 }
 
 static void realize(rtb_obj_t *obj, rtb_obj_t *parent,
 		rtb_win_t *window)
 {
-	rtb_win_t *self = RTB_WIN_T(obj);
+	SELF_FROM(obj);
 
-	super.realize_cb(self, parent, window);
+	super.realize_cb(obj, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.window");
 
@@ -115,12 +116,14 @@ void rtb_window_draw(rtb_win_t *self)
 			style->bg.a);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	self->draw_cb(self, RTB_DRAW_NORMAL);
+	self->draw_cb(RTB_OBJECT(self), RTB_DRAW_NORMAL);
 	window_impl_swap_buffers(self);
 }
 
 void rtb_window_reinit(rtb_win_t *self)
 {
+	rtb_obj_t *obj = RTB_OBJECT(self);
+
 	self->x = self->y = 0.f;
 
 	glScissor(0, 0, self->w, self->h);
@@ -129,9 +132,9 @@ void rtb_window_reinit(rtb_win_t *self)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	if (!self->window)
-		rtb_obj_realize(self, NULL, self, self);
+		rtb_obj_realize(obj, NULL, RTB_SURFACE(self), self);
 	else
-		rtb_obj_trigger_recalc(self, self, RTB_DIRECTION_LEAFWARD);
+		rtb_obj_trigger_recalc(obj,obj, RTB_DIRECTION_LEAFWARD);
 }
 
 rtb_win_t *rtb_window_open(rtb_t *r, int h, int w, const char *title)
@@ -147,7 +150,7 @@ rtb_win_t *rtb_window_open(rtb_t *r, int h, int w, const char *title)
 	if (!self)
 		goto err_window_impl;
 
-	rtb_surface_init(self, &super);
+	rtb_surface_init(RTB_SURFACE(self), &super);
 	pthread_mutex_init(&self->lock, NULL);
 
 	self->style_list = rtb_style_get_defaults();
@@ -159,7 +162,7 @@ rtb_win_t *rtb_window_open(rtb_t *r, int h, int w, const char *title)
 		goto err_font;
 
 	mat4_set_identity(&self->identity);
-	rtb_obj_set_layout(self, rtb_layout_vpack_top);
+	rtb_obj_set_layout(RTB_OBJECT(self), rtb_layout_vpack_top);
 
 	self->event_cb   = win_event;
 	self->mark_dirty = mark_dirty;

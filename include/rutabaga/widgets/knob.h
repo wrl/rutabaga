@@ -33,20 +33,20 @@
 typedef struct rtb_knob rtb_knob_t;
 typedef struct rtb_event_knob rtb_ev_knob_t;
 
-#define RTB_KNOB_T(x) ((struct rtb_knob *) x)
-#define RTB_EV_KNOB_T(x) ((rtb_ev_knob_t *) x)
+#define RTB_KNOB(x) (&(x)->_rtb_knob)
 
 typedef enum {
 	KNOB_VALUE_CHANGE = 1
 } rtb_ev_knob_type_t;
 
 struct rtb_event_knob {
-	rtb_ev_t;
+	RTB_INHERIT(rtb_event);
+
 	float value;
 };
 
 struct rtb_knob {
-	rtb_obj_t;
+	RTB_INHERIT(rtb_object);
 
 	/* public *********************************/
 	float origin;

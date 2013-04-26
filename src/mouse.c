@@ -58,12 +58,12 @@ static rtb_obj_t *dispatch_drag_event(rtb_win_t *win, rtb_ev_type_t type,
 	};
 
 	if (also_dispatch_to && also_dispatch_to != b->target)
-		rtb_dispatch_raw(also_dispatch_to, RTB_EV_T(&ev));
+		rtb_dispatch_raw(also_dispatch_to, RTB_EVENT(&ev));
 
 	if (!b->target)
 		return NULL;
 
-	return rtb_dispatch_raw(b->target, RTB_EV_T(&ev));
+	return rtb_dispatch_raw(b->target, RTB_EVENT(&ev));
 }
 
 static void dispatch_drag_enter(rtb_win_t *win, rtb_obj_t *dispatch_to,
@@ -93,7 +93,7 @@ static void dispatch_drag_enter(rtb_win_t *win, rtb_obj_t *dispatch_to,
 		ev.button = i;
 		ev.target = b->target;
 
-		rtb_dispatch_raw(dispatch_to, &ev);
+		rtb_dispatch_raw(dispatch_to, RTB_EVENT(&ev));
 	}
 }
 
@@ -124,7 +124,7 @@ static void dispatch_drag_leave(rtb_win_t *win, rtb_obj_t *dispatch_to,
 		ev.button = i;
 		ev.target = b->target;
 
-		rtb_dispatch_raw(dispatch_to, &ev);
+		rtb_dispatch_raw(dispatch_to, RTB_EVENT(&ev));
 	}
 }
 
@@ -142,7 +142,7 @@ static void dispatch_click_event(rtb_win_t *window, rtb_obj_t *target,
 			.y = y}
 	};
 
-	rtb_dispatch_raw(target, RTB_EV_T(&ev));
+	rtb_dispatch_raw(target, RTB_EVENT(&ev));
 }
 
 static void dispatch_simple_mouse_event(rtb_win_t *window, rtb_obj_t *target,
@@ -159,7 +159,7 @@ static void dispatch_simple_mouse_event(rtb_win_t *window, rtb_obj_t *target,
 			.y = y}
 	};
 
-	rtb_dispatch_raw(target, &ev);
+	rtb_dispatch_raw(target, RTB_EVENT(&ev));
 }
 
 /**
@@ -311,9 +311,10 @@ void rtb_mouse_motion(rtb_win_t *win, int x, int y)
 void rtb_mouse_enter_window(rtb_win_t *win, int x, int y)
 {
 	win->mouse_in = 1;
-	win->mouse.object_underneath = win;
+	win->mouse.object_underneath = RTB_OBJECT(win);
 
-	dispatch_simple_mouse_event(win, win, RTB_MOUSE_ENTER, -1, x, y);
+	dispatch_simple_mouse_event(win, RTB_OBJECT(win),
+			RTB_MOUSE_ENTER, -1, x, y);
 	rtb_mouse_motion(win, x, y);
 }
 

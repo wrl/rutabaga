@@ -356,7 +356,7 @@ static struct rtb_object_implementation default_impl = {
 
 int rtb_obj_init(rtb_obj_t *self, struct rtb_object_implementation *impl)
 {
-	struct rtb_object_implementation *obj_impl = self;
+	struct rtb_object_implementation *obj_impl = &self->impl;
 
 	memset(self, 0, sizeof(*self));
 	TAILQ_INIT(&self->children);

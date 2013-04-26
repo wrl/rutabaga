@@ -36,7 +36,8 @@
 
 #include "rutabaga/widgets/label.h"
 
-#define SELF_FROM(obj) struct rtb_label *self = RTB_LABEL_T(obj)
+#define SELF_FROM(obj) \
+	struct rtb_label *self = (void *) obj
 
 static struct rtb_object_implementation super;
 
@@ -44,7 +45,7 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
 
-	rtb_text_object_render(self->tobj, self, self->x, self->y, state);
+	rtb_text_object_render(self->tobj, obj, self->x, self->y, state);
 	super.draw_cb(obj, state);
 }
 
@@ -85,11 +86,13 @@ void rtb_label_set_font(rtb_label_t *self, rtb_font_t *font)
 {
 	self->font = font;
 
-	if (self->tobj) {
-		self->tobj->font = font;
-		rtb_text_object_update(self->tobj, self->text);
-		rtb_obj_trigger_recalc(self->parent, self, RTB_DIRECTION_ROOTWARD);
-	}
+	if (!self->tobj)
+		return;
+
+	self->tobj->font = font;
+	rtb_text_object_update(self->tobj, self->text);
+	rtb_obj_trigger_recalc(self->parent, RTB_OBJECT(self),
+			RTB_DIRECTION_ROOTWARD);
 }
 
 void rtb_label_set_text(rtb_label_t *self, const wchar_t *text)
@@ -99,16 +102,18 @@ void rtb_label_set_text(rtb_label_t *self, const wchar_t *text)
 
 	self->text = wcsdup(text);
 
-	if (self->tobj) {
-		rtb_text_object_update(self->tobj, text);
-		rtb_obj_trigger_recalc(self->parent, self, RTB_DIRECTION_ROOTWARD);
-	}
+	if (!self->tobj)
+		return;
+
+	rtb_text_object_update(self->tobj, self->text);
+	rtb_obj_trigger_recalc(self->parent, RTB_OBJECT(self),
+			RTB_DIRECTION_ROOTWARD);
 }
 
 int rtb_label_init(rtb_label_t *self,
 		struct rtb_object_implementation *impl)
 {
-	rtb_obj_init(self, &super);
+	rtb_obj_init(RTB_OBJECT(self), &super);
 
 	/* XXX: nasty */
 
@@ -138,13 +143,13 @@ void rtb_label_fini(rtb_label_t *self)
 	if (self->tobj)
 		rtb_text_object_free(self->tobj);
 
-	rtb_obj_fini(self);
+	rtb_obj_fini(RTB_OBJECT(self));
 }
 
 rtb_label_t *rtb_label_new(const wchar_t *text)
 {
 	rtb_label_t *self = calloc(1, sizeof(*self));
-	rtb_label_init(self, self);
+	rtb_label_init(self, &self->impl);
 
 	if (text)
 		self->text = wcsdup(text);

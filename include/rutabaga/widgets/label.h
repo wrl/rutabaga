@@ -32,12 +32,12 @@
 #include "rutabaga/text-object.h"
 #include "rutabaga/object.h"
 
-#define RTB_LABEL_T(x) ((struct rtb_label *) x)
+#define RTB_LABEL(x) (&(x)->_rtb_label)
 
 typedef struct rtb_label rtb_label_t;
 
 struct rtb_label {
-	rtb_obj_t;
+	RTB_INHERIT(rtb_object);
 
 	/* private ********************************/
 	wchar_t *text;

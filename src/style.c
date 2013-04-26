@@ -84,7 +84,7 @@ void rtb_style_apply_to_tree(rtb_obj_t *root, rtb_style_t *style_list)
 	rtb_obj_t *iter;
 
 	if (!root->style)
-		root->style = style_for_type(root, style_list);
+		root->style = style_for_type(RTB_TYPE_ATOM(root), style_list);
 
 	TAILQ_FOREACH(iter, &root->children, child)
 		rtb_style_apply_to_tree(iter, style_list);
@@ -92,7 +92,7 @@ void rtb_style_apply_to_tree(rtb_obj_t *root, rtb_style_t *style_list)
 
 rtb_style_t *rtb_style_for_object(rtb_obj_t *obj, rtb_style_t *style_list)
 {
-	return style_for_type(obj, style_list);
+	return style_for_type(RTB_TYPE_ATOM(obj), style_list);
 }
 
 rtb_style_t *rtb_style_get_defaults(void)

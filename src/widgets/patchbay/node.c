@@ -36,7 +36,8 @@
 
 #include "private/util.h"
 
-#define SELF_FROM(obj) struct rtb_patchbay_node *self = RTB_PATCHBAY_NODE_T(obj)
+#define SELF_FROM(obj) \
+	struct rtb_patchbay_node *self = (void *) obj
 
 #define LABEL_PADDING		15.f
 
@@ -80,9 +81,9 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
 
-	rtb_render_push(self);
-	rtb_render_set_position(self, 0.f, 0.f);
-	rtb_render_use_style_bg(self, state);
+	rtb_render_push(obj);
+	rtb_render_set_position(obj, 0.f, 0.f);
+	rtb_render_use_style_bg(obj, state);
 
 	glBindBuffer(GL_ARRAY_BUFFER, self->vbo);
 	glEnableVertexAttribArray(0);
@@ -97,7 +98,7 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 
 	super.draw_cb(obj, state);
 
-	glUseProgram(0);
+	rtb_render_pop(obj);
 }
 
 /**
@@ -115,12 +116,14 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 
 static int handle_drag(rtb_patchbay_node_t *self, const rtb_ev_drag_t *e)
 {
+	rtb_obj_t *obj = RTB_OBJECT(self);
+
 	switch (e->button) {
 	case RTB_MOUSE_BUTTON1:
 		self->x += e->delta.x;
 		self->y += e->delta.y;
 
-		rtb_obj_trigger_recalc(self, self, RTB_DIRECTION_LEAFWARD);
+		rtb_obj_trigger_recalc(obj, obj, RTB_DIRECTION_LEAFWARD);
 		rtb_surface_invalidate(self->surface);
 		return 1;
 
@@ -136,7 +139,7 @@ static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
 	switch (e->type) {
 	case RTB_DRAG_START:
 	case RTB_DRAGGING:
-		return handle_drag(self, RTB_EV_DRAG_T(e));
+		return handle_drag(self, (rtb_ev_drag_t *) e);
 
 	default:
 		return super.event_cb(obj, e);
@@ -151,7 +154,7 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
 
 	rtb_label_set_font(&self->name_label, &window->font_manager->fonts.big);
 
-	super.realize_cb(self, parent, window);
+	super.realize_cb(obj, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.patchbay.node");
 
@@ -164,9 +167,10 @@ static void size(rtb_obj_t *obj, const struct rtb_size *avail,
 	SELF_FROM(obj);
 	struct rtb_size label_size;
 
-	rtb_size_vfit_children(self, avail, want);
+	rtb_size_vfit_children(obj, avail, want);
 
-	self->name_label.size_cb(&self->name_label, avail, &label_size);
+	self->name_label.size_cb(RTB_OBJECT(&self->name_label),
+			avail, &label_size);
 	want->w = fmax(want->w, label_size.w + (LABEL_PADDING * 2.f));
 }
 
@@ -182,7 +186,7 @@ void rtb_patchbay_node_set_name(rtb_patchbay_node_t *self,
 
 void rtb_patchbay_node_init(rtb_patchbay_node_t *self)
 {
-	rtb_obj_init(self, &super);
+	rtb_obj_init(RTB_OBJECT(self), &super);
 	glGenBuffers(1, &self->vbo);
 
 	self->realize_cb = realize;
@@ -197,14 +201,14 @@ void rtb_patchbay_node_init(rtb_patchbay_node_t *self)
 	self->outer_pad.x = 0.f;
 	self->inner_pad.y = 5.f;
 
-	rtb_label_init(&self->name_label, &self->name_label);
+	rtb_label_init(&self->name_label, &self->name_label.impl);
 	self->name_label.align = RTB_ALIGN_CENTER;
 
 	/**
 	 * content area
 	 */
 
-	rtb_obj_init(&self->container, &self->container);
+	rtb_obj_init(&self->container, &self->container.impl);
 	self->container.size_cb = rtb_size_hfill;
 	self->container.layout_cb = rtb_layout_hdistribute;
 	self->container.outer_pad.x =
@@ -213,10 +217,10 @@ void rtb_patchbay_node_init(rtb_patchbay_node_t *self)
 
 	self->container.inner_pad.x = 10.f;
 
-	rtb_obj_init(&self->node_ui, &self->node_ui);
+	rtb_obj_init(&self->node_ui, &self->node_ui.impl);
 
-	rtb_obj_init(&self->input_ports, &self->input_ports);
-	rtb_obj_init(&self->output_ports, &self->output_ports);
+	rtb_obj_init(&self->input_ports, &self->input_ports.impl);
+	rtb_obj_init(&self->output_ports, &self->output_ports.impl);
 
 	self->input_ports.outer_pad.x =
 		self->input_ports.outer_pad.y =
@@ -240,15 +244,16 @@ void rtb_patchbay_node_init(rtb_patchbay_node_t *self)
 	rtb_obj_add_child(&self->container, &self->node_ui, RTB_ADD_TAIL);
 	rtb_obj_add_child(&self->container, &self->output_ports, RTB_ADD_TAIL);
 
-	rtb_obj_add_child(self, &self->name_label, RTB_ADD_HEAD);
-	rtb_obj_add_child(self, &self->container, RTB_ADD_TAIL);
+	rtb_obj_add_child(RTB_OBJECT(self), RTB_OBJECT(&self->name_label),
+			RTB_ADD_HEAD);
+	rtb_obj_add_child(RTB_OBJECT(self), &self->container, RTB_ADD_TAIL);
 }
 
 void rtb_patchbay_node_fini(rtb_patchbay_node_t *self)
 {
 	glDeleteBuffers(1, &self->vbo);
 
-	rtb_obj_remove_child(self->patchbay, self);
+	rtb_obj_remove_child(RTB_OBJECT(self->patchbay), RTB_OBJECT(self));
 
 	rtb_label_fini(&self->name_label);
 
@@ -257,7 +262,7 @@ void rtb_patchbay_node_fini(rtb_patchbay_node_t *self)
 	rtb_obj_fini(&self->node_ui);
 	rtb_obj_fini(&self->container);
 
-	rtb_obj_fini(self);
+	rtb_obj_fini(RTB_OBJECT(self));
 }
 
 rtb_patchbay_node_t *rtb_patchbay_node_new(rtb_patchbay_t *parent,

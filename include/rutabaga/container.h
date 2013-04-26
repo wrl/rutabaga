@@ -29,8 +29,6 @@
 #include "rutabaga/types.h"
 #include "rutabaga/object.h"
 
-#define RTB_CONTAINER_T(x) ((rtb_container_t *) (x))
-
 void rtb_container_add(rtb_container_t *container, rtb_obj_t *obj);
 
 int rtb_container_init(rtb_container_t *,

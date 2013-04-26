@@ -41,11 +41,8 @@
 #include "private/util.h"
 #include "rutabaga/widgets/button.h"
 
-#define SELF_FROM(obj) rtb_button_t *self = RTB_BUTTON_T(obj)
-
-#define BACKGROUND_NORMAL	RGB(0x404F3C)
-#define BACKGROUND_HOVER	RGB(0x5C704C)
-#define BACKGROUND_FOCUS	RGB(0x263222)
+#define SELF_FROM(obj) \
+	struct rtb_button *self = (void *) obj
 
 static struct rtb_object_implementation super;
 
@@ -87,10 +84,10 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
 
-	rtb_render_push(self);
-	rtb_render_set_position(self, 0, 0);
+	rtb_render_push(obj);
+	rtb_render_set_position(obj, 0, 0);
 
-	rtb_render_use_style_bg(self, state);
+	rtb_render_use_style_bg(obj, state);
 
 	glBindBuffer(GL_ARRAY_BUFFER, self->vbo);
 	glEnableVertexAttribArray(0);
@@ -118,7 +115,7 @@ static int dispatch_click_event(rtb_button_t *self, const rtb_ev_mouse_t *e)
 	event.cursor.x -= self->rect.p1.x;
 	event.cursor.y -= self->rect.p1.y;
 
-	return rtb_handle(self, RTB_EV_T(&event));
+	return rtb_handle(RTB_OBJECT(self), RTB_EVENT(&event));
 }
 
 static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
@@ -128,17 +125,17 @@ static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
 	switch (e->type) {
 	case RTB_MOUSE_DOWN:
 		/* XXX: HACK */
-		self->window->focus = self;
+		self->window->focus = RTB_OBJECT(self);
 		break;
 
 	case RTB_DRAG_START:
 		return 1;
 
 	case RTB_MOUSE_CLICK:
-		if (RTB_EV_MOUSE_T(e)->button != RTB_MOUSE_BUTTON1)
+		if (((rtb_ev_mouse_t *) e)->button != RTB_MOUSE_BUTTON1)
 			return 0;
 
-		return dispatch_click_event(self, RTB_EV_MOUSE_T(e));
+		return dispatch_click_event(self, (rtb_ev_mouse_t *) e);
 
 	default:
 		return super.event_cb(obj, e);
@@ -182,10 +179,11 @@ void rtb_button_set_label(rtb_button_t *self, const wchar_t *label)
 rtb_button_t *rtb_button_new(const wchar_t *label)
 {
 	rtb_button_t *self = calloc(1, sizeof(rtb_button_t));
-	rtb_obj_init(self, &super);
+	rtb_obj_init(RTB_OBJECT(self), &super);
 
-	rtb_label_init(&self->label, &self->label);
-	rtb_obj_add_child(self, &self->label, RTB_ADD_HEAD);
+	rtb_label_init(&self->label, &self->label.impl);
+	rtb_obj_add_child(RTB_OBJECT(self), RTB_OBJECT(&self->label),
+			RTB_ADD_HEAD);
 
 	glGenBuffers(1, &self->vbo);
 
@@ -211,6 +209,6 @@ rtb_button_t *rtb_button_new(const wchar_t *label)
 void rtb_button_free(rtb_button_t *self)
 {
 	rtb_label_fini(&self->label);
-	rtb_obj_fini(self);
+	rtb_obj_fini(RTB_OBJECT(self));
 	free(self);
 }

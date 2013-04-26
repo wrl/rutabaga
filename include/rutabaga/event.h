@@ -28,13 +28,14 @@
 
 #include <wchar.h>
 
+#include "rutabaga/rutabaga.h"
 #include "rutabaga/types.h"
 
 #define RTB_EVENT_SYS_MASK (1 << ((sizeof(rtb_ev_type_t) * 8) - 1))
 #define RTB_IS_SYS_EVENT(x) (!!(x & RTB_EVENT_SYS_MASK))
 
-#define RTB_EV_T(x) ((rtb_ev_t *) x)
-#define RTB_EV_KEY(x) ((rtb_ev_key_t *) x)
+#define RTB_EVENT(x) (&(x)->_rtb_event)
+#define RTB_EVENT_WINDOW(x) (&(x)->_rtb_event_window)
 
 /**
  * system event types
@@ -74,7 +75,8 @@ struct rtb_event {
 };
 
 struct rtb_event_window {
-	rtb_ev_t;
+	RTB_INHERIT(rtb_event);
+
 	rtb_win_t *window;
 };
 

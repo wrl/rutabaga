@@ -32,7 +32,8 @@
 
 #include "bsd/queue.h"
 
-#define RTB_OBJ_T(x) ((rtb_obj_t *) (x))
+#define RTB_OBJECT(x) (&(x)->_rtb_object)
+
 #define RTB_EVENT_HANDLERS_PER_OBJECT 32
 
 typedef struct rtb_object_implementation rtb_obj_impl_t;
@@ -49,14 +50,15 @@ struct rtb_object_implementation {
 };
 
 struct rtb_object {
-	rtb_type_atom_t;
+	RTB_INHERIT(rtb_type_atom);
 
 	/* public *********************************/
-	rtb_pt_t;        /* provides x, y */
-	struct rtb_size; /* provides w, h */
+	RTB_INHERIT_AS(rtb_point, pt);  /* provides x, y */
+	RTB_INHERIT_AS(rtb_size, size); /* provides w, h */
 	struct rtb_size min_size;
 
-	rtb_obj_impl_t;
+	RTB_INHERIT_AS(rtb_object_implementation, impl);
+
 	rtb_style_t *style;
 
 	/* XXX: should this stuff be in rtb_style_t? */

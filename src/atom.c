@@ -195,7 +195,7 @@ rtb_type_atom_descriptor_t *rtb_type_ref(rtb_win_t *win,
 			return NULL;
 
 		type->dict = dict;
-		NEDTRIE_INSERT(rtb_atom_dict, dict, type);
+		NEDTRIE_INSERT(rtb_atom_dict, dict, RTB_ATOM_DESCRIPTOR(type));
 	}
 
 	type->ref_count++;
@@ -210,7 +210,7 @@ int rtb_type_unref(rtb_type_atom_descriptor_t *type)
 	rtb_type_unref(type->super[0]);
 
 	if (!--type->ref_count) {
-		NEDTRIE_REMOVE(rtb_atom_dict, type->dict, type);
+		NEDTRIE_REMOVE(rtb_atom_dict, type->dict, RTB_ATOM_DESCRIPTOR(type));
 		free(type);
 		return 0;
 	}

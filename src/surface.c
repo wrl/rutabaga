@@ -38,7 +38,8 @@
 #include "private/layout-debug.h"
 #include "shaders/surface.glsl.h"
 
-#define SELF_FROM(obj) struct rtb_surface *self = (struct rtb_surface *) obj
+#define SELF_FROM(obj) \
+	struct rtb_surface *self = (void *) obj
 
 /**
  * internal stuff
@@ -51,7 +52,7 @@ static const GLubyte box_indices[] = {
 };
 
 static struct {
-	rtb_shader_program_t;
+	RTB_INHERIT(rtb_shader_program);
 
 	GLint texture;
 	GLint position;
@@ -65,7 +66,7 @@ static void init_shaders()
 	if (shader.program)
 		return;
 
-	if (!rtb_shader_program_create(&shader,
+	if (!rtb_shader_program_create(RTB_SHADER_PROGRAM(&shader),
 				SURFACE_VERT_SHADER,
 				SURFACE_FRAG_SHADER))
 		puts("rtb_surface: init_shaders() failed!");
@@ -129,7 +130,7 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 		rtb_event_direction_t direction)
 {
 	SELF_FROM(obj);
-	super.recalc_cb(self, instigator, direction);
+	super.recalc_cb(obj, instigator, direction);
 
 	if (self->w <= 0 || self->h <= 0)
 		return;
@@ -160,7 +161,7 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 static void attach_child(rtb_obj_t *obj, rtb_obj_t *child)
 {
 	SELF_FROM(obj);
-	rtb_obj_realize(child, self, self, self->window);
+	rtb_obj_realize(child, obj, self, self->window);
 }
 
 static void realize(rtb_obj_t *self, rtb_obj_t *parent,
@@ -177,9 +178,11 @@ static void realize(rtb_obj_t *self, rtb_obj_t *parent,
 
 void rtb_surface_blit(rtb_surface_t *self)
 {
-	rtb_render_push(self);
-	rtb_render_use_program(self, &shader);
-	rtb_render_set_position(self, 0, 0);
+	rtb_obj_t *obj = RTB_OBJECT(self);
+
+	rtb_render_push(obj);
+	rtb_render_use_program(obj, RTB_SHADER_PROGRAM(&shader));
+	rtb_render_set_position(obj, 0, 0);
 
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, self->texture);
@@ -203,9 +206,9 @@ void rtb_surface_blit(rtb_surface_t *self)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glDisable(GL_TEXTURE_2D);
 
-	rtb_render_pop(self);
+	rtb_render_pop(obj);
 
-	LAYOUT_DEBUG_DRAW_BOX(self);
+	LAYOUT_DEBUG_DRAW_BOX(obj);
 }
 
 void rtb_surface_draw_children(rtb_surface_t *self, rtb_draw_state_t state)
@@ -235,7 +238,7 @@ void rtb_surface_draw_children(rtb_surface_t *self, rtb_draw_state_t state)
 	switch (self->surface_state) {
 	case RTB_SURFACE_INVALID:
 		glDisable(GL_SCISSOR_TEST);
-		rtb_render_clear(self);
+		rtb_render_clear(RTB_OBJECT(self));
 
 		TAILQ_FOREACH(iter, &self->children, child)
 			rtb_obj_draw(iter, RTB_DRAW_NORMAL);
@@ -266,14 +269,14 @@ void rtb_surface_draw_children(rtb_surface_t *self, rtb_draw_state_t state)
 void rtb_surface_invalidate(rtb_surface_t *self)
 {
 	self->surface_state = RTB_SURFACE_INVALID;
-	rtb_obj_mark_dirty(self);
+	rtb_obj_mark_dirty(RTB_OBJECT(self));
 }
 
 int rtb_surface_init(rtb_surface_t *self,
 		struct rtb_object_implementation *impl)
 {
-	struct rtb_object_implementation *obj_impl = self;
-	rtb_obj_init(self, &super);
+	struct rtb_object_implementation *obj_impl = &self->impl;
+	rtb_obj_init(RTB_OBJECT(self), &super);
 	(*impl) = super;
 
 	do {
@@ -303,5 +306,5 @@ void rtb_surface_fini(rtb_surface_t *self)
 	glDeleteFramebuffers(1, &self->fbo);
 	glDeleteBuffers(1, &self->vbo);
 
-	rtb_obj_fini(self);
+	rtb_obj_fini(RTB_OBJECT(self));
 }

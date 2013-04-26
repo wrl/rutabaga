@@ -29,8 +29,8 @@
 #include "rutabaga/types.h"
 #include "rutabaga/event.h"
 
-#define RTB_EV_MOUSE_T(x) ((rtb_ev_mouse_t *) x)
-#define RTB_EV_DRAG_T(x) ((rtb_ev_drag_t *) x)
+#define RTB_EVENT_MOUSE(x) (&(x)->_rtb_event_mouse)
+#define RTB_EVENT_DRAG(x) (&(x)->_rtb_event_drag)
 
 /**
  * types
@@ -55,7 +55,8 @@ typedef enum {
  */
 
 struct rtb_event_mouse {
-	rtb_ev_t;
+	RTB_INHERIT(rtb_event);
+
 	rtb_win_t *window;
 	rtb_obj_t *target;
 
@@ -64,7 +65,8 @@ struct rtb_event_mouse {
 };
 
 struct rtb_event_drag {
-	rtb_ev_mouse_t;
+	RTB_INHERIT(rtb_event_mouse);
+
 	rtb_pt_t start;
 
 	struct {
@@ -78,7 +80,8 @@ struct rtb_event_drag {
  */
 
 struct rtb_mouse {
-	rtb_pt_t;
+	RTB_INHERIT(rtb_point);
+
 	rtb_obj_t *object_underneath;
 
 	struct rtb_mouse_button {

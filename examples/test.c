@@ -70,24 +70,24 @@ rtb_knob_t *knob;
 
 int print_streeng(rtb_obj_t *victim, const rtb_ev_t *e, void *ctx)
 {
-	rtb_ev_mouse_t *mv = RTB_EV_MOUSE_T(e);
+	rtb_ev_mouse_t *mv = (void *) e;
 	int i;
 
 	printf("(%f, %f) click!\n", mv->cursor.x, mv->cursor.y);
 
 	i = rand() % (ARRAY_LENGTH(rlabels));
-	rtb_button_set_label(RTB_BUTTON_T(victim), rlabels[i]);
+	rtb_button_set_label((rtb_button_t *) victim, rlabels[i]);
 	return 0;
 }
 
 int knob_value(rtb_obj_t *victim, const rtb_ev_t *e, void *unused)
 {
-	if (victim != RTB_OBJ_T(knob)) {
-		knob = RTB_KNOB_T(victim);
+	if (victim != RTB_OBJECT(knob)) {
+		knob = (void *) knob;
 		printf("\n");
 	}
 
-	printf(" :: value: %f\n", RTB_EV_KNOB_T(e)->value);
+	printf(" :: value: %f\n", ((rtb_ev_knob_t *) e)->value);
 	return 0;
 }
 
@@ -116,8 +116,8 @@ void distribute_demo(rtb_container_t *root)
 			knob->min = -1.f;
 			knob->max = 1.f;
 
-			rtb_attach(knob, KNOB_VALUE_CHANGE, knob_value, NULL);
-			rtb_container_add(containers[i], knob);
+			rtb_attach(RTB_OBJECT(knob), KNOB_VALUE_CHANGE, knob_value, NULL);
+			rtb_container_add(containers[i], RTB_OBJECT(knob));
 		}
 
 		knob = NULL;
@@ -150,16 +150,16 @@ void setup_ui(rtb_container_t *root)
 		buttons[i] = rtb_button_new(NULL);
 		rtb_button_set_label(buttons[i], labels[i]);
 
-		rtb_attach(buttons[i], BUTTON_CLICK, print_streeng, NULL);
+		rtb_attach(RTB_OBJECT(buttons[i]), BUTTON_CLICK, print_streeng, NULL);
 	}
 
-	rtb_container_add(upper, buttons[0]);
-	rtb_container_add(upper, buttons[1]);
-	rtb_container_add(upper, buttons[2]);
+	rtb_container_add(upper, RTB_OBJECT(buttons[0]));
+	rtb_container_add(upper, RTB_OBJECT(buttons[1]));
+	rtb_container_add(upper, RTB_OBJECT(buttons[2]));
 
-	rtb_container_add(lower, buttons[3]);
-	rtb_container_add(lower, buttons[4]);
-	rtb_container_add(lower, buttons[5]);
+	rtb_container_add(lower, RTB_OBJECT(buttons[3]));
+	rtb_container_add(lower, RTB_OBJECT(buttons[4]));
+	rtb_container_add(lower, RTB_OBJECT(buttons[5]));
 
 	rtb_container_add(root, upper);
 	rtb_container_add(root, lower);
@@ -168,7 +168,7 @@ void setup_ui(rtb_container_t *root)
 static int handle_key_press(struct rtb_object *victim,
 		const struct rtb_event *e, void *ctx)
 {
-	struct rtb_event_key *ev = RTB_EV_KEY(e);
+	struct rtb_event_key *ev = (void *) e;
 
 	switch (ev->keycode) {
 	case RTB_KEY_NUMPAD:
@@ -208,13 +208,13 @@ int main(int argc, char **argv)
 	win->outer_pad.x = 5.f;
 	win->outer_pad.y = 5.f;
 
-	rtb_obj_set_size_cb(win, rtb_size_hfit_children);
-	rtb_obj_set_layout(win, rtb_layout_vpack_bottom);
+	rtb_obj_set_size_cb(RTB_OBJECT(win), rtb_size_hfit_children);
+	rtb_obj_set_layout(RTB_OBJECT(win), rtb_layout_vpack_bottom);
 
-	rtb_attach(win, RTB_KEY_PRESS, handle_key_press, delicious);
+	rtb_attach(RTB_OBJECT(win), RTB_KEY_PRESS, handle_key_press, delicious);
 
-	distribute_demo(RTB_CONTAINER_T(delicious->win));
-	setup_ui(RTB_CONTAINER_T(delicious->win));
+	distribute_demo(RTB_OBJECT(delicious->win));
+	setup_ui(RTB_OBJECT(delicious->win));
 
 	rtb_event_loop(delicious);
 

@@ -33,8 +33,9 @@
 
 #include "rutabaga/widgets/label.h"
 
-#define RTB_PATCHBAY_T(x) ((struct rtb_patchbay *) x)
-#define RTB_PATCHBAY_NODE_T(x) ((struct rtb_patchbay_node *) x)
+#define RTB_PATCHBAY(x) (&(x)->_rtb_patchbay)
+#define RTB_PATCHBAY_NODE(x) (&(x)->_rtb_patchbay_node)
+#define RTB_PATCHBAY_PORT(x) (&(x)->_rtb_patchbay_port)
 
 /**
  * structures
@@ -51,7 +52,7 @@ typedef enum {
 } rtb_patchbay_port_type_t;
 
 struct rtb_patchbay_node {
-	rtb_obj_t;
+	RTB_INHERIT(rtb_object);
 
 	rtb_obj_t node_ui;
 
@@ -66,7 +67,7 @@ struct rtb_patchbay_node {
 };
 
 struct rtb_patchbay_port {
-	rtb_obj_t;
+	RTB_INHERIT(rtb_object);
 
 	/* private ********************************/
 	GLuint vbo;
@@ -88,7 +89,7 @@ struct rtb_patchbay_patch {
 };
 
 struct rtb_patchbay {
-	rtb_surface_t;
+	RTB_INHERIT(rtb_surface);
 
 	/* private ********************************/
 	GLuint bg_vbo[2];
@@ -108,9 +109,6 @@ struct rtb_patchbay {
  * events
  */
 
-#define RTB_EV_PATCHBAY_CONNECT_T(x) ((rtb_ev_patchbay_connect_t *) x)
-#define RTB_EV_PATCHBAY_DISCONNECT_T(x) ((rtb_ev_patchbay_disconnect_t *) x)
-
 typedef struct rtb_event_patchbay_connect rtb_ev_patchbay_connect_t;
 typedef struct rtb_event_patchbay_disconnect rtb_ev_patchbay_disconnect_t;
 
@@ -120,7 +118,7 @@ typedef enum {
 } rtb_ev_patchbay_type_t;
 
 struct rtb_event_patchbay_connect {
-	rtb_ev_t;
+	RTB_INHERIT(rtb_event);
 
 	struct {
 		rtb_patchbay_node_t *node;
@@ -129,7 +127,7 @@ struct rtb_event_patchbay_connect {
 };
 
 struct rtb_event_patchbay_disconnect {
-	rtb_ev_patchbay_connect_t;
+	RTB_INHERIT(rtb_event_patchbay_connect);
 
 	rtb_patchbay_patch_t *patch;
 };

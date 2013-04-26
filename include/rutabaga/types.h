@@ -27,6 +27,22 @@
 #pragma once
 
 /**
+ * inheritance/composition helpers
+ */
+
+#define RTB_INHERIT(from) \
+	union {               \
+		struct from;      \
+		struct from _##from; \
+	}
+
+#define RTB_INHERIT_AS(from, as) \
+	union {                      \
+		struct from;             \
+		struct from as;          \
+	}
+
+/**
  * enumerations
  */
 

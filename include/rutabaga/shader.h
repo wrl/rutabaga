@@ -29,6 +29,8 @@
 #include "rutabaga/types.h"
 #include "rutabaga/object.h"
 
+#define RTB_SHADER_PROGRAM(x) (&(x)->_rtb_shader_program)
+
 struct rtb_shader_program {
 	GLuint program;
 

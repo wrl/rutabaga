@@ -34,10 +34,10 @@
 #include "rutabaga/surface.h"
 #include "rutabaga/mouse.h"
 
-#define RTB_WIN_T(x) ((rtb_win_t *) (x))
+#define RTB_WINDOW(x) (&(x)->_rtb_window)
 
 struct rtb_window {
-	rtb_surface_t;
+	RTB_INHERIT(rtb_surface);
 	rtb_font_manager_t *font_manager;
 
 	/* public *********************************/

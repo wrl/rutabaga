@@ -39,7 +39,8 @@
 
 #include "private/util.h"
 
-#define SELF_FROM(obj) struct rtb_knob *self = RTB_KNOB_T(obj)
+#define SELF_FROM(obj) \
+	struct rtb_knob *self = (void *) obj
 
 #define MIN_DEGREES 35.f
 #define MAX_DEGREES (360.f - MIN_DEGREES)
@@ -124,9 +125,9 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
 
-	rtb_render_push(self);
-	rtb_render_clear(self);
-	rtb_render_set_position(self,
+	rtb_render_push(obj);
+	rtb_render_clear(obj);
+	rtb_render_set_position(obj,
 			self->x + ((self->w) / 2),
 			self->y + ((self->h) / 2));
 
@@ -150,7 +151,7 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-	rtb_render_set_modelview(self, self->modelview.data);
+	rtb_render_set_modelview(obj, self->modelview.data);
 
 	glDrawElements(
 			GL_LINES, ARRAY_LENGTH(indicator_indices),
@@ -173,7 +174,7 @@ static int dispatch_value_change_event(rtb_knob_t *self)
 		.value = self->value * (self->max - self->min),
 	};
 
-	return rtb_handle(self, RTB_EV_T(&event));
+	return rtb_handle(RTB_OBJECT(self), RTB_EVENT(&event));
 }
 
 /**
@@ -184,7 +185,7 @@ static int handle_drag(rtb_knob_t *self, rtb_ev_drag_t *e)
 {
 	float new_value;
 
-	if (e->target != RTB_OBJ_T(self))
+	if (e->target != RTB_OBJECT(self))
 		return 0;
 
 	new_value = self->value;
@@ -221,10 +222,10 @@ static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
 	switch (e->type) {
 	case RTB_DRAG_START:
 	case RTB_DRAGGING:
-		return handle_drag(self, RTB_EV_DRAG_T(e));
+		return handle_drag(self, (rtb_ev_drag_t *) e);
 
 	case RTB_MOUSE_DOWN:
-		return handle_mouse_down(self, RTB_EV_MOUSE_T(e));
+		return handle_mouse_down(self, (rtb_ev_mouse_t *) e);
 
 	default:
 		return super.event_cb(obj, e);
@@ -269,13 +270,13 @@ void rtb_knob_set_value(rtb_knob_t *self, float new_value)
 			MIN_DEGREES + (self->value * DEGREE_RANGE),
 			0.f, 0.f, 1.f);
 
-	rtb_obj_mark_dirty(self);
+	rtb_obj_mark_dirty(RTB_OBJECT(self));
 }
 
 rtb_knob_t *rtb_knob_new()
 {
 	rtb_knob_t *self = calloc(1, sizeof(rtb_knob_t));
-	rtb_obj_init(self, &super);
+	rtb_obj_init(RTB_OBJECT(self), &super);
 
 	self->origin = 0.f;
 	self->min = 0.f;
@@ -297,6 +298,6 @@ rtb_knob_t *rtb_knob_new()
 void rtb_knob_free(rtb_knob_t *self)
 {
 	glDeleteBuffers(2, self->vbo);
-	rtb_obj_fini(self);
+	rtb_obj_fini(RTB_OBJECT(self));
 	free(self);
 }

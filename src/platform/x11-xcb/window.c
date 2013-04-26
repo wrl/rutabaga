@@ -104,7 +104,7 @@ err_malloc:
 
 void window_impl_rtb_free(rtb_t *rtb)
 {
-	struct xcb_rutabaga *self = RTB_XCB(rtb);
+	struct xcb_rutabaga *self = (void *) rtb;
 
 	XCloseDisplay(self->dpy);
 	free(self);
@@ -153,7 +153,7 @@ static xcb_screen_t *find_xcb_screen(xcb_connection_t *c, int default_screen)
 
 void window_impl_swap_buffers(rtb_win_t *rwin)
 {
-	struct xcb_window *self = RTB_XCB_WIN(rwin);
+	struct xcb_window *self = (void *) rwin;
 	struct xcb_rutabaga *xrtb = self->xrtb;
 
 	if (xrtb->copy_sub_buffer)
@@ -277,7 +277,7 @@ void rtb_window_unlock(rtb_win_t *rwin)
 
 rtb_win_t *window_impl_open(rtb_t *rtb, int w, int h, const char *title)
 {
-	struct xcb_rutabaga *xrtb = RTB_XCB(rtb);
+	struct xcb_rutabaga *xrtb = (void *) rtb;
 	struct xcb_window *self;
 
 	Display *dpy;
@@ -437,7 +437,7 @@ err_malloc:
 
 void window_impl_close(rtb_win_t *rwin)
 {
-	struct xcb_window *self = RTB_XCB_WIN(rwin);
+	struct xcb_window *self = (void *) rwin;
 
 	xcb_key_symbols_free(self->keysyms);
 
