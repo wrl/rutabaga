@@ -9,8 +9,9 @@
   of development. it is built against the openGL 3 core
   profile (i.e. no fixed function pipeline), licensed
   under the 2-clause BSD license, and implemented in
-  plan9-flavoured C (anonymous structs, implicit
-  upcasting for ease of OO-style development).
+  almost-standard C99 (uses the non-standard ms-extensions
+  for anonymous structs because C11 anonymous structs
+  don't work for our purposes).
 
   currently it provides the skeletal components: a basic
   scene graph, event dispatching, rudimentary run-time
