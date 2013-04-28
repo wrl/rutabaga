@@ -35,6 +35,7 @@
 
 #include <xcb/xcb.h>
 #include <xcb/xcb_keysyms.h>
+#include <xkbcommon/xkbcommon.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xlib-xcb.h>
@@ -156,70 +157,70 @@ static rtb_keycode_t xkeysym_to_rtbkeycode(xcb_keysym_t sym, wint_t *chr,
 #define NPAD(xkey, rtbkey, wc) case xkey: if (numlock_on) { \
 	*chr = wc; return RTB_KEY_NUMPAD; } return rtbkey
 
-		CODE(XK_Shift_L,     RTB_KEY_LEFT_SHIFT);
-		CODE(XK_Control_L,   RTB_KEY_LEFT_CTRL);
-		CODE(XK_Super_L,     RTB_KEY_LEFT_SUPER);
-		CODE(XK_Alt_L,       RTB_KEY_LEFT_ALT);
+		CODE(XKB_KEY_Shift_L,     RTB_KEY_LEFT_SHIFT);
+		CODE(XKB_KEY_Control_L,   RTB_KEY_LEFT_CTRL);
+		CODE(XKB_KEY_Super_L,     RTB_KEY_LEFT_SUPER);
+		CODE(XKB_KEY_Alt_L,       RTB_KEY_LEFT_ALT);
 
-		CODE(XK_Shift_R,     RTB_KEY_RIGHT_SHIFT);
-		CODE(XK_Control_R,   RTB_KEY_RIGHT_CTRL);
-		CODE(XK_Super_R,     RTB_KEY_RIGHT_SUPER);
-		CODE(XK_Alt_R,       RTB_KEY_RIGHT_ALT);
+		CODE(XKB_KEY_Shift_R,     RTB_KEY_RIGHT_SHIFT);
+		CODE(XKB_KEY_Control_R,   RTB_KEY_RIGHT_CTRL);
+		CODE(XKB_KEY_Super_R,     RTB_KEY_RIGHT_SUPER);
+		CODE(XKB_KEY_Alt_R,       RTB_KEY_RIGHT_ALT);
 
-		CODE(XK_Menu,        RTB_KEY_MENU);
-		CODE(XK_Escape,      RTB_KEY_ESCAPE);
+		CODE(XKB_KEY_Menu,        RTB_KEY_MENU);
+		CODE(XKB_KEY_Escape,      RTB_KEY_ESCAPE);
 
-		CHAR(XK_Return,      RTB_KEY_NORMAL, L'\n');
-		CHAR(XK_Tab,         RTB_KEY_NORMAL, L'\t');
+		CHAR(XKB_KEY_Return,      RTB_KEY_NORMAL, L'\n');
+		CHAR(XKB_KEY_Tab,         RTB_KEY_NORMAL, L'\t');
 
-		CODE(XK_F1,          RTB_KEY_F1);
-		CODE(XK_F2,          RTB_KEY_F2);
-		CODE(XK_F3,          RTB_KEY_F3);
-		CODE(XK_F4,          RTB_KEY_F4);
-		CODE(XK_F5,          RTB_KEY_F5);
-		CODE(XK_F6,          RTB_KEY_F6);
-		CODE(XK_F7,          RTB_KEY_F7);
-		CODE(XK_F8,          RTB_KEY_F8);
-		CODE(XK_F9,          RTB_KEY_F9);
-		CODE(XK_F10,         RTB_KEY_F10);
-		CODE(XK_F11,         RTB_KEY_F11);
-		CODE(XK_F12,         RTB_KEY_F12);
+		CODE(XKB_KEY_F1,          RTB_KEY_F1);
+		CODE(XKB_KEY_F2,          RTB_KEY_F2);
+		CODE(XKB_KEY_F3,          RTB_KEY_F3);
+		CODE(XKB_KEY_F4,          RTB_KEY_F4);
+		CODE(XKB_KEY_F5,          RTB_KEY_F5);
+		CODE(XKB_KEY_F6,          RTB_KEY_F6);
+		CODE(XKB_KEY_F7,          RTB_KEY_F7);
+		CODE(XKB_KEY_F8,          RTB_KEY_F8);
+		CODE(XKB_KEY_F9,          RTB_KEY_F9);
+		CODE(XKB_KEY_F10,         RTB_KEY_F10);
+		CODE(XKB_KEY_F11,         RTB_KEY_F11);
+		CODE(XKB_KEY_F12,         RTB_KEY_F12);
 
-		CODE(XK_Print,       RTB_KEY_PRINT_SCREEN);
-		CODE(XK_Pause,       RTB_KEY_SCROLL_LOCK);
-		CODE(XK_Scroll_Lock, RTB_KEY_SCROLL_LOCK);
+		CODE(XKB_KEY_Print,       RTB_KEY_PRINT_SCREEN);
+		CODE(XKB_KEY_Pause,       RTB_KEY_SCROLL_LOCK);
+		CODE(XKB_KEY_Scroll_Lock, RTB_KEY_SCROLL_LOCK);
 
-		CODE(XK_Insert,      RTB_KEY_INSERT);
-		CODE(XK_Delete,      RTB_KEY_DELETE);
-		CODE(XK_Home,        RTB_KEY_HOME);
-		CODE(XK_End,         RTB_KEY_END);
-		CODE(XK_Prior,       RTB_KEY_PAGE_UP);
-		CODE(XK_Next,        RTB_KEY_PAGE_DOWN);
+		CODE(XKB_KEY_Insert,      RTB_KEY_INSERT);
+		CODE(XKB_KEY_Delete,      RTB_KEY_DELETE);
+		CODE(XKB_KEY_Home,        RTB_KEY_HOME);
+		CODE(XKB_KEY_End,         RTB_KEY_END);
+		CODE(XKB_KEY_Prior,       RTB_KEY_PAGE_UP);
+		CODE(XKB_KEY_Next,        RTB_KEY_PAGE_DOWN);
 
-		CODE(XK_Up,          RTB_KEY_UP);
-		CODE(XK_Left,        RTB_KEY_LEFT);
-		CODE(XK_Down,        RTB_KEY_DOWN);
-		CODE(XK_Right,       RTB_KEY_RIGHT);
+		CODE(XKB_KEY_Up,          RTB_KEY_UP);
+		CODE(XKB_KEY_Left,        RTB_KEY_LEFT);
+		CODE(XKB_KEY_Down,        RTB_KEY_DOWN);
+		CODE(XKB_KEY_Right,       RTB_KEY_RIGHT);
 
-		CODE(XK_Num_Lock,    RTB_KEY_NUMLOCK);
-		CHAR(XK_KP_Divide,   RTB_KEY_NUMPAD,           L'/');
-		CHAR(XK_KP_Multiply, RTB_KEY_NUMPAD,           L'*');
-		CHAR(XK_KP_Subtract, RTB_KEY_NUMPAD,           L'-');
-		CHAR(XK_KP_Add,      RTB_KEY_NUMPAD,           L'+');
-		CHAR(XK_KP_Enter,    RTB_KEY_NUMPAD,           L'\n');
+		CODE(XKB_KEY_Num_Lock,    RTB_KEY_NUMLOCK);
+		CHAR(XKB_KEY_KP_Divide,   RTB_KEY_NUMPAD,           L'/');
+		CHAR(XKB_KEY_KP_Multiply, RTB_KEY_NUMPAD,           L'*');
+		CHAR(XKB_KEY_KP_Subtract, RTB_KEY_NUMPAD,           L'-');
+		CHAR(XKB_KEY_KP_Add,      RTB_KEY_NUMPAD,           L'+');
+		CHAR(XKB_KEY_KP_Enter,    RTB_KEY_NUMPAD,           L'\n');
 
-		NPAD(XK_KP_Home,     RTB_KEY_NUMPAD_HOME,      L'7');
-		NPAD(XK_KP_Up,       RTB_KEY_NUMPAD_UP,        L'8');
-		NPAD(XK_KP_Prior,    RTB_KEY_NUMPAD_PAGE_UP,   L'9');
-		NPAD(XK_KP_Left,     RTB_KEY_NUMPAD_LEFT,      L'4');
-		NPAD(XK_KP_Begin,    RTB_KEY_NUMPAD_MIDDLE,    L'5');
-		NPAD(XK_KP_Right,    RTB_KEY_NUMPAD_RIGHT,     L'6');
-		NPAD(XK_KP_End,      RTB_KEY_NUMPAD_END,       L'1');
-		NPAD(XK_KP_Down,     RTB_KEY_NUMPAD_DOWN,      L'2');
-		NPAD(XK_KP_Next,     RTB_KEY_NUMPAD_PAGE_DOWN, L'3');
+		NPAD(XKB_KEY_KP_Home,     RTB_KEY_NUMPAD_HOME,      L'7');
+		NPAD(XKB_KEY_KP_Up,       RTB_KEY_NUMPAD_UP,        L'8');
+		NPAD(XKB_KEY_KP_Prior,    RTB_KEY_NUMPAD_PAGE_UP,   L'9');
+		NPAD(XKB_KEY_KP_Left,     RTB_KEY_NUMPAD_LEFT,      L'4');
+		NPAD(XKB_KEY_KP_Begin,    RTB_KEY_NUMPAD_MIDDLE,    L'5');
+		NPAD(XKB_KEY_KP_Right,    RTB_KEY_NUMPAD_RIGHT,     L'6');
+		NPAD(XKB_KEY_KP_End,      RTB_KEY_NUMPAD_END,       L'1');
+		NPAD(XKB_KEY_KP_Down,     RTB_KEY_NUMPAD_DOWN,      L'2');
+		NPAD(XKB_KEY_KP_Next,     RTB_KEY_NUMPAD_PAGE_DOWN, L'3');
 
-		NPAD(XK_KP_Insert,   RTB_KEY_NUMPAD_INSERT,    L'0');
-		NPAD(XK_KP_Delete,   RTB_KEY_NUMPAD_INSERT,    L'.');
+		NPAD(XKB_KEY_KP_Insert,   RTB_KEY_NUMPAD_INSERT,    L'0');
+		NPAD(XKB_KEY_KP_Delete,   RTB_KEY_NUMPAD_INSERT,    L'.');
 
 #undef NPAD
 #undef CHAR
@@ -233,18 +234,19 @@ static rtb_keycode_t xkeysym_to_rtbkeycode(xcb_keysym_t sym, wint_t *chr,
 static void dispatch_key_event(struct xcb_window *win,
 		const xcb_key_press_event_t *ev, rtb_ev_type_t type)
 {
+	xcb_key_symbols_t *keysyms = win->xrtb->keysyms;
 	struct rtb_event_key rtb_ev = {.type = type};
-	xcb_keysym_t sym;
 	int col = !!(ev->state & XCB_MOD_MASK_SHIFT);
+	xcb_keysym_t sym;
 	wint_t chr;
 
 	/* XXX: todo:
 	 *   mode switch key
 	 *   compose key */
-	sym = xcb_key_symbols_get_keysym(win->keysyms, ev->detail, col);
+	sym = xcb_key_symbols_get_keysym(keysyms, ev->detail, col);
 
 	if (sym == XCB_NO_SYMBOL)
-		sym = xcb_key_symbols_get_keysym(win->keysyms, ev->detail, col ^ 1);
+		sym = xcb_key_symbols_get_keysym(keysyms, ev->detail, col ^ 1);
 
 	chr = keysym2ucs(sym);
 
@@ -275,9 +277,8 @@ static int handle_key_press(struct xcb_window *win,
 		const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_key_press_event_t);
-	struct xcb_window *xwin = (void *) win;
 
-	dispatch_key_event(xwin, ev, RTB_KEY_PRESS);
+	dispatch_key_event(win, ev, RTB_KEY_PRESS);
 	return 0;
 }
 
@@ -285,24 +286,22 @@ static int handle_key_release(struct xcb_window *win,
 		const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_key_release_event_t);
+
+	dispatch_key_event(win, ev, RTB_KEY_RELEASE);
+	return 0;
+}
+
+static void handle_mapping_notify(struct xcb_window *win,
+		xcb_generic_event_t *_ev)
+{
 	struct xcb_window *xwin = (void *) win;
 
-	dispatch_key_event(xwin, ev, RTB_KEY_RELEASE);
-	return 0;
+	xrtb_refresh_keymap(xwin->xrtb);
 }
 
 /**
  * window structure events
  */
-
-static void handle_mapping_notify(struct xcb_window *win,
-		xcb_generic_event_t *_ev)
-{
-	CAST_EVENT_TO(xcb_mapping_notify_event_t);
-	struct xcb_window *xwin = (void *) win;
-
-	xcb_refresh_keyboard_mapping(xwin->keysyms, ev);
-}
 
 static void handle_visibility_notify(struct xcb_window *win,
 		xcb_generic_event_t *_ev)

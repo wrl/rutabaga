@@ -69,35 +69,36 @@ static xcb_atom_t intern_atom(xcb_connection_t *c, const char *atom_name)
 
 rtb_t *window_impl_rtb_alloc()
 {
-	struct xcb_rutabaga *xrtb;
+	struct xcb_rutabaga *self;
 	Display *dpy;
 
-	if (!(xrtb = calloc(1, sizeof(*xrtb))))
+	if (!(self = calloc(1, sizeof(*self))))
 		goto err_malloc;
 
-	if (!(xrtb->dpy = dpy = XOpenDisplay(NULL))) {
+	if (!(self->dpy = dpy = XOpenDisplay(NULL))) {
 		ERR("can't open X display\n");
 		goto err_dpy;
 	}
 
-	if (!(xrtb->xcb_conn = XGetXCBConnection(dpy))) {
+	if (!(self->xcb_conn = XGetXCBConnection(dpy))) {
 		ERR("can't get XCB connection for display\n");
 		goto err_get_conn;
 	}
 
 	XSetEventQueueOwner(dpy, XCBOwnsEventQueue);
 
-#define INTERN_ATOM(atom, name) xrtb->atoms.atom = intern_atom(xrtb->xcb_conn, name);
+#define INTERN_ATOM(atom, name) self->atoms.atom = intern_atom(self->xcb_conn, name);
 	INTERN_ATOM(wm_protocols, "WM_PROTOCOLS");
 	INTERN_ATOM(wm_delete_window, "WM_DELETE_WINDOW");
 #undef INTERN_ATOM
 
-	return (rtb_t *) xrtb;
+	self->keysyms = xcb_key_symbols_alloc(self->xcb_conn);
+	return (rtb_t *) self;
 
 err_get_conn:
-	XCloseDisplay(xrtb->dpy);
+	XCloseDisplay(self->dpy);
 err_dpy:
-	free(xrtb);
+	free(self);
 err_malloc:
 	return NULL;
 }
@@ -105,6 +106,8 @@ err_malloc:
 void window_impl_rtb_free(rtb_t *rtb)
 {
 	struct xcb_rutabaga *self = (void *) rtb;
+
+	xcb_key_symbols_free(self->keysyms);
 
 	XCloseDisplay(self->dpy);
 	free(self);
@@ -409,7 +412,6 @@ rtb_win_t *window_impl_open(rtb_t *rtb, int w, int h, const char *title)
 
 	init_gl(xrtb);
 
-	self->keysyms = xcb_key_symbols_alloc(xcb_conn);
 	xcb_icccm_set_wm_protocols(xcb_conn,
 			self->xcb_win, xrtb->atoms.wm_protocols,
 			1, &xrtb->atoms.wm_delete_window);
@@ -438,8 +440,6 @@ err_malloc:
 void window_impl_close(rtb_win_t *rwin)
 {
 	struct xcb_window *self = (void *) rwin;
-
-	xcb_key_symbols_free(self->keysyms);
 
 	glXMakeContextCurrent(self->xrtb->dpy, None, None, NULL);
 	glXDestroyWindow(self->xrtb->dpy, self->gl_win);

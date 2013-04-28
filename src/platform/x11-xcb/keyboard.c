@@ -24,51 +24,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/window.h"
+#include "xrtb.h"
 
-#include <xcb/xcb.h>
-#include <xcb/xcb_keysyms.h>
-
-#include <GL/glx.h>
-
-#include <xkbcommon/xkbcommon.h>
-
-#define ERR(...) fprintf(stderr, "rutabaga XCB: " __VA_ARGS__)
-
-struct xcb_rutabaga {
-	rtb_t rtb;
-
-	Display *dpy;
-	xcb_connection_t *xcb_conn;
-
-	struct {
-		xcb_atom_t wm_protocols;
-		xcb_atom_t wm_delete_window;
-	} atoms;
-
-	xcb_key_symbols_t *keysyms;
-
-	/* oh man, this typedef. it's in glxext.h */
-	PFNGLXCOPYSUBBUFFERMESAPROC copy_sub_buffer;
-};
-
-struct xcb_window {
-	RTB_INHERIT(rtb_window);
-
-	struct xcb_rutabaga *xrtb;
-
-	xcb_screen_t *screen;
-	xcb_window_t xcb_win;
-
-	GLXDrawable gl_draw;
-	GLXContext gl_ctx;
-	GLXWindow gl_win;
-
-	uint16_t numlock_mask;
-	uint16_t capslock_mask;
-	uint16_t shiftlock_mask;
-	uint16_t modeswitch_mask;
-};
-
-int xrtb_refresh_keymap(struct xcb_rutabaga *xrtb);
+int xrtb_refresh_keymap(struct xcb_rutabaga *xrtb)
+{
+	xcb_refresh_keyboard_mapping(xrtb->keysyms, NULL);
+	return 0;
+}
