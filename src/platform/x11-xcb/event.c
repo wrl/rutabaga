@@ -34,7 +34,6 @@
 #include <math.h>
 
 #include <xcb/xcb.h>
-#include <xcb/xcb_keysyms.h>
 #include <xkbcommon/xkbcommon.h>
 
 #include <X11/Xlib.h>
@@ -50,7 +49,6 @@
 #include "private/util.h"
 
 #include "xrtb.h"
-#include "keysym2ucs.h"
 
 #define FPS 60
 #define CAST_EVENT_TO(type) type *ev = (type *) _ev

@@ -60,7 +60,6 @@ def build(bld):
 	obj("platform/x11-xcb/event.c")
 	obj("platform/x11-xcb/window.c")
 	obj("platform/x11-xcb/keyboard.c")
-	obj("platform/x11-xcb/keysym2ucs.c")
 
 	# common
 
