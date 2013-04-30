@@ -85,6 +85,9 @@ rtb_t *window_impl_rtb_alloc()
 		goto err_get_conn;
 	}
 
+	if (xrtb_keyboard_init(self))
+		goto err_keyboard_init;
+
 	XSetEventQueueOwner(dpy, XCBOwnsEventQueue);
 
 #define INTERN_ATOM(atom, name) self->atoms.atom = intern_atom(self->xcb_conn, name);
@@ -92,9 +95,9 @@ rtb_t *window_impl_rtb_alloc()
 	INTERN_ATOM(wm_delete_window, "WM_DELETE_WINDOW");
 #undef INTERN_ATOM
 
-	self->keysyms = xcb_key_symbols_alloc(self->xcb_conn);
 	return (rtb_t *) self;
 
+err_keyboard_init:
 err_get_conn:
 	XCloseDisplay(self->dpy);
 err_dpy:
@@ -107,8 +110,7 @@ void window_impl_rtb_free(rtb_t *rtb)
 {
 	struct xcb_rutabaga *self = (void *) rtb;
 
-	xcb_key_symbols_free(self->keysyms);
-
+	xrtb_keyboard_fini(self);
 	XCloseDisplay(self->dpy);
 	free(self);
 }

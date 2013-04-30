@@ -3,7 +3,7 @@
  * (UCS, Unicode) values.
  */
 
-#include <wchar.h>
+#include <uchar.h>
 #include <X11/X.h>
 
-wchar_t keysym2ucs(KeySym keysym);
+char32_t keysym2ucs(KeySym keysym);

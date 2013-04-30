@@ -134,7 +134,9 @@ def build(bld):
 			"X11",
 			"XCB",
 			"XCB-KEYSYMS",
-			"XCB-ICCCM"],
+			"XCB-ICCCM",
+			"XKBFILE",
+			"XKBCOMMON"],
 
 		target="rutabaga",
 		name="librutabaga",

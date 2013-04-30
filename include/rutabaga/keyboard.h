@@ -26,6 +26,8 @@
 
 #pragma once
 
+#include <uchar.h>
+
 /**
  * types
  */
@@ -33,6 +35,10 @@
 typedef enum {
 	RTB_KEY_NORMAL,
 	RTB_KEY_NUMPAD,
+
+	RTB_KEY_NUM_LOCK,
+	RTB_KEY_SCROLL_LOCK,
+	RTB_KEY_CAPS_LOCK,
 
 	RTB_KEY_LEFT_SHIFT,
 	RTB_KEY_LEFT_CTRL,
@@ -43,9 +49,11 @@ typedef enum {
 	RTB_KEY_RIGHT_CTRL,
 	RTB_KEY_RIGHT_SUPER,
 	RTB_KEY_RIGHT_ALT,
-	RTB_KEY_MENU,
 
+	RTB_KEY_MENU,
 	RTB_KEY_ESCAPE,
+	RTB_KEY_BACKSPACE,
+
 	RTB_KEY_F1,
 	RTB_KEY_F2,
 	RTB_KEY_F3,
@@ -60,7 +68,6 @@ typedef enum {
 	RTB_KEY_F12,
 
 	RTB_KEY_PRINT_SCREEN,
-	RTB_KEY_SCROLL_LOCK,
 	RTB_KEY_PAUSE,
 
 	RTB_KEY_INSERT,
@@ -74,8 +81,6 @@ typedef enum {
 	RTB_KEY_LEFT,
 	RTB_KEY_DOWN,
 	RTB_KEY_RIGHT,
-
-	RTB_KEY_NUMLOCK,
 
 	RTB_KEY_NUMPAD_HOME,
 	RTB_KEY_NUMPAD_END,
@@ -114,5 +119,5 @@ struct rtb_event_key {
 	RTB_INHERIT(rtb_event);
 
 	rtb_keycode_t keycode;
-	wint_t character;
+	char32_t character;
 };

@@ -24,10 +24,87 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <assert.h>
+#include <stdio.h>
+
+#include <X11/XKBlib.h>
+#include <X11/extensions/XKBfile.h>
+#include <xkbcommon/xkbcommon.h>
+
 #include "xrtb.h"
 
-int xrtb_refresh_keymap(struct xcb_rutabaga *xrtb)
+int xrtb_keyboard_reload(struct xcb_rutabaga *xrtb)
 {
-	xcb_refresh_keyboard_mapping(xrtb->keysyms, NULL);
+	FILE *tmp;
+	XkbFileInfo xkbfile;
+	struct xkb_keymap *new_keymap;
+
+	/* large portions here lifted from i3lock.
+	 * thx. */
+
+	assert(xrtb->xkb_ctx);
+
+	if (!(tmp = tmpfile()))
+		goto err_tmpfile;
+
+	if (!(xkbfile.xkb = XkbGetKeyboard(xrtb->dpy,
+					XkbAllMapComponentsMask, XkbUseCoreKbd)))
+		goto err_get_keyboard;
+
+	if (!XkbWriteXKBKeymap(tmp, &xkbfile, 0, 0, NULL, NULL))
+		goto err_write_keymap;
+
+	rewind(tmp);
+
+	if (!(new_keymap = xkb_keymap_new_from_file(xrtb->xkb_ctx, tmp,
+					XKB_KEYMAP_FORMAT_TEXT_V1, 0)))
+		goto err_new_keymap;
+
+	if (xrtb->xkb_keymap)
+		xkb_keymap_unref(xrtb->xkb_keymap);
+	xrtb->xkb_keymap = new_keymap;
+
+	if (xrtb->xkb_state)
+		xkb_state_unref(xrtb->xkb_state);
+
+	if (!(xrtb->xkb_state = xkb_state_new(new_keymap)))
+		goto err_new_state;
+
+	XkbFreeKeyboard(xkbfile.xkb, XkbAllMapComponentsMask, 1);
+	fclose(tmp);
 	return 0;
+
+err_new_state:
+err_new_keymap:
+err_write_keymap:
+	XkbFreeKeyboard(xkbfile.xkb, XkbAllMapComponentsMask, 1);
+err_get_keyboard:
+	fclose(tmp);
+err_tmpfile:
+	return -1;
+}
+
+int xrtb_keyboard_init(struct xcb_rutabaga *xrtb)
+{
+	assert(!xrtb->xkb_ctx);
+
+	if (!(xrtb->xkb_ctx = xkb_context_new(0)))
+		return -1;
+
+	if (xrtb_keyboard_reload(xrtb))
+		return -1;
+	return 0;
+}
+
+void xrtb_keyboard_fini(struct xcb_rutabaga *xrtb)
+{
+	assert(xrtb->xkb_ctx);
+
+	xkb_context_unref(xrtb->xkb_ctx);
+
+	if (xrtb->xkb_keymap)
+		xkb_keymap_unref(xrtb->xkb_keymap);
+
+	if (xrtb->xkb_state)
+		xkb_state_unref(xrtb->xkb_state);
 }

@@ -35,7 +35,6 @@
 #define __FREETYPE_GL_H__
 
 #include <math.h>
-#include <wchar.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

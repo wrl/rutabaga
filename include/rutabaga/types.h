@@ -26,14 +26,16 @@
 
 #pragma once
 
+#include <stdint.h>
+
 /**
  * inheritance/composition helpers
  */
 
-#define RTB_INHERIT(from) \
-	union {               \
-		struct from;      \
-		struct from _##from; \
+#define RTB_INHERIT(from)        \
+	union {                      \
+		struct from;             \
+		struct from _##from;     \
 	}
 
 #define RTB_INHERIT_AS(from, as) \
@@ -90,6 +92,12 @@ typedef enum {
 } rtb_child_add_loc_t;
 
 /**
+ * basic types
+ */
+
+typedef uint8_t rtb_utf8_t;
+
+/**
  * structures
  */
 
@@ -112,10 +120,10 @@ typedef struct rtb_font_manager rtb_font_manager_t;
 
 typedef struct rtb_event_handler rtb_ev_handler_t;
 
-typedef struct rtb_event  rtb_ev_t;
-typedef struct rtb_event_drag rtb_ev_drag_t;
+typedef struct rtb_event       rtb_ev_t;
+typedef struct rtb_event_drag  rtb_ev_drag_t;
 typedef struct rtb_event_mouse rtb_ev_mouse_t;
-typedef struct rtb_event_key rtb_ev_key_t;
+typedef struct rtb_event_key   rtb_ev_key_t;
 
 typedef struct rtb_mouse rtb_mouse_t;
 

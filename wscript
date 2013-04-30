@@ -68,6 +68,7 @@ def check_x11(conf):
 	check("xcb")
 	check("xcb-keysyms")
 	check("xcb-icccm")
+	check("xkbfile")
 	check("xkbcommon")
 
 def check_jack(conf):

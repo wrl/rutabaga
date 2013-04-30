@@ -47,7 +47,9 @@ struct xcb_rutabaga {
 		xcb_atom_t wm_delete_window;
 	} atoms;
 
-	xcb_key_symbols_t *keysyms;
+	struct xkb_context *xkb_ctx;
+	struct xkb_keymap *xkb_keymap;
+	struct xkb_state *xkb_state;
 
 	/* oh man, this typedef. it's in glxext.h */
 	PFNGLXCOPYSUBBUFFERMESAPROC copy_sub_buffer;
@@ -71,4 +73,6 @@ struct xcb_window {
 	uint16_t modeswitch_mask;
 };
 
-int xrtb_refresh_keymap(struct xcb_rutabaga *xrtb);
+int  xrtb_keyboard_reload(struct xcb_rutabaga *xrtb);
+int  xrtb_keyboard_init(struct xcb_rutabaga *xrtb);
+void xrtb_keyboard_fini(struct xcb_rutabaga *xrtb);

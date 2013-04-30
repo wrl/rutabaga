@@ -148,14 +148,11 @@ static void handle_mouse_motion(struct xcb_window *win,
  * keyboard events
  */
 
-static rtb_keycode_t xkeysym_to_rtbkeycode(xcb_keysym_t sym, wint_t *chr,
-		int numlock_on)
+static rtb_keycode_t xkeysym_to_rtbkeycode(xcb_keysym_t sym, char32_t *chr)
 {
 	switch (sym) {
 #define CODE(xkey, rtbkey) case xkey: return rtbkey
 #define CHAR(xkey, rtbkey, wc) case xkey: *chr = wc; return rtbkey
-#define NPAD(xkey, rtbkey, wc) case xkey: if (numlock_on) { \
-	*chr = wc; return RTB_KEY_NUMPAD; } return rtbkey
 
 		CODE(XKB_KEY_Shift_L,     RTB_KEY_LEFT_SHIFT);
 		CODE(XKB_KEY_Control_L,   RTB_KEY_LEFT_CTRL);
@@ -170,8 +167,10 @@ static rtb_keycode_t xkeysym_to_rtbkeycode(xcb_keysym_t sym, wint_t *chr,
 		CODE(XKB_KEY_Menu,        RTB_KEY_MENU);
 		CODE(XKB_KEY_Escape,      RTB_KEY_ESCAPE);
 
-		CHAR(XKB_KEY_Return,      RTB_KEY_NORMAL, L'\n');
-		CHAR(XKB_KEY_Tab,         RTB_KEY_NORMAL, L'\t');
+		CODE(XKB_KEY_BackSpace,   RTB_KEY_BACKSPACE);
+		CHAR(XKB_KEY_Return,      RTB_KEY_NORMAL, U'\n');
+		CHAR(XKB_KEY_Tab,         RTB_KEY_NORMAL, U'\t');
+		CODE(XKB_KEY_Caps_Lock,   RTB_KEY_CAPS_LOCK);
 
 		CODE(XKB_KEY_F1,          RTB_KEY_F1);
 		CODE(XKB_KEY_F2,          RTB_KEY_F2);
@@ -202,73 +201,54 @@ static rtb_keycode_t xkeysym_to_rtbkeycode(xcb_keysym_t sym, wint_t *chr,
 		CODE(XKB_KEY_Down,        RTB_KEY_DOWN);
 		CODE(XKB_KEY_Right,       RTB_KEY_RIGHT);
 
-		CODE(XKB_KEY_Num_Lock,    RTB_KEY_NUMLOCK);
-		CHAR(XKB_KEY_KP_Divide,   RTB_KEY_NUMPAD,           L'/');
-		CHAR(XKB_KEY_KP_Multiply, RTB_KEY_NUMPAD,           L'*');
-		CHAR(XKB_KEY_KP_Subtract, RTB_KEY_NUMPAD,           L'-');
-		CHAR(XKB_KEY_KP_Add,      RTB_KEY_NUMPAD,           L'+');
-		CHAR(XKB_KEY_KP_Enter,    RTB_KEY_NUMPAD,           L'\n');
+		CODE(XKB_KEY_Num_Lock,    RTB_KEY_NUM_LOCK);
+		CHAR(XKB_KEY_KP_Divide,   RTB_KEY_NUMPAD,           U'/');
+		CHAR(XKB_KEY_KP_Multiply, RTB_KEY_NUMPAD,           U'*');
+		CHAR(XKB_KEY_KP_Subtract, RTB_KEY_NUMPAD,           U'-');
+		CHAR(XKB_KEY_KP_Add,      RTB_KEY_NUMPAD,           U'+');
+		CHAR(XKB_KEY_KP_Enter,    RTB_KEY_NUMPAD,           U'\n');
 
-		NPAD(XKB_KEY_KP_Home,     RTB_KEY_NUMPAD_HOME,      L'7');
-		NPAD(XKB_KEY_KP_Up,       RTB_KEY_NUMPAD_UP,        L'8');
-		NPAD(XKB_KEY_KP_Prior,    RTB_KEY_NUMPAD_PAGE_UP,   L'9');
-		NPAD(XKB_KEY_KP_Left,     RTB_KEY_NUMPAD_LEFT,      L'4');
-		NPAD(XKB_KEY_KP_Begin,    RTB_KEY_NUMPAD_MIDDLE,    L'5');
-		NPAD(XKB_KEY_KP_Right,    RTB_KEY_NUMPAD_RIGHT,     L'6');
-		NPAD(XKB_KEY_KP_End,      RTB_KEY_NUMPAD_END,       L'1');
-		NPAD(XKB_KEY_KP_Down,     RTB_KEY_NUMPAD_DOWN,      L'2');
-		NPAD(XKB_KEY_KP_Next,     RTB_KEY_NUMPAD_PAGE_DOWN, L'3');
+		CODE(XKB_KEY_KP_Home,     RTB_KEY_NUMPAD_HOME);
+		CODE(XKB_KEY_KP_Up,       RTB_KEY_NUMPAD_UP);
+		CODE(XKB_KEY_KP_Prior,    RTB_KEY_NUMPAD_PAGE_UP);
+		CODE(XKB_KEY_KP_Left,     RTB_KEY_NUMPAD_LEFT);
+		CODE(XKB_KEY_KP_Begin,    RTB_KEY_NUMPAD_MIDDLE);
+		CODE(XKB_KEY_KP_Right,    RTB_KEY_NUMPAD_RIGHT);
+		CODE(XKB_KEY_KP_End,      RTB_KEY_NUMPAD_END);
+		CODE(XKB_KEY_KP_Down,     RTB_KEY_NUMPAD_DOWN);
+		CODE(XKB_KEY_KP_Next,     RTB_KEY_NUMPAD_PAGE_DOWN);
 
-		NPAD(XKB_KEY_KP_Insert,   RTB_KEY_NUMPAD_INSERT,    L'0');
-		NPAD(XKB_KEY_KP_Delete,   RTB_KEY_NUMPAD_INSERT,    L'.');
+		CODE(XKB_KEY_KP_Insert,   RTB_KEY_NUMPAD_INSERT);
+		CODE(XKB_KEY_KP_Delete,   RTB_KEY_NUMPAD_INSERT);
 
-#undef NPAD
 #undef CHAR
 #undef CODE
 	}
 
-	printf(" :: got unknown key %d\n", sym);
 	return RTB_KEY_UNKNOWN;
 }
 
 static void dispatch_key_event(struct xcb_window *win,
 		const xcb_key_press_event_t *ev, rtb_ev_type_t type)
 {
-	xcb_key_symbols_t *keysyms = win->xrtb->keysyms;
 	struct rtb_event_key rtb_ev = {.type = type};
-	int col = !!(ev->state & XCB_MOD_MASK_SHIFT);
 	xcb_keysym_t sym;
-	wint_t chr;
 
-	/* XXX: todo:
-	 *   mode switch key
-	 *   compose key */
-	sym = xcb_key_symbols_get_keysym(keysyms, ev->detail, col);
+	sym = xkb_state_key_get_one_sym(win->xrtb->xkb_state, ev->detail);
 
-	if (sym == XCB_NO_SYMBOL)
-		sym = xcb_key_symbols_get_keysym(keysyms, ev->detail, col ^ 1);
+	/* first, look the keysym up in our internal mod key
+	 * translation table. */
+	rtb_ev.keycode = xkeysym_to_rtbkeycode(sym, &rtb_ev.character);
 
-	chr = keysym2ucs(sym);
+	/* if we don't find it there, treat it like an alphanumeric key
+	 * and get the UTF-32 value. */
+	if (rtb_ev.keycode == RTB_KEY_UNKNOWN) {
+		rtb_ev.keycode   = RTB_KEY_NORMAL;
+		rtb_ev.character = xkb_keysym_to_utf32(sym);
 
-	if (ev->state)
-		printf(" :: state %d\n", ev->state);
-
-	if (chr) {
-		/* XXX: capslock or numlock? */
-		if (ev->state & XCB_MOD_MASK_LOCK)
-			chr = towupper(chr);
-
-		rtb_ev.keycode = RTB_KEY_NORMAL;
-		rtb_ev.character = chr;
-		rtb_dispatch_raw(RTB_OBJECT(win), RTB_EVENT(&rtb_ev));
-		return;
+		if (!rtb_ev.character)
+			return;
 	}
-
-	rtb_ev.keycode = xkeysym_to_rtbkeycode(sym, &chr, 1);
-	rtb_ev.character = chr;
-
-	if (rtb_ev.keycode == RTB_KEY_UNKNOWN && !chr)
-		return; /* ??? what */
 
 	rtb_dispatch_raw(RTB_OBJECT(win), RTB_EVENT(&rtb_ev));
 }
@@ -279,6 +259,7 @@ static int handle_key_press(struct xcb_window *win,
 	CAST_EVENT_TO(xcb_key_press_event_t);
 
 	dispatch_key_event(win, ev, RTB_KEY_PRESS);
+	xkb_state_update_key(win->xrtb->xkb_state, ev->detail, XKB_KEY_DOWN);
 	return 0;
 }
 
@@ -288,6 +269,7 @@ static int handle_key_release(struct xcb_window *win,
 	CAST_EVENT_TO(xcb_key_release_event_t);
 
 	dispatch_key_event(win, ev, RTB_KEY_RELEASE);
+	xkb_state_update_key(win->xrtb->xkb_state, ev->detail, XKB_KEY_UP);
 	return 0;
 }
 
@@ -296,7 +278,7 @@ static void handle_mapping_notify(struct xcb_window *win,
 {
 	struct xcb_window *xwin = (void *) win;
 
-	xrtb_refresh_keymap(xwin->xrtb);
+	xrtb_keyboard_reload(xwin->xrtb);
 }
 
 /**

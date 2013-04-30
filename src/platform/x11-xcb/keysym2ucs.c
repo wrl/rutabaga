@@ -38,7 +38,7 @@
 
 struct codepair {
   unsigned short keysym;
-  unsigned short ucs;
+  char32_t ucs;
 } keysymtab[] = {
   { 0x01a1, 0x0104 }, /*                     Aogonek Ą LATIN CAPITAL LETTER A WITH OGONEK */
   { 0x01a2, 0x02d8 }, /*                       breve ˘ BREVE */
@@ -815,7 +815,7 @@ struct codepair {
   { 0x20ac, 0x20ac }, /*                    EuroSign € EURO SIGN */
 };
 
-wchar_t keysym2ucs(KeySym keysym)
+char32_t keysym2ucs(KeySym keysym)
 {
     int min = 0;
     int max = sizeof(keysymtab) / sizeof(struct codepair) - 1;
@@ -828,19 +828,19 @@ wchar_t keysym2ucs(KeySym keysym)
 
     /* also check for directly encoded 24-bit UCS characters */
     if ((keysym & 0xff000000) == 0x01000000)
-	return keysym & 0x00ffffff;
+		return keysym & 0x00ffffff;
 
     /* binary search in table */
     while (max >= min) {
-	mid = (min + max) / 2;
-	if (keysymtab[mid].keysym < keysym)
-	    min = mid + 1;
-	else if (keysymtab[mid].keysym > keysym)
-	    max = mid - 1;
-	else {
-	    /* found it */
-	    return keysymtab[mid].ucs;
-	}
+		mid = (min + max) / 2;
+		if (keysymtab[mid].keysym < keysym)
+			min = mid + 1;
+		else if (keysymtab[mid].keysym > keysym)
+			max = mid - 1;
+		else {
+			/* found it */
+			return keysymtab[mid].ucs;
+		}
     }
 
     /* no matching Unicode value found */
