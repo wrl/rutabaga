@@ -46,10 +46,6 @@
 #define MAX_DEGREES (360.f - MIN_DEGREES)
 #define DEGREE_RANGE (MAX_DEGREES - MIN_DEGREES)
 
-#define BACKGROUND_NORMAL	RGB(0x404F3C)
-
-#define OUTLINE_NORMAL		RGB(0x364232)
-
 #define CIRCLE_SEGMENTS 32
 
 /* would be cool to have this be like a smoothed equation or smth */
