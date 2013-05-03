@@ -52,7 +52,7 @@ void rtb_text_object_update(rtb_text_object_t *self, const rtb_utf8_t *text)
 	float x, y;
 
 	char32_t codepoint, prev_codepoint;
-	uint32_t u8dec_state;
+	uint32_t state, prev_state;
 
 	assert(text);
 	vertex_buffer_clear(self->vertices);
@@ -61,17 +61,22 @@ void rtb_text_object_update(rtb_text_object_t *self, const rtb_utf8_t *text)
 	x1 = 0.f;
 	y  = ceilf(font->height / 2.f) - font->descender + 1.f;
 
+	state = prev_state = UTF8_ACCEPT;
 	prev_codepoint = 0;
 
-	for (; *text; text++) {
+	for (; *text; prev_state = state, text++) {
 		texture_glyph_t *glyph;
 
-		switch(u8dec(&u8dec_state, &codepoint, *text)) {
+		switch(u8dec(&state, &codepoint, *text)) {
 		case UTF8_ACCEPT:
 			break;
 
 		case UTF8_REJECT:
-			codepoint = '?';
+			if (prev_state != UTF8_ACCEPT)
+				text--;
+
+			codepoint = 0xFFFD;
+			state = UTF8_ACCEPT;
 			break;
 
 		default:
