@@ -26,8 +26,7 @@
 
 #pragma once
 
-#include <wchar.h>
-
+#include "rutabaga/types.h"
 #include "rutabaga/font-manager.h"
 #include "freetype-gl/vertex-buffer.h"
 
@@ -42,10 +41,10 @@ struct rutabaga_text_object {
 	rtb_font_t *font;
 };
 
-void rtb_text_object_update(rtb_text_object_t *, const wchar_t *text);
+void rtb_text_object_update(rtb_text_object_t *, const rtb_utf8_t *text);
 void rtb_text_object_render(rtb_text_object_t *, rtb_obj_t *parent,
 		float x, float y, rtb_draw_state_t state);
 
 rtb_text_object_t *rtb_text_object_new(rtb_font_manager_t *fm,
-		rtb_font_t *font, const wchar_t *text);
+		rtb_font_t *font, const rtb_utf8_t *text);
 void rtb_text_object_free(rtb_text_object_t *self);

@@ -75,7 +75,7 @@ typedef struct
     /**
      * Left character code in the kern pair.
      */
-    wchar_t charcode;
+    char32_t charcode;
     
     /**
      * Kerning value (in fractional pixels).
@@ -128,7 +128,7 @@ typedef struct
     /**
      * Wide character this glyph represents
      */
-    wchar_t charcode;
+    char32_t charcode;
 
     /**
      * Glyph id (used for display lists)
@@ -362,7 +362,7 @@ typedef struct
  */
   texture_glyph_t *
   texture_font_get_glyph( texture_font_t * self,
-                          wchar_t charcode );
+                          char32_t charcode );
 
 
 /**
@@ -376,7 +376,7 @@ typedef struct
  */
   size_t
   texture_font_load_glyphs( texture_font_t * self,
-                            const wchar_t * charcodes );
+                            const char32_t * charcodes );
 
 /**
  * Get the kerning between two horizontal glyphs.
@@ -388,7 +388,7 @@ typedef struct
  */
 float 
 texture_glyph_get_kerning( const texture_glyph_t * self,
-                           const wchar_t charcode );
+                           const char32_t charcode );
 
 
 /**

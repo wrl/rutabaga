@@ -25,7 +25,6 @@
  */
 
 #include <stdlib.h>
-#include <wchar.h>
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/object.h"
@@ -39,37 +38,52 @@
 #include "freetype-gl/freetype-gl.h"
 #include "freetype-gl/vertex-buffer.h"
 
+#include "private/utf8.h"
+
 struct text_vertex {
 	float x, y;
 	float s, t;
 };
 
-void rtb_text_object_update(rtb_text_object_t *self, const wchar_t *text)
+void rtb_text_object_update(rtb_text_object_t *self, const rtb_utf8_t *text)
 {
 	texture_font_t *font = self->font->txfont;
 	float x0, y0, x1, y1;
 	float x, y;
-	int len, i;
 
+	char32_t codepoint, prev_codepoint;
+	uint32_t u8dec_state;
+
+	assert(text);
 	vertex_buffer_clear(self->vertices);
-	len = wcslen(text);
-
-	if (!len)
-		return;
 
 	x  = 0.f;
 	x1 = 0.f;
 	y  = ceilf(font->height / 2.f) - font->descender + 1.f;
 
-	for (i = 0; i < len; i++) {
+	prev_codepoint = 0;
+
+	for (; *text; text++) {
 		texture_glyph_t *glyph;
 
-		glyph = texture_font_get_glyph(font, text[i]);
+		switch(u8dec(&u8dec_state, &codepoint, *text)) {
+		case UTF8_ACCEPT:
+			break;
+
+		case UTF8_REJECT:
+			codepoint = '?';
+			break;
+
+		default:
+			continue;
+		}
+
+		glyph = texture_font_get_glyph(font, codepoint);
 		if (!glyph)
 			continue;
 
-		if (i > 0)
-			x += texture_glyph_get_kerning(glyph, text[i - 1]);
+		if (prev_codepoint)
+			x += texture_glyph_get_kerning(glyph, prev_codepoint);
 
 		x0 = x + glyph->offset_x;
 		y0 = y - glyph->offset_y;
@@ -99,6 +113,7 @@ void rtb_text_object_update(rtb_text_object_t *self, const wchar_t *text)
 		vertex_buffer_push_back(self->vertices, vertices, 4, indices, 6);
 
 		x += glyph->advance_x;
+		prev_codepoint = codepoint;
 	}
 
 	vertex_buffer_upload(self->vertices);
@@ -131,7 +146,7 @@ void rtb_text_object_render(rtb_text_object_t *self, rtb_obj_t *parent,
 }
 
 rtb_text_object_t *rtb_text_object_new(rtb_font_manager_t *fm,
-		rtb_font_t *font, const wchar_t *text)
+		rtb_font_t *font, const rtb_utf8_t *text)
 {
 	rtb_text_object_t *self = calloc(1, sizeof(*self));
 

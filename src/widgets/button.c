@@ -28,7 +28,6 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-#include <wchar.h>
 
 #include <math.h>
 
@@ -171,12 +170,12 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
  * public API
  */
 
-void rtb_button_set_label(rtb_button_t *self, const wchar_t *label)
+void rtb_button_set_label(rtb_button_t *self, const rtb_utf8_t *label)
 {
 	rtb_label_set_text(&self->label, label);
 }
 
-rtb_button_t *rtb_button_new(const wchar_t *label)
+rtb_button_t *rtb_button_new(const rtb_utf8_t *label)
 {
 	rtb_button_t *self = calloc(1, sizeof(rtb_button_t));
 	rtb_obj_init(RTB_OBJECT(self), &super);

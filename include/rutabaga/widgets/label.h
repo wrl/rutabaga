@@ -26,8 +26,6 @@
 
 #pragma once
 
-#include <wchar.h>
-
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/text-object.h"
 #include "rutabaga/object.h"
@@ -40,17 +38,17 @@ struct rtb_label {
 	RTB_INHERIT(rtb_object);
 
 	/* private ********************************/
-	wchar_t *text;
+	rtb_utf8_t *text;
 	rtb_font_t *font;
 	rtb_text_object_t *tobj;
 };
 
 void rtb_label_set_font(rtb_label_t *self, rtb_font_t *font);
-void rtb_label_set_text(rtb_label_t *self, const wchar_t *text);
+void rtb_label_set_text(rtb_label_t *self, const rtb_utf8_t *text);
 
 int rtb_label_init(rtb_label_t *label,
 		struct rtb_object_implementation *impl);
 void rtb_label_fini(rtb_label_t *self);
 
-rtb_label_t *rtb_label_new(const wchar_t *text);
+rtb_label_t *rtb_label_new(const rtb_utf8_t *text);
 void rtb_label_free(rtb_label_t *);

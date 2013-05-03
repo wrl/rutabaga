@@ -42,7 +42,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>
-#include <wchar.h>
+#include <uchar.h>
 #include "texture-font.h"
 
 #undef __FTERRORS_H__
@@ -165,7 +165,7 @@ texture_glyph_delete( texture_glyph_t *self )
 // ---------------------------------------------- texture_glyph_get_kerning ---
 float 
 texture_glyph_get_kerning( const texture_glyph_t * self,
-                           const wchar_t charcode )
+                           const char32_t charcode )
 {
     size_t i;
 
@@ -330,11 +330,18 @@ texture_font_delete( texture_font_t *self )
     free( self );
 }
 
+static size_t c32len(const char32_t *s)
+{
+	size_t len;
+	for (len = 0; *s; s++, len++);
+
+	return len;
+}
 
 // ----------------------------------------------- texture_font_load_glyphs ---
 size_t
 texture_font_load_glyphs( texture_font_t * self,
-                          const wchar_t * charcodes )
+                          const char32_t * charcodes )
 {
     assert( self );
     assert( charcodes );
@@ -350,18 +357,20 @@ texture_font_load_glyphs( texture_font_t * self,
     FT_UInt glyph_index;
     texture_glyph_t *glyph;
     ivec4 region;
-    size_t missed = 0;
+    size_t missed = 0, len;
     width  = self->atlas->width;
     height = self->atlas->height;
     depth  = self->atlas->depth;
 
+	len = c32len(charcodes);
+
     if( !texture_font_load_face( &library, self->filename, self->size, &face ) )
     {
-        return wcslen(charcodes);
+        return len;
     }
 
     /* Load each glyph */
-    for( i=0; i<wcslen(charcodes); ++i )
+    for(i=0; i < len; ++i)
     {
         glyph_index = FT_Get_Char_Index( face, charcodes[i] );
         // WARNING: We use texture-atlas depth to guess if user wants
@@ -397,13 +406,12 @@ texture_font_load_glyphs( texture_font_t * self,
             }
         }
         error = FT_Load_Glyph( face, glyph_index, flags );
-        if( error )
-        {
+        if(error) {
             fprintf( stderr, "FT_Error (line %d, code 0x%02x) : %s\n",
                      __LINE__, FT_Errors[error].code, FT_Errors[error].message );
             FT_Done_Face( face );
             FT_Done_FreeType( library );
-            return wcslen(charcodes)-i;
+            return len - i;
         }
 
         int ft_bitmap_width = 0;
@@ -566,12 +574,12 @@ texture_font_load_glyphs( texture_font_t * self,
 // ------------------------------------------------- texture_font_get_glyph ---
 texture_glyph_t *
 texture_font_get_glyph( texture_font_t * self,
-                        wchar_t charcode )
+                        char32_t charcode )
 {
     assert( self );
 
     size_t i;
-    wchar_t buffer[2] = {0,0};
+    char32_t buffer[2] = {0,0};
     texture_glyph_t *glyph;
 
     assert( self );
@@ -584,7 +592,7 @@ texture_font_get_glyph( texture_font_t * self,
         glyph = *(texture_glyph_t **) vector_get( self->glyphs, i );
         // If charcode is -1, we don't care about outline type or thickness
         if( (glyph->charcode == charcode) &&
-            ((charcode == (wchar_t)(-1) ) || 
+            ((charcode == (char32_t)(-1) ) || 
              ((glyph->outline_type == self->outline_type) &&
               (glyph->outline_thickness == self->outline_thickness)) ))
         {
@@ -595,7 +603,7 @@ texture_font_get_glyph( texture_font_t * self,
     /* charcode -1 is special : it is used for line drawing (overline,
      * underline, strikethrough) and background.
      */
-    if( charcode == (wchar_t)(-1) )
+    if( charcode == (char32_t)(-1) )
     {
         size_t width  = self->atlas->width;
         size_t height = self->atlas->height;
@@ -611,7 +619,7 @@ texture_font_get_glyph( texture_font_t * self,
             return NULL;
         }
         texture_atlas_set_region( self->atlas, region.x, region.y, 4, 4, data, 0 );
-        glyph->charcode = (wchar_t)(-1);
+        glyph->charcode = (char32_t)(-1);
         glyph->s0 = (region.x+2)/(float)width;
         glyph->t0 = (region.y+2)/(float)height;
         glyph->s1 = (region.x+3)/(float)width;

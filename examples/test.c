@@ -29,7 +29,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <wchar.h>
 #include <time.h>
 
 #include "rutabaga/rutabaga.h"
@@ -43,27 +42,27 @@
 
 #define ARRAY_LENGTH(a) (sizeof(a) / sizeof(*a))
 
-wchar_t *labels[] = {
-	L"hello",
-	L"we are",
-	L"buttons",
-	L"rendered",
-	L"in",
-	L"opengl"
+rtb_utf8_t *labels[] = {
+	"hello",
+	"we are",
+	"buttons",
+	"rendered",
+	"in",
+	"opengl"
 };
 
-wchar_t *rlabels[] = {
-	L"i'm",
-	L"gonna",
-	L"pop",
-	L"some",
-	L"taaaags",
-	L"only got",
-	L"20 dollars",
-	L"in my pocket",
-	L"i i i'm huntin",
-	L"looking for a come-up",
-	L"this is fucking awesome"
+rtb_utf8_t *rlabels[] = {
+	"i'm",
+	"gonna",
+	"pop",
+	"some",
+	"taaaags",
+	"only got",
+	"20 dollars",
+	"in my pocket",
+	"i i i'm huntin",
+	"looking for a come-up",
+	"this is fucking awesome"
 };
 
 rtb_knob_t *knob;

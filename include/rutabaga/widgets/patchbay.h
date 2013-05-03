@@ -146,16 +146,16 @@ rtb_patchbay_patch_t *rtb_patchbay_connect_ports(rtb_patchbay_t *,
 		rtb_patchbay_port_t *a, rtb_patchbay_port_t *b);
 
 int rtb_patchbay_port_init(rtb_patchbay_port_t *port,
-		rtb_patchbay_node_t *node, const wchar_t *name,
+		rtb_patchbay_node_t *node, const rtb_utf8_t *name,
 		rtb_patchbay_port_type_t type, rtb_child_add_loc_t location);
 void rtb_patchbay_port_fini(rtb_patchbay_port_t *self);
 
 void rtb_patchbay_node_set_name(rtb_patchbay_node_t *,
-		const wchar_t *name);
+		const rtb_utf8_t *name);
 void rtb_patchbay_node_init(rtb_patchbay_node_t *);
 void rtb_patchbay_node_fini(rtb_patchbay_node_t *);
 rtb_patchbay_node_t *rtb_patchbay_node_new(rtb_patchbay_t *parent,
-		const wchar_t *name);
+		const rtb_utf8_t *name);
 void rtb_patchbay_node_free(rtb_patchbay_node_t *);
 
 rtb_patchbay_t *rtb_patchbay_new(void);

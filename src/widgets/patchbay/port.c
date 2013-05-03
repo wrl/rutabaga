@@ -401,7 +401,7 @@ rtb_patchbay_patch_t *rtb_patchbay_connect_ports(rtb_patchbay_t *self,
 }
 
 int rtb_patchbay_port_init(rtb_patchbay_port_t *self,
-		rtb_patchbay_node_t *node, const wchar_t *name,
+		rtb_patchbay_node_t *node, const rtb_utf8_t *name,
 		rtb_patchbay_port_type_t type, rtb_child_add_loc_t location)
 {
 	rtb_obj_init(RTB_OBJECT(self), &super);

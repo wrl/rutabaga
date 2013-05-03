@@ -95,7 +95,7 @@ typedef enum {
  * basic types
  */
 
-typedef uint8_t rtb_utf8_t;
+typedef char rtb_utf8_t;
 
 /**
  * structures

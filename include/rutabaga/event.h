@@ -26,8 +26,6 @@
 
 #pragma once
 
-#include <wchar.h>
-
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/types.h"
 

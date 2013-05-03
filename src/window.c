@@ -27,7 +27,6 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <wchar.h>
 #include <pthread.h>
 
 #include "rutabaga/rutabaga.h"

@@ -26,7 +26,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <wchar.h>
 #include <math.h>
 
 #include "rutabaga/rutabaga.h"
@@ -95,12 +94,12 @@ void rtb_label_set_font(rtb_label_t *self, rtb_font_t *font)
 			RTB_DIRECTION_ROOTWARD);
 }
 
-void rtb_label_set_text(rtb_label_t *self, const wchar_t *text)
+void rtb_label_set_text(rtb_label_t *self, const rtb_utf8_t *text)
 {
 	if (self->text)
 		free(self->text);
 
-	self->text = wcsdup(text);
+	self->text = strdup(text);
 
 	if (!self->tobj)
 		return;
@@ -146,13 +145,13 @@ void rtb_label_fini(rtb_label_t *self)
 	rtb_obj_fini(RTB_OBJECT(self));
 }
 
-rtb_label_t *rtb_label_new(const wchar_t *text)
+rtb_label_t *rtb_label_new(const rtb_utf8_t *text)
 {
 	rtb_label_t *self = calloc(1, sizeof(*self));
 	rtb_label_init(self, &self->impl);
 
 	if (text)
-		self->text = wcsdup(text);
+		self->text = strdup(text);
 
 	return self;
 }

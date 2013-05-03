@@ -241,7 +241,7 @@ static GLXFBConfig find_reasonable_fb_config(
 	return NULL; /* lol */
 }
 
-static int set_xprop_from_wchar(xcb_connection_t *c, xcb_window_t win,
+static int set_xprop(xcb_connection_t *c, xcb_window_t win,
 		xcb_atom_t prop, const char *value)
 {
 	xcb_void_cookie_t cookie;
@@ -394,8 +394,8 @@ rtb_win_t *window_impl_open(rtb_t *rtb, int w, int h, const char *title)
 		goto err_gl_win;
 	}
 
-	if (set_xprop_from_wchar(xcb_conn, self->xcb_win, XCB_ATOM_WM_NAME, title))
-		set_xprop_from_wchar(xcb_conn, self->xcb_win, XCB_ATOM_WM_NAME, "oh no");
+	if (set_xprop(xcb_conn, self->xcb_win, XCB_ATOM_WM_NAME, title))
+		set_xprop(xcb_conn, self->xcb_win, XCB_ATOM_WM_NAME, "oh no");
 
 	self->gl_draw = self->gl_win;
 

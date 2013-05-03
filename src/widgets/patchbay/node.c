@@ -24,8 +24,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <wchar.h>
-
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/render.h"
 #include "rutabaga/surface.h"
@@ -179,7 +177,7 @@ static void size(rtb_obj_t *obj, const struct rtb_size *avail,
  */
 
 void rtb_patchbay_node_set_name(rtb_patchbay_node_t *self,
-		const wchar_t *name)
+		const rtb_utf8_t *name)
 {
 	rtb_label_set_text(&self->name_label, name);
 }
@@ -266,7 +264,7 @@ void rtb_patchbay_node_fini(rtb_patchbay_node_t *self)
 }
 
 rtb_patchbay_node_t *rtb_patchbay_node_new(rtb_patchbay_t *parent,
-		const wchar_t *name)
+		const rtb_utf8_t *name)
 {
 	rtb_patchbay_node_t *self = calloc(1, sizeof(*self));
 	rtb_patchbay_node_init(self);

@@ -29,12 +29,7 @@
 #include <stdio.h>
 #include <sys/queue.h>
 #include <string.h>
-#include <wchar.h>
 #include <pthread.h>
-
-#ifdef NEED_ALLOCA_H
-#include <alloca.h>
-#endif
 
 #include <jack/jack.h>
 
@@ -93,7 +88,6 @@ TAILQ_HEAD(clients, jack_client) clients;
 struct jack_client *client_alloc(const char *name, int len, int physical)
 {
 	struct jack_client *c;
-	wchar_t *wcs;
 
 	c = malloc(sizeof(*c) + len + 1);
 	TAILQ_INIT(&c->ports);
@@ -102,10 +96,6 @@ struct jack_client *client_alloc(const char *name, int len, int physical)
 	strncpy(c->name, name, len);
 	c->name[len] = '\0';
 
-	wcs = alloca((len + 1) * sizeof(wchar_t));
-	mbstowcs(wcs, name, len);
-	wcs[len] = L'\0';
-
 	c->physical = physical;
 
 	if (physical) {
@@ -113,7 +103,7 @@ struct jack_client *client_alloc(const char *name, int len, int physical)
 		state.system_out.client = c;
 	} else {
 		rtb_patchbay_node_init(RTB_PATCHBAY_NODE(c));
-		rtb_patchbay_node_set_name(RTB_PATCHBAY_NODE(c), wcs);
+		rtb_patchbay_node_set_name(RTB_PATCHBAY_NODE(c), name);
 
 		c->x = 100.f;
 		c->y = 100.f;
@@ -214,15 +204,10 @@ void client_add_port(struct jack_client *c, const char *name, int len,
 	struct jack_client_port *p;
 	rtb_patchbay_port_type_t type;
 	rtb_patchbay_node_t *node;
-	wchar_t *wcs;
 
 	p = malloc(sizeof(*p) + len + 1);
 	strncpy(p->name, name, len);
 	p->name[len] = '\0';
-
-	wcs = alloca((len + 1) * sizeof(wchar_t));
-	mbstowcs(wcs, name, len);
-	wcs[len] = L'\0';
 
 	if (flags & JackPortIsInput)
 		type = PORT_TYPE_INPUT;
@@ -237,7 +222,7 @@ void client_add_port(struct jack_client *c, const char *name, int len,
 	} else
 		node = RTB_PATCHBAY_NODE(c);
 
-	rtb_patchbay_port_init(RTB_PATCHBAY_PORT(p), node, wcs, type, location);
+	rtb_patchbay_port_init(RTB_PATCHBAY_PORT(p), node, name, type, location);
 
 	TAILQ_INSERT_TAIL(&c->ports, p, port);
 }
@@ -580,9 +565,9 @@ int main(int argc, char **argv)
 	init_patchbay(RTB_OBJECT(state.win));
 
 	rtb_patchbay_node_init(RTB_PATCHBAY_NODE(&state.system_in));
-	rtb_patchbay_node_set_name(RTB_PATCHBAY_NODE(&state.system_in), L"system");
+	rtb_patchbay_node_set_name(RTB_PATCHBAY_NODE(&state.system_in), "system");
 	rtb_patchbay_node_init(RTB_PATCHBAY_NODE(&state.system_out));
-	rtb_patchbay_node_set_name(RTB_PATCHBAY_NODE(&state.system_out), L"system");
+	rtb_patchbay_node_set_name(RTB_PATCHBAY_NODE(&state.system_out), "system");
 
 	rtb_obj_add_child(RTB_OBJECT(state.cp),
 			RTB_OBJECT(&state.system_in), RTB_ADD_TAIL);

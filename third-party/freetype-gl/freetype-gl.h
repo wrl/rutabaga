@@ -41,6 +41,7 @@
 #include <stdarg.h>
 #include <limits.h>
 #include <assert.h>
+#include <uchar.h>
 
 /* Mandatory */
 #include "vec234.h"

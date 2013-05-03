@@ -26,7 +26,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <wchar.h>
+#include <uchar.h>
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/font-manager.h"
@@ -40,11 +40,11 @@
 
 /* characters we cache by default in the texture */
 
-static const wchar_t *cache =
-	L" abcdefghijklmnopqrstuvwxyz"
-	L"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	L",.!?;"
-	L" [\\]^_@{|}~\"#$%&'()*+-/0123456789:<=>`";
+static const char32_t *cache =
+	U" abcdefghijklmnopqrstuvwxyz"
+	U"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	U",.!?;"
+	U" [\\]^_@{|}~\"#$%&'()*+-/0123456789:<=>`";
 
 int rtb_font_manager_load_font(rtb_font_manager_t *fm, rtb_font_t *font,
 		const char *path, int size)
