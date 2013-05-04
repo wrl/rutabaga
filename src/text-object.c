@@ -72,6 +72,8 @@ void rtb_text_object_update(rtb_text_object_t *self, const rtb_utf8_t *text)
 			break;
 
 		case UTF8_REJECT:
+			printf(" :: what\n");
+
 			if (prev_state != UTF8_ACCEPT)
 				text--;
 

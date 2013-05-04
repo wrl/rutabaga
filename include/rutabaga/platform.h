@@ -27,74 +27,14 @@
 #pragma once
 
 #include "rutabaga/types.h"
-#include "rutabaga/event.h"
-
-#define RTB_EVENT_MOUSE(x) (&(x)->_rtb_event_mouse)
-#define RTB_EVENT_DRAG(x) (&(x)->_rtb_event_drag)
+#include "rutabaga/mouse.h"
 
 /**
- * types
+ * mouse
  */
 
-typedef enum {
-	RTB_MOUSE_BUTTON1 = 0,
-	RTB_MOUSE_BUTTON2 = 1,
-	RTB_MOUSE_BUTTON3 = 2,
-
-	RTB_MOUSE_BUTTON_MAX = RTB_MOUSE_BUTTON3
-} rtb_mouse_buttons_t;
-
-typedef enum {
-	RTB_MOUSE_BUTTON1_MASK = 1 << RTB_MOUSE_BUTTON1,
-	RTB_MOUSE_BUTTON2_MASK = 1 << RTB_MOUSE_BUTTON2,
-	RTB_MOUSE_BUTTON3_MASK = 1 << RTB_MOUSE_BUTTON3
-} rtb_mouse_button_mask_t;
-
-/**
- * events
- */
-
-struct rtb_event_mouse {
-	RTB_INHERIT(rtb_event);
-
-	rtb_win_t *window;
-	rtb_obj_t *target;
-
-	rtb_pt_t cursor;
-	rtb_mouse_buttons_t button;
-};
-
-struct rtb_event_drag {
-	RTB_INHERIT(rtb_event_mouse);
-
-	rtb_pt_t start;
-
-	struct {
-		int x;
-		int y;
-	} delta;
-};
-
-/**
- * internal mouse structure
- */
-
-struct rtb_mouse {
-	RTB_INHERIT(rtb_point);
-
-	rtb_obj_t *object_underneath;
-
-	struct rtb_mouse_button {
-		rtb_pt_t drag_last;
-		rtb_pt_t drag_start;
-
-		rtb_obj_t *target;
-
-		enum {
-			UP,
-			DOWN,
-			DRAG
-		} state;
-	} button[RTB_MOUSE_BUTTON_MAX + 1];
-	rtb_mouse_button_mask_t buttons_down;
-};
+void rtb_platform_mouse_press(rtb_win_t *win, int buttons, int x, int y);
+void rtb_platform_mouse_release(rtb_win_t *win, int buttons, int x, int y);
+void rtb_platform_mouse_motion(rtb_win_t *win, int x, int y);
+void rtb_platform_mouse_enter_window(rtb_win_t *win, int x, int y);
+void rtb_platform_mouse_leave_window(rtb_win_t *win, int x, int y);

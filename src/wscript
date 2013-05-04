@@ -57,6 +57,8 @@ def build(bld):
 	# platform
 	#
 
+	obj("platform/mouse.c")
+
 	obj("platform/x11-xcb/event.c")
 	obj("platform/x11-xcb/window.c")
 	obj("platform/x11-xcb/keyboard.c")
@@ -65,6 +67,7 @@ def build(bld):
 
 	obj("rutabaga.c")
 	obj("style.c")
+	obj("event.c")
 	obj("atom.c")
 
 	obj("object.c")
@@ -74,9 +77,6 @@ def build(bld):
 	obj("shader.c")
 	obj("render.c")
 	obj("mat4.c")
-
-	obj("event.c")
-	obj("mouse.c")
 
 	obj("targa.c")
 

@@ -268,10 +268,10 @@ push:
 }
 
 /**
- * public API
+ * platform API
  */
 
-void rtb_mouse_press(rtb_win_t *win, int button, int x, int y)
+void rtb_platform_mouse_press(rtb_win_t *win, int button, int x, int y)
 {
 	rtb_obj_t *target;
 
@@ -284,7 +284,7 @@ void rtb_mouse_press(rtb_win_t *win, int button, int x, int y)
 	dispatch_simple_mouse_event(win, target, RTB_MOUSE_DOWN, button, x, y);
 }
 
-void rtb_mouse_release(rtb_win_t *win, int button, int x, int y)
+void rtb_platform_mouse_release(rtb_win_t *win, int button, int x, int y)
 {
 	rtb_obj_t *target;
 
@@ -297,7 +297,7 @@ void rtb_mouse_release(rtb_win_t *win, int button, int x, int y)
 	dispatch_simple_mouse_event(win, target, RTB_MOUSE_UP, button, x, y);
 }
 
-void rtb_mouse_motion(rtb_win_t *win, int x, int y)
+void rtb_platform_mouse_motion(rtb_win_t *win, int x, int y)
 {
 	retarget(win, x, y);
 
@@ -308,17 +308,17 @@ void rtb_mouse_motion(rtb_win_t *win, int x, int y)
 	win->mouse.y = y;
 }
 
-void rtb_mouse_enter_window(rtb_win_t *win, int x, int y)
+void rtb_platform_mouse_enter_window(rtb_win_t *win, int x, int y)
 {
 	win->mouse_in = 1;
 	win->mouse.object_underneath = RTB_OBJECT(win);
 
 	dispatch_simple_mouse_event(win, RTB_OBJECT(win),
 			RTB_MOUSE_ENTER, -1, x, y);
-	rtb_mouse_motion(win, x, y);
+	rtb_platform_mouse_motion(win, x, y);
 }
 
-void rtb_mouse_leave_window(rtb_win_t *win, int x, int y)
+void rtb_platform_mouse_leave_window(rtb_win_t *win, int x, int y)
 {
 	rtb_obj_t *underneath = win->mouse.object_underneath;
 

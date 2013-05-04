@@ -43,7 +43,7 @@
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/window.h"
 #include "rutabaga/event.h"
-#include "rutabaga/mouse.h"
+#include "rutabaga/platform.h"
 #include "rutabaga/keyboard.h"
 
 #include "private/util.h"
@@ -62,15 +62,14 @@ static void handle_mouse_enter(struct xcb_window *win,
 		const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_enter_notify_event_t);
-
-	rtb_mouse_enter_window(RTB_WINDOW(win), ev->event_x, ev->event_y);
+	rtb_platform_mouse_enter_window(RTB_WINDOW(win), ev->event_x, ev->event_y);
 }
 
 static void handle_mouse_leave(struct xcb_window *win,
 		const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_leave_notify_event_t);
-	rtb_mouse_leave_window(RTB_WINDOW(win), ev->event_x, ev->event_y);
+	rtb_platform_mouse_leave_window(RTB_WINDOW(win), ev->event_x, ev->event_y);
 }
 
 static void handle_mouse_button_press(struct xcb_window *win,
@@ -91,7 +90,8 @@ static void handle_mouse_button_press(struct xcb_window *win,
 		goto dont_handle;
 	}
 
-	rtb_mouse_press(RTB_WINDOW(win), button, ev->event_x, ev->event_y);
+	rtb_platform_mouse_press(RTB_WINDOW(win),
+			button, ev->event_x, ev->event_y);
 
 dont_handle:
 	cookie = xcb_grab_pointer(
@@ -131,7 +131,8 @@ static void handle_mouse_button_release(struct xcb_window *win,
 		return;
 	}
 
-	rtb_mouse_release(RTB_WINDOW(win), button, ev->event_x, ev->event_y);
+	rtb_platform_mouse_release(RTB_WINDOW(win),
+			button, ev->event_x, ev->event_y);
 }
 
 static void handle_mouse_motion(struct xcb_window *win,
@@ -139,7 +140,7 @@ static void handle_mouse_motion(struct xcb_window *win,
 {
 	CAST_EVENT_TO(xcb_motion_notify_event_t);
 
-	rtb_mouse_motion(RTB_WINDOW(win), ev->event_x, ev->event_y);
+	rtb_platform_mouse_motion(RTB_WINDOW(win), ev->event_x, ev->event_y);
 }
 
 /**
