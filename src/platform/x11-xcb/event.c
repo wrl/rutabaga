@@ -167,8 +167,8 @@ static rtb_keycode_t xkeysym_to_rtbkeycode(xcb_keysym_t sym, char32_t *chr)
 		CODE(XKB_KEY_Escape,      RTB_KEY_ESCAPE);
 
 		CODE(XKB_KEY_BackSpace,   RTB_KEY_BACKSPACE);
-		CHAR(XKB_KEY_Return,      RTB_KEY_NORMAL, U'\n');
-		CHAR(XKB_KEY_Tab,         RTB_KEY_NORMAL, U'\t');
+		CODE(XKB_KEY_Return,      RTB_KEY_RETURN);
+		CODE(XKB_KEY_Tab,         RTB_KEY_TAB);
 		CODE(XKB_KEY_Caps_Lock,   RTB_KEY_CAPS_LOCK);
 
 		CODE(XKB_KEY_F1,          RTB_KEY_F1);
@@ -205,7 +205,6 @@ static rtb_keycode_t xkeysym_to_rtbkeycode(xcb_keysym_t sym, char32_t *chr)
 		CHAR(XKB_KEY_KP_Multiply, RTB_KEY_NUMPAD,           U'*');
 		CHAR(XKB_KEY_KP_Subtract, RTB_KEY_NUMPAD,           U'-');
 		CHAR(XKB_KEY_KP_Add,      RTB_KEY_NUMPAD,           U'+');
-		CHAR(XKB_KEY_KP_Enter,    RTB_KEY_NUMPAD,           U'\n');
 
 		CODE(XKB_KEY_KP_Home,     RTB_KEY_NUMPAD_HOME);
 		CODE(XKB_KEY_KP_Up,       RTB_KEY_NUMPAD_UP);
@@ -219,6 +218,7 @@ static rtb_keycode_t xkeysym_to_rtbkeycode(xcb_keysym_t sym, char32_t *chr)
 
 		CODE(XKB_KEY_KP_Insert,   RTB_KEY_NUMPAD_INSERT);
 		CODE(XKB_KEY_KP_Delete,   RTB_KEY_NUMPAD_INSERT);
+		CODE(XKB_KEY_KP_Enter,    RTB_KEY_NUMPAD_ENTER);
 
 #undef CHAR
 #undef CODE
