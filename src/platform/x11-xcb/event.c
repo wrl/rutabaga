@@ -167,7 +167,7 @@ static rtb_keycode_t xkeysym_to_rtbkeycode(xcb_keysym_t sym, char32_t *chr)
 		CODE(XKB_KEY_Escape,      RTB_KEY_ESCAPE);
 
 		CODE(XKB_KEY_BackSpace,   RTB_KEY_BACKSPACE);
-		CODE(XKB_KEY_Return,      RTB_KEY_RETURN);
+		CODE(XKB_KEY_Return,      RTB_KEY_ENTER);
 		CODE(XKB_KEY_Tab,         RTB_KEY_TAB);
 		CODE(XKB_KEY_Caps_Lock,   RTB_KEY_CAPS_LOCK);
 

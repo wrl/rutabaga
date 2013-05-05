@@ -54,9 +54,7 @@ typedef enum {
 	RTB_KEY_TAB,
 	RTB_KEY_ESCAPE,
 	RTB_KEY_BACKSPACE,
-
-	RTB_KEY_RETURN,
-	RTB_KEY_ENTER = RTB_KEY_RETURN, /* whatever floats yr boat */
+	RTB_KEY_ENTER,
 
 	RTB_KEY_F1,
 	RTB_KEY_F2,
