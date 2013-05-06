@@ -170,14 +170,14 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
  * public API
  */
 
-void rtb_button_set_label(rtb_button_t *self, const rtb_utf8_t *label)
+void rtb_button_set_label(rtb_button_t *self, const rtb_utf8_t *text)
 {
-	rtb_label_set_text(&self->label, label);
+	rtb_label_set_text(&self->label, text);
 }
 
-rtb_button_t *rtb_button_new(const rtb_utf8_t *label)
+int rtb_button_init(rtb_button_t *self,
+		struct rtb_object_implementation *impl)
 {
-	rtb_button_t *self = calloc(1, sizeof(rtb_button_t));
 	rtb_obj_init(RTB_OBJECT(self), &super);
 
 	rtb_label_init(&self->label, &self->label.impl);
@@ -185,9 +185,6 @@ rtb_button_t *rtb_button_new(const rtb_utf8_t *label)
 			RTB_ADD_HEAD);
 
 	glGenBuffers(1, &self->vbo);
-
-	if (label)
-		rtb_button_set_label(self, label);
 
 	self->outer_pad.x =
 		self->outer_pad.y = 0.f;
@@ -202,12 +199,28 @@ rtb_button_t *rtb_button_new(const rtb_utf8_t *label)
 	self->size_cb    = rtb_size_hfit_children;
 	self->recalc_cb  = recalculate;
 
+	return 0;
+}
+
+void rtb_button_fini(rtb_button_t *self)
+{
+	rtb_label_fini(&self->label);
+	rtb_obj_fini(RTB_OBJECT(self));
+}
+
+rtb_button_t *rtb_button_new(const rtb_utf8_t *label)
+{
+	rtb_button_t *self = calloc(1, sizeof(*self));
+	rtb_button_init(self, &self->impl);
+
+	if (label)
+		rtb_button_set_label(self, label);
+
 	return self;
 }
 
 void rtb_button_free(rtb_button_t *self)
 {
-	rtb_label_fini(&self->label);
-	rtb_obj_fini(RTB_OBJECT(self));
+	rtb_button_fini(self);
 	free(self);
 }

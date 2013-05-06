@@ -53,6 +53,9 @@ struct rtb_button {
 	GLuint vbo;
 };
 
-void rtb_button_set_label(rtb_button_t *self, const rtb_utf8_t *label);
+void rtb_button_set_label(rtb_button_t *self, const rtb_utf8_t *text);
+
+int rtb_button_init(rtb_button_t *, struct rtb_object_implementation *impl);
+void rtb_button_fini(rtb_button_t *);
 rtb_button_t *rtb_button_new(const rtb_utf8_t *label);
 void rtb_button_free(rtb_button_t *);
