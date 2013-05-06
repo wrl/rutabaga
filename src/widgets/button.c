@@ -36,6 +36,7 @@
 #include "rutabaga/window.h"
 #include "rutabaga/render.h"
 #include "rutabaga/layout.h"
+#include "rutabaga/keyboard.h"
 
 #include "private/util.h"
 #include "rutabaga/widgets/button.h"
@@ -117,18 +118,35 @@ static int dispatch_click_event(rtb_button_t *self, const rtb_ev_mouse_t *e)
 	return rtb_handle(RTB_OBJECT(self), RTB_EVENT(&event));
 }
 
+static int handle_key_press(rtb_button_t *self, const rtb_ev_key_t *e)
+{
+	rtb_ev_button_t event = {
+		.type   = BUTTON_CLICK,
+		.source = RTB_EVENT_SYNTHETIC
+	};
+
+	if ((e->keycode == RTB_KEY_NORMAL && e->character == ' ')
+			|| (e->keycode == RTB_KEY_ENTER)) {
+		rtb_handle(RTB_OBJECT(self), RTB_EVENT(&event));
+		return 1;
+	}
+
+	return 0;
+}
+
 static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
 {
 	SELF_FROM(obj);
 
 	switch (e->type) {
 	case RTB_MOUSE_DOWN:
-		/* XXX: HACK */
-		self->window->focus = RTB_OBJECT(self);
-		break;
-
 	case RTB_DRAG_START:
 		return 1;
+
+	case RTB_KEY_PRESS:
+		if (handle_key_press(self, (rtb_ev_key_t *) e))
+			return 1;
+		break;
 
 	case RTB_MOUSE_CLICK:
 		if (((rtb_ev_mouse_t *) e)->button != RTB_MOUSE_BUTTON1)

@@ -65,11 +65,25 @@ enum {
 #undef SYS
 
 /**
+ * take, for example, a mouse click event. if the click actually
+ * originated from a mouse click, this would be RTB_EVENT_GENUINE.
+ * if it originated from, say, a key press (i.e. when a button is
+ * focused and the user presses <space> or <enter>), the event would
+ * be marked RTB_EVENT_SYNTHETIC.
+ */
+
+typedef enum {
+	RTB_EVENT_GENUINE    = 0,
+	RTB_EVENT_SYNTHETIC  = 1
+} rtb_ev_source_t;
+
+/**
  * structures
  */
 
 struct rtb_event {
 	rtb_ev_type_t type;
+	rtb_ev_source_t source;
 };
 
 struct rtb_event_window {

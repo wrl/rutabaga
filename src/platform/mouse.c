@@ -128,7 +128,7 @@ static void dispatch_drag_leave(rtb_win_t *win, rtb_obj_t *dispatch_to,
 	}
 }
 
-static void dispatch_click_event(rtb_win_t *window, rtb_obj_t *target,
+static rtb_obj_t *dispatch_click_event(rtb_win_t *window, rtb_obj_t *target,
 		int button, int x, int y)
 {
 	rtb_ev_mouse_t ev = {
@@ -142,11 +142,11 @@ static void dispatch_click_event(rtb_win_t *window, rtb_obj_t *target,
 			.y = y}
 	};
 
-	rtb_dispatch_raw(target, RTB_EVENT(&ev));
+	return rtb_dispatch_raw(target, RTB_EVENT(&ev));
 }
 
-static void dispatch_simple_mouse_event(rtb_win_t *window, rtb_obj_t *target,
-		rtb_ev_type_t type, int button, int x, int y)
+static rtb_obj_t *dispatch_simple_mouse_event(rtb_win_t *window,
+		rtb_obj_t *target, rtb_ev_type_t type, int button, int x, int y)
 {
 	rtb_ev_mouse_t ev = {
 		.type = type,
@@ -159,7 +159,7 @@ static void dispatch_simple_mouse_event(rtb_win_t *window, rtb_obj_t *target,
 			.y = y}
 	};
 
-	rtb_dispatch_raw(target, RTB_EVENT(&ev));
+	return rtb_dispatch_raw(target, RTB_EVENT(&ev));
 }
 
 /**
@@ -177,9 +177,6 @@ static void mouse_down(rtb_win_t *window, rtb_obj_t *target,
 	b->drag_last.x = x;
 	b->drag_last.y = y;
 	mouse->buttons_down |= 1 << button;
-
-	if (button == RTB_MOUSE_BUTTON1)
-		window->focus = target;
 }
 
 static void mouse_up(rtb_win_t *window, rtb_obj_t *target,
@@ -196,9 +193,6 @@ static void mouse_up(rtb_win_t *window, rtb_obj_t *target,
 	b->state  = UP;
 	b->target = NULL;
 	mouse->buttons_down &= ~(1 << button);
-
-	if (button == RTB_MOUSE_BUTTON1)
-		window->focus = NULL;
 }
 
 static void drag(rtb_win_t *win, int x, int y)
@@ -281,7 +275,12 @@ void rtb_platform_mouse_press(rtb_win_t *win, int button, int x, int y)
 	target = win->mouse.object_underneath;
 
 	mouse_down(win, target, button, x, y);
-	dispatch_simple_mouse_event(win, target, RTB_MOUSE_DOWN, button, x, y);
+
+	target = dispatch_simple_mouse_event(win,
+			target, RTB_MOUSE_DOWN, button, x, y);
+
+	if (button == RTB_MOUSE_BUTTON1)
+		rtb_window_focus_object(win, target);
 }
 
 void rtb_platform_mouse_release(rtb_win_t *win, int button, int x, int y)

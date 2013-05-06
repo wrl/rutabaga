@@ -74,6 +74,10 @@ static int win_event(rtb_obj_t *obj, const rtb_ev_t *e)
 
 	case RTB_KEY_PRESS:
 	case RTB_KEY_RELEASE:
+		if (self->focus && self->focus != RTB_OBJECT(self))
+			if (rtb_obj_deliver_event(self->focus, e))
+				return 1;
+
 		if (rtb_handle(obj, e))
 			return 1;
 	}
@@ -101,6 +105,17 @@ static void mark_dirty(rtb_obj_t *obj)
 /**
  * public API
  */
+
+void rtb_window_focus_object(rtb_win_t *self, rtb_obj_t *focused)
+{
+	rtb_obj_t *unfocused = self->focus;
+
+	self->focus = focused;
+	rtb_obj_mark_dirty(focused);
+
+	if (unfocused)
+		rtb_obj_mark_dirty(unfocused);
+}
 
 void rtb_window_draw(rtb_win_t *self)
 {

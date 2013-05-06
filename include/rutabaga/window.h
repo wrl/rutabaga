@@ -60,6 +60,8 @@ void rtb_window_unlock(rtb_win_t *);
 void rtb_window_draw(rtb_win_t *);
 void rtb_window_reinit(rtb_win_t *);
 
+void rtb_window_focus_object(rtb_win_t *, rtb_obj_t *focused);
+
 rtb_win_t *rtb_window_open(rtb_t *r,
 		int width, int height, const char *title);
 void rtb_window_close(rtb_win_t *);

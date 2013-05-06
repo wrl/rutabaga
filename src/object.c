@@ -187,9 +187,9 @@ static void mark_dirty(rtb_obj_t *self)
 
 int rtb_obj_deliver_event(rtb_obj_t *self, const rtb_ev_t *e)
 {
-	/* events should not receive events before they've had their realize()
-	 * callback called. */
-	if (!self->window)
+	/* objects should not receive events before they've had their
+	 * realize() callback called. */
+	if (self->state == RTB_STATE_UNREALIZED)
 		return 0;
 
 	switch (e->type) {
