@@ -72,16 +72,7 @@ def check_x11(conf):
 	check("xkbcommon")
 
 def check_jack(conf):
-	conf.check_cc(
-		mandatory=False,
-		execute=True,
-
-		lib="jack",
-		header_name="jack/jack.h",
-		uselib_store="JACK",
-		errmsg="not found (won't build cabbage_patch)",
-
-		msg="Checking for JACK")
+	pkg_check(conf, "jack")
 
 #
 # waf stuff
