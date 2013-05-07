@@ -34,6 +34,7 @@
 #include "rutabaga/window.h"
 #include "rutabaga/render.h"
 #include "rutabaga/event.h"
+#include "rutabaga/keyboard.h"
 
 #include "rutabaga/widgets/knob.h"
 
@@ -193,8 +194,6 @@ static int handle_drag(rtb_knob_t *self, rtb_ev_drag_t *e)
 	}
 
 	rtb_knob_set_value(self, new_value);
-
-	dispatch_value_change_event(self);
 	return 1;
 }
 
@@ -204,6 +203,29 @@ static int handle_mouse_down(rtb_knob_t *self, rtb_ev_mouse_t *e)
 	case RTB_MOUSE_BUTTON2:
 		rtb_knob_set_value(self, self->origin);
 		dispatch_value_change_event(self);
+		return 1;
+
+	case RTB_MOUSE_BUTTON1:
+		return 1;
+
+	default:
+		return 0;
+	}
+}
+
+static int handle_key(rtb_knob_t *self, rtb_ev_key_t *e)
+{
+	float step = DELTA_VALUE_STEP_BUTTON1;
+
+	switch (e->keycode) {
+	case RTB_KEY_UP:
+	case RTB_KEY_NUMPAD_UP:
+		rtb_knob_set_value(self, self->value + step);
+		return 1;
+
+	case RTB_KEY_DOWN:
+	case RTB_KEY_NUMPAD_DOWN:
+		rtb_knob_set_value(self, self->value - step);
 		return 1;
 
 	default:
@@ -222,6 +244,9 @@ static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
 
 	case RTB_MOUSE_DOWN:
 		return handle_mouse_down(self, (rtb_ev_mouse_t *) e);
+
+	case RTB_KEY_PRESS:
+		return handle_key(self, (rtb_ev_key_t *) e);
 
 	default:
 		return super.event_cb(obj, e);
@@ -267,6 +292,9 @@ void rtb_knob_set_value(rtb_knob_t *self, float new_value)
 			0.f, 0.f, 1.f);
 
 	rtb_obj_mark_dirty(RTB_OBJECT(self));
+
+	if (self->state != RTB_STATE_UNREALIZED)
+		dispatch_value_change_event(self);
 }
 
 rtb_knob_t *rtb_knob_new()
