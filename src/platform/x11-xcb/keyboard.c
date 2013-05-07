@@ -140,6 +140,9 @@ int xrtb_keyboard_reload(struct xcb_rutabaga *xrtb)
 					XKB_KEYMAP_FORMAT_TEXT_V1, 0)))
 		goto err_new_keymap;
 
+	XkbFreeKeyboard(xkbfile.xkb, XkbAllMapComponentsMask, 1);
+	fclose(tmp);
+
 	if (xrtb->xkb_keymap)
 		xkb_keymap_unref(xrtb->xkb_keymap);
 	xrtb->xkb_keymap = new_keymap;
@@ -150,8 +153,15 @@ int xrtb_keyboard_reload(struct xcb_rutabaga *xrtb)
 	if (!(xrtb->xkb_state = xkb_state_new(new_keymap)))
 		goto err_new_state;
 
-	XkbFreeKeyboard(xkbfile.xkb, XkbAllMapComponentsMask, 1);
-	fclose(tmp);
+#define CACHE_MOD_INDEX(name, constant) \
+	xrtb->mod_indices.name = xkb_keymap_mod_get_index(new_keymap, constant)
+
+	CACHE_MOD_INDEX(shift, XKB_MOD_NAME_SHIFT);
+	CACHE_MOD_INDEX(ctrl,  XKB_MOD_NAME_CTRL);
+	CACHE_MOD_INDEX(alt,   XKB_MOD_NAME_ALT);
+	CACHE_MOD_INDEX(super, XKB_MOD_NAME_LOGO);
+
+#undef CACHE_MOD_INDEX
 	return 0;
 
 err_new_state:

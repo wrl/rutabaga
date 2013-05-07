@@ -147,6 +147,22 @@ static void handle_mouse_motion(struct xcb_window *win,
  * keyboard events
  */
 
+static rtb_modkey_t modifier_state(struct xcb_rutabaga *xrtb)
+{
+#define MOD_ACTIVE(xkb_mod, rtb_mod) \
+	((xkb_state_mod_index_is_active(xrtb->xkb_state, \
+			xrtb->mod_indices.xkb_mod, XKB_STATE_MODS_EFFECTIVE) > 0) \
+	 * rtb_mod)
+
+	return
+		MOD_ACTIVE(super,   RTB_KEY_MOD_SUPER)
+		| MOD_ACTIVE(shift, RTB_KEY_MOD_SHIFT)
+		| MOD_ACTIVE(ctrl,  RTB_KEY_MOD_CTRL)
+		| MOD_ACTIVE(alt,   RTB_KEY_MOD_ALT);
+
+#undef MOD_ACTIVE
+}
+
 static void dispatch_key_event(struct xcb_window *win,
 		const xcb_key_press_event_t *ev, rtb_ev_type_t type)
 {
@@ -169,6 +185,7 @@ static void dispatch_key_event(struct xcb_window *win,
 			return;
 	}
 
+	rtb_ev.modkeys = modifier_state(win->xrtb);
 	rtb_dispatch_raw(RTB_OBJECT(win), RTB_EVENT(&rtb_ev));
 }
 

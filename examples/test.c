@@ -164,10 +164,33 @@ void setup_ui(rtb_container_t *root)
 	rtb_container_add(root, lower);
 }
 
+static void print_modkeys(const rtb_ev_key_t *ev)
+{
+	if (!ev->modkeys)
+		return;
+
+	printf("modkeys:");
+
+#define PRINT_MOD(constant, name) \
+	if (ev->modkeys & constant)   \
+		printf(" " name)
+
+	PRINT_MOD(RTB_KEY_MOD_SHIFT, "shift");
+	PRINT_MOD(RTB_KEY_MOD_CTRL,  "ctrl");
+	PRINT_MOD(RTB_KEY_MOD_ALT,   "alt");
+	PRINT_MOD(RTB_KEY_MOD_SUPER, "super");
+
+#undef PRINT_MOD
+
+	printf("\n");
+}
+
 static int handle_key_press(struct rtb_object *victim,
 		const struct rtb_event *e, void *ctx)
 {
 	struct rtb_event_key *ev = (void *) e;
+
+	print_modkeys(ev);
 
 	switch (ev->keysym) {
 	case RTB_KEY_NUMPAD:

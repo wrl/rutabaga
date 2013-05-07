@@ -102,10 +102,10 @@ typedef enum {
 } rtb_keysym_t;
 
 typedef enum {
-	RTB_KEY_MOD_CTRL  = 0x01,
-	RTB_KEY_MOD_ALT   = 0x02,
-	RTB_KEY_MOD_SUPER = 0x04,
-	RTB_KEY_MOD_CMD   = 0x08
+	RTB_KEY_MOD_SHIFT = 0x01,
+	RTB_KEY_MOD_CTRL  = 0x02,
+	RTB_KEY_MOD_ALT   = 0x04,
+	RTB_KEY_MOD_SUPER = 0x08
 } rtb_modkey_t;
 
 typedef enum {

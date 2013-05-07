@@ -48,6 +48,13 @@ struct xcb_rutabaga {
 		xcb_atom_t wm_delete_window;
 	} atoms;
 
+	struct {
+		xkb_mod_index_t shift;
+		xkb_mod_index_t ctrl;
+		xkb_mod_index_t alt;
+		xkb_mod_index_t super;
+	} mod_indices;
+
 	struct xkb_context *xkb_ctx;
 	struct xkb_keymap *xkb_keymap;
 	struct xkb_state *xkb_state;
