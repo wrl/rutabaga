@@ -125,8 +125,8 @@ static int handle_key_press(rtb_button_t *self, const rtb_ev_key_t *e)
 		.source = RTB_EVENT_SYNTHETIC
 	};
 
-	if ((e->keycode == RTB_KEY_NORMAL && e->character == ' ')
-			|| (e->keycode == RTB_KEY_ENTER)) {
+	if ((e->keysym == RTB_KEY_NORMAL && e->character == ' ')
+			|| (e->keysym == RTB_KEY_ENTER)) {
 		rtb_handle(RTB_OBJECT(self), RTB_EVENT(&event));
 		return 1;
 	}

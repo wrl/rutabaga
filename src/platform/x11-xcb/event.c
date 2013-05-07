@@ -147,86 +147,6 @@ static void handle_mouse_motion(struct xcb_window *win,
  * keyboard events
  */
 
-static rtb_keycode_t xkeysym_to_rtbkeycode(xcb_keysym_t sym, char32_t *chr)
-{
-	switch (sym) {
-#define CODE(xkey, rtbkey) case xkey: return rtbkey
-#define CHAR(xkey, rtbkey, wc) case xkey: *chr = wc; return rtbkey
-
-		CODE(XKB_KEY_Shift_L,     RTB_KEY_LEFT_SHIFT);
-		CODE(XKB_KEY_Control_L,   RTB_KEY_LEFT_CTRL);
-		CODE(XKB_KEY_Super_L,     RTB_KEY_LEFT_SUPER);
-		CODE(XKB_KEY_Alt_L,       RTB_KEY_LEFT_ALT);
-
-		CODE(XKB_KEY_Shift_R,     RTB_KEY_RIGHT_SHIFT);
-		CODE(XKB_KEY_Control_R,   RTB_KEY_RIGHT_CTRL);
-		CODE(XKB_KEY_Super_R,     RTB_KEY_RIGHT_SUPER);
-		CODE(XKB_KEY_Alt_R,       RTB_KEY_RIGHT_ALT);
-
-		CODE(XKB_KEY_Menu,        RTB_KEY_MENU);
-		CODE(XKB_KEY_Escape,      RTB_KEY_ESCAPE);
-
-		CODE(XKB_KEY_BackSpace,   RTB_KEY_BACKSPACE);
-		CODE(XKB_KEY_Return,      RTB_KEY_ENTER);
-		CODE(XKB_KEY_Tab,         RTB_KEY_TAB);
-		CODE(XKB_KEY_Caps_Lock,   RTB_KEY_CAPS_LOCK);
-
-		CODE(XKB_KEY_F1,          RTB_KEY_F1);
-		CODE(XKB_KEY_F2,          RTB_KEY_F2);
-		CODE(XKB_KEY_F3,          RTB_KEY_F3);
-		CODE(XKB_KEY_F4,          RTB_KEY_F4);
-		CODE(XKB_KEY_F5,          RTB_KEY_F5);
-		CODE(XKB_KEY_F6,          RTB_KEY_F6);
-		CODE(XKB_KEY_F7,          RTB_KEY_F7);
-		CODE(XKB_KEY_F8,          RTB_KEY_F8);
-		CODE(XKB_KEY_F9,          RTB_KEY_F9);
-		CODE(XKB_KEY_F10,         RTB_KEY_F10);
-		CODE(XKB_KEY_F11,         RTB_KEY_F11);
-		CODE(XKB_KEY_F12,         RTB_KEY_F12);
-
-		CODE(XKB_KEY_Print,       RTB_KEY_PRINT_SCREEN);
-		CODE(XKB_KEY_Pause,       RTB_KEY_SCROLL_LOCK);
-		CODE(XKB_KEY_Scroll_Lock, RTB_KEY_SCROLL_LOCK);
-
-		CODE(XKB_KEY_Insert,      RTB_KEY_INSERT);
-		CODE(XKB_KEY_Delete,      RTB_KEY_DELETE);
-		CODE(XKB_KEY_Home,        RTB_KEY_HOME);
-		CODE(XKB_KEY_End,         RTB_KEY_END);
-		CODE(XKB_KEY_Prior,       RTB_KEY_PAGE_UP);
-		CODE(XKB_KEY_Next,        RTB_KEY_PAGE_DOWN);
-
-		CODE(XKB_KEY_Up,          RTB_KEY_UP);
-		CODE(XKB_KEY_Left,        RTB_KEY_LEFT);
-		CODE(XKB_KEY_Down,        RTB_KEY_DOWN);
-		CODE(XKB_KEY_Right,       RTB_KEY_RIGHT);
-
-		CODE(XKB_KEY_Num_Lock,    RTB_KEY_NUM_LOCK);
-		CHAR(XKB_KEY_KP_Divide,   RTB_KEY_NUMPAD,           U'/');
-		CHAR(XKB_KEY_KP_Multiply, RTB_KEY_NUMPAD,           U'*');
-		CHAR(XKB_KEY_KP_Subtract, RTB_KEY_NUMPAD,           U'-');
-		CHAR(XKB_KEY_KP_Add,      RTB_KEY_NUMPAD,           U'+');
-
-		CODE(XKB_KEY_KP_Home,     RTB_KEY_NUMPAD_HOME);
-		CODE(XKB_KEY_KP_Up,       RTB_KEY_NUMPAD_UP);
-		CODE(XKB_KEY_KP_Prior,    RTB_KEY_NUMPAD_PAGE_UP);
-		CODE(XKB_KEY_KP_Left,     RTB_KEY_NUMPAD_LEFT);
-		CODE(XKB_KEY_KP_Begin,    RTB_KEY_NUMPAD_MIDDLE);
-		CODE(XKB_KEY_KP_Right,    RTB_KEY_NUMPAD_RIGHT);
-		CODE(XKB_KEY_KP_End,      RTB_KEY_NUMPAD_END);
-		CODE(XKB_KEY_KP_Down,     RTB_KEY_NUMPAD_DOWN);
-		CODE(XKB_KEY_KP_Next,     RTB_KEY_NUMPAD_PAGE_DOWN);
-
-		CODE(XKB_KEY_KP_Insert,   RTB_KEY_NUMPAD_INSERT);
-		CODE(XKB_KEY_KP_Delete,   RTB_KEY_NUMPAD_INSERT);
-		CODE(XKB_KEY_KP_Enter,    RTB_KEY_NUMPAD_ENTER);
-
-#undef CHAR
-#undef CODE
-	}
-
-	return RTB_KEY_UNKNOWN;
-}
-
 static void dispatch_key_event(struct xcb_window *win,
 		const xcb_key_press_event_t *ev, rtb_ev_type_t type)
 {
@@ -237,12 +157,12 @@ static void dispatch_key_event(struct xcb_window *win,
 
 	/* first, look the keysym up in our internal mod key
 	 * translation table. */
-	rtb_ev.keycode = xkeysym_to_rtbkeycode(sym, &rtb_ev.character);
+	rtb_ev.keysym = xrtb_keyboard_translate_keysym(sym, &rtb_ev.character);
 
 	/* if we don't find it there, treat it like an alphanumeric key
 	 * and get the UTF-32 value. */
-	if (rtb_ev.keycode == RTB_KEY_UNKNOWN) {
-		rtb_ev.keycode   = RTB_KEY_NORMAL;
+	if (rtb_ev.keysym == RTB_KEY_UNKNOWN) {
+		rtb_ev.keysym    = RTB_KEY_NORMAL;
 		rtb_ev.character = xkb_keysym_to_utf32(sym);
 
 		if (!rtb_ev.character)

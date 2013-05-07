@@ -169,7 +169,7 @@ static int handle_key_press(struct rtb_object *victim,
 {
 	struct rtb_event_key *ev = (void *) e;
 
-	switch (ev->keycode) {
+	switch (ev->keysym) {
 	case RTB_KEY_NUMPAD:
 		printf("numpad: %lc\n", ev->character);
 

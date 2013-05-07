@@ -217,7 +217,7 @@ static int handle_key(rtb_knob_t *self, rtb_ev_key_t *e)
 {
 	float step = DELTA_VALUE_STEP_BUTTON1;
 
-	switch (e->keycode) {
+	switch (e->keysym) {
 	case RTB_KEY_UP:
 	case RTB_KEY_NUMPAD_UP:
 		rtb_knob_set_value(self, self->value + step);

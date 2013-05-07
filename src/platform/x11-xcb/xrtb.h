@@ -26,6 +26,7 @@
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/window.h"
+#include "rutabaga/keyboard.h"
 
 #include <xcb/xcb.h>
 #include <xcb/xcb_keysyms.h>
@@ -73,6 +74,7 @@ struct xcb_window {
 	uint16_t modeswitch_mask;
 };
 
+rtb_keysym_t xrtb_keyboard_translate_keysym(xcb_keysym_t xsym, char32_t *chr);
 int  xrtb_keyboard_reload(struct xcb_rutabaga *xrtb);
 int  xrtb_keyboard_init(struct xcb_rutabaga *xrtb);
 void xrtb_keyboard_fini(struct xcb_rutabaga *xrtb);

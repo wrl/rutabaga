@@ -99,7 +99,7 @@ typedef enum {
 	RTB_KEY_NUMPAD_ENTER,
 
 	RTB_KEY_UNKNOWN
-} rtb_keycode_t;
+} rtb_keysym_t;
 
 typedef enum {
 	RTB_KEY_MOD_CTRL  = 0x01,
@@ -121,6 +121,8 @@ typedef enum {
 struct rtb_event_key {
 	RTB_INHERIT(rtb_event);
 
-	rtb_keycode_t keycode;
+	rtb_modkey_t modkeys;
+	rtb_keysym_t keysym;
+
 	char32_t character;
 };
