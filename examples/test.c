@@ -38,6 +38,7 @@
 #include "rutabaga/keyboard.h"
 
 #include "rutabaga/widgets/button.h"
+#include "rutabaga/widgets/text-input.h"
 #include "rutabaga/widgets/knob.h"
 
 #define ARRAY_LENGTH(a) (sizeof(a) / sizeof(*a))
@@ -164,6 +165,12 @@ void setup_ui(rtb_container_t *root)
 	rtb_container_add(root, lower);
 }
 
+void add_input(rtb_container_t *root)
+{
+	rtb_text_input_t *input = rtb_text_input_new();
+	rtb_obj_add_child(root, RTB_OBJECT(input), RTB_ADD_TAIL);
+}
+
 static void print_modkeys(const rtb_ev_key_t *ev)
 {
 	if (!ev->modkeys)
@@ -237,6 +244,7 @@ int main(int argc, char **argv)
 
 	distribute_demo(RTB_OBJECT(delicious->win));
 	setup_ui(RTB_OBJECT(delicious->win));
+	add_input(RTB_OBJECT(delicious->win));
 
 	rtb_event_loop(delicious);
 

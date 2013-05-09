@@ -95,6 +95,7 @@ def build(bld):
 	obj("widgets/label.c")
 	obj("widgets/button.c")
 	obj("widgets/knob.c")
+	obj("widgets/text-input.c")
 
 	obj("widgets/patchbay/canvas.c")
 	obj("widgets/patchbay/node.c")

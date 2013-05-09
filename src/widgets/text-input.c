@@ -24,37 +24,25 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <string.h>
-
-#include <math.h>
-
 #include "rutabaga/rutabaga.h"
-#include "rutabaga/object.h"
-#include "rutabaga/window.h"
 #include "rutabaga/render.h"
-#include "rutabaga/layout.h"
 #include "rutabaga/keyboard.h"
+#include "rutabaga/layout.h"
 
 #include "private/util.h"
-#include "rutabaga/widgets/button.h"
+#include "private/utf8.h"
+#include "rutabaga/widgets/text-input.h"
 
 #define SELF_FROM(obj) \
-	struct rtb_button *self = (void *) obj
+	struct rtb_text_input *self = (void *) obj
 
 static struct rtb_object_implementation super;
 
-/**
- * drawing-related things
- */
-
 static const GLubyte box_indices[] = {
-	0, 1, 3, 2
+	0, 1, 2, 3
 };
 
-static void cache_to_vbo(rtb_button_t *self)
+static void cache_to_vbo(rtb_text_input_t *self)
 {
 	GLfloat x, y, w, h, box[4][2];
 
@@ -93,8 +81,10 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
+	glLineWidth(2.f);
+
 	glDrawElements(
-			GL_TRIANGLE_STRIP, ARRAY_LENGTH(box_indices),
+			GL_LINE_LOOP, ARRAY_LENGTH(box_indices),
 			GL_UNSIGNED_BYTE, box_indices);
 
 	glDisableVertexAttribArray(0);
@@ -104,34 +94,40 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 }
 
 /**
- * event handlers
+ * object implementation
  */
 
-static int dispatch_click_event(rtb_button_t *self, const rtb_ev_mouse_t *e)
+static int handle_key_press(rtb_text_input_t *self, const rtb_ev_key_t *e)
 {
-	rtb_ev_button_t event = *((rtb_ev_button_t *) e);
+	rtb_utf8_t utf[6];
+	char null = '\0';
+	int len;
 
-	event.type = BUTTON_CLICK;
-	event.cursor.x -= self->rect.p1.x;
-	event.cursor.y -= self->rect.p1.y;
+	switch (e->keysym) {
+	case RTB_KEY_NORMAL:
+		if (e->modkeys & ~RTB_KEY_MOD_SHIFT)
+			return 0;
 
-	return rtb_handle(RTB_OBJECT(self), RTB_EVENT(&event));
-}
+		len = u8enc(e->character, utf);
+		vector_pop_back(self->entered); /* pop the terminating NULL */
+		vector_push_back_data(self->entered, utf, len);
+		vector_push_back(self->entered, &null); /* and push it back on */
+		break;
 
-static int handle_key_press(rtb_button_t *self, const rtb_ev_key_t *e)
-{
-	rtb_ev_button_t event = {
-		.type   = BUTTON_CLICK,
-		.source = RTB_EVENT_SYNTHETIC
-	};
+	case RTB_KEY_BACKSPACE:
+		if (!(vector_size(self->entered) > 1))
+			return 1;
 
-	if ((e->keysym == RTB_KEY_NORMAL && e->character == ' ')
-			|| (e->keysym == RTB_KEY_ENTER)) {
-		rtb_handle(RTB_OBJECT(self), RTB_EVENT(&event));
-		return 1;
+		vector_erase(self->entered, vector_size(self->entered) - 2);
+		break;
+
+	default:
+		return 0;
 	}
 
-	return 0;
+	rtb_label_set_text(&self->label,
+			(rtb_utf8_t *) vector_front(self->entered));
+	return 1;
 }
 
 static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
@@ -139,8 +135,8 @@ static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
 	SELF_FROM(obj);
 
 	switch (e->type) {
+	case RTB_MOUSE_CLICK:
 	case RTB_MOUSE_DOWN:
-	case RTB_DRAG_START:
 		return 1;
 
 	case RTB_KEY_PRESS:
@@ -148,19 +144,12 @@ static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
 			return 1;
 		break;
 
-	case RTB_MOUSE_CLICK:
-		if (((rtb_ev_mouse_t *) e)->button != RTB_MOUSE_BUTTON1)
-			return 0;
-
-		return dispatch_click_event(self, (rtb_ev_mouse_t *) e);
-
 	default:
 		return super.event_cb(obj, e);
 	}
 
 	return 0;
 }
-
 static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 		rtb_event_direction_t direction)
 {
@@ -168,9 +157,7 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 
 	super.recalc_cb(obj, instigator, direction);
 
-	self->outer_pad.x = self->label.outer_pad.x;
 	self->outer_pad.y = self->label.outer_pad.y;
-
 	cache_to_vbo(self);
 }
 
@@ -180,9 +167,9 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
 
 	super.realize_cb(obj, parent, window);
 	self->type = rtb_type_ref(window, self->type,
-			"net.illest.rutabaga.widgets.button");
+			"net.illest.rutabaga.widgets.text-input");
 
-	self->outer_pad.x = self->label.outer_pad.x;
+	self->outer_pad.x = 5.f;
 	self->outer_pad.y = self->label.outer_pad.y;
 }
 
@@ -190,57 +177,58 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
  * public API
  */
 
-void rtb_button_set_label(rtb_button_t *self, const rtb_utf8_t *text)
-{
-	rtb_label_set_text(&self->label, text);
-}
-
-int rtb_button_init(rtb_button_t *self,
+int rtb_text_input_init(rtb_text_input_t *self,
 		struct rtb_object_implementation *impl)
 {
+	char null = '\0';
+
 	rtb_obj_init(RTB_OBJECT(self), &super);
 
 	rtb_label_init(&self->label, &self->label.impl);
 	rtb_obj_add_child(RTB_OBJECT(self), RTB_OBJECT(&self->label),
 			RTB_ADD_HEAD);
 
+	self->entered = vector_new(sizeof(rtb_utf8_t));
+	vector_push_back(self->entered, &null);
+
 	glGenBuffers(1, &self->vbo);
+
+	self->label.align = RTB_ALIGN_MIDDLE;
 
 	self->outer_pad.x =
 		self->outer_pad.y = 0.f;
 
-	self->min_size.w = 70.f;
-	self->min_size.h = 26.f;
+	self->min_size.w = 120.f;
 
-	self->draw_cb    = draw;
-	self->event_cb   = on_event;
 	self->realize_cb = realize;
-	self->layout_cb  = rtb_layout_hpack_center;
-	self->size_cb    = rtb_size_hfit_children;
 	self->recalc_cb  = recalculate;
+	self->draw_cb    = draw;
+	self->size_cb    = rtb_size_hfit_children;
+	self->layout_cb  = rtb_layout_hpack_left;
+	self->event_cb   = on_event;
+
+	rtb_label_set_text(&self->label, "");
 
 	return 0;
 }
 
-void rtb_button_fini(rtb_button_t *self)
+void rtb_text_input_fini(rtb_text_input_t *self)
 {
+	vector_delete(self->entered);
 	rtb_label_fini(&self->label);
 	rtb_obj_fini(RTB_OBJECT(self));
 }
 
-rtb_button_t *rtb_button_new(const rtb_utf8_t *label)
+rtb_text_input_t *rtb_text_input_new(void)
 {
-	rtb_button_t *self = calloc(1, sizeof(*self));
-	rtb_button_init(self, &self->impl);
-
-	if (label)
-		rtb_button_set_label(self, label);
+	rtb_text_input_t *self = calloc(1, sizeof(*self));
+	rtb_text_input_init(self, &self->impl);
 
 	return self;
 }
 
-void rtb_button_free(rtb_button_t *self)
+void rtb_text_input_free(rtb_text_input_t *self)
 {
-	rtb_button_fini(self);
+	rtb_text_input_fini(self);
 	free(self);
 }
