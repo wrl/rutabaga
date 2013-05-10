@@ -67,6 +67,7 @@ rtb_utf8_t *rlabels[] = {
 };
 
 rtb_knob_t *knob;
+rtb_button_t *last_button = NULL;
 rtb_text_input_t *input;
 
 int print_streeng(rtb_obj_t *victim, const rtb_ev_t *e, void *ctx)
@@ -77,7 +78,8 @@ int print_streeng(rtb_obj_t *victim, const rtb_ev_t *e, void *ctx)
 	printf("(%f, %f) click!\n", mv->cursor.x, mv->cursor.y);
 
 	i = rand() % (ARRAY_LENGTH(rlabels));
-	rtb_button_set_label((rtb_button_t *) victim, rlabels[i]);
+	rtb_button_set_label((void *) victim, rlabels[i]);
+	last_button = (void *) victim;
 
 	rtb_text_input_set_text(input, rlabels[i], -1);
 
@@ -169,9 +171,32 @@ void setup_ui(rtb_container_t *root)
 	rtb_container_add(root, lower);
 }
 
+static int handle_input_key(struct rtb_object *obj,
+		const struct rtb_event *_ev, void *ctx)
+{
+	rtb_text_input_t *input = (rtb_text_input_t *) obj;
+	rtb_ev_key_t *ev = (void *) _ev;
+
+	switch (ev->keysym) {
+	case RTB_KEY_ENTER:
+		if (!last_button)
+			break;
+
+		rtb_button_set_label(last_button, rtb_text_input_get_text(input));
+		break;
+
+	default:
+		break;
+	}
+
+	return 1;
+}
+
 void add_input(rtb_container_t *root)
 {
 	input = rtb_text_input_new();
+
+	rtb_attach(RTB_OBJECT(input), RTB_KEY_PRESS, handle_input_key, NULL);
 	rtb_obj_add_child(root, RTB_OBJECT(input), RTB_ADD_TAIL);
 }
 

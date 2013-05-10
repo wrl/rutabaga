@@ -135,21 +135,17 @@ static void draw(rtb_obj_t *self, rtb_draw_state_t state)
 
 static int on_event(rtb_obj_t *self, const rtb_ev_t *e)
 {
-	int ret = rtb_handle(self, e);
-
-	if (!ret) {
-		switch (e->type) {
-		case RTB_MOUSE_ENTER:
-		case RTB_MOUSE_LEAVE:
-		case RTB_DRAG_ENTER:
-		case RTB_DRAG_LEAVE:
-			/* eat these events because we already handle propagation
-			 * in mouse.c as we dispatch them. */
-			return 1;
-		}
+	switch (e->type) {
+	case RTB_MOUSE_ENTER:
+	case RTB_MOUSE_LEAVE:
+	case RTB_DRAG_ENTER:
+	case RTB_DRAG_LEAVE:
+		/* eat these events because we already handle propagation
+		 * in mouse.c as we dispatch them. */
+		return 1;
 	}
 
-	return ret;
+	return 0;
 }
 
 static void realize(rtb_obj_t *self, rtb_obj_t *parent,
@@ -187,6 +183,8 @@ static void mark_dirty(rtb_obj_t *self)
 
 int rtb_obj_deliver_event(rtb_obj_t *self, const rtb_ev_t *e)
 {
+	int ret;
+
 	/* objects should not receive events before they've had their
 	 * realize() callback called. */
 	if (self->state == RTB_STATE_UNREALIZED)
@@ -207,7 +205,12 @@ int rtb_obj_deliver_event(rtb_obj_t *self, const rtb_ev_t *e)
 		break;
 	}
 
-	return self->event_cb(self, e);
+	ret = self->event_cb(self, e);
+
+	if (self->flags & RTB_OBJ_FLAG_EVENT_SNOOP)
+		return rtb_handle(self, e) || ret;
+	else
+		return ret || rtb_handle(self, e);
 }
 
 void rtb_obj_draw(rtb_obj_t *self, rtb_draw_state_t state)

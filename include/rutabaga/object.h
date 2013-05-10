@@ -38,6 +38,13 @@
 
 typedef struct rtb_object_implementation rtb_obj_impl_t;
 
+typedef enum {
+	/* all events, regardless of whether they are already handled by
+	 * the object in question, are passed to client code after the
+	 * object's event_cb has been run. */
+	RTB_OBJ_FLAG_EVENT_SNOOP = 0x01,
+} rtb_obj_flags_t;
+
 struct rtb_object_implementation {
 	rtb_size_cb_t size_cb;
 	rtb_layout_cb_t layout_cb;
@@ -56,6 +63,8 @@ struct rtb_object {
 	RTB_INHERIT_AS(rtb_point, pt);  /* provides x, y */
 	RTB_INHERIT_AS(rtb_size, size); /* provides w, h */
 	struct rtb_size min_size;
+
+	rtb_obj_flags_t flags;
 
 	RTB_INHERIT_AS(rtb_object_implementation, impl);
 
