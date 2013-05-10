@@ -30,7 +30,7 @@
 #include "rutabaga/text-object.h"
 #include "rutabaga/object.h"
 
-#define RTB_LABEL(x) RTB_AS_TYPE(x, rtb_label)
+#define RTB_LABEL(x) RTB_UPCAST(x, rtb_label)
 
 typedef struct rtb_label rtb_label_t;
 

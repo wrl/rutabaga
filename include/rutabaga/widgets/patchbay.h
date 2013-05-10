@@ -33,9 +33,9 @@
 
 #include "rutabaga/widgets/label.h"
 
-#define RTB_PATCHBAY(x) RTB_AS_TYPE(x, rtb_patchbay)
-#define RTB_PATCHBAY_NODE(x) RTB_AS_TYPE(x, rtb_patchbay_node)
-#define RTB_PATCHBAY_PORT(x) RTB_AS_TYPE(x, rtb_patchbay_port)
+#define RTB_PATCHBAY(x) RTB_UPCAST(x, rtb_patchbay)
+#define RTB_PATCHBAY_NODE(x) RTB_UPCAST(x, rtb_patchbay_node)
+#define RTB_PATCHBAY_PORT(x) RTB_UPCAST(x, rtb_patchbay_port)
 
 /**
  * structures

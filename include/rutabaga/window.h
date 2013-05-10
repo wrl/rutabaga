@@ -34,7 +34,7 @@
 #include "rutabaga/surface.h"
 #include "rutabaga/mouse.h"
 
-#define RTB_WINDOW(x) RTB_AS_TYPE(x, rtb_window)
+#define RTB_WINDOW(x) RTB_UPCAST(x, rtb_window)
 
 struct rtb_window {
 	RTB_INHERIT(rtb_surface);

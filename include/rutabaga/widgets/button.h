@@ -32,7 +32,7 @@
 
 #include "rutabaga/widgets/label.h"
 
-#define RTB_BUTTON(x) RTB_AS_TYPE(x, rtb_button)
+#define RTB_BUTTON(x) RTB_UPCAST(x, rtb_button)
 
 typedef struct rtb_button rtb_button_t;
 typedef struct rtb_event_button rtb_ev_button_t;

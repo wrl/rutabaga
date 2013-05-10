@@ -32,7 +32,7 @@
 #include "rutabaga/render.h"
 #include "rutabaga/mat4.h"
 
-#define RTB_SURFACE(x) RTB_AS_TYPE(x, rtb_surface)
+#define RTB_SURFACE(x) RTB_UPCAST(x, rtb_surface)
 
 typedef enum {
 	RTB_SURFACE_VALID,

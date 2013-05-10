@@ -35,7 +35,7 @@
 #include "rutabaga/widgets/label.h"
 #include "freetype-gl/vector.h"
 
-#define RTB_TEXT_INPUT(x) RTB_AS_TYPE(x, rtb_text_input)
+#define RTB_TEXT_INPUT(x) RTB_UPCAST(x, rtb_text_input)
 
 typedef struct rtb_text_input rtb_text_input_t;
 

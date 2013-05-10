@@ -30,10 +30,10 @@
 #include "rutabaga/types.h"
 #include "rutabaga/dict.h"
 
-#define RTB_ATOM(x) RTB_AS_TYPE(x, rtb_atom)
-#define RTB_TYPE_ATOM(x) RTB_AS_TYPE(x, rtb_type_atom)
+#define RTB_ATOM(x) RTB_UPCAST(x, rtb_atom)
+#define RTB_TYPE_ATOM(x) RTB_UPCAST(x, rtb_type_atom)
 
-#define RTB_ATOM_DESCRIPTOR(x) RTB_AS_TYPE(x, rtb_atom_descriptor)
+#define RTB_ATOM_DESCRIPTOR(x) RTB_UPCAST(x, rtb_atom_descriptor)
 
 typedef struct rtb_atom rtb_atom_t;
 typedef struct rtb_type_atom rtb_type_atom_t;

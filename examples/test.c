@@ -174,7 +174,7 @@ void setup_ui(rtb_container_t *root)
 static int handle_input_key(struct rtb_object *obj,
 		const struct rtb_event *_ev, void *ctx)
 {
-	rtb_text_input_t *input = (rtb_text_input_t *) obj;
+	rtb_text_input_t *input = RTB_OBJECT_AS(obj, rtb_text_input);
 	rtb_ev_key_t *ev = (void *) _ev;
 
 	switch (ev->keysym) {
