@@ -40,11 +40,11 @@
 
 /* characters we cache by default in the texture */
 
-static const char32_t *cache =
-	U" abcdefghijklmnopqrstuvwxyz"
-	U"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	U",.!?;"
-	U" [\\]^_@{|}~\"#$%&'()*+-/0123456789:<=>`";
+static const char32_t *cache = (char32_t *)
+	L" abcdefghijklmnopqrstuvwxyz"
+	L"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	L",.!?;"
+	L" [\\]^_@{|}~\"#$%&'()*+-/0123456789:<=>`";
 
 int rtb_font_manager_load_font(rtb_font_manager_t *fm, rtb_font_t *font,
 		const char *path, int size)
