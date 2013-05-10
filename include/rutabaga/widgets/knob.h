@@ -33,7 +33,7 @@
 typedef struct rtb_knob rtb_knob_t;
 typedef struct rtb_event_knob rtb_ev_knob_t;
 
-#define RTB_KNOB(x) (&(x)->_rtb_knob)
+#define RTB_KNOB(x) RTB_AS_TYPE(x, rtb_knob)
 
 typedef enum {
 	KNOB_VALUE_CHANGE = 1

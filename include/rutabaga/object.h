@@ -32,7 +32,7 @@
 
 #include "bsd/queue.h"
 
-#define RTB_OBJECT(x) (&(x)->_rtb_object)
+#define RTB_OBJECT(x) RTB_AS_TYPE(x, rtb_object)
 
 #define RTB_EVENT_HANDLERS_PER_OBJECT 32
 

@@ -32,8 +32,8 @@
 #define RTB_EVENT_SYS_MASK (1 << ((sizeof(rtb_ev_type_t) * 8) - 1))
 #define RTB_IS_SYS_EVENT(x) (!!(x & RTB_EVENT_SYS_MASK))
 
-#define RTB_EVENT(x) (&(x)->_rtb_event)
-#define RTB_EVENT_WINDOW(x) (&(x)->_rtb_event_window)
+#define RTB_EVENT(x) RTB_AS_TYPE(x, rtb_event)
+#define RTB_EVENT_WINDOW(x) RTB_AS_TYPE(x, rtb_event_window)
 
 /**
  * system event types

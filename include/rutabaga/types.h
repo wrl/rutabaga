@@ -32,17 +32,19 @@
  * inheritance/composition helpers
  */
 
-#define RTB_INHERIT(from)        \
-	union {                      \
-		struct from;             \
-		struct from _##from;     \
+#define RTB_INHERIT(from)              \
+	union {                            \
+		struct from;                   \
+		struct from _inherited_##from; \
 	}
 
-#define RTB_INHERIT_AS(from, as) \
-	union {                      \
-		struct from;             \
-		struct from as;          \
+#define RTB_INHERIT_AS(from, as)       \
+	union {                            \
+		struct from;                   \
+		struct from as;                \
 	}
+
+#define RTB_AS_TYPE(obj, type) (&(obj)->_inherited_##type)
 
 /**
  * enumerations

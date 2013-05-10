@@ -29,8 +29,8 @@
 #include "rutabaga/types.h"
 #include "rutabaga/event.h"
 
-#define RTB_EVENT_MOUSE(x) (&(x)->_rtb_event_mouse)
-#define RTB_EVENT_DRAG(x) (&(x)->_rtb_event_drag)
+#define RTB_EVENT_MOUSE(x) RTB_AS_TYPE(x, rtb_event_mouse)
+#define RTB_EVENT_DRAG(x) RTB_AS_TYPE(x, rtb_event_drag)
 
 /**
  * types
