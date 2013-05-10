@@ -67,6 +67,7 @@ rtb_utf8_t *rlabels[] = {
 };
 
 rtb_knob_t *knob;
+rtb_text_input_t *input;
 
 int print_streeng(rtb_obj_t *victim, const rtb_ev_t *e, void *ctx)
 {
@@ -77,6 +78,9 @@ int print_streeng(rtb_obj_t *victim, const rtb_ev_t *e, void *ctx)
 
 	i = rand() % (ARRAY_LENGTH(rlabels));
 	rtb_button_set_label((rtb_button_t *) victim, rlabels[i]);
+
+	rtb_text_input_set_text(input, rlabels[i], -1);
+
 	return 0;
 }
 
@@ -167,7 +171,7 @@ void setup_ui(rtb_container_t *root)
 
 void add_input(rtb_container_t *root)
 {
-	rtb_text_input_t *input = rtb_text_input_new();
+	input = rtb_text_input_new();
 	rtb_obj_add_child(root, RTB_OBJECT(input), RTB_ADD_TAIL);
 }
 

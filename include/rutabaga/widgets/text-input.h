@@ -26,6 +26,8 @@
 
 #pragma once
 
+#include <unistd.h>
+
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/object.h"
 #include "rutabaga/event.h"
@@ -45,8 +47,13 @@ struct rtb_text_input {
 	GLuint vbo;
 };
 
+/**
+ * if `nbytes` is -1, strlen() will be run on `text` to determine
+ * the length.
+ */
+int rtb_text_input_set_text(rtb_text_input_t *,
+		rtb_utf8_t *text, ssize_t nbytes);
 const rtb_utf8_t *rtb_text_input_get_text(rtb_text_input_t *);
-int rtb_text_input_set_text(rtb_text_input_t *, rtb_utf8_t *text);
 
 int rtb_text_input_init(rtb_text_input_t *,
 		struct rtb_object_implementation *impl);

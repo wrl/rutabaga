@@ -24,6 +24,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <string.h>
+
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/render.h"
 #include "rutabaga/keyboard.h"
@@ -125,8 +127,7 @@ static int handle_key_press(rtb_text_input_t *self, const rtb_ev_key_t *e)
 		return 0;
 	}
 
-	rtb_label_set_text(&self->label,
-			(rtb_utf8_t *) vector_front(self->entered));
+	rtb_label_set_text(&self->label, rtb_text_input_get_text(self));
 	return 1;
 }
 
@@ -176,6 +177,30 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
 /**
  * public API
  */
+
+int rtb_text_input_set_text(rtb_text_input_t *self,
+		rtb_utf8_t *text, ssize_t nbytes)
+{
+	char null = '\0';
+
+	if (nbytes < 0)
+		nbytes = strlen(text);
+
+	vector_clear(self->entered);
+	vector_push_back_data(self->entered, text, nbytes);
+	vector_push_back(self->entered, &null);
+
+	printf(" :: setting to \"%s\" (%ld)\n", text, nbytes);
+
+	rtb_label_set_text(&self->label, rtb_text_input_get_text(self));
+
+	return 0;
+}
+
+const rtb_utf8_t *rtb_text_input_get_text(rtb_text_input_t *self)
+{
+	return vector_front(self->entered);
+}
 
 int rtb_text_input_init(rtb_text_input_t *self,
 		struct rtb_object_implementation *impl)
