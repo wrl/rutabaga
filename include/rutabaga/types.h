@@ -34,13 +34,13 @@
 
 #define RTB_INHERITED_MEMBER(type) _parent_##type
 
-#define RTB_INHERIT_AS(from, as) \
-	union {                      \
-		struct from;             \
-		struct from as;          \
+#define RTB_INHERIT_AS(from, as)	\
+	union {				\
+		struct from;		\
+		struct from as;		\
 	}
 
-#define RTB_INHERIT(from)        \
+#define RTB_INHERIT(from)		\
 	RTB_INHERIT_AS(from, RTB_INHERITED_MEMBER(from))
 
 /**
@@ -48,17 +48,17 @@
  * http://stackoverflow.com/questions/10269685/kernels-container-of-any-way-to-make-it-iso-conforming
  */
 #ifdef __GNUC__
-#define RTB_CONTAINER_OF(ptr, type, member) \
-	((type *) \
+#define RTB_CONTAINER_OF(ptr, type, member)	\
+	((type *)				\
 	 ((char *)(__typeof__(((type *) 0)->member) *){ptr} - offsetof(type, member)))
 #else
-#define RTB_CONTAINER_OF(ptr, type, member) \
-	((type *)( \
-		(char *)(void *){ptr} - offsetof(type, member)))
+#define RTB_CONTAINER_OF(ptr, type, member)	\
+	((type *)				\
+	 (char *)(void *){ptr} - offsetof(type, member))
 #endif
 
 #define RTB_UPCAST(obj, to) (&(obj)->RTB_INHERITED_MEMBER(to))
-#define RTB_DOWNCAST(obj, to, from) \
+#define RTB_DOWNCAST(obj, to, from)		\
 	RTB_CONTAINER_OF(obj, struct to, RTB_INHERITED_MEMBER(from))
 
 /**
