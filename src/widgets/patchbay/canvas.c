@@ -47,7 +47,7 @@
 #include "shaders/patchbay-canvas.glsl.h"
 
 #define SELF_FROM(obj) \
-	struct rtb_patchbay *self = (void *) obj
+	struct rtb_patchbay *self = RTB_OBJECT_AS(obj, rtb_patchbay)
 
 #define CONNECTION_COLOR	RGB(0x404F3C)
 #define DISCONNECT_COLOR	RGB(0x69181B)

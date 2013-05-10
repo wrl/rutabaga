@@ -39,7 +39,7 @@
 #include "shaders/surface.glsl.h"
 
 #define SELF_FROM(obj) \
-	struct rtb_surface *self = (void *) obj
+	struct rtb_surface *self = RTB_OBJECT_AS(obj, rtb_surface)
 
 /**
  * internal stuff

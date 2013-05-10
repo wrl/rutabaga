@@ -46,7 +46,7 @@
 
 #define ERR(...) fprintf(stderr, "rutabaga: " __VA_ARGS__)
 #define SELF_FROM(obj) \
-	struct rtb_window *self = (void *) obj
+	struct rtb_window *self = RTB_OBJECT_AS(obj, rtb_window)
 
 static struct rtb_object_implementation super;
 

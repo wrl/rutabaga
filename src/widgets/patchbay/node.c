@@ -35,7 +35,7 @@
 #include "private/util.h"
 
 #define SELF_FROM(obj) \
-	struct rtb_patchbay_node *self = (void *) obj
+	struct rtb_patchbay_node *self = RTB_OBJECT_AS(obj, rtb_patchbay_node)
 
 #define LABEL_PADDING		15.f
 

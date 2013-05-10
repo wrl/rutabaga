@@ -36,7 +36,7 @@
 #include "rutabaga/widgets/label.h"
 
 #define SELF_FROM(obj) \
-	struct rtb_label *self = (void *) obj
+	struct rtb_label *self = RTB_OBJECT_AS(obj, rtb_label)
 
 static struct rtb_object_implementation super;
 

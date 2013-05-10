@@ -41,7 +41,7 @@
 #include "private/util.h"
 
 #define SELF_FROM(obj) \
-	struct rtb_knob *self = (void *) obj
+	struct rtb_knob *self = RTB_OBJECT_AS(obj, rtb_knob)
 
 #define MIN_DEGREES 35.f
 #define MAX_DEGREES (360.f - MIN_DEGREES)

@@ -42,7 +42,7 @@
 #include "rutabaga/widgets/button.h"
 
 #define SELF_FROM(obj) \
-	struct rtb_button *self = (void *) obj
+	struct rtb_button *self = RTB_OBJECT_AS(obj, rtb_button)
 
 static struct rtb_object_implementation super;
 

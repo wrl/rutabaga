@@ -36,7 +36,7 @@
 #include "rutabaga/widgets/text-input.h"
 
 #define SELF_FROM(obj) \
-	struct rtb_text_input *self = (void *) obj
+	struct rtb_text_input *self = RTB_OBJECT_AS(obj, rtb_text_input)
 
 static struct rtb_object_implementation super;
 

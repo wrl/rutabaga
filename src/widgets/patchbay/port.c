@@ -38,7 +38,7 @@
 static struct rtb_object_implementation super;
 
 #define SELF_FROM(obj) \
-	struct rtb_patchbay_port *self = (void *) obj
+	struct rtb_patchbay_port *self = RTB_OBJECT_AS(obj, rtb_patchbay_port)
 
 /**
  * private utility functions
