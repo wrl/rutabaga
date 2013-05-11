@@ -77,6 +77,7 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 	/* XXX: hack to get the outline to render in front of the
 	 *      label. need to fix the render push/pop system. */
 	rtb_render_push(obj);
+	rtb_render_clear(obj);
 	super.draw_cb(obj, state);
 	rtb_render_pop(obj);
 
