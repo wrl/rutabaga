@@ -124,7 +124,7 @@ static int pop_u32(rtb_text_input_t *self)
 	utf8_seq--;
 
 	/* seek backward to the start of the utf-8 sequence */
-	while (utf8_seq >= front && (*utf8_seq >> 6) == 0x2)
+	while (utf8_seq >= front && (*utf8_seq & 0x80) == 0x80)
 		utf8_seq--;
 
 	vector_erase_range(self->entered, (utf8_seq - front), size - 1);
