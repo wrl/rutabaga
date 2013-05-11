@@ -99,28 +99,50 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
  * object implementation
  */
 
-static int handle_key_press(rtb_text_input_t *self, const rtb_ev_key_t *e)
+static void push_u32(rtb_text_input_t *self, char32_t c)
 {
 	rtb_utf8_t utf[6];
 	char null = '\0';
 	int len;
 
+	len = u8enc(c, utf);
+	vector_pop_back(self->entered); /* pop the terminating NULL */
+	vector_push_back_data(self->entered, utf, len);
+	vector_push_back(self->entered, &null); /* and push it back on */
+}
+
+static int pop_u32(rtb_text_input_t *self)
+{
+	size_t size = vector_size(self->entered);
+	const uint8_t *front, *utf8_seq;
+
+	if (!(size > 1))
+		return -1;
+
+	front = vector_front(self->entered);
+	utf8_seq = vector_back(self->entered);
+	utf8_seq--;
+
+	/* seek backward to the start of the utf-8 sequence */
+	while (utf8_seq >= front && (*utf8_seq >> 6) == 0x2)
+		utf8_seq--;
+
+	vector_erase_range(self->entered, (utf8_seq - front), size - 1);
+	return 0;
+}
+
+static int handle_key_press(rtb_text_input_t *self, const rtb_ev_key_t *e)
+{
 	switch (e->keysym) {
 	case RTB_KEY_NORMAL:
 		if (e->modkeys & ~RTB_KEY_MOD_SHIFT)
 			return 0;
 
-		len = u8enc(e->character, utf);
-		vector_pop_back(self->entered); /* pop the terminating NULL */
-		vector_push_back_data(self->entered, utf, len);
-		vector_push_back(self->entered, &null); /* and push it back on */
+		push_u32(self, e->character);
 		break;
 
 	case RTB_KEY_BACKSPACE:
-		if (!(vector_size(self->entered) > 1))
-			return 1;
-
-		vector_erase(self->entered, vector_size(self->entered) - 2);
+		pop_u32(self);
 		break;
 
 	default:

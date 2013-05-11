@@ -196,6 +196,8 @@ void add_input(rtb_container_t *root)
 {
 	input = rtb_text_input_new();
 
+	rtb_text_input_set_text(input, "hey ßßßß man §§§", -1);
+
 	rtb_attach(RTB_OBJECT(input), RTB_KEY_PRESS, handle_input_key, NULL);
 	rtb_obj_add_child(root, RTB_OBJECT(input), RTB_ADD_TAIL);
 }
