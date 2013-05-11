@@ -74,9 +74,14 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
 
+	/* XXX: hack to get the outline to render in front of the
+	 *      label. need to fix the render push/pop system. */
+	rtb_render_push(obj);
+	super.draw_cb(obj, state);
+	rtb_render_pop(obj);
+
 	rtb_render_push(obj);
 	rtb_render_set_position(obj, 0, 0);
-
 	rtb_render_use_style_bg(obj, state);
 
 	glBindBuffer(GL_ARRAY_BUFFER, self->vbo);
@@ -92,7 +97,7 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 	glDisableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	super.draw_cb(obj, state);
+	rtb_render_pop(obj);
 }
 
 /**
@@ -124,7 +129,7 @@ static int pop_u32(rtb_text_input_t *self)
 	utf8_seq--;
 
 	/* seek backward to the start of the utf-8 sequence */
-	while (utf8_seq >= front && (*utf8_seq & 0x80) == 0x80)
+	while ((*utf8_seq & 0xC0) == 0x80 && utf8_seq >= front)
 		utf8_seq--;
 
 	vector_erase_range(self->entered, (utf8_seq - front), size - 1);
@@ -245,12 +250,13 @@ int rtb_text_input_init(rtb_text_input_t *self,
 	self->outer_pad.x =
 		self->outer_pad.y = 0.f;
 
+	self->min_size.h = 30.f;
 	self->min_size.w = 120.f;
 
 	self->realize_cb = realize;
 	self->recalc_cb  = recalculate;
 	self->draw_cb    = draw;
-	self->size_cb    = rtb_size_hfit_children;
+	self->size_cb    = rtb_size_self;
 	self->layout_cb  = rtb_layout_hpack_left;
 	self->event_cb   = on_event;
 
