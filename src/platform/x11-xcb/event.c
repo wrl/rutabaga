@@ -29,7 +29,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <wctype.h>
-#include <sys/time.h>
+#include <time.h>
 #include <poll.h>
 #include <math.h>
 
@@ -403,55 +403,75 @@ static int drain_xcb_event_queue(rtb_win_t *win, xcb_connection_t *conn)
 	return 0;
 }
 
-static void timeval_copy_inc(struct timeval *dst, struct timeval *src,
-		int by_usecs)
+/**
+ * timespec utils
+ */
+
+static void timespec_copy_inc(struct timespec *dst, struct timespec *src,
+		long by_nsec)
 {
 	dst->tv_sec  = src->tv_sec;
-	dst->tv_usec = src->tv_usec + by_usecs;
+	dst->tv_nsec = src->tv_nsec + by_nsec;
 
-	if (dst->tv_usec > 1000000) {
+	if (dst->tv_nsec > 999999999) {
 		dst->tv_sec++;
-		dst->tv_usec -= 1000000;
-	} else if (dst->tv_usec < 0) {
+		dst->tv_nsec -= 999999999;
+	} else if (dst->tv_nsec < 0) {
 		dst->tv_sec--;
-		dst->tv_usec += 1000000;
+		dst->tv_nsec += 999999999;
 	}
 }
 
-static int timeval_cmp(struct timeval *a, struct timeval *b)
+static void timespec_diff(struct timespec *diff,
+		struct timespec *a, struct timespec *b)
 {
-	int diff = 
-		((a->tv_sec - b->tv_sec) * 1000000) +
-		(a->tv_usec - b->tv_usec);
+	diff->tv_sec  = a->tv_sec  - b->tv_sec;
+	diff->tv_nsec = a->tv_nsec - b->tv_nsec;
+}
 
-	if (diff > 0)
+/**
+ * granularity specified in fraction of a second. i.e. pass `1`
+ * for a granularity of 1 second, `1000` for a millisecond, etc.
+ *
+ * finest granularity is 1 nanosecond, coarsest is 1 second.
+ */
+static int timespec_cmp(struct timespec *a, struct timespec *b,
+		long granularity)
+{
+	struct timespec diff;
+	int64_t nsec_diff;
+
+	timespec_diff(&diff, a, b);
+
+	if (granularity < 1 || granularity > 1000000000L)
+		granularity = 1;
+	else
+		granularity = 1000000000L / granularity;
+
+	nsec_diff = (diff.tv_sec * 1000000000L) +
+		((diff.tv_nsec / (granularity)) * granularity);
+
+	if (nsec_diff > 0)
 		return 1;
-	else if (diff < 0)
+	else if (nsec_diff < 0)
 		return -1;
 
 	return 0;
 }
 
-static void timeval_diff(struct timeval *res,
-		struct timeval *a, struct timeval *b)
-{
-	res->tv_sec = a->tv_sec - b->tv_sec;
-	res->tv_usec = a->tv_usec - b->tv_usec;
-}
-
-#define FRAME_USEC (999999 / FPS)
+#define FRAME_NSEC (999999999 / FPS)
 #define FRAME_MSEC (999 / FPS)
 
 void rtb_event_loop(rtb_t *r)
 {
 	struct xcb_rutabaga *xrtb = (void *) r;
-	struct timeval next_frame, now, diff;
+	struct timespec next_frame, now, diff;
 	struct pollfd fds[1];
 	rtb_win_t *win = r->win;
 	int timeout_ms;
 
-	gettimeofday(&now, NULL);
-	timeval_copy_inc(&next_frame, &now, -1);
+	clock_gettime(CLOCK_MONOTONIC, &now);
+	timespec_copy_inc(&next_frame, &now, -1);
 
 	r->run_event_loop = 1;
 
@@ -459,11 +479,11 @@ void rtb_event_loop(rtb_t *r)
 	fds[0].events = POLLIN;
 
 	while (r->run_event_loop) {
-		gettimeofday(&now, NULL);
-		timeval_diff(&diff, &next_frame, &now);
-		timeout_ms = (diff.tv_sec * 1000) + (diff.tv_usec / 1000) + 1;
-		if (timeout_ms < 0 || timeout_ms > FRAME_MSEC)
-			timeout_ms = 1;
+		clock_gettime(CLOCK_MONOTONIC, &now);
+		timespec_diff(&diff, &next_frame, &now);
+		timeout_ms = (diff.tv_sec * 1000) + (diff.tv_nsec / 1000000);
+		if (timeout_ms < 0 || timeout_ms >= FRAME_MSEC)
+			timeout_ms = 0;
 
 		poll(fds, ARRAY_LENGTH(fds), timeout_ms);
 
@@ -472,10 +492,11 @@ void rtb_event_loop(rtb_t *r)
 		if (drain_xcb_event_queue(win, xrtb->xcb_conn) < 0)
 			return;
 
-		if ((timeval_cmp(&next_frame, &now) < 1) &&
+		clock_gettime(CLOCK_MONOTONIC, &now);
+		if ((timespec_cmp(&next_frame, &now, 1000L) < 1) &&
 		    win->visibility != RTB_FULLY_OBSCURED) {
 			rtb_window_draw(win);
-			timeval_copy_inc(&next_frame, &now, FRAME_USEC);
+			timespec_copy_inc(&next_frame, &now, FRAME_NSEC);
 		}
 
 		rtb_window_unlock(win);
