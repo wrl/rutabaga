@@ -130,10 +130,15 @@ static void update_cursor(rtb_text_input_t *self)
 		/* if the cursor isn't at the end of the entered text,
 		 * we position it halfway between the character it's after
 		 * and the one it's before */
+
+		/* XXX: commented out because the cursor moves slightly when
+		 *      deleting (with the delete key, not backspace) the last
+		 *      character. fix it.
 		if (!rtb_text_object_get_glyph_rect(self->label.tobj,
 					self->cursor_position + 1, &glyphs[1]))
-			x = floorf((glyphs[1].p1.x - glyphs[0].p2.x) / 2.f);
-		else
+			x = glyphs[0].p2.x
+				+ floorf((glyphs[1].p1.x - glyphs[0].p2.x) / 2.f);
+		else */
 			x = glyphs[0].p2.x + 1.f;
 	} else
 		x = 0.f;
@@ -163,13 +168,11 @@ static void post_change(rtb_text_input_t *self)
 static void push_u32(rtb_text_input_t *self, char32_t c)
 {
 	rtb_utf8_t utf[6];
-	char null = '\0';
 	int len;
 
 	len = u8enc(c, utf);
-	vector_pop_back(self->entered); /* pop the terminating NULL */
-	vector_push_back_data(self->entered, utf, len);
-	vector_push_back(self->entered, &null); /* and push it back on */
+	vector_insert_data(self->entered,
+			self->cursor_position, utf, len);
 
 	self->cursor_position++;
 }
@@ -183,17 +186,57 @@ static int pop_u32(rtb_text_input_t *self)
 		return -1;
 
 	front = vector_front(self->entered);
-	utf8_seq = vector_back(self->entered);
+	utf8_seq = vector_get(self->entered, self->cursor_position);
 	utf8_seq--;
 
 	/* seek backward to the start of the utf-8 sequence */
 	while ((*utf8_seq & 0xC0) == 0x80 && utf8_seq >= front)
 		utf8_seq--;
 
-	vector_erase_range(self->entered, (utf8_seq - front), size - 1);
+	vector_erase_range(self->entered, (utf8_seq - front),
+			self->cursor_position);
 
 	self->cursor_position--;
 	return 0;
+}
+
+static int delete_u32(rtb_text_input_t *self)
+{
+	size_t size = vector_size(self->entered) - 1;
+	const uint8_t *front, *back, *utf8_seq;
+
+	if (self->cursor_position >= size)
+		return -1;
+
+	front = vector_front(self->entered);
+	back  = vector_back(self->entered);
+	utf8_seq = vector_get(self->entered, self->cursor_position);
+	utf8_seq++;
+
+	/* seek backward to the start of the utf-8 sequence */
+	while ((*utf8_seq & 0xC0) == 0x80 && utf8_seq <= back)
+		utf8_seq++;
+
+	vector_erase_range(self->entered,
+			self->cursor_position, (utf8_seq - front));
+
+	return 0;
+}
+
+static void fix_cursor(rtb_text_input_t *self)
+{
+	rtb_rect_t glyph;
+
+	if (self->cursor_position < 0)
+		self->cursor_position = 0;
+	else if (self->cursor_position > 0 &&
+			rtb_text_object_get_glyph_rect(self->label.tobj,
+				self->cursor_position, &glyph))
+		self->cursor_position =
+			rtb_text_object_count_glyphs(self->label.tobj);
+
+	update_cursor(self);
+	rtb_obj_mark_dirty(RTB_OBJECT(self));
 }
 
 static int handle_key_press(rtb_text_input_t *self, const rtb_ev_key_t *e)
@@ -204,17 +247,48 @@ static int handle_key_press(rtb_text_input_t *self, const rtb_ev_key_t *e)
 			return 0;
 
 		push_u32(self, e->character);
+		post_change(self);
 		break;
 
 	case RTB_KEY_BACKSPACE:
 		pop_u32(self);
+		post_change(self);
+		break;
+
+	case RTB_KEY_DELETE:
+	case RTB_KEY_NUMPAD_DELETE:
+		delete_u32(self);
+		post_change(self);
+		break;
+
+	case RTB_KEY_HOME:
+	case RTB_KEY_NUMPAD_HOME:
+		self->cursor_position = 0;
+		fix_cursor(self);
+		break;
+
+	case RTB_KEY_END:
+	case RTB_KEY_NUMPAD_END:
+		self->cursor_position = INT_MAX;
+		fix_cursor(self);
+		break;
+
+	case RTB_KEY_LEFT:
+	case RTB_KEY_NUMPAD_LEFT:
+		self->cursor_position--;
+		fix_cursor(self);
+		break;
+
+	case RTB_KEY_RIGHT:
+	case RTB_KEY_NUMPAD_RIGHT:
+		self->cursor_position++;
+		fix_cursor(self);
 		break;
 
 	default:
 		return 0;
 	}
 
-	post_change(self);
 	return 1;
 }
 

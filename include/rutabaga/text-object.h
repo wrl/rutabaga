@@ -43,6 +43,8 @@ struct rutabaga_text_object {
 
 int rtb_text_object_get_glyph_rect(rtb_text_object_t *, int idx,
 		rtb_rect_t *rect);
+int rtb_text_object_count_glyphs(rtb_text_object_t *);
+
 void rtb_text_object_update(rtb_text_object_t *, const rtb_utf8_t *text);
 void rtb_text_object_render(rtb_text_object_t *, rtb_obj_t *parent,
 		float x, float y, rtb_draw_state_t state);

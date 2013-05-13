@@ -343,7 +343,7 @@ vector_insert_data( vector_t *self,
     }
     memmove( (char *)(self->items) + (index + count ) * self->item_size,
              (char *)(self->items) + (index ) * self->item_size,
-             count*self->item_size );
+             (self->size - index) * self->item_size );
     memmove( (char *)(self->items) + index * self->item_size, data,
              count*self->item_size );
     self->size += count;
