@@ -122,3 +122,17 @@ static int inline u8enc(uint32_t unichar, char *buffer)
 	buffer[0] = head | ((unichar >> shift) & 0x3f);
 	return length;
 }
+
+/**
+ * returns the number of characters in `string`
+ */
+static size_t inline u8chars(const rtb_utf8_t *string)
+{
+	size_t ret = 0;
+
+	for (; *string; string++)
+		if ((*string & 0xC0) != 0x80)
+			ret++;
+
+	return ret;
+}

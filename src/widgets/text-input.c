@@ -28,6 +28,7 @@
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/render.h"
+#include "rutabaga/window.h"
 #include "rutabaga/keyboard.h"
 #include "rutabaga/layout.h"
 
@@ -65,7 +66,7 @@ static void cache_to_vbo(rtb_text_input_t *self)
 	box[3][0] = x;
 	box[3][1] = y + h;
 
-	glBindBuffer(GL_ARRAY_BUFFER, self->vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, self->vbo[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(box), box, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
@@ -83,9 +84,21 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 
 	rtb_render_push(obj);
 	rtb_render_set_position(obj, 0, 0);
-	rtb_render_use_style_bg(obj, state);
 
-	glBindBuffer(GL_ARRAY_BUFFER, self->vbo);
+	if (self->window->focus == RTB_OBJECT(self)) {
+		glBindBuffer(GL_ARRAY_BUFFER, self->vbo[1]);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+		glLineWidth(1.f);
+
+		rtb_render_set_color(obj, 1.f, 1.f, 1.f, 1.f);
+
+		glDrawArrays(GL_LINES, 0, 2);
+	}
+
+	rtb_render_use_style_bg(obj, state);
+	glBindBuffer(GL_ARRAY_BUFFER, self->vbo[0]);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
@@ -105,6 +118,48 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
  * object implementation
  */
 
+static void update_cursor(rtb_text_input_t *self)
+{
+	GLfloat x, y, h, line[2][2];
+	rtb_rect_t glyphs[2];
+
+	if (self->cursor_position > 0) {
+		rtb_text_object_get_glyph_rect(self->label.tobj,
+				self->cursor_position, &glyphs[0]);
+
+		/* if the cursor isn't at the end of the entered text,
+		 * we position it halfway between the character it's after
+		 * and the one it's before */
+		if (!rtb_text_object_get_glyph_rect(self->label.tobj,
+					self->cursor_position + 1, &glyphs[1]))
+			x = floorf((glyphs[1].p1.x - glyphs[0].p2.x) / 2.f);
+		else
+			x = glyphs[0].p2.x + 1.f;
+	} else
+		x = 0.f;
+
+	x += self->label.x;
+	y  = self->label.y;
+	h  = self->label.h;
+
+	line[0][0] = x;
+	line[0][1] = y;
+
+	line[1][0] = x;
+	line[1][1] = y + h;
+
+	glBindBuffer(GL_ARRAY_BUFFER, self->vbo[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(line), line, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+static void post_change(rtb_text_input_t *self)
+{
+	const rtb_utf8_t *text = rtb_text_input_get_text(self);
+
+	rtb_label_set_text(&self->label, text);
+}
+
 static void push_u32(rtb_text_input_t *self, char32_t c)
 {
 	rtb_utf8_t utf[6];
@@ -115,6 +170,8 @@ static void push_u32(rtb_text_input_t *self, char32_t c)
 	vector_pop_back(self->entered); /* pop the terminating NULL */
 	vector_push_back_data(self->entered, utf, len);
 	vector_push_back(self->entered, &null); /* and push it back on */
+
+	self->cursor_position++;
 }
 
 static int pop_u32(rtb_text_input_t *self)
@@ -134,6 +191,8 @@ static int pop_u32(rtb_text_input_t *self)
 		utf8_seq--;
 
 	vector_erase_range(self->entered, (utf8_seq - front), size - 1);
+
+	self->cursor_position--;
 	return 0;
 }
 
@@ -155,7 +214,7 @@ static int handle_key_press(rtb_text_input_t *self, const rtb_ev_key_t *e)
 		return 0;
 	}
 
-	rtb_label_set_text(&self->label, rtb_text_input_get_text(self));
+	post_change(self);
 	return 1;
 }
 
@@ -188,6 +247,8 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 
 	self->outer_pad.y = self->label.outer_pad.y;
 	cache_to_vbo(self);
+
+	update_cursor(self);
 }
 
 static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
@@ -218,9 +279,9 @@ int rtb_text_input_set_text(rtb_text_input_t *self,
 	vector_push_back_data(self->entered, text, nbytes);
 	vector_push_back(self->entered, &null);
 
-	printf(" :: setting to \"%s\" (%ld)\n", text, nbytes);
+	self->cursor_position = u8chars(text);
 
-	rtb_label_set_text(&self->label, rtb_text_input_get_text(self));
+	post_change(self);
 
 	return 0;
 }
@@ -244,7 +305,7 @@ int rtb_text_input_init(rtb_text_input_t *self,
 	self->entered = vector_new(sizeof(rtb_utf8_t));
 	vector_push_back(self->entered, &null);
 
-	glGenBuffers(1, &self->vbo);
+	glGenBuffers(2, self->vbo);
 
 	self->label.align = RTB_ALIGN_MIDDLE;
 
@@ -261,6 +322,7 @@ int rtb_text_input_init(rtb_text_input_t *self,
 	self->layout_cb  = rtb_layout_hpack_left;
 	self->event_cb   = on_event;
 
+	self->cursor_position = 0;
 	rtb_label_set_text(&self->label, "");
 
 	return 0;

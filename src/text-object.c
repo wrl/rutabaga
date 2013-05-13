@@ -45,6 +45,29 @@ struct text_vertex {
 	float s, t;
 };
 
+int rtb_text_object_get_glyph_rect(rtb_text_object_t *self, int idx,
+		rtb_rect_t *rect)
+{
+	vector_t *vertices = self->vertices->vertices;
+	struct text_vertex *v;
+
+	if (idx < 0 || (idx * 4) > vector_size(vertices))
+		return -1;
+
+	v = (void *) vector_get(vertices, (idx * 4) - 4);
+
+	/* upper left corner */
+	rect->p1.x = v->x;
+	rect->p1.y = v->y;
+
+	/* lower right corner */
+	v += 2;
+	rect->p2.x = v->x;
+	rect->p2.y = v->y;
+
+	return 0;
+}
+
 void rtb_text_object_update(rtb_text_object_t *self, const rtb_utf8_t *text)
 {
 	texture_font_t *font = self->font->txfont;
@@ -72,8 +95,6 @@ void rtb_text_object_update(rtb_text_object_t *self, const rtb_utf8_t *text)
 			break;
 
 		case UTF8_REJECT:
-			printf(" :: what\n");
-
 			if (prev_state != UTF8_ACCEPT)
 				text--;
 

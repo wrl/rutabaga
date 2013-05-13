@@ -42,9 +42,11 @@ typedef struct rtb_text_input rtb_text_input_t;
 struct rtb_text_input {
 	RTB_INHERIT(rtb_object);
 
+	/* private ********************************/
+	int cursor_position;
 	vector_t *entered;
 	rtb_label_t label;
-	GLuint vbo;
+	GLuint vbo[2];
 };
 
 /**
