@@ -273,6 +273,8 @@ int main(int argc, char **argv)
 
 	rtb_attach(RTB_OBJECT(win), RTB_KEY_PRESS, handle_key_press, delicious);
 
+	printf("%ld\n", sizeof(struct rtb_object));
+
 	distribute_demo(RTB_OBJECT(delicious->win));
 	setup_ui(RTB_OBJECT(delicious->win));
 	add_input(RTB_OBJECT(delicious->win));

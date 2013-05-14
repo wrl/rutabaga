@@ -31,6 +31,7 @@
 #include "rutabaga/event.h"
 
 #include "bsd/queue.h"
+#include "freetype-gl/vector.h"
 
 #define RTB_OBJECT(x) RTB_UPCAST(x, rtb_object)
 #define RTB_OBJECT_AS(x, type) RTB_DOWNCAST(x, type, rtb_object)
@@ -88,7 +89,7 @@ struct rtb_object {
 	rtb_win_t *window;
 	rtb_surface_t *surface;
 
-	struct rtb_event_handler handlers[RTB_EVENT_HANDLERS_PER_OBJECT];
+	vector_t *handlers;
 	TAILQ_ENTRY(rtb_object) child;
 	TAILQ_ENTRY(rtb_object) render_entry;
 };

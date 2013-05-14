@@ -32,24 +32,51 @@
 #include "rutabaga/event.h"
 #include "rutabaga/object.h"
 
-static struct rtb_event_handler *find_handler_for(
-		struct rtb_event_handler *handlers, rtb_ev_type_t type)
+static const struct rtb_event_handler *find_handler_for(
+		rtb_obj_t *obj, rtb_ev_type_t type)
 {
-	int i;
+	const struct rtb_event_handler *handlers;
+	int i, size;
 
-	for (i = 0; i < RTB_EVENT_HANDLERS_PER_OBJECT &&
-			handlers[i].callback.cb; i++)
+	handlers = obj->handlers->items;
+	size = vector_size(obj->handlers);
+
+	for (i = 0; i < size; i++)
 		if (handlers[i].type == type)
 			return &handlers[i];
 
 	return NULL;
 }
 
+int replace_handler(rtb_obj_t *obj, struct rtb_event_handler *with)
+{
+	const struct rtb_event_handler *handlers;
+	int i, size;
+
+	handlers = obj->handlers->items;
+	size = vector_size(obj->handlers);
+
+	for (i = 0; i < size; i++) {
+		/* if there's already a handler defined for this event type,
+		 * replace it. */
+		if (handlers[i].type == with->type) {
+			vector_set(obj->handlers, i, with);
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+/**
+ * public API
+ */
+
 int rtb_handle(rtb_obj_t *victim, const rtb_ev_t *ev)
 {
-	struct rtb_event_handler *h;
+	const struct rtb_event_handler *h;
 
-	if (!(h = find_handler_for(victim->handlers, ev->type)))
+	if (!(h = find_handler_for(victim, ev->type)))
 		return 0;
 
 	h->callback.cb(victim, ev, h->callback.ctx);
@@ -76,56 +103,35 @@ rtb_obj_t *rtb_dispatch_simple(rtb_obj_t *victim, rtb_ev_type_t type)
 int rtb_attach(rtb_obj_t *victim, rtb_ev_type_t type, rtb_event_cb_t cb,
 		void *user_arg)
 {
-	rtb_ev_handler_t *h;
-	int i;
+	struct rtb_event_handler handler = {
+		.type         = type,
+		.callback.cb  = cb,
+		.callback.ctx = user_arg
+	};
 
 	assert(victim);
 	assert(cb);
 
-	for (i = 0; i < RTB_EVENT_HANDLERS_PER_OBJECT &&
-			victim->handlers[i].callback.cb; i++) {
-		/* if there's already a handler defined for this event type,
-		 * replace it. */
-		if (victim->handlers[i].type == type)
-			break;
-	}
-
-	if (i == RTB_EVENT_HANDLERS_PER_OBJECT)
-		return -1;
-
-	h = &victim->handlers[i];
-	h->type = type;
-	h->callback.cb = cb;
-	h->callback.ctx = user_arg;
+	if (!replace_handler(victim, &handler))
+		vector_push_back(victim->handlers, &handler);
 
 	return 0;
 }
 
 void rtb_detach(rtb_obj_t *victim, rtb_ev_type_t type)
 {
-	int i, found;
+	const struct rtb_event_handler *handlers;
+	int i, size;
 
 	assert(victim);
 
-	found = -1;
+	handlers = vector_front(victim->handlers);
+	size = vector_size(victim->handlers);
 
-	for (i = 0; i < RTB_EVENT_HANDLERS_PER_OBJECT &&
-			victim->handlers[i].callback.cb; i++) {
-		if (victim->handlers[i].type == type)
-			found = i;
+	for (i = 0; i < size; i++) {
+		if (handlers[i].type == type) {
+			vector_erase(victim->handlers, i);
+			return;
+		}
 	}
-
-	if (found < 0)
-		return;
-
-	/* if the handler was in the middle of the handlers list, move the
-	 * handlers after it up. */
-	if (i > found)
-		memmove(&victim->handlers[i], &victim->handlers[i + 1],
-				(i - found) * sizeof(victim->handlers[i]));
-
-	/* clear the last element of the list */
-	memset(&victim->handlers[i], 0, sizeof(victim->handlers[i]));
-
-	return;
 }
