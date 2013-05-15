@@ -42,8 +42,10 @@
 #include "rutabaga/event.h"
 #include "rutabaga/mouse.h"
 
+#include "private/stdlib-allocator.h"
 #include "private/layout-debug.h"
-#include "freetype-gl/vector.h"
+
+#include "wwrl/vector.h"
 
 /**
  * private stuff
@@ -383,7 +385,7 @@ int rtb_obj_init(rtb_obj_t *self, struct rtb_object_implementation *impl)
 	self->visibility  = RTB_UNOBSCURED;
 	self->window      = NULL;
 
-	self->handlers    = vector_new(sizeof(struct rtb_event_handler));
+	VECTOR_INIT(&self->handlers, &stdlib_allocator, 1);
 
 	LAYOUT_DEBUG_INIT();
 
@@ -392,6 +394,6 @@ int rtb_obj_init(rtb_obj_t *self, struct rtb_object_implementation *impl)
 
 void rtb_obj_fini(rtb_obj_t *self)
 {
-	vector_delete(self->handlers);
+	VECTOR_FREE(&self->handlers);
 	rtb_type_unref(self->type);
 }

@@ -24,39 +24,26 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdlib.h>
-#include <string.h>
+#pragma once
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/window.h"
-#include "rutabaga/dict.h"
+/* XXX: this is a monstrous hack. i don't like this.
+ *      unfortunately a lot of client-facing API calls need to be modified
+ *      in order to get rid of this.
+ *
+ *      what i'm thinking:
+ *          - rtb_t has its own `global` allocator for everything that's
+ *            created underneath it.
+ *          - anything that allocates memory needs a pointer to said rtb_t.
+ *
+ *      this is going to suck because currently we don't need any reference
+ *      to the rtb_t until an object is attached to the tree somewhere,
+ *      so this would require things like
+ *
+ *			rtb_button_new(const rtb_utf8_t *label);
+ *
+ *		to instead be
+ *
+ *			rtb_button_new(rtb_t *, const rtb_utf8_t *label);
+ */
 
-#include "private/stdlib-allocator.h"
-
-struct wwrl_allocator stdlib_allocator = {
-	.malloc  = malloc,
-	.free    = free,
-	.calloc  = calloc,
-	.realloc = realloc
-};
-
-void rtb_stop_event_loop(rtb_t *self)
-{
-	self->run_event_loop = 0;
-}
-
-void rtb_destroy(rtb_t *self)
-{
-	window_impl_rtb_free(self);
-}
-
-rtb_t *rtb_init(void)
-{
-	rtb_t *self = window_impl_rtb_alloc();
-
-	RTB_DICT_INIT(&self->atoms.type);
-
-	memcpy(&self->allocator, &stdlib_allocator,
-			sizeof(self->allocator));
-	return self;
-}
+extern struct wwrl_allocator stdlib_allocator;

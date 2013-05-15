@@ -33,6 +33,8 @@
 #include "rutabaga/atom.h"
 #include "rutabaga/dict.h"
 
+#include "wwrl/allocator.h"
+
 /**
  * general utility macros
  */
@@ -54,6 +56,8 @@ struct rutabaga {
 	struct {
 		RTB_DICT(rtb_atom_dict, rtb_atom_descriptor) type;
 	} atoms;
+
+	struct wwrl_allocator allocator;
 };
 
 void rtb_stop_event_loop(rtb_t *self);

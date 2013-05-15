@@ -35,11 +35,11 @@
 static const struct rtb_event_handler *find_handler_for(
 		rtb_obj_t *obj, rtb_ev_type_t type)
 {
-	const struct rtb_event_handler *handlers;
+	struct rtb_event_handler *handlers;
 	int i, size;
 
-	handlers = obj->handlers->items;
-	size = vector_size(obj->handlers);
+	handlers = obj->handlers.data;
+	size = obj->handlers.size;
 
 	for (i = 0; i < size; i++)
 		if (handlers[i].type == type)
@@ -50,17 +50,17 @@ static const struct rtb_event_handler *find_handler_for(
 
 int replace_handler(rtb_obj_t *obj, struct rtb_event_handler *with)
 {
-	const struct rtb_event_handler *handlers;
+	struct rtb_event_handler *handlers;
 	int i, size;
 
-	handlers = obj->handlers->items;
-	size = vector_size(obj->handlers);
+	handlers = obj->handlers.data;
+	size = obj->handlers.size;
 
 	for (i = 0; i < size; i++) {
 		/* if there's already a handler defined for this event type,
 		 * replace it. */
 		if (handlers[i].type == with->type) {
-			vector_set(obj->handlers, i, with);
+			handlers[i] = *with;
 			return 1;
 		}
 	}
@@ -113,24 +113,24 @@ int rtb_attach(rtb_obj_t *victim, rtb_ev_type_t type, rtb_event_cb_t cb,
 	assert(cb);
 
 	if (!replace_handler(victim, &handler))
-		vector_push_back(victim->handlers, &handler);
+		VECTOR_PUSH_BACK(&victim->handlers, &handler);
 
 	return 0;
 }
 
-void rtb_detach(rtb_obj_t *victim, rtb_ev_type_t type)
+void rtb_detach(rtb_obj_t *obj, rtb_ev_type_t type)
 {
 	const struct rtb_event_handler *handlers;
 	int i, size;
 
-	assert(victim);
+	assert(obj);
 
-	handlers = vector_front(victim->handlers);
-	size = vector_size(victim->handlers);
+	handlers = obj->handlers.data;
+	size = obj->handlers.size;
 
 	for (i = 0; i < size; i++) {
 		if (handlers[i].type == type) {
-			vector_erase(victim->handlers, i);
+			VECTOR_ERASE(&obj->handlers, i);
 			return;
 		}
 	}
