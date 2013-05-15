@@ -43,7 +43,11 @@ struct rtb_text_input {
 	RTB_INHERIT(rtb_object);
 
 	/* private ********************************/
-	int cursor_position;
+	struct {
+		int draw;
+		int edit;
+	} cursor;
+
 	VECTOR(text, rtb_utf8_t) text;
 	rtb_label_t label;
 	GLuint vbo[2];
