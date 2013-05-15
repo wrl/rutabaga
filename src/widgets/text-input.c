@@ -291,7 +291,6 @@ static int handle_key_press(rtb_text_input_t *self, const rtb_ev_key_t *e)
 		return 0;
 	}
 
-	printf(" :: %d \"%s\"\n", self->text.size, self->text.data);
 	return 1;
 }
 
