@@ -33,7 +33,7 @@
 #include "rutabaga/event.h"
 
 #include "rutabaga/widgets/label.h"
-#include "freetype-gl/vector.h"
+#include "wwrl/vector.h"
 
 #define RTB_TEXT_INPUT(x) RTB_UPCAST(x, rtb_text_input)
 
@@ -44,7 +44,7 @@ struct rtb_text_input {
 
 	/* private ********************************/
 	int cursor_position;
-	vector_t *entered;
+	VECTOR(text, rtb_utf8_t) text;
 	rtb_label_t label;
 	GLuint vbo[2];
 };

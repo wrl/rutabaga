@@ -35,8 +35,8 @@
 #define VECTOR(tag, type)						\
 	struct tag {							\
 		struct wwrl_allocator *allocator;			\
-		size_t size;						\
-		size_t capacity;					\
+		unsigned int size;					\
+		unsigned int capacity;					\
 		type *data;						\
 	}
 

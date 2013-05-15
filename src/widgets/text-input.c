@@ -32,9 +32,11 @@
 #include "rutabaga/keyboard.h"
 #include "rutabaga/layout.h"
 
+#include "rutabaga/widgets/text-input.h"
+
+#include "private/stdlib-allocator.h"
 #include "private/util.h"
 #include "private/utf8.h"
-#include "rutabaga/widgets/text-input.h"
 
 #define SELF_FROM(obj) \
 	struct rtb_text_input *self = RTB_OBJECT_AS(obj, rtb_text_input)
@@ -171,7 +173,7 @@ static void push_u32(rtb_text_input_t *self, char32_t c)
 	int len;
 
 	len = u8enc(c, utf);
-	vector_insert_data(self->entered,
+	VECTOR_INSERT_DATA(&self->text,
 			self->cursor_position, utf, len);
 
 	self->cursor_position++;
@@ -179,21 +181,21 @@ static void push_u32(rtb_text_input_t *self, char32_t c)
 
 static int pop_u32(rtb_text_input_t *self)
 {
-	size_t size = vector_size(self->entered);
 	const uint8_t *front, *utf8_seq;
+	size_t size = self->text.size;
 
 	if (!(size > 1))
 		return -1;
 
-	front = vector_front(self->entered);
-	utf8_seq = vector_get(self->entered, self->cursor_position);
+	front = (void *) VECTOR_FRONT(&self->text);
+	utf8_seq = &front[self->cursor_position];
 	utf8_seq--;
 
 	/* seek backward to the start of the utf-8 sequence */
 	while ((*utf8_seq & 0xC0) == 0x80 && utf8_seq >= front)
 		utf8_seq--;
 
-	vector_erase_range(self->entered, (utf8_seq - front),
+	VECTOR_ERASE_RANGE(&self->text, (utf8_seq - front),
 			self->cursor_position);
 
 	self->cursor_position--;
@@ -202,22 +204,22 @@ static int pop_u32(rtb_text_input_t *self)
 
 static int delete_u32(rtb_text_input_t *self)
 {
-	size_t size = vector_size(self->entered) - 1;
 	const uint8_t *front, *back, *utf8_seq;
+	size_t size = self->text.size;
 
 	if (self->cursor_position >= size)
 		return -1;
 
-	front = vector_front(self->entered);
-	back  = vector_back(self->entered);
-	utf8_seq = vector_get(self->entered, self->cursor_position);
+	front = (void *) VECTOR_FRONT(&self->text);
+	back  = (void *) VECTOR_BACK(&self->text);
+	utf8_seq = &front[self->cursor_position];
 	utf8_seq++;
 
 	/* seek backward to the start of the utf-8 sequence */
 	while ((*utf8_seq & 0xC0) == 0x80 && utf8_seq <= back)
 		utf8_seq++;
 
-	vector_erase_range(self->entered,
+	VECTOR_ERASE_RANGE(&self->text,
 			self->cursor_position, (utf8_seq - front));
 
 	return 0;
@@ -289,6 +291,7 @@ static int handle_key_press(rtb_text_input_t *self, const rtb_ev_key_t *e)
 		return 0;
 	}
 
+	printf(" :: %d \"%s\"\n", self->text.size, self->text.data);
 	return 1;
 }
 
@@ -349,9 +352,9 @@ int rtb_text_input_set_text(rtb_text_input_t *self,
 	if (nbytes < 0)
 		nbytes = strlen(text);
 
-	vector_clear(self->entered);
-	vector_push_back_data(self->entered, text, nbytes);
-	vector_push_back(self->entered, &null);
+	VECTOR_CLEAR(&self->text);
+	VECTOR_PUSH_BACK_DATA(&self->text, text, nbytes);
+	VECTOR_PUSH_BACK(&self->text, &null);
 
 	self->cursor_position = u8chars(text);
 
@@ -362,7 +365,7 @@ int rtb_text_input_set_text(rtb_text_input_t *self,
 
 const rtb_utf8_t *rtb_text_input_get_text(rtb_text_input_t *self)
 {
-	return vector_front(self->entered);
+	return self->text.data;
 }
 
 int rtb_text_input_init(rtb_text_input_t *self,
@@ -376,8 +379,8 @@ int rtb_text_input_init(rtb_text_input_t *self,
 	rtb_obj_add_child(RTB_OBJECT(self), RTB_OBJECT(&self->label),
 			RTB_ADD_HEAD);
 
-	self->entered = vector_new(sizeof(rtb_utf8_t));
-	vector_push_back(self->entered, &null);
+	VECTOR_INIT(&self->text, &stdlib_allocator, 32);
+	VECTOR_PUSH_BACK(&self->text, &null);
 
 	glGenBuffers(2, self->vbo);
 
@@ -404,7 +407,7 @@ int rtb_text_input_init(rtb_text_input_t *self,
 
 void rtb_text_input_fini(rtb_text_input_t *self)
 {
-	vector_delete(self->entered);
+	VECTOR_FREE(&self->text);
 	rtb_label_fini(&self->label);
 	rtb_obj_fini(RTB_OBJECT(self));
 }
