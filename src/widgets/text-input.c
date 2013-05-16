@@ -125,9 +125,9 @@ static void update_cursor(rtb_text_input_t *self)
 	GLfloat x, y, h, line[2][2];
 	rtb_rect_t glyphs[2];
 
-	if (self->cursor.draw > 0) {
+	if (self->cursor_position > 0) {
 		rtb_text_object_get_glyph_rect(self->label.tobj,
-				self->cursor.draw, &glyphs[0]);
+				self->cursor_position, &glyphs[0]);
 
 		/* if the cursor isn't at the end of the entered text,
 		 * we position it halfway between the character it's after
@@ -137,7 +137,7 @@ static void update_cursor(rtb_text_input_t *self)
 		 *      deleting (with the delete key, not backspace) the last
 		 *      character. fix it.
 		if (!rtb_text_object_get_glyph_rect(self->label.tobj,
-					self->cursor.draw + 1, &glyphs[1]))
+					self->cursor_position + 1, &glyphs[1]))
 			x = glyphs[0].p2.x
 				+ floorf((glyphs[1].p1.x - glyphs[0].p2.x) / 2.f);
 		else */
@@ -174,10 +174,9 @@ static void push_u32(rtb_text_input_t *self, char32_t c)
 
 	len = u8enc(c, utf);
 	VECTOR_INSERT_DATA(&self->text,
-			self->cursor.edit, utf, len);
+			self->cursor_position, utf, len);
 
-	self->cursor.draw++;
-	self->cursor.edit += len;
+	self->cursor_position++;
 }
 
 static int pop_u32(rtb_text_input_t *self)
@@ -185,25 +184,21 @@ static int pop_u32(rtb_text_input_t *self)
 	const uint8_t *front, *utf8_seq;
 	size_t size = self->text.size;
 
-	if (!(size > 1) || !self->cursor.edit)
+	if (!(size > 1))
 		return -1;
 
-	printf(" :: %d %d\n", self->cursor.edit, self->cursor.draw);
-
 	front = (void *) VECTOR_FRONT(&self->text);
-	utf8_seq = &front[self->cursor.edit];
+	utf8_seq = &front[self->cursor_position];
 	utf8_seq--;
 
 	/* seek backward to the start of the utf-8 sequence */
 	while ((*utf8_seq & 0xC0) == 0x80 && utf8_seq >= front)
 		utf8_seq--;
 
-	VECTOR_ERASE_RANGE(&self->text,
-			(utf8_seq - front), self->cursor.edit);
+	VECTOR_ERASE_RANGE(&self->text, (utf8_seq - front),
+			self->cursor_position);
 
-	self->cursor.draw--;
-	self->cursor.edit = (utf8_seq - front);
-
+	self->cursor_position--;
 	return 0;
 }
 
@@ -212,67 +207,35 @@ static int delete_u32(rtb_text_input_t *self)
 	const uint8_t *front, *back, *utf8_seq;
 	size_t size = self->text.size;
 
-	if (self->cursor.edit >= size)
+	if (self->cursor_position >= size)
 		return -1;
-
-	printf(" :: %d %d\n", self->cursor.edit, self->cursor.draw);
 
 	front = (void *) VECTOR_FRONT(&self->text);
 	back  = (void *) VECTOR_BACK(&self->text);
-	utf8_seq = &front[self->cursor.edit];
+	utf8_seq = &front[self->cursor_position];
 	utf8_seq++;
 
-	/* seek forward to the end of the utf-8 sequence */
+	/* seek backward to the start of the utf-8 sequence */
 	while ((*utf8_seq & 0xC0) == 0x80 && utf8_seq <= back)
 		utf8_seq++;
 
 	VECTOR_ERASE_RANGE(&self->text,
-			self->cursor.edit, (utf8_seq - front));
+			self->cursor_position, (utf8_seq - front));
 
 	return 0;
 }
 
-static void move_cursor_home(rtb_text_input_t *self)
+static void fix_cursor(rtb_text_input_t *self)
 {
-	self->cursor.draw =
-		self->cursor.edit = 0;
+	rtb_rect_t glyph;
 
-	update_cursor(self);
-	rtb_obj_mark_dirty(RTB_OBJECT(self));
-}
-
-static void move_cursor_end(rtb_text_input_t *self)
-{
-	self->cursor.draw =
-		rtb_text_object_count_glyphs(self->label.tobj);
-	self->cursor.edit = self->text.size - 1;
-
-	update_cursor(self);
-	rtb_obj_mark_dirty(RTB_OBJECT(self));
-}
-
-static void move_cursor_by(rtb_text_input_t *self, int how_much)
-{
-	if (how_much > 0) {
-		for (; how_much && self->cursor.edit < self->text.size - 1;
-				how_much--) {
-			self->cursor.draw++;
-			self->cursor.edit++;
-
-			while ((self->text.data[self->cursor.edit] & 0xC0) == 0x80 &&
-					self->cursor.edit < self->text.size - 1)
-				self->cursor.edit++;
-		}
-	} else {
-		for (; how_much && self->cursor.edit; how_much++) {
-			self->cursor.draw--;
-			self->cursor.edit--;
-
-			while ((self->text.data[self->cursor.edit] & 0xC0) == 0x80 &&
-					self->cursor.edit > 0)
-				self->cursor.edit--;
-		}
-	}
+	if (self->cursor_position < 0)
+		self->cursor_position = 0;
+	else if (self->cursor_position > 0 &&
+			rtb_text_object_get_glyph_rect(self->label.tobj,
+				self->cursor_position, &glyph))
+		self->cursor_position =
+			rtb_text_object_count_glyphs(self->label.tobj);
 
 	update_cursor(self);
 	rtb_obj_mark_dirty(RTB_OBJECT(self));
@@ -302,22 +265,26 @@ static int handle_key_press(rtb_text_input_t *self, const rtb_ev_key_t *e)
 
 	case RTB_KEY_HOME:
 	case RTB_KEY_NUMPAD_HOME:
-		move_cursor_home(self);
+		self->cursor_position = 0;
+		fix_cursor(self);
 		break;
 
 	case RTB_KEY_END:
 	case RTB_KEY_NUMPAD_END:
-		move_cursor_end(self);
+		self->cursor_position = INT_MAX;
+		fix_cursor(self);
 		break;
 
 	case RTB_KEY_LEFT:
 	case RTB_KEY_NUMPAD_LEFT:
-		move_cursor_by(self, -1);
+		self->cursor_position--;
+		fix_cursor(self);
 		break;
 
 	case RTB_KEY_RIGHT:
 	case RTB_KEY_NUMPAD_RIGHT:
-		move_cursor_by(self, 1);
+		self->cursor_position++;
+		fix_cursor(self);
 		break;
 
 	default:
@@ -388,8 +355,7 @@ int rtb_text_input_set_text(rtb_text_input_t *self,
 	VECTOR_PUSH_BACK_DATA(&self->text, text, nbytes);
 	VECTOR_PUSH_BACK(&self->text, &null);
 
-	self->cursor.draw = u8chars(text);
-	self->cursor.edit = nbytes;
+	self->cursor_position = u8chars(text);
 
 	post_change(self);
 
@@ -432,8 +398,7 @@ int rtb_text_input_init(rtb_text_input_t *self,
 	self->layout_cb  = rtb_layout_hpack_left;
 	self->event_cb   = on_event;
 
-	self->cursor.draw =
-		self->cursor.edit = 0;
+	self->cursor_position = 0;
 	rtb_label_set_text(&self->label, "");
 
 	return 0;
