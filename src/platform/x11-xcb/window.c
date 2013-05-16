@@ -105,6 +105,7 @@ static int receive_xkb_events(xcb_connection_t *c)
 	if (error) {
 		ERR("error requesting XKB events\n");
 		free(error);
+		return -1;
 	}
 
 	return 0;
