@@ -34,6 +34,7 @@
 #include <math.h>
 
 #include <xcb/xcb.h>
+#include <xcb/xkb.h>
 #include <xkbcommon/xkbcommon.h>
 
 #include <X11/Xlib.h>
@@ -270,6 +271,35 @@ static void handle_client_message(struct xcb_window *win,
 }
 
 /**
+ * bullshit xkb fuck
+ */
+
+static int handle_xkb_new_keyboard(struct xcb_window *win,
+		xcb_generic_event_t *_ev)
+{
+	CAST_EVENT_TO(xcb_xkb_new_keyboard_notify_event_t);
+
+	if (ev->deviceID == win->xrtb->xkb_core_kbd_id)
+		xrtb_keyboard_reload(win->xrtb);
+
+	return 0;
+}
+
+static int handle_xkb_event(struct xcb_window *win,
+		xcb_generic_event_t *_ev)
+{
+	int type = ((xcb_xkb_new_keyboard_notify_event_t *) _ev)->xkbType;
+
+	switch (type) {
+	case XCB_XKB_NEW_KEYBOARD_NOTIFY:
+		handle_xkb_new_keyboard(win, _ev);
+		break;
+	}
+
+	return 0;
+}
+
+/**
  * ~mystery~ events
  */
 
@@ -303,7 +333,9 @@ static int handle_secret_xlib_event(Display *dpy, xcb_generic_event_t *ev)
 int handle_generic_event(struct xcb_window *win,
 		xcb_generic_event_t *ev)
 {
-	switch (ev->response_type & ~0x80) {
+	int type = ev->response_type & ~0x80;
+
+	switch (type) {
 	/**
 	 * mouse events
 	 */
@@ -375,7 +407,10 @@ int handle_generic_event(struct xcb_window *win,
 	 */
 
 	default:
-		handle_secret_xlib_event(win->xrtb->dpy, ev); /* 2spooky! */
+		if (type == win->xrtb->xkb_event)
+			handle_xkb_event(win, ev);
+		else
+			handle_secret_xlib_event(win->xrtb->dpy, ev);
 		break;
 	}
 

@@ -66,6 +66,7 @@ def check_x11(conf):
 
 	check("x11-xcb")
 	check("xcb")
+	check("xcb-xkb")
 	check("xcb-keysyms")
 	check("xcb-icccm")
 	check("xkbfile")

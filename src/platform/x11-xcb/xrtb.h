@@ -59,6 +59,10 @@ struct xcb_rutabaga {
 	struct xkb_keymap *xkb_keymap;
 	struct xkb_state *xkb_state;
 
+	int xkb_supported;
+	int xkb_core_kbd_id;
+	int xkb_event;
+
 	/* oh man, this typedef. it's in glxext.h */
 	PFNGLXCOPYSUBBUFFERMESAPROC copy_sub_buffer;
 };

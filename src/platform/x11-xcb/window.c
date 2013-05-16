@@ -33,6 +33,7 @@
 #include <X11/Xlib-xcb.h>
 
 #include <xcb/xcb.h>
+#include <xcb/xkb.h>
 #include <xcb/xcb_icccm.h>
 
 #define GLX_GLXEXT_PROTOTYPES "gimme dem"
@@ -41,8 +42,9 @@
 #include <GL/glxext.h>
 
 #include "rutabaga/rutabaga.h"
-#include "xrtb.h"
 #include "rutabaga/window.h"
+
+#include "xrtb.h"
 
 #define MIN_COLOR_CHANNEL_BITS 8
 
@@ -67,6 +69,77 @@ static xcb_atom_t intern_atom(xcb_connection_t *c, const char *atom_name)
 	return atom;
 }
 
+static int receive_xkb_events(xcb_connection_t *c)
+{
+	xcb_xkb_use_extension_cookie_t xkb_cookie;
+	xcb_xkb_use_extension_reply_t *xkb_reply;
+	xcb_generic_error_t *error;
+	xcb_void_cookie_t cookie;
+	unsigned int events, map;
+
+	xkb_cookie = xcb_xkb_use_extension(c,
+			XCB_XKB_MAJOR_VERSION, XCB_XKB_MINOR_VERSION);
+	xkb_reply = xcb_xkb_use_extension_reply(c, xkb_cookie, NULL);
+
+	if (!xkb_reply) {
+		ERR("couldn't initialize XKB\n");
+		return -1;
+	} else if (!xkb_reply->supported) {
+		ERR("couldn't initialize XKB: unsupported version"
+				"(server is %d.%d, we're %d.%d)\n",
+				xkb_reply->serverMajor, xkb_reply->serverMinor,
+				XCB_XKB_MAJOR_VERSION, XCB_XKB_MINOR_VERSION);
+		free(xkb_reply);
+		return -1;
+	}
+
+	free(xkb_reply);
+
+	events = XCB_XKB_EVENT_TYPE_NEW_KEYBOARD_NOTIFY;
+	map = XCB_XKB_MAP_PART_KEY_SYMS;
+
+	cookie = xcb_xkb_select_events_checked(c,
+			XCB_XKB_ID_USE_CORE_KBD, events, 0, events, map, map, 0);
+
+	error = xcb_request_check(c, cookie);
+	if (error) {
+		ERR("error requesting XKB events\n");
+		free(error);
+	}
+
+	return 0;
+}
+
+static int get_xkb_event_id(xcb_connection_t *c)
+{
+	const xcb_query_extension_reply_t *extdata;
+
+	if (!(extdata = xcb_get_extension_data(c, &xcb_xkb_id)))
+		return -1;
+
+	return extdata->first_event;
+}
+
+static int get_core_kbd_id(xcb_connection_t *c)
+{
+	xcb_xkb_get_device_info_cookie_t cookie;
+	xcb_xkb_get_device_info_reply_t *reply;
+	int device_id;
+
+	cookie = xcb_xkb_get_device_info(c, XCB_XKB_ID_USE_CORE_KBD,
+			0, 0, 0, 0, 0, 0);
+	reply = xcb_xkb_get_device_info_reply(c, cookie, NULL);
+	if (!reply) {
+		ERR("couldn't get core XKB ID\n");
+		return -1;
+	}
+
+	device_id = reply->deviceID;
+	free(reply);
+
+	return device_id;
+}
+
 rtb_t *window_impl_rtb_alloc()
 {
 	struct xcb_rutabaga *self;
@@ -89,6 +162,13 @@ rtb_t *window_impl_rtb_alloc()
 		goto err_keyboard_init;
 
 	XSetEventQueueOwner(dpy, XCBOwnsEventQueue);
+
+	self->xkb_event = get_xkb_event_id(self->xcb_conn);
+	self->xkb_core_kbd_id = get_core_kbd_id(self->xcb_conn);
+
+	if (self->xkb_event >= 0 && self->xkb_core_kbd_id >= 0
+			&& !receive_xkb_events(self->xcb_conn))
+		self->xkb_supported = 1;
 
 #define INTERN_ATOM(atom, name) self->atoms.atom = intern_atom(self->xcb_conn, name);
 	INTERN_ATOM(wm_protocols, "WM_PROTOCOLS");

@@ -133,6 +133,7 @@ def build(bld):
 			"FREETYPE2",
 			"X11",
 			"XCB",
+			"XCB-XKB",
 			"XCB-KEYSYMS",
 			"XCB-ICCCM",
 			"XKBFILE",
