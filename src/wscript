@@ -80,8 +80,9 @@ def build(bld):
 
 	obj("targa.c")
 
-	obj("font-manager.c")
-	obj("text-object.c")
+	obj("text/font-manager.c")
+	obj("text/text-object.c")
+	obj("text/text-buffer.c")
 
 	obj("layout.c")
 

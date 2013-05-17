@@ -41,11 +41,17 @@
 #define SELF_FROM(obj) \
 	struct rtb_text_input *self = RTB_OBJECT_AS(obj, rtb_text_input)
 
+#define UTF8_IS_CONTINUATION(byte) (((byte) & 0xC0) == 0x80)
+
 static struct rtb_object_implementation super;
 
 static const GLubyte box_indices[] = {
 	0, 1, 2, 3
 };
+
+/**
+ * vbo wrangling
+ */
 
 static void cache_to_vbo(rtb_text_input_t *self)
 {
@@ -72,6 +78,46 @@ static void cache_to_vbo(rtb_text_input_t *self)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(box), box, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
+
+static void update_cursor(rtb_text_input_t *self)
+{
+	GLfloat x, y, h, line[2][2];
+	rtb_rect_t glyphs[2];
+
+	if (self->cursor_position > 0) {
+		rtb_text_object_get_glyph_rect(self->label.tobj,
+				self->cursor_position, &glyphs[0]);
+
+		/* if the cursor isn't at the end of the entered text,
+		 * we position it halfway between the character it's after
+		 * and the one it's before */
+
+		if (!rtb_text_object_get_glyph_rect(self->label.tobj,
+					self->cursor_position + 1, &glyphs[1]))
+			x = glyphs[1].p1.x - 1.f;
+		else
+			x = glyphs[0].p2.x + 1.f;
+	} else
+		x = 0.f;
+
+	x += self->label.x;
+	y  = self->label.y;
+	h  = self->label.h;
+
+	line[0][0] = x;
+	line[0][1] = y;
+
+	line[1][0] = x;
+	line[1][1] = y + h;
+
+	glBindBuffer(GL_ARRAY_BUFFER, self->vbo[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(line), line, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+/**
+ * drawing
+ */
 
 static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 {
@@ -117,86 +163,19 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 }
 
 /**
- * object implementation
+ * text buffer
  */
-
-static void update_cursor(rtb_text_input_t *self)
-{
-	GLfloat x, y, h, line[2][2];
-	rtb_rect_t glyphs[2];
-
-	if (self->cursor_position > 0) {
-		rtb_text_object_get_glyph_rect(self->label.tobj,
-				self->cursor_position, &glyphs[0]);
-
-		/* if the cursor isn't at the end of the entered text,
-		 * we position it halfway between the character it's after
-		 * and the one it's before */
-
-		/* XXX: commented out because the cursor moves slightly when
-		 *      deleting (with the delete key, not backspace) the last
-		 *      character. fix it.
-		if (!rtb_text_object_get_glyph_rect(self->label.tobj,
-					self->cursor_position + 1, &glyphs[1]))
-			x = glyphs[0].p2.x
-				+ floorf((glyphs[1].p1.x - glyphs[0].p2.x) / 2.f);
-		else */
-			x = glyphs[0].p2.x + 1.f;
-	} else
-		x = 0.f;
-
-	x += self->label.x;
-	y  = self->label.y;
-	h  = self->label.h;
-
-	line[0][0] = x;
-	line[0][1] = y;
-
-	line[1][0] = x;
-	line[1][1] = y + h;
-
-	glBindBuffer(GL_ARRAY_BUFFER, self->vbo[1]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(line), line, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-static void post_change(rtb_text_input_t *self)
-{
-	const rtb_utf8_t *text = rtb_text_input_get_text(self);
-
-	rtb_label_set_text(&self->label, text);
-}
 
 static void push_u32(rtb_text_input_t *self, char32_t c)
 {
-	rtb_utf8_t utf[6];
-	int len;
-
-	len = u8enc(c, utf);
-	VECTOR_INSERT_DATA(&self->text,
-			self->cursor_position, utf, len);
-
+	rtb_text_buffer_insert_u32(&self->text, self->cursor_position, c);
 	self->cursor_position++;
 }
 
 static int pop_u32(rtb_text_input_t *self)
 {
-	const uint8_t *front, *utf8_seq;
-	size_t size = self->text.size;
-
-	if (!(size > 1))
+	if (rtb_text_buffer_erase_char(&self->text, self->cursor_position))
 		return -1;
-
-	front = (void *) VECTOR_FRONT(&self->text);
-	utf8_seq = &front[self->cursor_position];
-	utf8_seq--;
-
-	/* seek backward to the start of the utf-8 sequence */
-	while ((*utf8_seq & 0xC0) == 0x80 && utf8_seq >= front)
-		utf8_seq--;
-
-	VECTOR_ERASE_RANGE(&self->text, (utf8_seq - front),
-			self->cursor_position);
 
 	self->cursor_position--;
 	return 0;
@@ -204,26 +183,15 @@ static int pop_u32(rtb_text_input_t *self)
 
 static int delete_u32(rtb_text_input_t *self)
 {
-	const uint8_t *front, *back, *utf8_seq;
-	size_t size = self->text.size;
-
-	if (self->cursor_position >= size)
+	if (rtb_text_buffer_erase_char(&self->text, self->cursor_position + 1))
 		return -1;
-
-	front = (void *) VECTOR_FRONT(&self->text);
-	back  = (void *) VECTOR_BACK(&self->text);
-	utf8_seq = &front[self->cursor_position];
-	utf8_seq++;
-
-	/* seek backward to the start of the utf-8 sequence */
-	while ((*utf8_seq & 0xC0) == 0x80 && utf8_seq <= back)
-		utf8_seq++;
-
-	VECTOR_ERASE_RANGE(&self->text,
-			self->cursor_position, (utf8_seq - front));
 
 	return 0;
 }
+
+/**
+ * object implementation
+ */
 
 static void fix_cursor(rtb_text_input_t *self)
 {
@@ -239,6 +207,24 @@ static void fix_cursor(rtb_text_input_t *self)
 
 	update_cursor(self);
 	rtb_obj_mark_dirty(RTB_OBJECT(self));
+}
+
+static void post_change(rtb_text_input_t *self)
+{
+	const rtb_utf8_t *text = rtb_text_input_get_text(self);
+
+	{
+		const rtb_utf8_t *fuck = text;
+
+		printf (" ::");
+		for (;*fuck;fuck++)
+			printf(" %02X", *fuck & 0xFF);
+		printf(" %2X", *fuck & 0xFF);
+
+		printf(" \"%s\"\n", text);
+	}
+
+	rtb_label_set_text(&self->label, text);
 }
 
 static int handle_key_press(rtb_text_input_t *self, const rtb_ev_key_t *e)
@@ -346,15 +332,7 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
 int rtb_text_input_set_text(rtb_text_input_t *self,
 		rtb_utf8_t *text, ssize_t nbytes)
 {
-	char null = '\0';
-
-	if (nbytes < 0)
-		nbytes = strlen(text);
-
-	VECTOR_CLEAR(&self->text);
-	VECTOR_PUSH_BACK_DATA(&self->text, text, nbytes);
-	VECTOR_PUSH_BACK(&self->text, &null);
-
+	rtb_text_buffer_set_text(&self->text, text, nbytes);
 	self->cursor_position = u8chars(text);
 
 	post_change(self);
@@ -364,22 +342,19 @@ int rtb_text_input_set_text(rtb_text_input_t *self,
 
 const rtb_utf8_t *rtb_text_input_get_text(rtb_text_input_t *self)
 {
-	return self->text.data;
+	return rtb_text_buffer_get_text(&self->text);
 }
 
-int rtb_text_input_init(rtb_text_input_t *self,
+int rtb_text_input_init(rtb_t *rtb, rtb_text_input_t *self,
 		struct rtb_object_implementation *impl)
 {
-	char null = '\0';
-
 	rtb_obj_init(RTB_OBJECT(self), &super);
 
 	rtb_label_init(&self->label, &self->label.impl);
 	rtb_obj_add_child(RTB_OBJECT(self), RTB_OBJECT(&self->label),
 			RTB_ADD_HEAD);
 
-	VECTOR_INIT(&self->text, &stdlib_allocator, 32);
-	VECTOR_PUSH_BACK(&self->text, &null);
+	rtb_text_buffer_init(rtb, &self->text);
 
 	glGenBuffers(2, self->vbo);
 
@@ -389,7 +364,7 @@ int rtb_text_input_init(rtb_text_input_t *self,
 		self->outer_pad.y = 0.f;
 
 	self->min_size.h = 30.f;
-	self->min_size.w = 120.f;
+	self->min_size.w = 150.f;
 
 	self->realize_cb = realize;
 	self->recalc_cb  = recalculate;
@@ -406,15 +381,15 @@ int rtb_text_input_init(rtb_text_input_t *self,
 
 void rtb_text_input_fini(rtb_text_input_t *self)
 {
-	VECTOR_FREE(&self->text);
+	rtb_text_buffer_fini(&self->text);
 	rtb_label_fini(&self->label);
 	rtb_obj_fini(RTB_OBJECT(self));
 }
 
-rtb_text_input_t *rtb_text_input_new(void)
+rtb_text_input_t *rtb_text_input_new(rtb_t *rtb)
 {
 	rtb_text_input_t *self = calloc(1, sizeof(*self));
-	rtb_text_input_init(self, &self->impl);
+	rtb_text_input_init(rtb, self, &self->impl);
 
 	return self;
 }

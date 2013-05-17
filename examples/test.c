@@ -192,9 +192,9 @@ static int handle_input_key(struct rtb_object *obj,
 	return 1;
 }
 
-void add_input(rtb_container_t *root)
+void add_input(rtb_t *rtb, rtb_container_t *root)
 {
-	input = rtb_text_input_new();
+	input = rtb_text_input_new(rtb);
 
 	rtb_text_input_set_text(input, "hey ßßßß man §§§", -1);
 
@@ -275,7 +275,7 @@ int main(int argc, char **argv)
 
 	distribute_demo(RTB_OBJECT(delicious->win));
 	setup_ui(RTB_OBJECT(delicious->win));
-	add_input(RTB_OBJECT(delicious->win));
+	add_input(delicious, RTB_OBJECT(delicious->win));
 
 	rtb_event_loop(delicious);
 
