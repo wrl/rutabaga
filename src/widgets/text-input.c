@@ -211,20 +211,8 @@ static void fix_cursor(rtb_text_input_t *self)
 
 static void post_change(rtb_text_input_t *self)
 {
-	const rtb_utf8_t *text = rtb_text_input_get_text(self);
-
-	{
-		const rtb_utf8_t *fuck = text;
-
-		printf (" ::");
-		for (;*fuck;fuck++)
-			printf(" %02X", *fuck & 0xFF);
-		printf(" %2X", *fuck & 0xFF);
-
-		printf(" \"%s\"\n", text);
-	}
-
-	rtb_label_set_text(&self->label, text);
+	rtb_label_set_text(&self->label,
+			rtb_text_buffer_get_text(&self->text));
 }
 
 static int handle_key_press(rtb_text_input_t *self, const rtb_ev_key_t *e)
