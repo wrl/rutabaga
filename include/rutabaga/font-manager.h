@@ -37,6 +37,8 @@ struct rtb_font {
 	char *path;
 	int size;
 
+	float lcd_gamma;
+
 	texture_font_t *txfont;
 	rtb_font_manager_t *fm;
 };
@@ -44,10 +46,13 @@ struct rtb_font {
 struct rtb_font_manager {
 	rtb_win_t *win;
 
-	struct {
-		rtb_shader_program_t alpha;
-		rtb_shader_program_t lcd;
-	} shaders;
+	struct rtb_font_shader {
+		RTB_INHERIT(rtb_shader_program);
+
+		GLint texture;
+		GLint atlas_pixel;
+		GLint gamma;
+	} shader;
 
 	struct {
 		rtb_font_t main;

@@ -55,7 +55,7 @@ static int utf8_idx(struct rtb_text_buffer *self, int idx)
  */
 
 int rtb_text_buffer_insert_u32(struct rtb_text_buffer *self,
-		int after_idx, char32_t c)
+		int after_idx, rtb_utf32_t c)
 {
 	rtb_utf8_t utf[6];
 	int len;

@@ -24,10 +24,28 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-uniform sampler2D texture;
+uniform mat4 projection;
+uniform mat4 modelview;
+
+uniform vec2 offset;
+uniform vec4 color;
+
+attribute vec2 position;
+attribute vec2 tex_coord;
+attribute float subpixel_shift;
+
+varying float shift;
 
 void main()
 {
-	float a = texture2D(texture, gl_TexCoord[0].xy).a;
-	gl_FragColor = vec4(gl_Color.rgb, gl_Color.a*a);
+	vec4 pixelization_vector = vec4(0.375, 0.375, 0.0, 0.0);
+	vec4 offset_vector = vec4(offset.x, offset.y, 0.0, 0.0);
+
+	shift = subpixel_shift;
+	gl_TexCoord[0].xy = tex_coord.xy;
+	gl_FrontColor = color;
+
+	gl_Position = projection *
+		(offset_vector + pixelization_vector +
+		 (modelview * vec4(position, 0.0, 1.0)));
 }

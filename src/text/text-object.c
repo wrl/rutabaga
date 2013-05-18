@@ -43,6 +43,7 @@
 struct text_vertex {
 	float x, y;
 	float s, t;
+	float shift;
 };
 
 int rtb_text_object_get_glyph_rect(rtb_text_object_t *self, int idx,
@@ -80,7 +81,7 @@ void rtb_text_object_update(rtb_text_object_t *self, const rtb_utf8_t *text)
 	float x0, y0, x1, y1;
 	float x, y;
 
-	char32_t codepoint, prev_codepoint;
+	rtb_utf32_t codepoint, prev_codepoint;
 	uint32_t state, prev_state;
 
 	assert(text);
@@ -95,6 +96,7 @@ void rtb_text_object_update(rtb_text_object_t *self, const rtb_utf8_t *text)
 
 	for (; *text; prev_state = state, text++) {
 		texture_glyph_t *glyph;
+		float s0, t0, s1, t1, x0_shift, x1_shift;
 
 		switch(u8dec(&state, &codepoint, *text)) {
 		case UTF8_ACCEPT:
@@ -119,29 +121,29 @@ void rtb_text_object_update(rtb_text_object_t *self, const rtb_utf8_t *text)
 		if (prev_codepoint)
 			x += texture_glyph_get_kerning(glyph, prev_codepoint);
 
-		x0 = x + glyph->offset_x;
-		y0 = y - glyph->offset_y;
+		x0 = x  + glyph->offset_x;
+		y0 = y  - glyph->offset_y;
 		x1 = x0 + glyph->width;
 		y1 = y0 + glyph->height;
 
+		s0 = glyph->s0;
+		s1 = glyph->s1;
+
+		t0 = glyph->t0;
+		t1 = glyph->t1;
+
+		x0_shift = x0 - floorf(x0);
+		x1_shift = x1 - floorf(x1);
+
+		x0 = floorf(x0);
+		x1 = floorf(x1);
+
 		GLuint indices[6] = {0, 1, 2, 0, 2, 3};
 		struct text_vertex vertices[4] = {
-			{   .x = x0,
-				.y = y0,
-				.s = glyph->s0,
-				.t = glyph->t0},
-			{   .x = x0,
-				.y = y1,
-				.s = glyph->s0,
-				.t = glyph->t1},
-			{   .x = x1,
-				.y = y1,
-				.s = glyph->s1,
-				.t = glyph->t1},
-			{   .x = x1,
-				.y = y0,
-				.s = glyph->s1,
-				.t = glyph->t0}
+			{x0, y0, s0, t0, x0_shift},
+			{x0, y1, s0, t1, x0_shift},
+			{x1, y1, s1, t1, x1_shift},
+			{x1, y0, s1, t0, x1_shift}
 		};
 
 		vertex_buffer_push_back(self->vertices, vertices, 4, indices, 6);
@@ -161,21 +163,29 @@ void rtb_text_object_update(rtb_text_object_t *self, const rtb_utf8_t *text)
 void rtb_text_object_render(rtb_text_object_t *self, rtb_obj_t *parent,
 		float x, float y, rtb_draw_state_t state)
 {
-	rtb_font_manager_t *fm = self->fm;
-	GLuint program = fm->shaders.alpha.program;
+	struct rtb_font_shader *shader;
+	rtb_font_manager_t *fm;
+	texture_atlas_t *atlas;
 
 	if (!vertex_buffer_size(self->vertices))
 		return;
 
-	rtb_render_use_program(parent, &fm->shaders.alpha);
-	glBindTexture(GL_TEXTURE_2D, fm->atlas->id);
+	fm = self->fm;
+	shader = &fm->shader;
+	atlas = fm->atlas;
 
-	glUniform1i(glGetUniformLocation(program, "texture"), 0);
+	rtb_render_use_program(parent, RTB_SHADER_PROGRAM(shader));
+	glBindTexture(GL_TEXTURE_2D, atlas->id);
+	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-	/* normal */
-	glUniform2f(glGetUniformLocation(program, "offset"), x, y);
+	glUniform1i(shader->texture, 0);
+	glUniform1f(shader->gamma, self->font->lcd_gamma);
+	glUniform2f(shader->offset, x, y);
+
+	glUniform3f(shader->atlas_pixel,
+			1.f / atlas->width, 1.f / atlas->height, atlas->depth);
+
 	rtb_render_use_style_fg(parent, state);
-
 	vertex_buffer_render(self->vertices, GL_TRIANGLES);
 }
 
@@ -188,7 +198,7 @@ rtb_text_object_t *rtb_text_object_new(rtb_font_manager_t *fm,
 		font = &fm->fonts.main;
 
 	self->fm = fm;
-	self->vertices = vertex_buffer_new("position:2f,tex_coord:2f");
+	self->vertices = vertex_buffer_new("position:2f,tex_coord:2f,subpixel_shift:1f");
 	self->font = font;
 
 	if (text)

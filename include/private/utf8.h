@@ -23,7 +23,8 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <uchar.h>
+
+#include "rutabaga/types.h"
 
 #define UTF8_ACCEPT 0
 #define UTF8_REJECT 12
@@ -49,7 +50,7 @@ static const uint8_t utf8d[] = {
 	12,36,12,12,12,12,12,12,12,12,12,12, 
 };
 
-static uint32_t inline u8dec(uint32_t *state, char32_t *codep,
+static uint32_t inline u8dec(uint32_t *state, rtb_utf32_t *codep,
 		uint8_t byte) {
 	uint32_t type = utf8d[byte];
 
@@ -86,7 +87,7 @@ static uint32_t inline u8dec(uint32_t *state, char32_t *codep,
  * Author: Rob Bradford <rob@linux.intel.com>
  */
 
-static int inline u8enc(uint32_t unichar, char *buffer)
+static int inline u8enc(rtb_utf32_t unichar, char *buffer)
 {
 	int count, shift, length;
 	uint8_t head;

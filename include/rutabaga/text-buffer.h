@@ -26,14 +26,14 @@
 
 #pragma once
 
-#include "rutabaga/rutabaga.h"
+#include "rutabaga/types.h"
 
 #include "wwrl/vector.h"
 
 VECTOR(rtb_text_buffer, rtb_utf8_t);
 
 int rtb_text_buffer_insert_u32(struct rtb_text_buffer *,
-		int after_idx, char32_t c);
+		int after_idx, rtb_utf32_t c);
 int rtb_text_buffer_erase_char(struct rtb_text_buffer *, int idx);
 
 /**

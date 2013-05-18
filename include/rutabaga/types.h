@@ -113,6 +113,7 @@ typedef enum {
  */
 
 typedef char rtb_utf8_t;
+typedef int32_t rtb_utf32_t;
 
 /**
  * structures

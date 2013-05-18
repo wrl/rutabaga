@@ -38,7 +38,6 @@
 #include <limits.h>
 
 #include "rutabaga/rutabaga.h"
-
 #include "texture-atlas.h"
 
 
@@ -48,9 +47,13 @@ texture_atlas_new( const size_t width,
                    const size_t height,
                    const size_t depth )
 {
-    assert( (depth == 1) || (depth == 3) || (depth == 4) );
-
     texture_atlas_t *self = (texture_atlas_t *) malloc( sizeof(texture_atlas_t) );
+
+    // We want a one pixel border around the whole atlas to avoid any artefact when
+    // sampling texture
+    ivec3 node = {{1,1,width-2}};
+
+    assert( (depth == 1) || (depth == 3) || (depth == 4) );
     if( self == NULL)
     {
         fprintf( stderr,
@@ -63,10 +66,6 @@ texture_atlas_new( const size_t width,
     self->height = height;
     self->depth = depth;
     self->id = 0;
-
-    // We want a one pixel border around the whole atlas to avoid any artefact when
-    // sampling texture
-    ivec3 node = {{1,1,width-2}};
 
     vector_push_back( self->nodes, &node );
     self->data = (unsigned char *)
@@ -93,7 +92,7 @@ texture_atlas_delete( texture_atlas_t *self )
     {
         free( self->data );
     }
-    if( !self->id )
+    if( self->id )
     {
         glDeleteTextures( 1, &self->id );
     }
@@ -111,6 +110,10 @@ texture_atlas_set_region( texture_atlas_t * self,
                           const unsigned char * data,
                           const size_t stride )
 {
+    size_t i;
+    size_t depth;
+    size_t charsize;
+
     assert( self );
     assert( x > 0);
     assert( y > 0);
@@ -119,12 +122,11 @@ texture_atlas_set_region( texture_atlas_t * self,
     assert( y < (self->height-1));
     assert( (y + height) <= (self->height-1));
 
-    size_t i;
-    size_t depth = self->depth;
-    size_t charsize = sizeof(char);
+    depth = self->depth;
+    charsize = sizeof(char);
     for( i=0; i<height; ++i )
     {
-        memcpy( self->data+((y+i)*self->width + x ) * charsize * depth, 
+        memcpy( self->data+((y+i)*self->width + x ) * charsize * depth,
                 data + (i*stride) * charsize, width * charsize * depth  );
     }
 }
@@ -137,11 +139,17 @@ texture_atlas_fit( texture_atlas_t * self,
                    const size_t width,
                    const size_t height )
 {
+    ivec3 *node;
+    int x, y, width_left;
+	size_t i;
+
     assert( self );
 
-    ivec3 *node = (ivec3 *) (vector_get( self->nodes, index ));
-    int x = node->x, y, width_left = width;
-	size_t i = index;
+    node = (ivec3 *) (vector_get( self->nodes, index ));
+    x = node->x;
+	y = node->y;
+    width_left = width;
+	i = index;
 
 	if ( (x + width) > (self->width-1) )
     {
@@ -170,10 +178,10 @@ texture_atlas_fit( texture_atlas_t * self,
 void
 texture_atlas_merge( texture_atlas_t * self )
 {
-    assert( self );
-
     ivec3 *node, *next;
     size_t i;
+
+    assert( self );
 
 	for( i=0; i< self->nodes->size-1; ++i )
     {
@@ -195,12 +203,13 @@ texture_atlas_get_region( texture_atlas_t * self,
                           const size_t width,
                           const size_t height )
 {
-    assert( self );
 
 	int y, best_height, best_width, best_index;
     ivec3 *node, *prev;
     ivec4 region = {{0,0,width,height}};
     size_t i;
+
+    assert( self );
 
     best_height = INT_MAX;
     best_index  = -1;
@@ -222,7 +231,7 @@ texture_atlas_get_region( texture_atlas_t * self,
 			}
         }
     }
-   
+
 	if( best_index == -1 )
     {
         region.x = -1;
@@ -280,6 +289,8 @@ texture_atlas_get_region( texture_atlas_t * self,
 void
 texture_atlas_clear( texture_atlas_t * self )
 {
+    ivec3 node = {{1,1,1}};
+
     assert( self );
     assert( self->data );
 
@@ -287,7 +298,8 @@ texture_atlas_clear( texture_atlas_t * self )
     self->used = 0;
     // We want a one pixel border around the whole atlas to avoid any artefact when
     // sampling texture
-    ivec3 node = {{1,1,self->width-2}};
+    node.z = self->width-2;
+
     vector_push_back( self->nodes, &node );
     memset( self->data, 0, self->width*self->height*self->depth );
 }

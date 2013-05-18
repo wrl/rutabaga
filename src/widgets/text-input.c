@@ -92,11 +92,11 @@ static void update_cursor(rtb_text_input_t *self)
 		 * we position it halfway between the character it's after
 		 * and the one it's before */
 
-		if (!rtb_text_object_get_glyph_rect(self->label.tobj,
+		if (rtb_text_object_get_glyph_rect(self->label.tobj,
 					self->cursor_position + 1, &glyphs[1]))
-			x = glyphs[1].p1.x - 1.f;
+			x = glyphs[0].p2.x;
 		else
-			x = glyphs[0].p2.x + 1.f;
+			x = glyphs[1].p1.x;
 	} else
 		x = 0.f;
 
@@ -166,7 +166,7 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
  * text buffer
  */
 
-static void push_u32(rtb_text_input_t *self, char32_t c)
+static void push_u32(rtb_text_input_t *self, rtb_utf32_t c)
 {
 	rtb_text_buffer_insert_u32(&self->text, self->cursor_position, c);
 	self->cursor_position++;

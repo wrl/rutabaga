@@ -117,7 +117,7 @@ def build(bld):
 
 	shader("default")
 	shader("surface")
-	shader("text-alpha")
+	shader("text")
 	shader("patchbay-canvas")
 
 	# outputs

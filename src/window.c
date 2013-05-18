@@ -128,7 +128,7 @@ void rtb_window_draw(rtb_win_t *self)
 			style->bg.g,
 			style->bg.b,
 			style->bg.a);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	self->draw_cb(RTB_OBJECT(self), RTB_DRAW_NORMAL);
 	window_impl_swap_buffers(self);

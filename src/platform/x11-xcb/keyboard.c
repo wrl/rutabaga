@@ -33,7 +33,8 @@
 
 #include "xrtb.h"
 
-rtb_keysym_t xrtb_keyboard_translate_keysym(xcb_keysym_t xsym, char32_t *chr)
+rtb_keysym_t xrtb_keyboard_translate_keysym(xcb_keysym_t xsym,
+		rtb_utf32_t *chr)
 {
 	switch (xsym) {
 #define CODE(xkey, rtbkey) case xkey: return rtbkey

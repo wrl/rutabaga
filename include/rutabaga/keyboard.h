@@ -26,7 +26,8 @@
 
 #pragma once
 
-#include <uchar.h>
+#include <stdint.h>
+#include "rutabaga/types.h"
 
 /**
  * types
@@ -124,5 +125,5 @@ struct rtb_event_key {
 	rtb_modkey_t modkeys;
 	rtb_keysym_t keysym;
 
-	char32_t character;
+	rtb_utf32_t character;
 };

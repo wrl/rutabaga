@@ -33,14 +33,22 @@
 #include "rutabaga/window.h"
 #include "rutabaga/shader.h"
 
-#include "shaders/text-alpha.glsl.h"
+#include "shaders/text.glsl.h"
 
 #define ERR(...) fprintf(stderr, "rutabaga: " __VA_ARGS__)
-#define FONT "./assets/fonts/pf_tempesta_seven/pf_tempesta_seven.ttf"
+#define FONT "./assets/fonts/open_sans/OpenSans-Regular.ttf"
+
+static const uint8_t lcd_weights[] = {
+	0x00,
+	0x55,
+	0x56,
+	0x55,
+	0x00
+};
 
 /* characters we cache by default in the texture */
-
-static const char32_t *cache = (char32_t *)
+/* XXX: this is going to break so hard when we do the windows port */
+static const rtb_utf32_t *cache =
 	L" abcdefghijklmnopqrstuvwxyz"
 	L"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	L",.!?;"
@@ -58,6 +66,8 @@ int rtb_font_manager_load_font(rtb_font_manager_t *fm, rtb_font_t *font,
 	font->path = strdup(path);
 	font->size = size;
 	font->fm   = fm;
+
+	memcpy(font->txfont->lcd_weights, lcd_weights, sizeof(lcd_weights));
 
 	texture_font_load_glyphs(font->txfont, cache);
 	return 0;
@@ -78,19 +88,32 @@ int rtb_font_manager_init(rtb_win_t *win)
 		goto err_calloc;
 	}
 
-	if (!rtb_shader_program_create(&fm->shaders.alpha,
-				TEXT_ALPHA_VERT_SHADER, TEXT_ALPHA_FRAG_SHADER)) {
-		ERR("couldn't compile font shaders.\n");
+	if (!rtb_shader_program_create(RTB_SHADER_PROGRAM(&fm->shader),
+				TEXT_VERT_SHADER, TEXT_FRAG_SHADER)) {
+		ERR("couldn't compile text shader.\n");
 		goto err_shader;
 	}
 
-	fm->atlas = texture_atlas_new(512, 512, 1);
+#define CACHE_UNIFORM(UNIFORM) \
+	fm->shader.UNIFORM = glGetUniformLocation(fm->shader.program, #UNIFORM)
 
-	if (rtb_font_manager_load_font(fm, &fm->fonts.main, FONT, 8) < 0)
+	CACHE_UNIFORM(offset);
+	CACHE_UNIFORM(texture);
+	CACHE_UNIFORM(atlas_pixel);
+	CACHE_UNIFORM(gamma);
+
+#undef CACHE_UNIFORM
+
+	fm->atlas = texture_atlas_new(512, 512, 3);
+
+	if (rtb_font_manager_load_font(fm, &fm->fonts.main, FONT, 12) < 0)
 		goto err_main_font;
 
-	if (rtb_font_manager_load_font(fm, &fm->fonts.big, FONT, 16) < 0)
+	if (rtb_font_manager_load_font(fm, &fm->fonts.big, FONT, 20) < 0)
 		goto err_big_font;
+
+	fm->fonts.main.lcd_gamma = .7f;
+	fm->fonts.big.lcd_gamma  = .7f;
 
 	fm->win = win;
 	win->font_manager = fm;
@@ -99,7 +122,6 @@ int rtb_font_manager_init(rtb_win_t *win)
 err_big_font:
 	rtb_font_manager_free_font(&fm->fonts.main);
 err_main_font:
-	rtb_shader_program_free(&fm->shaders.alpha);
 err_shader:
 	free(fm);
 err_calloc:
@@ -117,7 +139,7 @@ void rtb_font_manager_fini(rtb_win_t *win)
 	rtb_font_manager_free_font(&fm->fonts.big);
 	texture_atlas_delete(fm->atlas);
 
-	rtb_shader_program_free(&fm->shaders.alpha);
+	rtb_shader_program_free(RTB_SHADER_PROGRAM(&fm->shader));
 
 	free(fm);
 }
