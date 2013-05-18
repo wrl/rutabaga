@@ -62,7 +62,7 @@ static struct rtb_object_implementation super;
 targa_t tile;
 
 static struct {
-	RTB_INHERIT(rtb_shader_program);
+	RTB_INHERIT(rtb_shader);
 
 	struct {
 		GLint texture;
@@ -81,7 +81,7 @@ static void init_shaders()
 	if (shader.program)
 		return;
 
-	if (!rtb_shader_program_create(RTB_SHADER_PROGRAM(&shader),
+	if (!rtb_shader_create(RTB_SHADER(&shader),
 				PATCHBAY_CANVAS_VERT_SHADER,
 				PATCHBAY_CANVAS_FRAG_SHADER))
 		puts("rtb_patchbay: init_shaders() failed!");
@@ -157,7 +157,7 @@ static void draw_bg(rtb_patchbay_t *self)
 	rtb_style_t *style = self->style;
 
 	rtb_render_push(obj);
-	rtb_render_use_program(obj, RTB_SHADER_PROGRAM(&shader));
+	rtb_render_use_shader(obj, RTB_SHADER(&shader));
 	rtb_render_set_position(obj, 0, 0);
 
 	/* draw the background */

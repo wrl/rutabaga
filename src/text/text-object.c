@@ -174,7 +174,7 @@ void rtb_text_object_render(rtb_text_object_t *self, rtb_obj_t *parent,
 	shader = &fm->shader;
 	atlas = fm->atlas;
 
-	rtb_render_use_program(parent, RTB_SHADER_PROGRAM(shader));
+	rtb_render_use_shader(parent, RTB_SHADER(shader));
 	glBindTexture(GL_TEXTURE_2D, atlas->id);
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 

@@ -52,7 +52,7 @@ static const GLubyte box_indices[] = {
 };
 
 static struct {
-	RTB_INHERIT(rtb_shader_program);
+	RTB_INHERIT(rtb_shader);
 
 	GLint texture;
 	GLint position;
@@ -66,7 +66,7 @@ static void init_shaders()
 	if (shader.program)
 		return;
 
-	if (!rtb_shader_program_create(RTB_SHADER_PROGRAM(&shader),
+	if (!rtb_shader_create(RTB_SHADER(&shader),
 				SURFACE_VERT_SHADER,
 				SURFACE_FRAG_SHADER))
 		puts("rtb_surface: init_shaders() failed!");
@@ -181,7 +181,7 @@ void rtb_surface_blit(rtb_surface_t *self)
 	rtb_obj_t *obj = RTB_OBJECT(self);
 
 	rtb_render_push(obj);
-	rtb_render_use_program(obj, RTB_SHADER_PROGRAM(&shader));
+	rtb_render_use_shader(obj, RTB_SHADER(&shader));
 	rtb_render_set_position(obj, 0, 0);
 
 	glEnable(GL_TEXTURE_2D);

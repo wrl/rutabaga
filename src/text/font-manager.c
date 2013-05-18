@@ -88,7 +88,7 @@ int rtb_font_manager_init(rtb_win_t *win)
 		goto err_calloc;
 	}
 
-	if (!rtb_shader_program_create(RTB_SHADER_PROGRAM(&fm->shader),
+	if (!rtb_shader_create(RTB_SHADER(&fm->shader),
 				TEXT_VERT_SHADER, TEXT_FRAG_SHADER)) {
 		ERR("couldn't compile text shader.\n");
 		goto err_shader;
@@ -139,7 +139,7 @@ void rtb_font_manager_fini(rtb_win_t *win)
 	rtb_font_manager_free_font(&fm->fonts.big);
 	texture_atlas_delete(fm->atlas);
 
-	rtb_shader_program_free(RTB_SHADER_PROGRAM(&fm->shader));
+	rtb_shader_free(RTB_SHADER(&fm->shader));
 
 	free(fm);
 }

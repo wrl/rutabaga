@@ -41,7 +41,11 @@ struct rtb_window {
 	rtb_font_manager_t *font_manager;
 
 	/* public *********************************/
-	rtb_shader_program_t default_shader;
+	struct {
+		struct rtb_shader dfault;
+		struct rtb_shader surface;
+	} shaders;
+
 	rtb_style_t *style_list;
 
 	mat4 identity;

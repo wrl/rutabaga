@@ -47,7 +47,7 @@ struct rtb_font_manager {
 	rtb_win_t *win;
 
 	struct rtb_font_shader {
-		RTB_INHERIT(rtb_shader_program);
+		RTB_INHERIT(rtb_shader);
 
 		GLint texture;
 		GLint atlas_pixel;

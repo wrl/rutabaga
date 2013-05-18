@@ -32,7 +32,7 @@
 #include "bsd/queue.h"
 
 struct rtb_render_context {
-	rtb_shader_program_t *shader;
+	struct rtb_shader *shader;
 
 	struct {
 		TAILQ_HEAD(rtb_render_tailq, rtb_object) every_frame;
@@ -48,7 +48,7 @@ void rtb_render_set_color(rtb_obj_t *,
 		GLfloat r, GLfloat g, GLfloat b, GLfloat a);
 void rtb_render_set_modelview(rtb_obj_t *, const GLfloat *matrix);
 
-void rtb_render_use_program(rtb_obj_t *obj, rtb_shader_program_t *p);
+void rtb_render_use_shader(rtb_obj_t *obj, struct rtb_shader *shader);
 void rtb_render_clear(rtb_obj_t *obj);
 void rtb_render_push(rtb_obj_t *obj);
 void rtb_render_pop(rtb_obj_t *obj);

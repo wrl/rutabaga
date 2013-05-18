@@ -83,27 +83,28 @@ void rtb_render_set_modelview(rtb_obj_t *obj, const GLfloat *matrix)
 		1, GL_FALSE, matrix);
 }
 
-void rtb_render_use_program(rtb_obj_t *obj, rtb_shader_program_t *p)
+
+void rtb_render_use_shader(rtb_obj_t *obj, struct rtb_shader *shader)
 {
 	GLuint program;
 
-	if (!p)
-		p = &obj->window->default_shader;
+	if (!shader)
+		shader = &obj->window->shaders.dfault;
 
-	program = p->program;
-	CONTEXT.shader = p;
+	program = shader->program;
+	CONTEXT.shader = shader;
 
 	glUseProgram(program);
 
-	glUniformMatrix4fv(p->matrices.projection,
+	glUniformMatrix4fv(shader->matrices.projection,
 		1, GL_FALSE, obj->surface->projection.data);
-	glUniformMatrix4fv(p->matrices.modelview,
+	glUniformMatrix4fv(shader->matrices.modelview,
 		1, GL_FALSE, obj->window->identity.data);
 }
 
 void rtb_render_push(rtb_obj_t *obj)
 {
-	rtb_render_use_program(obj, NULL);
+	rtb_render_use_shader(obj, NULL);
 
 	glScissor(obj->x - obj->surface->x,
 			obj->surface->y + obj->surface->h - obj->h - obj->y,

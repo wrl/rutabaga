@@ -50,9 +50,9 @@
 
 static struct rtb_object_implementation super;
 
-static int initialize_default_shader(rtb_win_t *self)
+static int initialize_shaders(rtb_win_t *self)
 {
-	if (!rtb_shader_program_create(&self->default_shader,
+	if (!rtb_shader_create(&self->shaders.dfault,
 				DEFAULT_VERT_SHADER, DEFAULT_FRAG_SHADER))
 		return 1;
 	return 0;
@@ -169,7 +169,7 @@ rtb_win_t *rtb_window_open(rtb_t *r, int h, int w, const char *title)
 
 	self->style_list = rtb_style_get_defaults();
 
-	if (initialize_default_shader(self))
+	if (initialize_shaders(self))
 		goto err_shaders;
 
 	if (rtb_font_manager_init(self))
@@ -197,7 +197,7 @@ void rtb_window_close(rtb_win_t *self)
 	assert(self);
 
 	rtb_font_manager_fini(self);
-	rtb_shader_program_free(&self->default_shader);
+	rtb_shader_free(&self->shaders.dfault);
 	rtb_type_unref(self->type);
 
 	window_impl_close(self);

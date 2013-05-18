@@ -29,9 +29,9 @@
 #include "rutabaga/types.h"
 #include "rutabaga/object.h"
 
-#define RTB_SHADER_PROGRAM(x) RTB_UPCAST(x, rtb_shader_program)
+#define RTB_SHADER(x) RTB_UPCAST(x, rtb_shader)
 
-struct rtb_shader_program {
+struct rtb_shader {
 	GLuint program;
 
 	GLuint vertex_shader;
@@ -47,9 +47,6 @@ struct rtb_shader_program {
 	GLuint color;
 };
 
-GLuint rtb_shader_compile(GLenum type, const char *source);
-GLuint rtb_shader_program_link(rtb_shader_program_t *p);
-
-void rtb_shader_program_free(rtb_shader_program_t *p);
-int rtb_shader_program_create(rtb_shader_program_t *p,
+void rtb_shader_free(struct rtb_shader *);
+int rtb_shader_create(struct rtb_shader *shader,
 		const char *vertex_src, const char *fragment_src);

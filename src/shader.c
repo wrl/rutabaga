@@ -68,25 +68,21 @@ static void print_program_error(GLuint program)
 			"openGL said:\n     %s\n\n", buf);
 }
 
-/**
- * public API
- */
-
-GLuint rtb_shader_program_link(rtb_shader_program_t *p)
+static GLuint shader_link(struct rtb_shader *shader)
 {
 	GLuint program;
 	GLint status;
 
 	program = glCreateProgram();
 
-	glAttachShader(program, p->vertex_shader);
-	glAttachShader(program, p->fragment_shader);
+	glAttachShader(program, shader->vertex_shader);
+	glAttachShader(program, shader->fragment_shader);
 
 	glLinkProgram(program);
 	glGetProgramiv(program, GL_LINK_STATUS, &status);
 
 	if (status == GL_TRUE) {
-		p->program = program;
+		shader->program = program;
 		return program;
 	}
 
@@ -95,7 +91,7 @@ GLuint rtb_shader_program_link(rtb_shader_program_t *p)
 	return 0;
 }
 
-GLuint rtb_shader_compile(GLenum type, const char *source)
+static GLuint glsl_compile(GLenum type, const char *source)
 {
 	GLuint shader;
 	GLint status;
@@ -113,36 +109,45 @@ GLuint rtb_shader_compile(GLenum type, const char *source)
 	return 0;
 }
 
-int rtb_shader_program_create(rtb_shader_program_t *p,
+/**
+ * public API
+ */
+
+int rtb_shader_create(struct rtb_shader *shader,
 		const char *vertex_src, const char *fragment_src)
 {
 	int status;
 
-	p->vertex_shader = rtb_shader_compile(GL_VERTEX_SHADER, vertex_src);
-	p->fragment_shader = rtb_shader_compile(GL_FRAGMENT_SHADER, fragment_src);
+	shader->vertex_shader = glsl_compile(GL_VERTEX_SHADER, vertex_src);
+	shader->fragment_shader = glsl_compile(GL_FRAGMENT_SHADER, fragment_src);
 
-	if (!p->vertex_shader || !p->fragment_shader)
+	if (!shader->vertex_shader || !shader->fragment_shader)
 		return 0;
 
-	status = rtb_shader_program_link(p);
+	status = shader_link(shader);
 	if (!status)
 		return 0;
 
-	p->matrices.modelview  = glGetUniformLocation(p->program, "modelview");
-	p->matrices.projection = glGetUniformLocation(p->program, "projection");
+#define CACHE_UNIFORM(TO, NAME) \
+	shader->TO = glGetUniformLocation(shader->program, NAME)
+#define CACHE_SIMPLE_UNIFORM(NAME) CACHE_UNIFORM(NAME, #NAME)
+#define CACHE_MATRIX_UNIFORM(NAME) CACHE_UNIFORM(matrices.NAME, #NAME)
 
-	p->offset = glGetUniformLocation(p->program, "offset");
-	p->color  = glGetUniformLocation(p->program, "color");
+	CACHE_MATRIX_UNIFORM(modelview);
+	CACHE_MATRIX_UNIFORM(projection);
+
+	CACHE_SIMPLE_UNIFORM(offset);
+	CACHE_SIMPLE_UNIFORM(color);
 
 	return status;
 }
 
-void rtb_shader_program_free(rtb_shader_program_t *p)
+void rtb_shader_free(struct rtb_shader *shader)
 {
-	glDetachShader(p->program, p->vertex_shader);
-	glDetachShader(p->program, p->fragment_shader);
+	glDetachShader(shader->program, shader->vertex_shader);
+	glDetachShader(shader->program, shader->fragment_shader);
 
-	glDeleteShader(p->vertex_shader);
-	glDeleteShader(p->fragment_shader);
-	glDeleteProgram(p->program);
+	glDeleteShader(shader->vertex_shader);
+	glDeleteShader(shader->fragment_shader);
+	glDeleteProgram(shader->program);
 }
