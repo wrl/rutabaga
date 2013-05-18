@@ -30,7 +30,7 @@ uniform mat4 modelview;
 uniform vec2 offset;
 uniform vec4 color;
 
-attribute vec2 position;
+attribute vec2 vertex;
 attribute vec2 tex_coord;
 
 void main()
@@ -43,5 +43,5 @@ void main()
 
 	gl_Position = projection *
 		(offset_vector + pixelization_vector +
-		 (modelview * vec4(position, 0.0, 1.0)));
+		 (modelview * vec4(vertex.xy, 0.0, 1.0)));
 }

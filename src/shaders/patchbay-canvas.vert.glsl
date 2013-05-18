@@ -29,7 +29,7 @@ uniform mat4 modelview;
 
 uniform vec2 offset;
 
-attribute vec2 position;
+attribute vec2 vertex;
 
 void main()
 {
@@ -37,5 +37,6 @@ void main()
 	vec4 offset_vector = vec4(offset.x, offset.y, 0.0, 0.0);
 
 	gl_Position = projection *
-		(offset_vector + pixelization_vector + (modelview * vec4(position, 0.0, 1.0)));
+		(offset_vector + pixelization_vector +
+		 (modelview * vec4(vertex.xy, 0.0, 1.0)));
 }

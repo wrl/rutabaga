@@ -198,7 +198,7 @@ rtb_text_object_t *rtb_text_object_new(rtb_font_manager_t *fm,
 		font = &fm->fonts.main;
 
 	self->fm = fm;
-	self->vertices = vertex_buffer_new("position:2f,tex_coord:2f,subpixel_shift:1f");
+	self->vertices = vertex_buffer_new("vertex:2f,tex_coord:2f,subpixel_shift:1f");
 	self->font = font;
 
 	if (text)

@@ -43,7 +43,13 @@ struct rtb_window {
 	/* public *********************************/
 	struct {
 		struct rtb_shader dfault;
-		struct rtb_shader surface;
+
+		struct rtb_surface_shader {
+			RTB_INHERIT(rtb_shader);
+
+			GLint texture;
+			GLint tex_coord;
+		} surface;
 	} shaders;
 
 	rtb_style_t *style_list;

@@ -36,7 +36,6 @@
 
 #include "private/util.h"
 #include "private/layout-debug.h"
-#include "shaders/surface.glsl.h"
 
 #define SELF_FROM(obj) \
 	struct rtb_surface *self = RTB_OBJECT_AS(obj, rtb_surface)
@@ -50,31 +49,6 @@ static struct rtb_object_implementation super;
 static const GLubyte box_indices[] = {
 	0, 1, 3, 2
 };
-
-static struct {
-	RTB_INHERIT(rtb_shader);
-
-	GLint texture;
-	GLint position;
-	GLint tex_coord;
-} shader = {
-	.program = 0
-};
-
-static void init_shaders()
-{
-	if (shader.program)
-		return;
-
-	if (!rtb_shader_create(RTB_SHADER(&shader),
-				SURFACE_VERT_SHADER,
-				SURFACE_FRAG_SHADER))
-		puts("rtb_surface: init_shaders() failed!");
-
-	shader.position  = glGetAttribLocation(shader.program, "position");
-	shader.tex_coord = glGetAttribLocation(shader.program, "tex_coord");
-	shader.texture   = glGetUniformLocation(shader.program, "texture");
-}
 
 static void cache_to_vbo(rtb_surface_t *self)
 {
@@ -178,22 +152,23 @@ static void realize(rtb_obj_t *self, rtb_obj_t *parent,
 
 void rtb_surface_blit(rtb_surface_t *self)
 {
+	struct rtb_surface_shader *shader = &self->window->shaders.surface;
 	rtb_obj_t *obj = RTB_OBJECT(self);
 
 	rtb_render_push(obj);
-	rtb_render_use_shader(obj, RTB_SHADER(&shader));
+	rtb_render_use_shader(obj, RTB_SHADER(shader));
 	rtb_render_set_position(obj, 0, 0);
 
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, self->texture);
-	glUniform1i(shader.texture, 0);
+	glUniform1i(shader->texture, 0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, self->vbo);
-	glEnableVertexAttribArray(shader.position);
-	glVertexAttribPointer(shader.position,
+	glEnableVertexAttribArray(shader->vertex);
+	glVertexAttribPointer(shader->vertex,
 			2, GL_FLOAT, GL_FALSE, 16, 0);
-	glEnableVertexAttribArray(shader.tex_coord);
-	glVertexAttribPointer(shader.tex_coord,
+	glEnableVertexAttribArray(shader->tex_coord);
+	glVertexAttribPointer(shader->tex_coord,
 			2, GL_FLOAT, GL_FALSE, 16, (void *) 8);
 
 	glDrawElements(
@@ -294,8 +269,6 @@ int rtb_surface_init(rtb_surface_t *self,
 	glGenBuffers(1, &self->vbo);
 
 	self->surface_state = RTB_SURFACE_INVALID;
-
-	init_shaders();
 
 	return 0;
 }

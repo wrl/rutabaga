@@ -116,6 +116,7 @@ static GLuint glsl_compile(GLenum type, const char *source)
 int rtb_shader_create(struct rtb_shader *shader,
 		const char *vertex_src, const char *fragment_src)
 {
+	GLuint program;
 	int status;
 
 	shader->vertex_shader = glsl_compile(GL_VERTEX_SHADER, vertex_src);
@@ -128,8 +129,12 @@ int rtb_shader_create(struct rtb_shader *shader,
 	if (!status)
 		return 0;
 
+	program = shader->program;
+
+#define CACHE_ATTRIBUTE(NAME) \
+	shader->NAME = glGetAttribLocation(program, #NAME)
 #define CACHE_UNIFORM(TO, NAME) \
-	shader->TO = glGetUniformLocation(shader->program, NAME)
+	shader->TO = glGetUniformLocation(program, NAME)
 #define CACHE_SIMPLE_UNIFORM(NAME) CACHE_UNIFORM(NAME, #NAME)
 #define CACHE_MATRIX_UNIFORM(NAME) CACHE_UNIFORM(matrices.NAME, #NAME)
 
@@ -138,6 +143,8 @@ int rtb_shader_create(struct rtb_shader *shader,
 
 	CACHE_SIMPLE_UNIFORM(offset);
 	CACHE_SIMPLE_UNIFORM(color);
+
+	CACHE_ATTRIBUTE(vertex);
 
 	return status;
 }
