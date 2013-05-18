@@ -27,7 +27,8 @@
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/render.h"
 
-#include "layout-debug.h"
+#include "private/layout-debug.h"
+#include "private/util.h"
 
 static GLuint vbo = 0;
 
