@@ -2,6 +2,11 @@
 .lock-waf*
 .waf*
 
+# python stuff
+__pycache__
+*.pyc
+*.pyo
+
 # build stuff
 build/
 

@@ -17,6 +17,8 @@ def separator():
 	# print() (as a function) doesn't work in python <2.7
 	sys.stdout.write("\n")
 
+sys.path.append("./python")
+
 #
 # dep checking functions
 #
