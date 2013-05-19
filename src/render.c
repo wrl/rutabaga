@@ -102,7 +102,7 @@ void rtb_render_use_shader(rtb_obj_t *obj, struct rtb_shader *shader)
 		1, GL_FALSE, obj->window->identity.data);
 }
 
-void rtb_render_push(rtb_obj_t *obj)
+void rtb_render_reset(rtb_obj_t *obj)
 {
 	rtb_render_use_shader(obj, NULL);
 
@@ -111,6 +111,14 @@ void rtb_render_push(rtb_obj_t *obj)
 			obj->w, obj->h);
 
 	glEnable(GL_SCISSOR_TEST);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void rtb_render_push(rtb_obj_t *obj)
+{
+	rtb_render_reset(obj);
 }
 
 void rtb_render_clear(rtb_obj_t *obj)

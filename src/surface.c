@@ -96,8 +96,10 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
 
+	rtb_render_push(obj);
 	rtb_surface_draw_children(self, state);
 	rtb_surface_blit(self);
+	rtb_render_pop(obj);
 }
 
 static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
@@ -155,7 +157,7 @@ void rtb_surface_blit(rtb_surface_t *self)
 	struct rtb_surface_shader *shader = &self->window->shaders.surface;
 	rtb_obj_t *obj = RTB_OBJECT(self);
 
-	rtb_render_push(obj);
+	rtb_render_reset(obj);
 	rtb_render_use_shader(obj, RTB_SHADER(shader));
 	rtb_render_set_position(obj, 0, 0);
 
@@ -171,6 +173,9 @@ void rtb_surface_blit(rtb_surface_t *self)
 	glVertexAttribPointer(shader->tex_coord,
 			2, GL_FLOAT, GL_FALSE, 16, (void *) 8);
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
 	glDrawElements(
 			GL_TRIANGLE_STRIP, ARRAY_LENGTH(box_indices),
 			GL_UNSIGNED_BYTE, box_indices);
@@ -180,8 +185,6 @@ void rtb_surface_blit(rtb_surface_t *self)
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glDisable(GL_TEXTURE_2D);
-
-	rtb_render_pop(obj);
 
 	LAYOUT_DEBUG_DRAW_BOX(obj);
 }
@@ -207,13 +210,17 @@ void rtb_surface_draw_children(rtb_surface_t *self, rtb_draw_state_t state)
 	glBindFramebuffer(GL_FRAMEBUFFER, self->fbo);
 	glViewport(0, 0, self->w, self->h);
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	switch (self->surface_state) {
 	case RTB_SURFACE_INVALID:
 		glDisable(GL_SCISSOR_TEST);
 		rtb_render_clear(RTB_OBJECT(self));
+
+		while ((iter = TAILQ_FIRST(&ctx->queues.next_frame))) {
+			TAILQ_REMOVE(&ctx->queues.next_frame, iter, render_entry);
+
+			iter->render_entry.tqe_next = NULL;
+			iter->render_entry.tqe_prev = NULL;
+		}
 
 		TAILQ_FOREACH(iter, &self->children, child)
 			rtb_obj_draw(iter, RTB_DRAW_NORMAL);

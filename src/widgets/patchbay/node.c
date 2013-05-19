@@ -81,12 +81,12 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 
 	rtb_render_push(obj);
 	rtb_render_set_position(obj, 0.f, 0.f);
-	rtb_render_use_style_bg(obj, state);
 
 	glBindBuffer(GL_ARRAY_BUFFER, self->vbo);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
+	rtb_render_use_style_bg(obj, state);
 	glDrawElements(
 			GL_TRIANGLE_STRIP, ARRAY_LENGTH(box_indices),
 			GL_UNSIGNED_BYTE, box_indices);

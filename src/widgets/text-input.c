@@ -46,6 +46,10 @@
 static struct rtb_object_implementation super;
 
 static const GLubyte box_indices[] = {
+	0, 1, 3, 2
+};
+
+static const GLubyte line_indices[] = {
 	0, 1, 2, 3
 };
 
@@ -125,12 +129,13 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 
 	/* XXX: hack to get the outline to render in front of the
 	 *      label. need to fix the render push/pop system. */
-	rtb_render_push(obj);
-	rtb_render_clear(obj);
-	super.draw_cb(obj, state);
-	rtb_render_pop(obj);
 
 	rtb_render_push(obj);
+	rtb_render_clear(obj);
+
+	super.draw_cb(obj, state);
+
+	rtb_render_reset(obj);
 	rtb_render_set_position(obj, 0, 0);
 
 	if (self->window->focus == RTB_OBJECT(self)) {
@@ -153,8 +158,8 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 	glLineWidth(2.f);
 
 	glDrawElements(
-			GL_LINE_LOOP, ARRAY_LENGTH(box_indices),
-			GL_UNSIGNED_BYTE, box_indices);
+			GL_LINE_LOOP, ARRAY_LENGTH(line_indices),
+			GL_UNSIGNED_BYTE, line_indices);
 
 	glDisableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);

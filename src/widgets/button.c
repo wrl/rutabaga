@@ -85,6 +85,7 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 	SELF_FROM(obj);
 
 	rtb_render_push(obj);
+	rtb_render_clear(obj);
 	rtb_render_set_position(obj, 0, 0);
 
 	rtb_render_use_style_bg(obj, state);
@@ -101,6 +102,7 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	super.draw_cb(obj, state);
+	rtb_render_pop(obj);
 }
 
 /**
@@ -206,6 +208,7 @@ int rtb_button_init(rtb_button_t *self,
 
 	glGenBuffers(1, &self->vbo);
 
+	self->label.align = RTB_ALIGN_MIDDLE;
 	self->outer_pad.x =
 		self->outer_pad.y = 0.f;
 

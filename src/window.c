@@ -148,7 +148,10 @@ void rtb_window_draw(rtb_win_t *self)
 			style->bg.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	rtb_render_push(RTB_OBJECT(self));
 	self->draw_cb(RTB_OBJECT(self), RTB_DRAW_NORMAL);
+	rtb_render_pop(RTB_OBJECT(self));
+
 	window_impl_swap_buffers(self);
 }
 
@@ -159,9 +162,6 @@ void rtb_window_reinit(rtb_win_t *self)
 	self->x = self->y = 0.f;
 
 	glScissor(0, 0, self->w, self->h);
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	if (!self->window)
 		rtb_obj_realize(obj, NULL, RTB_SURFACE(self), self);

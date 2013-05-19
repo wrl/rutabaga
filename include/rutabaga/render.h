@@ -50,5 +50,7 @@ void rtb_render_set_modelview(rtb_obj_t *, const GLfloat *matrix);
 
 void rtb_render_use_shader(rtb_obj_t *obj, struct rtb_shader *shader);
 void rtb_render_clear(rtb_obj_t *obj);
+
+void rtb_render_reset(rtb_obj_t *obj);
 void rtb_render_push(rtb_obj_t *obj);
 void rtb_render_pop(rtb_obj_t *obj);

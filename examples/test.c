@@ -274,8 +274,8 @@ int main(int argc, char **argv)
 	rtb_attach(RTB_OBJECT(win), RTB_KEY_PRESS, handle_key_press, delicious);
 
 	distribute_demo(RTB_OBJECT(delicious->win));
-	setup_ui(RTB_OBJECT(delicious->win));
 	add_input(delicious, RTB_OBJECT(delicious->win));
+	setup_ui(RTB_OBJECT(delicious->win));
 
 	rtb_event_loop(delicious);
 

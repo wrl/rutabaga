@@ -176,7 +176,6 @@ void rtb_text_object_render(rtb_text_object_t *self, rtb_obj_t *parent,
 
 	rtb_render_use_shader(parent, RTB_SHADER(shader));
 	glBindTexture(GL_TEXTURE_2D, atlas->id);
-	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 	glUniform1i(shader->texture, 0);
 	glUniform1f(shader->gamma, self->font->lcd_gamma);
@@ -186,6 +185,10 @@ void rtb_text_object_render(rtb_text_object_t *self, rtb_obj_t *parent,
 			1.f / atlas->width, 1.f / atlas->height, atlas->depth);
 
 	rtb_render_use_style_fg(parent, state);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
 	vertex_buffer_render(self->vertices, GL_TRIANGLES);
 }
 
@@ -205,7 +208,7 @@ rtb_text_object_t *rtb_text_object_new(rtb_font_manager_t *fm,
 		rtb_text_object_update(self, text);
 
 	self->xpad = floorf(font->txfont->size * 2.f);
-	self->ypad = floorf(font->txfont->height / 2.f);
+	self->ypad = 0.f;
 
 	return self;
 }

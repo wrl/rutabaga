@@ -56,7 +56,7 @@ static struct rtb_style dark_style[] = {
 		.states = {
 			[RTB_DRAW_NORMAL] = {
 				.fg = {RGB(0xFFFFFF), 1.f},
-				.bg = {RGB(0x18181C), .9f}}
+				.bg = {RGB(0x18181C), .8f}}
 		}
 	},
 
