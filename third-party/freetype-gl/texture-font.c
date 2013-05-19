@@ -41,7 +41,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>
-#include "platform.h"
 #include "texture-font.h"
 
 #undef __FTERRORS_H__
