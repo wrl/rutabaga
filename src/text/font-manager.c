@@ -118,8 +118,8 @@ int rtb_font_manager_init(rtb_win_t *win)
 	if (rtb_font_manager_load_font(fm, &fm->fonts.big, FONT, 20) < 0)
 		goto err_big_font;
 
-	fm->fonts.main.lcd_gamma = .7f;
-	fm->fonts.big.lcd_gamma  = .7f;
+	fm->fonts.main.lcd_gamma = 2.2f;
+	fm->fonts.big.lcd_gamma  = 2.2f;
 
 	fm->win = win;
 	win->font_manager = fm;

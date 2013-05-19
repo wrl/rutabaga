@@ -179,16 +179,15 @@ void rtb_text_object_render(rtb_text_object_t *self, rtb_obj_t *parent,
 
 	glUniform1i(shader->texture, 0);
 	glUniform1f(shader->gamma, self->font->lcd_gamma);
-	glUniform2f(shader->offset, x, y);
 
 	glUniform3f(shader->atlas_pixel,
 			1.f / atlas->width, 1.f / atlas->height, atlas->depth);
 
-	rtb_render_use_style_fg(parent, state);
-
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	glUniform2f(shader->offset, x, y);
+	rtb_render_use_style_fg(parent, state);
 	vertex_buffer_render(self->vertices, GL_TRIANGLES);
 }
 
