@@ -34,6 +34,9 @@
 
 #include "shaders/text.glsl.h"
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 #define ERR(...) fprintf(stderr, "rutabaga: " __VA_ARGS__)
 #define FONT "./assets/fonts/open_sans/OpenSans-Regular.ttf"
 
@@ -103,7 +106,11 @@ int rtb_font_manager_init(rtb_win_t *win)
 
 #undef CACHE_UNIFORM
 
+#ifdef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
 	fm->atlas = texture_atlas_new(512, 512, 3);
+#else
+	fm->atlas = texture_atlas_new(512, 512, 1);
+#endif
 
 	if (rtb_font_manager_load_font(fm, &fm->fonts.main, FONT, 12) < 0)
 		goto err_main_font;
