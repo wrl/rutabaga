@@ -24,7 +24,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <uchar.h>
+#include <string.h>
+
+#include "wwrl/vector.h"
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/text-buffer.h"

@@ -115,7 +115,7 @@ def configure(conf):
 	conf.env.VERSION = VERSION
 	conf.define("_GNU_SOURCE", "")
 	conf.env.append_unique("CFLAGS", [
-		"-std=c11", "-ggdb", "-Wall", "-Werror", "-Wno-microsoft", "-fms-extensions",
+		"-std=c99", "-ggdb", "-Wall", "-Werror", "-Wno-microsoft", "-fms-extensions",
 		"-ffunction-sections", "-fdata-sections"])
 
 	if conf.options.debug_layout:

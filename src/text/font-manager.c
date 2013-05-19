@@ -26,7 +26,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <uchar.h>
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/font-manager.h"
