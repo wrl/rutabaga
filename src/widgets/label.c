@@ -48,6 +48,13 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 	super.draw_cb(obj, state);
 }
 
+static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
+		rtb_event_direction_t direction)
+{
+	super.recalc_cb(obj, instigator, direction);
+	obj->style = obj->parent->style;
+}
+
 static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
 {
 	SELF_FROM(obj);
@@ -125,6 +132,7 @@ int rtb_label_init(rtb_label_t *self,
 		self->draw_cb    = draw;
 		self->realize_cb = realize;
 		self->size_cb    = size;
+		self->recalc_cb  = recalculate;
 	}
 
 	self->text = NULL;
