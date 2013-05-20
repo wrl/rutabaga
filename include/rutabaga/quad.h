@@ -31,6 +31,8 @@ struct rtb_quad {
 	GLuint vertices;
 };
 
+void rtb_quad_set_tex_coords(struct rtb_quad *, struct rtb_rect *from);
 void rtb_quad_set_vertices(struct rtb_quad *, struct rtb_rect *from);
+
 void rtb_quad_init(struct rtb_quad *);
 void rtb_quad_fini(struct rtb_quad *);

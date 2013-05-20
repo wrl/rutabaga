@@ -112,10 +112,21 @@ static void render_quad(rtb_obj_t *obj, struct rtb_quad *quad, GLenum mode,
 	glEnableVertexAttribArray(shader->vertex);
 	glVertexAttribPointer(shader->vertex, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
+	if (quad->tex_coords) {
+		glBindBuffer(GL_ARRAY_BUFFER, quad->tex_coords);
+		glEnableVertexAttribArray(shader->tex_coord);
+		glVertexAttribPointer(shader->tex_coord,
+				2, GL_FLOAT, GL_FALSE, 0, 0);
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 	glDrawElements(mode, count, GL_UNSIGNED_BYTE, indices);
 
-	glDisableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glDisableVertexAttribArray(shader->vertex);
+
+	if (quad->tex_coords)
+		glDisableVertexAttribArray(shader->tex_coord);
 }
 
 void rtb_render_quad_outline(rtb_obj_t *obj, struct rtb_quad *quad)

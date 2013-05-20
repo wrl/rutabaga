@@ -36,18 +36,32 @@ void rtb_quad_set_vertices(struct rtb_quad *self, struct rtb_rect *from)
 		{from->p1.x, from->p2.y}
 	};
 
-	if (!self->vertices)
-		glGenBuffers(1, &self->vertices);
-
 	glBindBuffer(GL_ARRAY_BUFFER, self->vertices);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void rtb_quad_set_tex_coords(struct rtb_quad *self, struct rtb_rect *from)
+{
+	GLfloat v[4][2] = {
+		{from->p1.x, from->p1.y},
+		{from->p2.x, from->p1.y},
+		{from->p2.x, from->p2.y},
+		{from->p1.x, from->p2.y}
+	};
+
+	if (!self->tex_coords)
+		glGenBuffers(1, &self->tex_coords);
+
+	glBindBuffer(GL_ARRAY_BUFFER, self->tex_coords);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void rtb_quad_init(struct rtb_quad *self)
 {
+	glGenBuffers(1, &self->vertices);
 	self->tex_coords = 0;
-	self->vertices   = 0;
 }
 
 void rtb_quad_fini(struct rtb_quad *self)

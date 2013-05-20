@@ -45,7 +45,7 @@ struct rtb_surface {
 	/* private ********************************/
 	GLuint fbo;
 	GLuint texture;
-	GLuint vbo;
+	struct rtb_quad quad;
 
 	rtb_surface_state_t surface_state;
 

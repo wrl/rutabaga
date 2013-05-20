@@ -54,13 +54,13 @@ static struct rtb_object_implementation super;
 
 static int initialize_shaders(rtb_win_t *self)
 {
-	struct rtb_surface_shader *s;
+	struct rtb_shader *s;
 
 	if (!rtb_shader_create(&self->shaders.dfault,
 				DEFAULT_VERT_SHADER, DEFAULT_FRAG_SHADER))
 		goto err_dfault;
 
-	if (!rtb_shader_create(RTB_SHADER(&self->shaders.surface),
+	if (!rtb_shader_create(&self->shaders.surface,
 				SURFACE_VERT_SHADER, SURFACE_FRAG_SHADER))
 		goto err_surface;
 
@@ -214,7 +214,7 @@ void rtb_window_close(rtb_win_t *self)
 {
 	assert(self);
 
-	rtb_shader_free(RTB_SHADER(&self->shaders.surface));
+	rtb_shader_free(&self->shaders.surface);
 	rtb_shader_free(&self->shaders.dfault);
 
 	rtb_font_manager_fini(self);

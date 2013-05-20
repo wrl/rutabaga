@@ -181,6 +181,6 @@ struct rtb_padding {
 };
 
 struct rtb_rect {
-	rtb_pt_t p1;
-	rtb_pt_t p2;
+	struct rtb_point p1;
+	struct rtb_point p2;
 };

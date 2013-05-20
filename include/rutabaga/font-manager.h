@@ -49,7 +49,6 @@ struct rtb_font_manager {
 	struct rtb_font_shader {
 		RTB_INHERIT(rtb_shader);
 
-		GLint texture;
 		GLint atlas_pixel;
 		GLint gamma;
 	} shader;

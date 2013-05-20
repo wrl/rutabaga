@@ -260,7 +260,6 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 	SELF_FROM(obj);
 
 	super.recalc_cb(obj, instigator, direction);
-
 	self->outer_pad.y = self->label.outer_pad.y;
 
 	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
@@ -303,6 +302,7 @@ int rtb_text_input_init(rtb_t *rtb, rtb_text_input_t *self,
 		struct rtb_object_implementation *impl)
 {
 	rtb_obj_init(RTB_OBJECT(self), &super);
+	rtb_quad_init(&self->bg_quad);
 
 	rtb_label_init(&self->label, &self->label.impl);
 	rtb_obj_add_child(RTB_OBJECT(self), RTB_OBJECT(&self->label),
@@ -336,7 +336,10 @@ int rtb_text_input_init(rtb_t *rtb, rtb_text_input_t *self,
 void rtb_text_input_fini(rtb_text_input_t *self)
 {
 	rtb_text_buffer_fini(&self->text);
+
+	rtb_quad_fini(&self->bg_quad);
 	glDeleteBuffers(1, &self->cursor_vbo);
+
 	rtb_label_fini(&self->label);
 	rtb_obj_fini(RTB_OBJECT(self));
 }

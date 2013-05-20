@@ -43,9 +43,14 @@ struct rtb_shader {
 		GLuint projection;
 	} matrices;
 
-	GLint vertex;
+	/* uniforms */
 	GLint offset;
 	GLint color;
+	GLint texture;
+
+	/* attributes */
+	GLint vertex;
+	GLint tex_coord;
 };
 
 void rtb_shader_free(struct rtb_shader *);

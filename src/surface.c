@@ -33,6 +33,7 @@
 #include "rutabaga/shader.h"
 #include "rutabaga/render.h"
 #include "rutabaga/window.h"
+#include "rutabaga/quad.h"
 
 #include "private/util.h"
 #include "private/layout-debug.h"
@@ -45,48 +46,6 @@
  */
 
 static struct rtb_object_implementation super;
-
-static const GLubyte box_indices[] = {
-	0, 1, 3, 2
-};
-
-static void cache_to_vbo(rtb_surface_t *self)
-{
-	GLfloat x, y, w, h;
-	struct vertex {
-		float x, y;
-		float s, t;
-	} box[4];
-
-	x = self->x;
-	y = self->y;
-	w = self->w;
-	h = self->h;
-
-	box[0].x = x;
-	box[0].y = y;
-	box[0].s = 0.f;
-	box[0].t = 1.f;
-
-	box[1].x = x + w;
-	box[1].y = y;
-	box[1].s = 1.f;
-	box[1].t = 1.f;
-
-	box[2].x = x + w;
-	box[2].y = y + h;
-	box[2].s = 1.f;
-	box[2].t = 0.f;
-
-	box[3].x = x;
-	box[3].y = y + h;
-	box[3].s = 0.f;
-	box[3].t = 0.f;
-
-	glBindBuffer(GL_ARRAY_BUFFER, self->vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(box), box, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
 
 /**
  * object implementation
@@ -105,6 +64,11 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 		rtb_event_direction_t direction)
 {
+	struct rtb_rect tex_coords = {
+		{0.f, 1.f},
+		{1.f, 0.f}
+	};
+
 	SELF_FROM(obj);
 	super.recalc_cb(obj, instigator, direction);
 
@@ -130,8 +94,10 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 			GL_TEXTURE_2D, self->texture, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+	rtb_quad_set_vertices(&self->quad, &self->rect);
+	rtb_quad_set_tex_coords(&self->quad, &tex_coords);
+
 	rtb_surface_invalidate(self);
-	cache_to_vbo(self);
 }
 
 static void attach_child(rtb_obj_t *obj, rtb_obj_t *child)
@@ -154,34 +120,22 @@ static void realize(rtb_obj_t *self, rtb_obj_t *parent,
 
 void rtb_surface_blit(rtb_surface_t *self)
 {
-	struct rtb_surface_shader *shader = &self->window->shaders.surface;
+	struct rtb_shader *shader = &self->window->shaders.surface;
 	rtb_obj_t *obj = RTB_OBJECT(self);
 
 	rtb_render_reset(obj);
-	rtb_render_use_shader(obj, RTB_SHADER(shader));
+	rtb_render_use_shader(obj, shader);
 	rtb_render_set_position(obj, 0, 0);
 
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, self->texture);
 	glUniform1i(shader->texture, 0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, self->vbo);
-	glEnableVertexAttribArray(shader->vertex);
-	glVertexAttribPointer(shader->vertex,
-			2, GL_FLOAT, GL_FALSE, 16, 0);
-	glEnableVertexAttribArray(shader->tex_coord);
-	glVertexAttribPointer(shader->tex_coord,
-			2, GL_FLOAT, GL_FALSE, 16, (void *) 8);
-
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-	glDrawElements(
-			GL_TRIANGLE_STRIP, ARRAY_LENGTH(box_indices),
-			GL_UNSIGNED_BYTE, box_indices);
+	rtb_render_quad(obj, &self->quad);
 
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glDisable(GL_TEXTURE_2D);
@@ -273,7 +227,7 @@ int rtb_surface_init(rtb_surface_t *self,
 
 	glGenTextures(1, &self->texture);
 	glGenFramebuffers(1, &self->fbo);
-	glGenBuffers(1, &self->vbo);
+	rtb_quad_init(&self->quad);
 
 	self->surface_state = RTB_SURFACE_INVALID;
 
@@ -282,9 +236,10 @@ int rtb_surface_init(rtb_surface_t *self,
 
 void rtb_surface_fini(rtb_surface_t *self)
 {
-	glDeleteTextures(1, &self->texture);
+	rtb_quad_fini(&self->quad);
+
 	glDeleteFramebuffers(1, &self->fbo);
-	glDeleteBuffers(1, &self->vbo);
+	glDeleteTextures(1, &self->texture);
 
 	rtb_obj_fini(RTB_OBJECT(self));
 }
