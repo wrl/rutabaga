@@ -37,6 +37,7 @@
 #include "rutabaga/render.h"
 #include "rutabaga/layout.h"
 #include "rutabaga/keyboard.h"
+#include "rutabaga/quad.h"
 
 #include "private/util.h"
 #include "rutabaga/widgets/button.h"
@@ -50,36 +51,6 @@ static struct rtb_object_implementation super;
  * drawing-related things
  */
 
-static const GLubyte box_indices[] = {
-	0, 1, 3, 2
-};
-
-static void cache_to_vbo(rtb_button_t *self)
-{
-	GLfloat x, y, w, h, box[4][2];
-
-	x = self->x;
-	y = self->y;
-	w = self->w;
-	h = self->h;
-
-	box[0][0] = x;
-	box[0][1] = y;
-
-	box[1][0] = x + w;
-	box[1][1] = y;
-
-	box[2][0] = x + w;
-	box[2][1] = y + h;
-
-	box[3][0] = x;
-	box[3][1] = y + h;
-
-	glBindBuffer(GL_ARRAY_BUFFER, self->vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(box), box, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
 static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
@@ -87,19 +58,9 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 	rtb_render_push(obj);
 	rtb_render_clear(obj);
 	rtb_render_set_position(obj, 0, 0);
-
 	rtb_render_use_style_bg(obj, state);
 
-	glBindBuffer(GL_ARRAY_BUFFER, self->vbo);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-	glDrawElements(
-			GL_TRIANGLE_STRIP, ARRAY_LENGTH(box_indices),
-			GL_UNSIGNED_BYTE, box_indices);
-
-	glDisableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	rtb_render_quad(obj, &self->bg_quad);
 
 	super.draw_cb(obj, state);
 	rtb_render_pop(obj);
@@ -173,7 +134,7 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 	self->outer_pad.x = self->label.outer_pad.x;
 	self->outer_pad.y = self->label.outer_pad.y;
 
-	cache_to_vbo(self);
+	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
 }
 
 static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
@@ -206,7 +167,7 @@ int rtb_button_init(rtb_button_t *self,
 	rtb_obj_add_child(RTB_OBJECT(self), RTB_OBJECT(&self->label),
 			RTB_ADD_HEAD);
 
-	glGenBuffers(1, &self->vbo);
+	rtb_quad_init(&self->bg_quad);
 
 	self->label.align = RTB_ALIGN_MIDDLE;
 	self->outer_pad.x =
@@ -227,6 +188,7 @@ int rtb_button_init(rtb_button_t *self,
 
 void rtb_button_fini(rtb_button_t *self)
 {
+	rtb_quad_fini(&self->bg_quad);
 	rtb_label_fini(&self->label);
 	rtb_obj_fini(RTB_OBJECT(self));
 }

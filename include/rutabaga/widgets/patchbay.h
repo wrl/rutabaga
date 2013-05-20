@@ -30,6 +30,7 @@
 #include "rutabaga/object.h"
 #include "rutabaga/surface.h"
 #include "rutabaga/event.h"
+#include "rutabaga/quad.h"
 
 #include "rutabaga/widgets/label.h"
 
@@ -61,7 +62,7 @@ struct rtb_patchbay_node {
 	rtb_obj_t input_ports;
 	rtb_obj_t output_ports;
 
-	GLuint vbo;
+	struct rtb_quad bg_quad;
 	rtb_label_t name_label;
 	rtb_patchbay_t *patchbay;
 };
@@ -70,7 +71,7 @@ struct rtb_patchbay_port {
 	RTB_INHERIT(rtb_object);
 
 	/* private ********************************/
-	GLuint vbo;
+	struct rtb_quad bg_quad;
 	rtb_label_t label;
 	rtb_patchbay_port_type_t port_type;
 

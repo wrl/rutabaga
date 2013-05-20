@@ -45,10 +45,6 @@
 
 static struct rtb_object_implementation super;
 
-static const GLubyte box_indices[] = {
-	0, 1, 3, 2
-};
-
 static const GLubyte line_indices[] = {
 	0, 1, 2, 3
 };
@@ -56,32 +52,6 @@ static const GLubyte line_indices[] = {
 /**
  * vbo wrangling
  */
-
-static void cache_to_vbo(rtb_text_input_t *self)
-{
-	GLfloat x, y, w, h, box[4][2];
-
-	x = self->x;
-	y = self->y;
-	w = self->w;
-	h = self->h;
-
-	box[0][0] = x;
-	box[0][1] = y;
-
-	box[1][0] = x + w;
-	box[1][1] = y;
-
-	box[2][0] = x + w;
-	box[2][1] = y + h;
-
-	box[3][0] = x;
-	box[3][1] = y + h;
-
-	glBindBuffer(GL_ARRAY_BUFFER, self->vbo[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(box), box, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
 
 static void update_cursor(rtb_text_input_t *self)
 {
@@ -114,7 +84,7 @@ static void update_cursor(rtb_text_input_t *self)
 	line[1][0] = x;
 	line[1][1] = y + h;
 
-	glBindBuffer(GL_ARRAY_BUFFER, self->vbo[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, self->cursor_vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(line), line, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
@@ -139,7 +109,7 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 	rtb_render_set_position(obj, 0, 0);
 
 	if (self->window->focus == RTB_OBJECT(self)) {
-		glBindBuffer(GL_ARRAY_BUFFER, self->vbo[1]);
+		glBindBuffer(GL_ARRAY_BUFFER, self->cursor_vbo);
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
@@ -151,18 +121,9 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 	}
 
 	rtb_render_use_style_bg(obj, state);
-	glBindBuffer(GL_ARRAY_BUFFER, self->vbo[0]);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
 	glLineWidth(2.f);
 
-	glDrawElements(
-			GL_LINE_LOOP, ARRAY_LENGTH(line_indices),
-			GL_UNSIGNED_BYTE, line_indices);
-
-	glDisableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	rtb_render_quad_outline(obj, &self->bg_quad);
 
 	rtb_render_pop(obj);
 }
@@ -301,8 +262,8 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 	super.recalc_cb(obj, instigator, direction);
 
 	self->outer_pad.y = self->label.outer_pad.y;
-	cache_to_vbo(self);
 
+	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
 	update_cursor(self);
 }
 
@@ -349,7 +310,7 @@ int rtb_text_input_init(rtb_t *rtb, rtb_text_input_t *self,
 
 	rtb_text_buffer_init(rtb, &self->text);
 
-	glGenBuffers(2, self->vbo);
+	glGenBuffers(1, &self->cursor_vbo);
 
 	self->label.align = RTB_ALIGN_MIDDLE;
 
@@ -375,6 +336,7 @@ int rtb_text_input_init(rtb_t *rtb, rtb_text_input_t *self,
 void rtb_text_input_fini(rtb_text_input_t *self)
 {
 	rtb_text_buffer_fini(&self->text);
+	glDeleteBuffers(1, &self->cursor_vbo);
 	rtb_label_fini(&self->label);
 	rtb_obj_fini(RTB_OBJECT(self));
 }

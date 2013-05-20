@@ -28,8 +28,19 @@
 #include "rutabaga/window.h"
 #include "rutabaga/render.h"
 #include "rutabaga/style.h"
+#include "rutabaga/quad.h"
+
+#include "private/util.h"
 
 #define CONTEXT (obj->window->render_ctx)
+
+static const GLubyte quad_tri_indices[] = {
+	0, 1, 3, 2
+};
+
+static const GLubyte quad_outline_indices[] = {
+	0, 1, 2, 3
+};
 
 static rtb_style_props_t *get_styleprops(rtb_obj_t *obj,
 		rtb_draw_state_t state)
@@ -42,6 +53,8 @@ static rtb_style_props_t *get_styleprops(rtb_obj_t *obj,
 
 /**
  * public API
+ *
+ * shader variables
  */
 
 void rtb_render_use_style_bg(rtb_obj_t *obj, rtb_draw_state_t state)
@@ -66,15 +79,15 @@ void rtb_render_use_style_fg(rtb_obj_t *obj, rtb_draw_state_t state)
 			color->a);
 }
 
-void rtb_render_set_position(rtb_obj_t *obj, float x, float y)
-{
-	glUniform2f(CONTEXT.shader->offset, x, y);
-}
-
 void rtb_render_set_color(rtb_obj_t *obj,
 		GLfloat r, GLfloat g, GLfloat b, GLfloat a)
 {
 	glUniform4f(CONTEXT.shader->color, r, g, b, a);
+}
+
+void rtb_render_set_position(rtb_obj_t *obj, float x, float y)
+{
+	glUniform2f(CONTEXT.shader->offset, x, y);
 }
 
 void rtb_render_set_modelview(rtb_obj_t *obj, const GLfloat *matrix)
@@ -83,6 +96,49 @@ void rtb_render_set_modelview(rtb_obj_t *obj, const GLfloat *matrix)
 		1, GL_FALSE, matrix);
 }
 
+/**
+ * quad drawing
+ */
+
+static void render_quad(rtb_obj_t *obj, struct rtb_quad *quad, GLenum mode,
+		const GLubyte *indices, GLsizei count)
+{
+	struct rtb_shader *shader = CONTEXT.shader;
+
+	if (!quad->vertices)
+		return;
+
+	glBindBuffer(GL_ARRAY_BUFFER, quad->vertices);
+	glEnableVertexAttribArray(shader->vertex);
+	glVertexAttribPointer(shader->vertex, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+	glDrawElements(mode, count, GL_UNSIGNED_BYTE, indices);
+
+	glDisableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void rtb_render_quad_outline(rtb_obj_t *obj, struct rtb_quad *quad)
+{
+	render_quad(obj, quad, GL_LINE_LOOP,
+			quad_outline_indices, ARRAY_LENGTH(quad_outline_indices));
+}
+
+void rtb_render_quad(rtb_obj_t *obj, struct rtb_quad *quad)
+{
+	render_quad(obj, quad, GL_TRIANGLE_STRIP,
+			quad_tri_indices, ARRAY_LENGTH(quad_tri_indices));
+}
+
+void rtb_render_clear(rtb_obj_t *obj)
+{
+	glClearColor(0.f, 0.f, 0.f, 0.f);
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
+/**
+ * state changes
+ */
 
 void rtb_render_use_shader(rtb_obj_t *obj, struct rtb_shader *shader)
 {
@@ -119,12 +175,6 @@ void rtb_render_reset(rtb_obj_t *obj)
 void rtb_render_push(rtb_obj_t *obj)
 {
 	rtb_render_reset(obj);
-}
-
-void rtb_render_clear(rtb_obj_t *obj)
-{
-	glClearColor(0.f, 0.f, 0.f, 0.f);
-	glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void rtb_render_pop(rtb_obj_t *obj)

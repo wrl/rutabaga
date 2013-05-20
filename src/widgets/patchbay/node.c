@@ -45,55 +45,15 @@ static struct rtb_object_implementation super;
  * drawing
  */
 
-static const GLubyte box_indices[] = {
-	0, 1, 3, 2
-};
-
-static void cache_to_vbo(rtb_patchbay_node_t *self)
-{
-	GLfloat x, y, w, h, box[4][2];
-
-	x = self->x;
-	y = self->y;
-	w = self->w;
-	h = self->h;
-
-	box[0][0] = x;
-	box[0][1] = y;
-
-	box[1][0] = x + w;
-	box[1][1] = y;
-
-	box[2][0] = x + w;
-	box[2][1] = y + h;
-
-	box[3][0] = x;
-	box[3][1] = y + h;
-
-	glBindBuffer(GL_ARRAY_BUFFER, self->vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(box), box, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
 static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
 
 	rtb_render_push(obj);
 	rtb_render_set_position(obj, 0.f, 0.f);
-
-	glBindBuffer(GL_ARRAY_BUFFER, self->vbo);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
 	rtb_render_use_style_bg(obj, state);
-	glDrawElements(
-			GL_TRIANGLE_STRIP, ARRAY_LENGTH(box_indices),
-			GL_UNSIGNED_BYTE, box_indices);
 
-	glDisableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
+	rtb_render_quad(obj, &self->bg_quad);
 	super.draw_cb(obj, state);
 
 	rtb_render_pop(obj);
@@ -109,7 +69,7 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 	SELF_FROM(obj);
 
 	super.recalc_cb(obj, instigator, direction);
-	cache_to_vbo(self);
+	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
 }
 
 static int handle_drag(rtb_patchbay_node_t *self, const rtb_ev_drag_t *e)
@@ -155,8 +115,6 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
 	super.realize_cb(obj, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.patchbay.node");
-
-	cache_to_vbo(self);
 }
 
 static void size(rtb_obj_t *obj, const struct rtb_size *avail,
@@ -185,7 +143,7 @@ void rtb_patchbay_node_set_name(rtb_patchbay_node_t *self,
 void rtb_patchbay_node_init(rtb_patchbay_node_t *self)
 {
 	rtb_obj_init(RTB_OBJECT(self), &super);
-	glGenBuffers(1, &self->vbo);
+	rtb_quad_init(&self->bg_quad);
 
 	self->realize_cb = realize;
 	self->event_cb   = on_event;
@@ -249,7 +207,7 @@ void rtb_patchbay_node_init(rtb_patchbay_node_t *self)
 
 void rtb_patchbay_node_fini(rtb_patchbay_node_t *self)
 {
-	glDeleteBuffers(1, &self->vbo);
+	rtb_quad_fini(&self->bg_quad);
 
 	rtb_obj_remove_child(RTB_OBJECT(self->patchbay), RTB_OBJECT(self));
 

@@ -28,6 +28,7 @@
 
 #include "rutabaga/types.h"
 #include "rutabaga/shader.h"
+#include "rutabaga/quad.h"
 
 #include "bsd/queue.h"
 
@@ -43,14 +44,16 @@ struct rtb_render_context {
 void rtb_render_use_style_bg(rtb_obj_t *, rtb_draw_state_t state);
 void rtb_render_use_style_fg(rtb_obj_t *, rtb_draw_state_t state);
 
-void rtb_render_set_position(rtb_obj_t *, float x, float y);
 void rtb_render_set_color(rtb_obj_t *,
 		GLfloat r, GLfloat g, GLfloat b, GLfloat a);
+void rtb_render_set_position(rtb_obj_t *, float x, float y);
 void rtb_render_set_modelview(rtb_obj_t *, const GLfloat *matrix);
 
-void rtb_render_use_shader(rtb_obj_t *obj, struct rtb_shader *shader);
+void rtb_render_quad_outline(rtb_obj_t *obj, struct rtb_quad *quad);
+void rtb_render_quad(rtb_obj_t *obj, struct rtb_quad *quad);
 void rtb_render_clear(rtb_obj_t *obj);
 
+void rtb_render_use_shader(rtb_obj_t *obj, struct rtb_shader *shader);
 void rtb_render_reset(rtb_obj_t *obj);
 void rtb_render_push(rtb_obj_t *obj);
 void rtb_render_pop(rtb_obj_t *obj);

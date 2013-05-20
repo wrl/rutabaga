@@ -29,6 +29,7 @@
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/object.h"
 #include "rutabaga/event.h"
+#include "rutabaga/quad.h"
 
 #include "rutabaga/widgets/label.h"
 
@@ -50,7 +51,7 @@ struct rtb_button {
 
 	/* private ********************************/
 	rtb_label_t label;
-	GLuint vbo;
+	struct rtb_quad bg_quad;
 };
 
 void rtb_button_set_label(rtb_button_t *self, const rtb_utf8_t *text);

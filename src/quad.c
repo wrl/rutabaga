@@ -24,39 +24,36 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
-
-#include <unistd.h>
-
 #include "rutabaga/rutabaga.h"
-#include "rutabaga/text-buffer.h"
-#include "rutabaga/object.h"
-#include "rutabaga/event.h"
 #include "rutabaga/quad.h"
 
-#include "rutabaga/widgets/label.h"
+void rtb_quad_set_vertices(struct rtb_quad *self, struct rtb_rect *from)
+{
+	GLfloat v[4][2] = {
+		{from->p1.x, from->p1.y},
+		{from->p2.x, from->p1.y},
+		{from->p2.x, from->p2.y},
+		{from->p1.x, from->p2.y}
+	};
 
-#define RTB_TEXT_INPUT(x) RTB_UPCAST(x, rtb_text_input)
+	if (!self->vertices)
+		glGenBuffers(1, &self->vertices);
 
-typedef struct rtb_text_input rtb_text_input_t;
+	glBindBuffer(GL_ARRAY_BUFFER, self->vertices);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
 
-struct rtb_text_input {
-	RTB_INHERIT(rtb_object);
+void rtb_quad_init(struct rtb_quad *self)
+{
+	self->tex_coords = 0;
+	self->vertices   = 0;
+}
 
-	/* private ********************************/
-	int cursor_position;
-	struct rtb_text_buffer text;
-	rtb_label_t label;
-	struct rtb_quad bg_quad;
-	GLuint cursor_vbo;
-};
+void rtb_quad_fini(struct rtb_quad *self)
+{
+#define FREE_BUFFER_IF_USED(buf) if (self->buf) glDeleteBuffers(1, &self->buf)
 
-int rtb_text_input_set_text(rtb_text_input_t *,
-		rtb_utf8_t *text, ssize_t nbytes);
-const rtb_utf8_t *rtb_text_input_get_text(rtb_text_input_t *);
-
-int rtb_text_input_init(rtb_t *, rtb_text_input_t *,
-		struct rtb_object_implementation *impl);
-void rtb_text_input_fini(rtb_text_input_t *);
-rtb_text_input_t *rtb_text_input_new(rtb_t *);
-void rtb_text_input_free(rtb_text_input_t *);
+	FREE_BUFFER_IF_USED(tex_coords);
+	FREE_BUFFER_IF_USED(vertices);
+}
