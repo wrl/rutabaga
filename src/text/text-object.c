@@ -71,8 +71,7 @@ int rtb_text_object_get_glyph_rect(rtb_text_object_t *self, int idx,
 
 int rtb_text_object_count_glyphs(rtb_text_object_t *self)
 {
-	return vector_size(self->vertices->vertices)
-		/ (sizeof(struct text_vertex) / sizeof(float));
+	return vector_size(self->vertices->vertices) / 4;
 }
 
 void rtb_text_object_update(rtb_text_object_t *self, const rtb_utf8_t *text)
