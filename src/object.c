@@ -275,7 +275,7 @@ void rtb_obj_set_layout(rtb_obj_t *self, rtb_layout_cb_t layout_cb)
 	self->layout_cb = layout_cb;
 }
 
-void rtb_obj_set_position_from_point(rtb_obj_t *self, rtb_pt_t *pos)
+void rtb_obj_set_position_from_point(rtb_obj_t *self, struct rtb_point *pos)
 {
 	self->x = floorf(pos->x);
 	self->y = floorf(pos->y);
@@ -283,7 +283,7 @@ void rtb_obj_set_position_from_point(rtb_obj_t *self, rtb_pt_t *pos)
 
 void rtb_obj_set_position(rtb_obj_t *self, float x, float y)
 {
-	rtb_pt_t positition = {x, y};
+	struct rtb_point positition = {x, y};
 	rtb_obj_set_position_from_point(self, &positition);
 }
 

@@ -228,7 +228,7 @@ static void drag(rtb_win_t *win, int x, int y)
 static void retarget(rtb_win_t *win, int x, int y)
 {
 	rtb_obj_t *iter, *ret = win->mouse.object_underneath;
-	rtb_pt_t cursor = {x, y};
+	struct rtb_point cursor = {x, y};
 
 	while (ret != (rtb_obj_t *) win) {
 		if (RTB_POINT_IN_RECT(cursor, *ret))

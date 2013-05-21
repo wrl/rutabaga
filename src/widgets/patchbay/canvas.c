@@ -311,7 +311,7 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 	cache_to_vbo(self);
 }
 
-static void reposition(rtb_patchbay_t *self, rtb_pt_t *by)
+static void reposition(rtb_patchbay_t *self, struct rtb_point *by)
 {
 	rtb_obj_t *iter;
 
@@ -332,7 +332,7 @@ static void reposition(rtb_patchbay_t *self, rtb_pt_t *by)
 
 static int handle_drag(rtb_patchbay_t *self, rtb_ev_drag_t *e)
 {
-	rtb_pt_t delta = {
+	struct rtb_point delta = {
 		e->delta.x,
 		e->delta.y
 	};

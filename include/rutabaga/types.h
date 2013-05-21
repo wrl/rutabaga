@@ -120,7 +120,6 @@ typedef int32_t rtb_utf32_t;
  */
 
 typedef struct rutabaga    rtb_t;
-typedef struct rtb_point   rtb_pt_t;
 typedef struct rtb_size    rtb_size_t;
 
 typedef struct rtb_object  rtb_obj_t;

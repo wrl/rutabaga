@@ -306,7 +306,7 @@ static void layout(rtb_obj_t *obj)
 	SELF_FROM(obj);
 
 	struct rtb_size avail, child;
-	rtb_pt_t position;
+	struct rtb_point position;
 	rtb_obj_t *iter;
 	float ystart;
 

@@ -95,14 +95,14 @@ struct rtb_patchbay {
 	/* private ********************************/
 	GLuint bg_vbo[2];
 	GLuint bg_texture;
-	rtb_pt_t texture_offset;
+	struct rtb_point texture_offset;
 
 	TAILQ_HEAD(patchbay_patches, rtb_patchbay_patch) patches;
 	struct {
 		rtb_patchbay_port_t *from;
 		rtb_patchbay_port_t *to;
 
-		rtb_pt_t cursor;
+		struct rtb_point cursor;
 	} patch_in_progress;
 };
 

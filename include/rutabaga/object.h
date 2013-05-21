@@ -104,14 +104,14 @@ void rtb_obj_trigger_recalc(rtb_obj_t *, rtb_obj_t *instigator,
 
 void rtb_obj_set_size_cb(rtb_obj_t *, rtb_size_cb_t size_cb);
 void rtb_obj_set_layout(rtb_obj_t *, rtb_layout_cb_t layout_cb);
-void rtb_obj_set_position_from_point(rtb_obj_t *, rtb_pt_t *pos);
+void rtb_obj_set_position_from_point(rtb_obj_t *, struct rtb_point *);
 void rtb_obj_set_position(rtb_obj_t *, float x, float y);
-void rtb_obj_set_size(rtb_obj_t *, struct rtb_size *sz);
+void rtb_obj_set_size(rtb_obj_t *, struct rtb_size *);
 
 int rtb_obj_in_tree(rtb_obj_t *root, rtb_obj_t *leaf);
 void rtb_obj_add_child(rtb_obj_t *parent, rtb_obj_t *child,
 		rtb_child_add_loc_t where);
-void rtb_obj_remove_child(rtb_obj_t *self, rtb_obj_t *child);
+void rtb_obj_remove_child(rtb_obj_t *, rtb_obj_t *child);
 
-int rtb_obj_init(rtb_obj_t *obj, struct rtb_object_implementation *impl);
-void rtb_obj_fini(rtb_obj_t *self);
+int rtb_obj_init(rtb_obj_t *, struct rtb_object_implementation *impl);
+void rtb_obj_fini(rtb_obj_t *);
