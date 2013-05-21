@@ -107,15 +107,15 @@ static void recalculate(rtb_obj_t *self, rtb_obj_t *instigator,
 		break;
 	}
 
-	self->rect.p1.x  = self->rect.p2.x = self->x;
-	self->rect.p1.y  = self->rect.p2.y = self->y;
-	self->rect.p2.x += (GLfloat) self->w;
-	self->rect.p2.y += (GLfloat) self->h;
+	self->rect.x   = self->rect.x2 = self->x;
+	self->rect.y   = self->rect.y2 = self->y;
+	self->rect.x2 += (GLfloat) self->w;
+	self->rect.y2 += (GLfloat) self->h;
 
-	self->inner_rect.p1.x = self->x + self->outer_pad.x;
-	self->inner_rect.p1.y = self->y + self->outer_pad.y;
-	self->inner_rect.p2.x = self->rect.p2.x - self->outer_pad.x;
-	self->inner_rect.p2.y = self->rect.p2.y - self->outer_pad.y;
+	self->inner_rect.x  = self->x + self->outer_pad.x;
+	self->inner_rect.y  = self->y + self->outer_pad.y;
+	self->inner_rect.x2 = self->rect.x2 - self->outer_pad.x;
+	self->inner_rect.y2 = self->rect.y2 - self->outer_pad.y;
 }
 
 /**

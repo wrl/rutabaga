@@ -75,8 +75,8 @@ static int dispatch_click_event(rtb_button_t *self, const rtb_ev_mouse_t *e)
 	rtb_ev_button_t event = *((rtb_ev_button_t *) e);
 
 	event.type = BUTTON_CLICK;
-	event.cursor.x -= self->rect.p1.x;
-	event.cursor.y -= self->rect.p1.y;
+	event.cursor.x -= self->rect.x;
+	event.cursor.y -= self->rect.y;
 
 	return rtb_handle(RTB_OBJECT(self), RTB_EVENT(&event));
 }

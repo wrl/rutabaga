@@ -32,6 +32,7 @@
 #include "rutabaga/keyboard.h"
 #include "rutabaga/layout.h"
 #include "rutabaga/layout-helpers.h"
+#include "rutabaga/rect.h"
 
 #include "rutabaga/widgets/text-input.h"
 
@@ -57,7 +58,7 @@ static const GLubyte line_indices[] = {
 static void update_cursor(rtb_text_input_t *self)
 {
 	GLfloat x, y, h, line[2][2];
-	rtb_rect_t glyphs[2];
+	struct rtb_rect glyphs[2];
 
 	if (self->cursor_position > 0) {
 		rtb_text_object_get_glyph_rect(self->label.tobj,
@@ -69,17 +70,17 @@ static void update_cursor(rtb_text_input_t *self)
 
 		if (rtb_text_object_get_glyph_rect(self->label.tobj,
 					self->cursor_position + 1, &glyphs[1]))
-			x = glyphs[0].p2.x;
+			x = glyphs[0].x2;
 		else
-			x = glyphs[1].p1.x;
+			x = glyphs[1].x;
 	} else
 		x = 0.f;
 
 	x += self->label.x;
 
 	if (self->label_offset < 0 &&
-			self->label.rect.p2.x < self->inner_rect.p2.x) {
-		self->label_offset += self->inner_rect.p2.x - self->label.rect.p2.x;
+			self->label.rect.x2 < self->inner_rect.x2) {
+		self->label_offset += self->inner_rect.x2 - self->label.rect.x2;
 		self->label_offset = MIN(self->label_offset, 0);
 
 		rtb_obj_trigger_recalc(RTB_OBJECT(self), RTB_OBJECT(self),
@@ -89,11 +90,11 @@ static void update_cursor(rtb_text_input_t *self)
 
 	/* if the cursor has wandered outside our bounding box, move the label
 	 * so that the cursor is inside it again. */
-	if (x < self->inner_rect.p1.x || x > self->inner_rect.p2.x) {
-		if (x < self->inner_rect.p1.x)
-			self->label_offset += self->inner_rect.p1.x - x;
+	if (x < self->inner_rect.x || x > self->inner_rect.x2) {
+		if (x < self->inner_rect.x)
+			self->label_offset += self->inner_rect.x - x;
 		else
-			self->label_offset += self->inner_rect.p2.x - x;
+			self->label_offset += self->inner_rect.x2 - x;
 
 		rtb_obj_trigger_recalc(RTB_OBJECT(self), RTB_OBJECT(self),
 				RTB_DIRECTION_LEAFWARD);
@@ -183,7 +184,7 @@ static int delete_u32(rtb_text_input_t *self)
 
 static void fix_cursor(rtb_text_input_t *self)
 {
-	rtb_rect_t glyph;
+	struct rtb_rect glyph;
 
 	if (self->cursor_position < 0)
 		self->cursor_position = 0;

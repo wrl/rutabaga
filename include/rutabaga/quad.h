@@ -26,6 +26,8 @@
 
 #pragma once
 
+#include "rutabaga/rect.h"
+
 struct rtb_quad {
 	GLuint tex_coords;
 	GLuint vertices;

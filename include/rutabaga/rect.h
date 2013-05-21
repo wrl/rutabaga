@@ -27,30 +27,39 @@
 #pragma once
 
 #include "rutabaga/types.h"
-#include "rutabaga/rect.h"
-#include "rutabaga/font-manager.h"
 
-#include "freetype-gl/vertex-buffer.h"
+#define RTB_POINT_IN_RECT(pt, rect) \
+	(((pt.x >= rect.x) && (pt.x <= rect.x2)) \
+	 && ((pt.y >= rect.y) && (pt.y <= rect.y2)))
 
-typedef struct rutabaga_text_object rtb_text_object_t;
+struct rtb_rect {
+	/**
+	 * nasty looking union here, but supports accessing members through
+	 * several different ways:
+	 *
+	 *     struct rtb_rect rect;
+	 *
+	 *     rect.x  == rect.p[0].x
+	 *     rect.y  == rect.p[0].y
+	 *     rect.x2 == rect.p[1].x
+	 *     rect.y2 == rect.p[1].y
+	 *
+	 *     rect.x  == rect.as_float[0]
+	 *     rect.y  == rect.as_float[1]
+	 *     rect.x2 == rect.as_float[2]
+	 *     rect.y2 == rect.as_float[3]
+	 */
 
-struct rutabaga_text_object {
-	GLfloat w, h;
-	GLfloat xpad, ypad;
+	union {
+		struct rtb_point pts[2];
 
-	vertex_buffer_t *vertices;
-	rtb_font_manager_t *fm;
-	rtb_font_t *font;
+		struct {
+			GLfloat x, y;
+			GLfloat x2, y2;
+		};
+
+		GLfloat as_float[4];
+	};
+
+	RTB_INHERIT_AS(rtb_size, size);
 };
-
-int rtb_text_object_get_glyph_rect(rtb_text_object_t *, int idx,
-		struct rtb_rect *rect);
-int rtb_text_object_count_glyphs(rtb_text_object_t *);
-
-void rtb_text_object_update(rtb_text_object_t *, const rtb_utf8_t *text);
-void rtb_text_object_render(rtb_text_object_t *, rtb_obj_t *parent,
-		float x, float y, rtb_draw_state_t state);
-
-rtb_text_object_t *rtb_text_object_new(rtb_font_manager_t *fm,
-		rtb_font_t *font, const rtb_utf8_t *text);
-void rtb_text_object_free(rtb_text_object_t *self);

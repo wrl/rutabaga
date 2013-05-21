@@ -36,14 +36,6 @@
 #include "wwrl/allocator.h"
 
 /**
- * general utility macros
- */
-
-#define RTB_POINT_IN_RECT(pt, rect) \
-	(((pt.x >= rect.p1.x) && (pt.x <= rect.p2.x)) \
-	 && ((pt.y >= rect.p1.y) && (pt.y <= rect.p2.y)))
-
-/**
  * structures
  */
 

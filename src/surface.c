@@ -65,8 +65,10 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 		rtb_event_direction_t direction)
 {
 	struct rtb_rect tex_coords = {
-		{0.f, 1.f},
-		{1.f, 0.f}
+		.as_float = {
+			0.f, 1.f,
+			1.f, 0.f
+		}
 	};
 
 	SELF_FROM(obj);

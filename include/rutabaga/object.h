@@ -29,14 +29,13 @@
 #include "rutabaga/types.h"
 #include "rutabaga/atom.h"
 #include "rutabaga/event.h"
+#include "rutabaga/rect.h"
 
 #include "bsd/queue.h"
 #include "wwrl/vector.h"
 
 #define RTB_OBJECT(x) RTB_UPCAST(x, rtb_object)
 #define RTB_OBJECT_AS(x, type) RTB_DOWNCAST(x, type, rtb_object)
-
-#define RTB_EVENT_HANDLERS_PER_OBJECT 32
 
 typedef struct rtb_object_implementation rtb_obj_impl_t;
 
@@ -81,7 +80,7 @@ struct rtb_object {
 
 	/* private ********************************/
 	int mouse_in;
-	rtb_rect_t rect, inner_rect;
+	struct rtb_rect rect, inner_rect;
 	rtb_visibility_t visibility;
 	rtb_obj_state_t state;
 

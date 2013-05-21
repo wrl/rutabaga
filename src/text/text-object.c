@@ -32,6 +32,7 @@
 #include "rutabaga/render.h"
 #include "rutabaga/shader.h"
 #include "rutabaga/style.h"
+#include "rutabaga/rect.h"
 
 #include "rutabaga/text-object.h"
 
@@ -47,7 +48,7 @@ struct text_vertex {
 };
 
 int rtb_text_object_get_glyph_rect(rtb_text_object_t *self, int idx,
-		rtb_rect_t *rect)
+		struct rtb_rect *rect)
 {
 	vector_t *vertices = self->vertices->vertices;
 	struct text_vertex *v;
@@ -58,13 +59,13 @@ int rtb_text_object_get_glyph_rect(rtb_text_object_t *self, int idx,
 	v = (void *) vector_get(vertices, (idx * 4) - 4);
 
 	/* upper left corner */
-	rect->p1.x = v->x;
-	rect->p1.y = v->y;
+	rect->x = v->x;
+	rect->y = v->y;
 
 	/* lower right corner */
 	v += 2;
-	rect->p2.x = v->x;
-	rect->p2.y = v->y;
+	rect->x2 = v->x;
+	rect->y2 = v->y;
 
 	return 0;
 }
