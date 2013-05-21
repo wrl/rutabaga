@@ -77,6 +77,9 @@ typedef enum {
 	RTB_EVENT_SYNTHETIC  = 1
 } rtb_ev_source_t;
 
+typedef int (*rtb_event_cb_t)
+	(rtb_obj_t *obj, const rtb_ev_t *event, void *ctx);
+
 /**
  * structures
  */

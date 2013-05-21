@@ -120,7 +120,6 @@ typedef int32_t rtb_utf32_t;
  */
 
 typedef struct rutabaga    rtb_t;
-typedef struct rtb_size    rtb_size_t;
 
 typedef struct rtb_object  rtb_obj_t;
 typedef struct rtb_object  rtb_container_t;
@@ -144,21 +143,6 @@ typedef struct rtb_mouse rtb_mouse_t;
 /**
  * callbacks
  */
-
-typedef void (*rtb_draw_cb_t)(rtb_obj_t *obj, rtb_draw_state_t state);
-typedef int  (*rtb_internal_event_cb_t)(rtb_obj_t *obj, const rtb_ev_t *event);
-typedef void (*rtb_realize_cb_t)(rtb_obj_t *obj, rtb_obj_t *parent,
-		rtb_win_t *window);
-typedef void (*rtb_layout_cb_t)(rtb_obj_t *);
-typedef void (*rtb_size_cb_t)(rtb_obj_t *obj, const rtb_size_t *avail,
-		rtb_size_t *want);
-typedef void (*rtb_recalc_cb_t)(rtb_obj_t *obj, rtb_obj_t *instigator,
-		rtb_event_direction_t direction);
-typedef void (*rtb_attach_child_cb_t)(rtb_obj_t *obj, rtb_obj_t *child);
-typedef void (*rtb_mark_dirty_cb_t)(rtb_obj_t *);
-
-typedef int  (*rtb_event_cb_t)(rtb_obj_t *obj, const rtb_ev_t *event,
-		void *ctx);
 
 /**
  * structure definitions

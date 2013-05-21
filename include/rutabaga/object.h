@@ -46,6 +46,22 @@ typedef enum {
 	RTB_OBJ_FLAG_EVENT_SNOOP = 0x01,
 } rtb_obj_flags_t;
 
+/**
+ * object implementation
+ */
+
+typedef void (*rtb_draw_cb_t)(rtb_obj_t *obj, rtb_draw_state_t state);
+typedef int  (*rtb_internal_event_cb_t)(rtb_obj_t *obj, const rtb_ev_t *event);
+typedef void (*rtb_realize_cb_t)(rtb_obj_t *obj, rtb_obj_t *parent,
+		rtb_win_t *window);
+typedef void (*rtb_layout_cb_t)(rtb_obj_t *);
+typedef void (*rtb_size_cb_t)(rtb_obj_t *obj,
+		const struct rtb_size *avail, struct rtb_size *want);
+typedef void (*rtb_recalc_cb_t)(rtb_obj_t *obj,
+		rtb_obj_t *instigator, rtb_event_direction_t direction);
+typedef void (*rtb_attach_child_cb_t)(rtb_obj_t *obj, rtb_obj_t *child);
+typedef void (*rtb_mark_dirty_cb_t)(rtb_obj_t *);
+
 struct rtb_object_implementation {
 	rtb_size_cb_t size_cb;
 	rtb_layout_cb_t layout_cb;
@@ -56,6 +72,10 @@ struct rtb_object_implementation {
 	rtb_attach_child_cb_t attach_child;
 	rtb_mark_dirty_cb_t mark_dirty;
 };
+
+/**
+ * and finally rtb_object itself
+ */
 
 struct rtb_object {
 	RTB_INHERIT(rtb_type_atom);
