@@ -107,10 +107,15 @@ static void recalculate(rtb_obj_t *self, rtb_obj_t *instigator,
 		break;
 	}
 
-	self->rect.p1.x = self->rect.p2.x = self->x;
-	self->rect.p1.y = self->rect.p2.y = self->y;
+	self->rect.p1.x  = self->rect.p2.x = self->x;
+	self->rect.p1.y  = self->rect.p2.y = self->y;
 	self->rect.p2.x += (GLfloat) self->w;
 	self->rect.p2.y += (GLfloat) self->h;
+
+	self->inner_rect.p1.x = self->x + self->outer_pad.x;
+	self->inner_rect.p1.y = self->y + self->outer_pad.y;
+	self->inner_rect.p2.x = self->rect.p2.x - self->outer_pad.x;
+	self->inner_rect.p2.y = self->rect.p2.y - self->outer_pad.y;
 }
 
 /**
@@ -143,8 +148,8 @@ static int on_event(rtb_obj_t *self, const rtb_ev_t *e)
 	case RTB_MOUSE_LEAVE:
 	case RTB_DRAG_ENTER:
 	case RTB_DRAG_LEAVE:
-		/* eat these events because we already handle propagation
-		 * in mouse.c as we dispatch them. */
+		/* eat these events because we already dispatch them up
+		 * and down the tree in platform/mouse.c */
 		return 1;
 	}
 

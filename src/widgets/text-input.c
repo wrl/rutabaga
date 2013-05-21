@@ -31,6 +31,7 @@
 #include "rutabaga/window.h"
 #include "rutabaga/keyboard.h"
 #include "rutabaga/layout.h"
+#include "rutabaga/layout-helpers.h"
 
 #include "rutabaga/widgets/text-input.h"
 
@@ -46,7 +47,7 @@
 static struct rtb_object_implementation super;
 
 static const GLubyte line_indices[] = {
-	0, 1, 2, 3
+	0, 1
 };
 
 /**
@@ -75,6 +76,30 @@ static void update_cursor(rtb_text_input_t *self)
 		x = 0.f;
 
 	x += self->label.x;
+
+	if (self->label_offset < 0 &&
+			self->label.rect.p2.x < self->inner_rect.p2.x) {
+		self->label_offset += self->inner_rect.p2.x - self->label.rect.p2.x;
+		self->label_offset = MIN(self->label_offset, 0);
+
+		rtb_obj_trigger_recalc(RTB_OBJECT(self), RTB_OBJECT(self),
+				RTB_DIRECTION_LEAFWARD);
+		return;
+	}
+
+	/* if the cursor has wandered outside our bounding box, move the label
+	 * so that the cursor is inside it again. */
+	if (x < self->inner_rect.p1.x || x > self->inner_rect.p2.x) {
+		if (x < self->inner_rect.p1.x)
+			self->label_offset += self->inner_rect.p1.x - x;
+		else
+			self->label_offset += self->inner_rect.p2.x - x;
+
+		rtb_obj_trigger_recalc(RTB_OBJECT(self), RTB_OBJECT(self),
+				RTB_DIRECTION_LEAFWARD);
+		return;
+	}
+
 	y  = self->label.y;
 	h  = self->label.h;
 
@@ -96,9 +121,6 @@ static void update_cursor(rtb_text_input_t *self)
 static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
-
-	/* XXX: hack to get the outline to render in front of the
-	 *      label. need to fix the render push/pop system. */
 
 	rtb_render_push(obj);
 	rtb_render_clear(obj);
@@ -278,6 +300,33 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
 	self->outer_pad.y = self->label.outer_pad.y;
 }
 
+static void layout(rtb_obj_t *obj)
+{
+	SELF_FROM(obj);
+
+	struct rtb_size avail, child;
+	rtb_pt_t position;
+	rtb_obj_t *iter;
+	float ystart;
+
+	avail.w = obj->w - (obj->outer_pad.x * 2);
+	avail.h = obj->h - (obj->outer_pad.y * 2);
+
+	position.x = obj->x + obj->outer_pad.x + self->label_offset;
+	ystart = obj->y + obj->outer_pad.y;
+
+	TAILQ_FOREACH(iter, &obj->children, child) {
+		iter->size_cb(iter, &avail, &child);
+		position.y = ystart + valign(avail.h, child.h, iter->align);
+
+		rtb_obj_set_position_from_point(iter, &position);
+		rtb_obj_set_size(iter, &child);
+
+		avail.w    -= child.w + obj->inner_pad.x;
+		position.x += child.w + obj->inner_pad.x;
+	}
+}
+
 /**
  * public API
  */
@@ -313,6 +362,7 @@ int rtb_text_input_init(rtb_t *rtb, rtb_text_input_t *self,
 	glGenBuffers(1, &self->cursor_vbo);
 
 	self->label.align = RTB_ALIGN_MIDDLE;
+	self->label_offset = 0;
 
 	self->outer_pad.x =
 		self->outer_pad.y = 0.f;
@@ -324,7 +374,7 @@ int rtb_text_input_init(rtb_t *rtb, rtb_text_input_t *self,
 	self->recalc_cb  = recalculate;
 	self->draw_cb    = draw;
 	self->size_cb    = rtb_size_self;
-	self->layout_cb  = rtb_layout_hpack_left;
+	self->layout_cb  = layout;
 	self->event_cb   = on_event;
 
 	self->cursor_position = 0;

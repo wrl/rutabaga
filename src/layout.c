@@ -31,6 +31,7 @@
 #include "rutabaga/object.h"
 #include "rutabaga/container.h"
 #include "rutabaga/layout.h"
+#include "rutabaga/layout-helpers.h"
 
 /**
  * size
@@ -119,38 +120,6 @@ void rtb_layout_unmanaged(rtb_obj_t *obj)
 	TAILQ_FOREACH(iter, &obj->children, child) {
 		iter->size_cb(iter, &avail, &child);
 		rtb_obj_set_size(iter, &child);
-	}
-}
-
-/**
- * alignment helpers
- */
-
-static float halign(float havail, float w, rtb_alignment_t align)
-{
-	switch (align & RTB_ALIGN_HORIZONTAL) {
-	case RTB_ALIGN_CENTER:
-		return (havail - w) / 2.f;
-
-	case RTB_ALIGN_RIGHT:
-		return havail - w;
-
-	default:
-		return 0.f;
-	}
-}
-
-static float valign(float vavail, float h, rtb_alignment_t align)
-{
-	switch (align & RTB_ALIGN_VERTICAL) {
-	case RTB_ALIGN_MIDDLE:
-		return (vavail - h) / 2.f;
-
-	case RTB_ALIGN_BOTTOM:
-		return vavail - h;
-
-	default:
-		return 0.f;
 	}
 }
 

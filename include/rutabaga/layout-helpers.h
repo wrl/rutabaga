@@ -24,42 +24,32 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#include "rutabaga/types.h"
 
-#include <unistd.h>
+static inline float halign(float havail, float w, rtb_alignment_t align)
+{
+	switch (align & RTB_ALIGN_HORIZONTAL) {
+	case RTB_ALIGN_CENTER:
+		return (havail - w) / 2.f;
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/text-buffer.h"
-#include "rutabaga/object.h"
-#include "rutabaga/event.h"
-#include "rutabaga/quad.h"
+	case RTB_ALIGN_RIGHT:
+		return havail - w;
 
-#include "rutabaga/widgets/label.h"
+	default:
+		return 0.f;
+	}
+}
 
-#define RTB_TEXT_INPUT(x) RTB_UPCAST(x, rtb_text_input)
+static inline float valign(float vavail, float h, rtb_alignment_t align)
+{
+	switch (align & RTB_ALIGN_VERTICAL) {
+	case RTB_ALIGN_MIDDLE:
+		return (vavail - h) / 2.f;
 
-typedef struct rtb_text_input rtb_text_input_t;
+	case RTB_ALIGN_BOTTOM:
+		return vavail - h;
 
-struct rtb_text_input {
-	RTB_INHERIT(rtb_object);
-
-	/* private ********************************/
-	int cursor_position;
-	struct rtb_text_buffer text;
-
-	rtb_label_t label;
-	int label_offset;
-
-	struct rtb_quad bg_quad;
-	GLuint cursor_vbo;
-};
-
-int rtb_text_input_set_text(rtb_text_input_t *,
-		rtb_utf8_t *text, ssize_t nbytes);
-const rtb_utf8_t *rtb_text_input_get_text(rtb_text_input_t *);
-
-int rtb_text_input_init(rtb_t *, rtb_text_input_t *,
-		struct rtb_object_implementation *impl);
-void rtb_text_input_fini(rtb_text_input_t *);
-rtb_text_input_t *rtb_text_input_new(rtb_t *);
-void rtb_text_input_free(rtb_text_input_t *);
+	default:
+		return 0.f;
+	}
+}

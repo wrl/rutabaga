@@ -81,7 +81,7 @@ struct rtb_object {
 
 	/* private ********************************/
 	int mouse_in;
-	rtb_rect_t rect;
+	rtb_rect_t rect, inner_rect;
 	rtb_visibility_t visibility;
 	rtb_obj_state_t state;
 
