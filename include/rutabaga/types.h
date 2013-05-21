@@ -139,25 +139,3 @@ typedef struct rtb_event_mouse rtb_ev_mouse_t;
 typedef struct rtb_event_key   rtb_ev_key_t;
 
 typedef struct rtb_mouse rtb_mouse_t;
-
-/**
- * callbacks
- */
-
-/**
- * structure definitions
- */
-
-struct rtb_point {
-	GLfloat x;
-	GLfloat y;
-};
-
-struct rtb_size {
-	GLfloat w;
-	GLfloat h;
-};
-
-struct rtb_padding {
-	struct rtb_point;
-};

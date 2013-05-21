@@ -28,6 +28,7 @@
 #include <math.h>
 
 #include "rutabaga/rutabaga.h"
+#include "rutabaga/geometry.h"
 #include "rutabaga/object.h"
 #include "rutabaga/container.h"
 #include "rutabaga/layout.h"

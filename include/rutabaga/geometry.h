@@ -28,11 +28,23 @@
 
 #include "rutabaga/types.h"
 
-#define RTB_RECT(x) RTB_UPCAST(x, rtb_rect)
-
 #define RTB_POINT_IN_RECT(pt, rect) \
 	((pt).x >= (rect).x && (pt).x <= (rect).x2 \
 	 && (pt).y >= (rect).y && (pt).y <= (rect).y2)
+
+struct rtb_point {
+	GLfloat x;
+	GLfloat y;
+};
+
+struct rtb_size {
+	GLfloat w;
+	GLfloat h;
+};
+
+struct rtb_padding {
+	struct rtb_point;
+};
 
 struct rtb_rect {
 	/**
