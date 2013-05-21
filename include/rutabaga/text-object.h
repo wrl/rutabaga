@@ -27,7 +27,7 @@
 #pragma once
 
 #include "rutabaga/types.h"
-#include "rutabaga/rect.h"
+#include "rutabaga/geometry.h"
 #include "rutabaga/font-manager.h"
 
 #include "freetype-gl/vertex-buffer.h"

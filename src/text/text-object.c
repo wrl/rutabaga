@@ -32,7 +32,7 @@
 #include "rutabaga/render.h"
 #include "rutabaga/shader.h"
 #include "rutabaga/style.h"
-#include "rutabaga/rect.h"
+#include "rutabaga/geometry.h"
 
 #include "rutabaga/text-object.h"
 

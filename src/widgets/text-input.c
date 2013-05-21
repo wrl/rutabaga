@@ -32,7 +32,7 @@
 #include "rutabaga/keyboard.h"
 #include "rutabaga/layout.h"
 #include "rutabaga/layout-helpers.h"
-#include "rutabaga/rect.h"
+#include "rutabaga/geometry.h"
 
 #include "rutabaga/widgets/text-input.h"
 
