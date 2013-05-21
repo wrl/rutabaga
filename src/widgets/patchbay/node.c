@@ -69,7 +69,7 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 	SELF_FROM(obj);
 
 	super.recalc_cb(obj, instigator, direction);
-	rtb_quad_set_vertices(&self->bg_quad, RTB_RECT(self));
+	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
 }
 
 static int handle_drag(rtb_patchbay_node_t *self, const rtb_ev_drag_t *e)

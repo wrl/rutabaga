@@ -134,7 +134,7 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 	self->outer_pad.x = self->label.outer_pad.x;
 	self->outer_pad.y = self->label.outer_pad.y;
 
-	rtb_quad_set_vertices(&self->bg_quad, RTB_RECT(self));
+	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
 }
 
 static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)

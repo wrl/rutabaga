@@ -61,7 +61,7 @@ struct rtb_object {
 	RTB_INHERIT(rtb_type_atom);
 
 	/* public *********************************/
-	RTB_INHERIT(rtb_rect);
+	RTB_INHERIT_AS(rtb_rect, rect);
 	struct rtb_size min_size;
 	struct rtb_size max_size;
 
