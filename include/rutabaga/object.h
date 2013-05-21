@@ -61,9 +61,9 @@ struct rtb_object {
 	RTB_INHERIT(rtb_type_atom);
 
 	/* public *********************************/
-	RTB_INHERIT_AS(rtb_point, pt);  /* provides x, y */
-	RTB_INHERIT_AS(rtb_size, size); /* provides w, h */
+	RTB_INHERIT(rtb_rect);
 	struct rtb_size min_size;
+	struct rtb_size max_size;
 
 	rtb_obj_flags_t flags;
 
@@ -80,7 +80,7 @@ struct rtb_object {
 
 	/* private ********************************/
 	int mouse_in;
-	struct rtb_rect rect, inner_rect;
+	struct rtb_rect inner_rect;
 	rtb_visibility_t visibility;
 	rtb_obj_state_t state;
 

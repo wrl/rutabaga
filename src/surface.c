@@ -96,7 +96,7 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 			GL_TEXTURE_2D, self->texture, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	rtb_quad_set_vertices(&self->quad, &self->rect);
+	rtb_quad_set_vertices(&self->quad, RTB_RECT(self));
 	rtb_quad_set_tex_coords(&self->quad, &tex_coords);
 
 	rtb_surface_invalidate(self);

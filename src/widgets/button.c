@@ -75,8 +75,8 @@ static int dispatch_click_event(rtb_button_t *self, const rtb_ev_mouse_t *e)
 	rtb_ev_button_t event = *((rtb_ev_button_t *) e);
 
 	event.type = BUTTON_CLICK;
-	event.cursor.x -= self->rect.x;
-	event.cursor.y -= self->rect.y;
+	event.cursor.x -= self->x;
+	event.cursor.y -= self->y;
 
 	return rtb_handle(RTB_OBJECT(self), RTB_EVENT(&event));
 }
@@ -134,7 +134,7 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 	self->outer_pad.x = self->label.outer_pad.x;
 	self->outer_pad.y = self->label.outer_pad.y;
 
-	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
+	rtb_quad_set_vertices(&self->bg_quad, RTB_RECT(self));
 }
 
 static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)

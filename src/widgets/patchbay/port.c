@@ -227,7 +227,7 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 	SELF_FROM(obj);
 
 	super.recalc_cb(obj, instigator, direction);
-	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
+	rtb_quad_set_vertices(&self->bg_quad, RTB_RECT(self));
 }
 
 static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)

@@ -79,8 +79,8 @@ static void update_cursor(rtb_text_input_t *self)
 	x += self->label.x;
 
 	if (self->label_offset < 0 &&
-			self->label.rect.x2 < self->inner_rect.x2) {
-		self->label_offset += self->inner_rect.x2 - self->label.rect.x2;
+			self->label.x2 < self->inner_rect.x2) {
+		self->label_offset += self->inner_rect.x2 - self->label.x2;
 		self->label_offset = MIN(self->label_offset, 0);
 
 		rtb_obj_trigger_recalc(RTB_OBJECT(self), RTB_OBJECT(self),
@@ -285,7 +285,7 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 	super.recalc_cb(obj, instigator, direction);
 	self->outer_pad.y = self->label.outer_pad.y;
 
-	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
+	rtb_quad_set_vertices(&self->bg_quad, RTB_RECT(self));
 	update_cursor(self);
 }
 

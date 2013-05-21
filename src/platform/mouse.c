@@ -231,7 +231,7 @@ static void retarget(rtb_win_t *win, int x, int y)
 	rtb_pt_t cursor = {x, y};
 
 	while (ret != (rtb_obj_t *) win) {
-		if (RTB_POINT_IN_RECT(cursor, ret->rect))
+		if (RTB_POINT_IN_RECT(cursor, *ret))
 			break;
 
 		ret->mouse_in = 0;
@@ -245,7 +245,7 @@ static void retarget(rtb_win_t *win, int x, int y)
 
 push:
 	TAILQ_FOREACH_REVERSE(iter, &ret->children, children, child) {
-		if (RTB_POINT_IN_RECT(cursor, iter->rect)) {
+		if (RTB_POINT_IN_RECT(cursor, *iter)) {
 			ret = iter;
 			ret->mouse_in = 1;
 
