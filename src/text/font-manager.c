@@ -39,6 +39,8 @@
 
 #define ERR(...) fprintf(stderr, "rutabaga: " __VA_ARGS__)
 #define FONT "./assets/fonts/open_sans/OpenSans-Regular.ttf"
+#undef FONT
+#define FONT "/home/will/.fonts/pt_sans/PTS55F.ttf"
 
 static const uint8_t lcd_weights[] = {
 	0x00,
@@ -69,7 +71,8 @@ int rtb_font_manager_load_font(rtb_font_manager_t *fm, rtb_font_t *font,
 	font->size = size;
 	font->fm   = fm;
 
-	memcpy(font->txfont->lcd_weights, lcd_weights, sizeof(lcd_weights));
+	if (0)
+		memcpy(font->txfont->lcd_weights, lcd_weights, sizeof(lcd_weights));
 
 	texture_font_load_glyphs(font->txfont, cache);
 	return 0;
@@ -112,10 +115,10 @@ int rtb_font_manager_init(rtb_win_t *win)
 	fm->atlas = texture_atlas_new(512, 512, 1);
 #endif
 
-	if (rtb_font_manager_load_font(fm, &fm->fonts.main, FONT, 12) < 0)
+	if (rtb_font_manager_load_font(fm, &fm->fonts.main, FONT, 10) < 0)
 		goto err_main_font;
 
-	if (rtb_font_manager_load_font(fm, &fm->fonts.big, FONT, 20) < 0)
+	if (rtb_font_manager_load_font(fm, &fm->fonts.big, FONT, 16) < 0)
 		goto err_big_font;
 
 	fm->fonts.main.lcd_gamma = 2.2f;

@@ -198,6 +198,8 @@ void add_input(rtb_t *rtb, rtb_container_t *root)
 
 	rtb_text_input_set_text(input, "hey ßßßß man §§§", -1);
 
+	input->min_size.w = 200.f;
+
 	rtb_attach(RTB_OBJECT(input), RTB_KEY_PRESS, handle_input_key, NULL);
 	rtb_obj_add_child(root, RTB_OBJECT(input), RTB_ADD_TAIL);
 }
@@ -274,8 +276,8 @@ int main(int argc, char **argv)
 	rtb_attach(RTB_OBJECT(win), RTB_KEY_PRESS, handle_key_press, delicious);
 
 	distribute_demo(RTB_OBJECT(delicious->win));
-	add_input(delicious, RTB_OBJECT(delicious->win));
 	setup_ui(RTB_OBJECT(delicious->win));
+	add_input(delicious, RTB_OBJECT(delicious->win));
 
 	rtb_event_loop(delicious);
 

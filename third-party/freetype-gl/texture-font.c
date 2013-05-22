@@ -53,9 +53,6 @@ const struct {
 } FT_Errors[] =
 #include FT_ERRORS_H
 
-
-
-
 // ------------------------------------------------- texture_font_load_face ---
 int
 texture_font_load_face( FT_Library * library,
@@ -63,7 +60,7 @@ texture_font_load_face( FT_Library * library,
                         const float size,
                         FT_Face * face )
 {
-    size_t hres = 64;
+    size_t hres = 1;
     FT_Error error;
     FT_Matrix matrix = { (int)((1.0/hres) * 0x10000L),
                          (int)((0.0)      * 0x10000L),
@@ -105,7 +102,8 @@ texture_font_load_face( FT_Library * library,
     }
 
     /* Set char size */
-    error = FT_Set_Char_Size( *face, (int)(size*64), 0, 72*hres, 72 );
+	error = FT_Set_Char_Size( *face, (int)(size*64), 0, 96*hres, 96 );
+
     if( error )
     {
         fprintf( stderr, "FT_Error (line %d, code 0x%02x) : %s\n",
@@ -386,17 +384,12 @@ texture_font_load_glyphs( texture_font_t * self,
         //          LCD subpixel rendering
 
         if( self->outline_type > 0 )
-        {
             flags |= FT_LOAD_NO_BITMAP;
-        }
         else
-        {
             flags |= FT_LOAD_RENDER;
-        }
 
-        if( !self->hinting ) {
+        if( !self->hinting )
             flags |= FT_LOAD_NO_HINTING | FT_LOAD_NO_AUTOHINT;
-        }
 
         if( depth == 3 )
         {
