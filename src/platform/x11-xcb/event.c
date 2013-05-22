@@ -285,6 +285,22 @@ static int handle_xkb_new_keyboard(struct xcb_window *win,
 	return 0;
 }
 
+static int handle_xkb_state_notify(struct xcb_window *win,
+		xcb_generic_event_t *_ev)
+{
+	CAST_EVENT_TO(xcb_xkb_state_notify_event_t);
+
+	xkb_state_update_mask(win->xrtb->xkb_state,
+			ev->baseMods,
+			ev->latchedMods,
+			ev->lockedMods,
+			ev->baseGroup,
+			ev->latchedGroup,
+			ev->lockedGroup);
+
+	return 0;
+}
+
 static int handle_xkb_event(struct xcb_window *win,
 		xcb_generic_event_t *_ev)
 {
@@ -293,6 +309,10 @@ static int handle_xkb_event(struct xcb_window *win,
 	switch (type) {
 	case XCB_XKB_NEW_KEYBOARD_NOTIFY:
 		handle_xkb_new_keyboard(win, _ev);
+		break;
+
+	case XCB_XKB_STATE_NOTIFY:
+		handle_xkb_state_notify(win, _ev);
 		break;
 	}
 

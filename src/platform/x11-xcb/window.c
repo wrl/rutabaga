@@ -95,8 +95,9 @@ static int receive_xkb_events(xcb_connection_t *c)
 
 	free(xkb_reply);
 
-	events = XCB_XKB_EVENT_TYPE_NEW_KEYBOARD_NOTIFY;
-	map = XCB_XKB_MAP_PART_KEY_SYMS;
+	map = XCB_XKB_MAP_PART_KEY_SYMS | XCB_XKB_MAP_PART_MODIFIER_MAP;
+	events = XCB_XKB_EVENT_TYPE_NEW_KEYBOARD_NOTIFY
+		| XCB_XKB_EVENT_TYPE_STATE_NOTIFY;
 
 	cookie = xcb_xkb_select_events_checked(c,
 			XCB_XKB_ID_USE_CORE_KBD, events, 0, events, map, map, 0);
