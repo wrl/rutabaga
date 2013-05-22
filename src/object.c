@@ -52,7 +52,7 @@
  */
 
 static int recalc_rootward(rtb_obj_t *self, rtb_obj_t *instigator,
-		rtb_event_direction_t direction)
+		rtb_ev_direction_t direction)
 {
 	rtb_obj_t *iter;
 	struct rtb_size inst_old_size = {
@@ -79,7 +79,7 @@ static int recalc_rootward(rtb_obj_t *self, rtb_obj_t *instigator,
 }
 
 static void recalc_leafward(rtb_obj_t *self, rtb_obj_t *instigator,
-		rtb_event_direction_t direction)
+		rtb_ev_direction_t direction)
 {
 	rtb_obj_t *iter;
 
@@ -90,7 +90,7 @@ static void recalc_leafward(rtb_obj_t *self, rtb_obj_t *instigator,
 }
 
 static void recalculate(rtb_obj_t *self, rtb_obj_t *instigator,
-		rtb_event_direction_t direction)
+		rtb_ev_direction_t direction)
 {
 	/* XXX: invariant: self->window->state != RTB_STATE_UNREALIZED */
 	if (!self->style)
@@ -255,7 +255,7 @@ void rtb_obj_realize(rtb_obj_t *self, rtb_obj_t *parent,
 }
 
 void rtb_obj_trigger_recalc(rtb_obj_t *self, rtb_obj_t *instigator,
-		rtb_event_direction_t direction)
+		rtb_ev_direction_t direction)
 {
 	self->recalc_cb(self, instigator, direction);
 }

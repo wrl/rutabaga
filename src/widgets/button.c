@@ -125,7 +125,7 @@ static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
 }
 
 static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
-		rtb_event_direction_t direction)
+		rtb_ev_direction_t direction)
 {
 	SELF_FROM(obj);
 

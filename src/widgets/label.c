@@ -49,7 +49,7 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 }
 
 static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
-		rtb_event_direction_t direction)
+		rtb_ev_direction_t direction)
 {
 	super.recalc_cb(obj, instigator, direction);
 	obj->style = obj->parent->style;

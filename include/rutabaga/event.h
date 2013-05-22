@@ -64,13 +64,16 @@ enum {
 };
 #undef SYS
 
-/**
- * take, for example, a mouse click event. if the click actually
+typedef enum {
+	RTB_DIRECTION_LEAFWARD,
+	RTB_DIRECTION_ROOTWARD
+} rtb_ev_direction_t;
+
+/* take, for example, a mouse click event. if the click actually
  * originated from a mouse click, this would be RTB_EVENT_GENUINE.
  * if it originated from, say, a key press (i.e. when a button is
  * focused and the user presses <space> or <enter>), the event would
- * be marked RTB_EVENT_SYNTHETIC.
- */
+ * be marked RTB_EVENT_SYNTHETIC.  */
 
 typedef enum {
 	RTB_EVENT_GENUINE    = 0,

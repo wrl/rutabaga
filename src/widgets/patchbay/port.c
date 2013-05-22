@@ -222,7 +222,7 @@ static int handle_mouse(rtb_patchbay_port_t *self, rtb_ev_mouse_t *e)
  */
 
 static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
-		rtb_event_direction_t direction)
+		rtb_ev_direction_t direction)
 {
 	SELF_FROM(obj);
 

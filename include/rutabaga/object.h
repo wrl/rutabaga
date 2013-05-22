@@ -46,6 +46,11 @@ typedef enum {
 	RTB_OBJ_FLAG_EVENT_SNOOP = 0x01,
 } rtb_obj_flags_t;
 
+typedef enum {
+	RTB_STATE_UNREALIZED = 0,
+	RTB_STATE_REALIZED   = 1
+} rtb_obj_state_t;
+
 /**
  * object implementation
  */
@@ -58,7 +63,7 @@ typedef void (*rtb_layout_cb_t)(rtb_obj_t *);
 typedef void (*rtb_size_cb_t)(rtb_obj_t *obj,
 		const struct rtb_size *avail, struct rtb_size *want);
 typedef void (*rtb_recalc_cb_t)(rtb_obj_t *obj,
-		rtb_obj_t *instigator, rtb_event_direction_t direction);
+		rtb_obj_t *instigator, rtb_ev_direction_t direction);
 typedef void (*rtb_attach_child_cb_t)(rtb_obj_t *obj, rtb_obj_t *child);
 typedef void (*rtb_mark_dirty_cb_t)(rtb_obj_t *);
 
@@ -99,10 +104,11 @@ struct rtb_object {
 	TAILQ_HEAD(children, rtb_object) children;
 
 	/* private ********************************/
-	int mouse_in;
+	rtb_obj_state_t state;
 	struct rtb_rect inner_rect;
 	rtb_visibility_t visibility;
-	rtb_obj_state_t state;
+
+	int mouse_in;
 
 	rtb_obj_t *parent;
 	rtb_win_t *window;
@@ -120,7 +126,7 @@ void rtb_obj_realize(rtb_obj_t *, rtb_obj_t *parent,
 
 void rtb_obj_mark_dirty(rtb_obj_t *);
 void rtb_obj_trigger_recalc(rtb_obj_t *, rtb_obj_t *instigator,
-		rtb_event_direction_t direction);
+		rtb_ev_direction_t direction);
 
 void rtb_obj_set_size_cb(rtb_obj_t *, rtb_size_cb_t size_cb);
 void rtb_obj_set_layout(rtb_obj_t *, rtb_layout_cb_t layout_cb);
