@@ -39,8 +39,6 @@
 
 #define ERR(...) fprintf(stderr, "rutabaga: " __VA_ARGS__)
 #define FONT "./assets/fonts/open_sans/OpenSans-Regular.ttf"
-#undef FONT
-#define FONT "/home/will/.fonts/pt_sans/PTS55F.ttf"
 
 static const uint8_t lcd_weights[] = {
 	0x00,
