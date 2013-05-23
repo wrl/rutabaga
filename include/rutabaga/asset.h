@@ -28,6 +28,10 @@
 
 #include <unistd.h>
 
+#define RTB_ASSET_IS_LOADED(a) ((a)->loaded)
+#define RTB_ASSET_SIZE(a) ((a)->buffer.size)
+#define RTB_ASSET_DATA(a) ((a)->buffer.data)
+
 typedef enum {
 	RTB_ASSET_EXTERNAL = 0,
 	RTB_ASSET_EMBEDDED = 1

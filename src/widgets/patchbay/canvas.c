@@ -39,6 +39,7 @@
 #include "rutabaga/event.h"
 #include "rutabaga/mouse.h"
 #include "rutabaga/style.h"
+#include "rutabaga/asset.h"
 
 #include "rutabaga/widgets/patchbay.h"
 
@@ -59,7 +60,22 @@ static struct rtb_object_implementation super;
  */
 
 #define TILE_IMG "./assets/tile.tga"
-targa_t tile;
+struct tile {
+	struct rtb_asset asset;
+	struct targa_header *img;
+	void *img_data;
+};
+
+struct tile tile = {
+	.asset = {
+		.location = RTB_ASSET_EXTERNAL,
+		.compression = RTB_ASSET_UNCOMPRESSED,
+		.external.path = TILE_IMG
+	},
+
+	.img = NULL,
+	.img_data = NULL
+};
 
 static struct {
 	RTB_INHERIT(rtb_shader);
@@ -98,18 +114,25 @@ static void init_shaders()
 
 static void load_tile(rtb_patchbay_t *self)
 {
-	if (!tile.data) {
-		if (targa_load(&tile, TILE_IMG) < 0)
+	if (!RTB_ASSET_IS_LOADED(&tile.asset)) {
+		if (rtb_asset_load(&tile.asset)) {
+			printf(" [!] couldn't load tile, aiee!\n");
 			return;
+		}
+
+		tile.img = RTB_ASSET_DATA(&tile.asset);
+		tile.img_data = &tile.img[1] +
+			(tile.img->id_length +
+			 (tile.img->cmap_len * tile.img->cmap_bpp));
 	}
 
 	glGenTextures(1, &self->bg_texture);
 	glBindTexture(GL_TEXTURE_2D, self->bg_texture);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
-			tile.info.width, tile.info.height,
+			tile.img->width, tile.img->height,
 			0, GL_BGRA, GL_UNSIGNED_BYTE,
-			tile.data);
+			tile.img_data);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -168,7 +191,7 @@ static void draw_bg(rtb_patchbay_t *self)
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, self->bg_texture);
 	glUniform1i(shader.uniform.texture, 0);
-	glUniform2f(shader.uniform.tx_size, tile.info.width, tile.info.height);
+	glUniform2f(shader.uniform.tx_size, tile.img->width, tile.img->height);
 	glUniform2f(shader.uniform.tx_offset,
 			roundf(self->texture_offset.x),
 			roundf(self->texture_offset.y));
@@ -423,8 +446,12 @@ void rtb_patchbay_free(rtb_patchbay_t *self)
 
 	/* if ref_count is one, this is the last patchbay allocated, and
 	 * the type will be freed by the subsequent rtb_surface_fini(). */
-	if (self->type->ref_count == 1 && tile.data)
-		free(tile.data);
+	if (self->type->ref_count == 1 && RTB_ASSET_IS_LOADED(&tile.asset)) {
+		rtb_asset_free(&tile.asset);
+
+		tile.img = NULL;
+		tile.img_data = NULL;
+	}
 
 	rtb_surface_fini(RTB_SURFACE(self));
 

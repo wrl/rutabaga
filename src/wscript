@@ -37,11 +37,12 @@ def build(bld):
 	# common
 
 	obj("rutabaga.c")
-	obj("asset.c")
-	obj("style.c")
 	obj("event.c")
 	obj("atom.c")
 	obj("quad.c")
+
+	obj("asset.c")
+	obj("style.c")
 
 	obj("object.c")
 	obj("surface.c")
@@ -50,8 +51,6 @@ def build(bld):
 	obj("shader.c")
 	obj("render.c")
 	obj("mat4.c")
-
-	obj("targa.c")
 
 	obj("text/font-manager.c")
 	obj("text/text-object.c")
