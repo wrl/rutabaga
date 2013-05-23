@@ -540,7 +540,10 @@ void rtb_event_loop(rtb_t *r)
 		if (timeout_ms < 0 || timeout_ms >= FRAME_MSEC)
 			timeout_ms = 0;
 
-		poll(fds, ARRAY_LENGTH(fds), timeout_ms);
+		if (win->visibility == RTB_FULLY_OBSCURED)
+			poll(fds, ARRAY_LENGTH(fds), -1);
+		else
+			poll(fds, ARRAY_LENGTH(fds), timeout_ms);
 
 		rtb_window_lock(win);
 
