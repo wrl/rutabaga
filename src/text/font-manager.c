@@ -113,7 +113,7 @@ int rtb_font_manager_init(rtb_win_t *win)
 	fm->atlas = texture_atlas_new(512, 512, 1);
 #endif
 
-	if (rtb_font_manager_load_font(fm, &fm->fonts.main, FONT, 10) < 0)
+	if (rtb_font_manager_load_font(fm, &fm->fonts.main, FONT, 9) < 0)
 		goto err_main_font;
 
 	if (rtb_font_manager_load_font(fm, &fm->fonts.big, FONT, 16) < 0)
