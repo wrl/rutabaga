@@ -29,18 +29,19 @@
 #include <unistd.h>
 
 typedef enum {
-	RTB_RESOURCE_EXTERNAL,
-	RTB_RESOURCE_EMBEDDED
-} rtb_resource_location_t;
+	RTB_ASSET_EXTERNAL = 0,
+	RTB_ASSET_EMBEDDED = 1
+} rtb_asset_location_t;
 
 typedef enum {
-	RTB_RESOURCE_UNCOMPRESSED  = 0,
-	RTB_RESOURCE_COMPRESSED_XZ = 1
-} rtb_resource_compression_t;
+	RTB_ASSET_UNCOMPRESSED  = 0,
+	RTB_ASSET_COMPRESSED_XZ = 1
+} rtb_asset_compression_t;
 
-struct rtb_resource {
-	rtb_resource_location_t location;
-	rtb_resource_compression_t compression;
+struct rtb_asset {
+	/* public *********************************/
+	rtb_asset_location_t location;
+	rtb_asset_compression_t compression;
 
 	/**
 	 * location
@@ -51,8 +52,8 @@ struct rtb_resource {
 		} external;
 
 		struct {
-			void *base;
 			size_t size;
+			void *base;
 		} embedded;
 	};
 
@@ -64,4 +65,16 @@ struct rtb_resource {
 			size_t deflated_size;
 		} xz;
 	} compressor;
+
+	/* private ********************************/
+	int loaded;
+
+	struct {
+		int allocated;
+		size_t size;
+		void *data;
+	} buffer;
 };
+
+int rtb_asset_load(struct rtb_asset *);
+void rtb_asset_free(struct rtb_asset *);

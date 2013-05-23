@@ -28,7 +28,7 @@
 
 #include "rutabaga/types.h"
 #include "rutabaga/geometry.h"
-#include "rutabaga/resource.h"
+#include "rutabaga/asset.h"
 #include "rutabaga/atom.h"
 
 typedef enum {
@@ -43,7 +43,7 @@ typedef enum {
  */
 
 struct rtb_style_texture_definition {
-	RTB_INHERIT(rtb_resource);
+	RTB_INHERIT(rtb_asset);
 
 	RTB_INHERIT_AS(rtb_size, size);
 	struct {
@@ -55,7 +55,9 @@ struct rtb_rgb_color {
 	GLfloat r, g, b, a;
 };
 
-struct rtb_style_property_definition {
+struct rtb_style_property {
+	char *name;
+
 	enum {
 		RTB_STYLE_PROP_COLOR,
 		RTB_STYLE_PROP_FLOAT,
@@ -63,6 +65,11 @@ struct rtb_style_property_definition {
 		RTB_STYLE_PROP_FONT,
 		RTB_STYLE_PROP_TEXTURE
 	} type;
+};
+
+struct rtb_style_property_definition {
+	/* public *********************************/
+	char *for_prop;
 
 	union {
 		struct rtb_rgb_color color;
@@ -70,12 +77,9 @@ struct rtb_style_property_definition {
 		int i;
 		struct rtb_style_texture_definition texture;
 	};
-};
 
-struct rtb_style_property {
-	char *prop;
-
-	struct rtb_style_property_definition;
+	/* private ********************************/
+	struct rtb_style_property *prop;
 };
 
 struct rtb_style_props {
@@ -84,7 +88,6 @@ struct rtb_style_props {
 
 struct rtb_style {
 	/* public *********************************/
-
 	char *for_type;
 	rtb_style_states_t available_styles;
 
