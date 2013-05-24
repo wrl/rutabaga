@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 
-top = ".."
+import os
+import re
 
 from glsl2h import write_shader_header
 
-def shader_header(bld, dest):
+top = ".."
+
+def glsl2h_task(bld, dest):
 	def shader(task):
 		write_shader_header(task.outputs[0], task.inputs)
 
@@ -16,13 +19,27 @@ def shader_header(bld, dest):
 		export_includes=".",
 		update_outputs=True)
 
+
+sanitize_cvar = re.compile(r"[.,-]")
+
+def bin2h_task(bld, src):
+	var = sanitize_cvar.sub("_", src).upper()
+
+	bld(
+		rule="python ../python/bin2h.py -p static -v %s < ${SRC} > ${TGT}" % var,
+		source="../assets/{0}".format(src),
+		target="assets/{0}.h".format(src),
+		name="assets",
+		export_includes=".",
+		update_outputs=True)
+
+
 def build(bld):
 	bld(export_includes="../third-party/gl3w ../third-party .", name="private")
 	bld(export_includes="../include", name="public")
 
 	objs = []
 	obj = lambda src: objs.append(src)
-	shader = lambda dest: shader_header(bld, dest)
 
 	#
 	# platform
@@ -87,10 +104,18 @@ def build(bld):
 
 	# shaders
 
+	shader = lambda dest: glsl2h_task(bld, dest)
+
 	shader("default")
 	shader("surface")
 	shader("text")
 	shader("patchbay-canvas")
+
+	# assets
+
+	asset = lambda src: bin2h_task(bld, src)
+
+	asset("tile.tga")
 
 	# outputs
 

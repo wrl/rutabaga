@@ -45,7 +45,9 @@
 
 #include "private/util.h"
 #include "private/targa.h"
+
 #include "shaders/patchbay-canvas.glsl.h"
+#include "assets/tile.tga.h"
 
 #define SELF_FROM(obj) \
 	struct rtb_patchbay *self = RTB_OBJECT_AS(obj, rtb_patchbay)
@@ -59,18 +61,19 @@ static struct rtb_object_implementation super;
  * custom openGL stuff
  */
 
-#define TILE_IMG "./assets/tile.tga"
 struct tile {
 	struct rtb_asset asset;
-	struct targa_header *img;
-	void *img_data;
+	const struct targa_header *img;
+	const void *img_data;
 };
 
 struct tile tile = {
 	.asset = {
-		.location = RTB_ASSET_EXTERNAL,
+		.location = RTB_ASSET_EMBEDDED,
 		.compression = RTB_ASSET_UNCOMPRESSED,
-		.external.path = TILE_IMG
+
+		.embedded.size = TILE_TGA_SIZE,
+		.embedded.base = TILE_TGA_DATA
 	},
 
 	.img = NULL,

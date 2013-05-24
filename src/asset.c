@@ -45,6 +45,7 @@ static int load_ext(struct rtb_asset *asset)
 {
 	FILE *f;
 	int size;
+	void *data;
 
 	if (!(f = fopen(asset->external.path, "rb"))) {
 		perror("rtb_asset: load_ext(): ");
@@ -56,9 +57,9 @@ static int load_ext(struct rtb_asset *asset)
 	fseek(f, 0, SEEK_SET);
 
 	asset->buffer.size = size;
-	asset->buffer.data = malloc(size);
+	asset->buffer.data = data = malloc(size);
 
-	fread(asset->buffer.data, 1, size, f);
+	fread(data, 1, size, f);
 
 	fclose(f);
 	return 0;
@@ -126,7 +127,7 @@ void rtb_asset_free(struct rtb_asset *asset)
 	assert(asset->loaded && asset->buffer.data);
 
 	if (asset->buffer.allocated)
-		free(asset->buffer.data);
+		free((void *) asset->buffer.data);
 
 	asset->buffer.size      = 0;
 	asset->buffer.data      = NULL;

@@ -57,7 +57,7 @@ struct rtb_asset {
 
 		struct {
 			size_t size;
-			void *base;
+			const void *base;
 		} embedded;
 	};
 
@@ -76,7 +76,7 @@ struct rtb_asset {
 	struct {
 		int allocated;
 		size_t size;
-		void *data;
+		const void *data;
 	} buffer;
 };
 
