@@ -72,8 +72,8 @@ struct tile tile = {
 		.location = RTB_ASSET_EMBEDDED,
 		.compression = RTB_ASSET_UNCOMPRESSED,
 
-		.embedded.size = TILE_TGA_SIZE,
-		.embedded.base = TILE_TGA_DATA
+		.embedded.base = TILE_TGA,
+		.embedded.size = TILE_TGA_SIZE
 	},
 
 	.img = NULL,

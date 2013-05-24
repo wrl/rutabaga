@@ -94,7 +94,7 @@ def main():
     if not args.no_preamble:
         print(preamble)
 
-    print("{prefix}uint8_t {var}_DATA[] = {{".format(
+    print("{prefix}uint8_t {var}[] = {{".format(
         prefix=prefix, var=varname))
 
     nbytes = write_hex_data(
