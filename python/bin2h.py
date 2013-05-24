@@ -31,7 +31,6 @@
 
 import sys
 import argparse
-from getopt import getopt, GetoptError
 
 all = ['write_hex_data']
 
