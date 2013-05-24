@@ -71,9 +71,6 @@ def write_hex_data(file_in, file_out, line_wrap=79, line_start=''):
     return nbytes
 
 
-def usage(prog):
-    print(usage_str.format(prog=prog), file=sys.stderr)
-
 def main():
     p = argparse.ArgumentParser(description='embed data into C headers')
     p.add_argument('-p', '--no-preamble',
@@ -102,6 +99,7 @@ def main():
     print("};")
 
     print("size_t {0}_size = {1};".format(varname, nbytes))
+
 
 if __name__ == '__main__':
     main()
