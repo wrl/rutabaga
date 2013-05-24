@@ -4,7 +4,7 @@ let g:syntastic_mode_map = {
 			\ "passive_filetypes": []}
 
 let g:syntastic_c_checkers = ['gcc']
-let g:syntastic_c_compiler_options = "-std=c11 -D_GNU_SOURCE -fms-extensions"
+let g:syntastic_c_compiler_options = "-std=c99 -D_GNU_SOURCE -fms-extensions"
 let g:syntastic_c_include_dirs = [
 			\ "include",
 			\ "third-party",
