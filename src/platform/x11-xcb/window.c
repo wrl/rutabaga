@@ -210,15 +210,6 @@ static int init_gl(struct xcb_rutabaga *xrtb)
 		ERR("openGL initialized, but missing %d functions.\n",
 				missing - ogl_LOAD_SUCCEEDED);
 
-	xrtb->copy_sub_buffer =
-		(PFNGLXCOPYSUBBUFFERMESAPROC) glXGetProcAddress(
-				(const GLubyte *) "glXCopySubBufferMESA");
-
-	if (xrtb->copy_sub_buffer)
-		printf(" :: using glXCopySubBufferMESA() for buffer swaps\n");
-	else
-		printf(" :: using glXSwapBuffers() for buffer swaps\n");
-
 	return 0;
 }
 
@@ -243,12 +234,7 @@ void window_impl_swap_buffers(rtb_win_t *rwin)
 	struct xcb_window *self = (void *) rwin;
 	struct xcb_rutabaga *xrtb = self->xrtb;
 
-	if (xrtb->copy_sub_buffer)
-		xrtb->copy_sub_buffer(xrtb->dpy, self->gl_win,
-				0, 0, self->w, self->h);
-	else
-		glXSwapBuffers(xrtb->dpy, self->gl_win);
-
+	glXSwapBuffers(xrtb->dpy, self->gl_win);
 	glFinish();
 }
 

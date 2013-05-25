@@ -62,9 +62,6 @@ struct xcb_rutabaga {
 	int xkb_supported;
 	int xkb_core_kbd_id;
 	int xkb_event;
-
-	/* oh man, this typedef. it's in glxext.h */
-	PFNGLXCOPYSUBBUFFERMESAPROC copy_sub_buffer;
 };
 
 struct xcb_window {
