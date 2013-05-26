@@ -42,11 +42,6 @@
  * structures
  */
 
-typedef struct rtb_patchbay rtb_patchbay_t;
-typedef struct rtb_patchbay_node rtb_patchbay_node_t;
-typedef struct rtb_patchbay_port rtb_patchbay_port_t;
-typedef struct rtb_patchbay_patch rtb_patchbay_patch_t;
-
 typedef enum {
 	PORT_TYPE_INPUT,
 	PORT_TYPE_OUTPUT
@@ -55,16 +50,16 @@ typedef enum {
 struct rtb_patchbay_node {
 	RTB_INHERIT(rtb_object);
 
-	rtb_obj_t node_ui;
+	struct rtb_object node_ui;
 
 	/* private ********************************/
-	rtb_obj_t container;
-	rtb_obj_t input_ports;
-	rtb_obj_t output_ports;
+	struct rtb_object container;
+	struct rtb_object input_ports;
+	struct rtb_object output_ports;
 
 	struct rtb_quad bg_quad;
-	rtb_label_t name_label;
-	rtb_patchbay_t *patchbay;
+	struct rtb_label name_label;
+	struct rtb_patchbay *patchbay;
 };
 
 struct rtb_patchbay_port {
@@ -72,16 +67,16 @@ struct rtb_patchbay_port {
 
 	/* private ********************************/
 	struct rtb_quad bg_quad;
-	rtb_label_t label;
+	struct rtb_label label;
 	rtb_patchbay_port_type_t port_type;
 
-	rtb_patchbay_node_t *node;
+	struct rtb_patchbay_node *node;
 	TAILQ_HEAD(port_patches, rtb_patchbay_patch) patches;
 };
 
 struct rtb_patchbay_patch {
-	rtb_patchbay_port_t *from;
-	rtb_patchbay_port_t *to;
+	struct rtb_patchbay_port *from;
+	struct rtb_patchbay_port *to;
 
 	/* private ********************************/
 	TAILQ_ENTRY(rtb_patchbay_patch) patchbay_patch;
@@ -99,8 +94,8 @@ struct rtb_patchbay {
 
 	TAILQ_HEAD(patchbay_patches, rtb_patchbay_patch) patches;
 	struct {
-		rtb_patchbay_port_t *from;
-		rtb_patchbay_port_t *to;
+		struct rtb_patchbay_port *from;
+		struct rtb_patchbay_port *to;
 
 		struct rtb_point cursor;
 	} patch_in_progress;
@@ -119,41 +114,41 @@ struct rtb_patchbay_event_connect {
 	RTB_INHERIT(rtb_event);
 
 	struct {
-		rtb_patchbay_node_t *node;
-		rtb_patchbay_port_t *port;
+		struct rtb_patchbay_node *node;
+		struct rtb_patchbay_port *port;
 	} from, to;
 };
 
 struct rtb_patchbay_event_disconnect {
 	RTB_INHERIT(rtb_patchbay_event_connect);
-	rtb_patchbay_patch_t *patch;
+	struct rtb_patchbay_patch *patch;
 };
 
 /**
  * public API
  */
 
-int rtb_patchbay_are_ports_connected(rtb_patchbay_port_t *a,
-		rtb_patchbay_port_t *b);
-void rtb_patchbay_free_patch(rtb_patchbay_t *self,
-		rtb_patchbay_patch_t *patch);
-void rtb_patchbay_disconnect_ports(rtb_patchbay_t *self,
-		rtb_patchbay_port_t *a, rtb_patchbay_port_t *b);
-rtb_patchbay_patch_t *rtb_patchbay_connect_ports(rtb_patchbay_t *,
-		rtb_patchbay_port_t *a, rtb_patchbay_port_t *b);
+int rtb_patchbay_are_ports_connected(struct rtb_patchbay_port *a,
+		struct rtb_patchbay_port *b);
+void rtb_patchbay_free_patch(struct rtb_patchbay *self,
+		struct rtb_patchbay_patch *patch);
+void rtb_patchbay_disconnect_ports(struct rtb_patchbay *self,
+		struct rtb_patchbay_port *a, struct rtb_patchbay_port *b);
+struct rtb_patchbay_patch *rtb_patchbay_connect_ports(struct rtb_patchbay *,
+		struct rtb_patchbay_port *a, struct rtb_patchbay_port *b);
 
-int rtb_patchbay_port_init(rtb_patchbay_port_t *port,
-		rtb_patchbay_node_t *node, const rtb_utf8_t *name,
+int rtb_patchbay_port_init(struct rtb_patchbay_port *port,
+		struct rtb_patchbay_node *node, const rtb_utf8_t *name,
 		rtb_patchbay_port_type_t type, rtb_child_add_loc_t location);
-void rtb_patchbay_port_fini(rtb_patchbay_port_t *self);
+void rtb_patchbay_port_fini(struct rtb_patchbay_port *self);
 
-void rtb_patchbay_node_set_name(rtb_patchbay_node_t *,
+void rtb_patchbay_node_set_name(struct rtb_patchbay_node *,
 		const rtb_utf8_t *name);
-void rtb_patchbay_node_init(rtb_patchbay_node_t *);
-void rtb_patchbay_node_fini(rtb_patchbay_node_t *);
-rtb_patchbay_node_t *rtb_patchbay_node_new(rtb_patchbay_t *parent,
+void rtb_patchbay_node_init(struct rtb_patchbay_node *);
+void rtb_patchbay_node_fini(struct rtb_patchbay_node *);
+struct rtb_patchbay_node *rtb_patchbay_node_new(struct rtb_patchbay *parent,
 		const rtb_utf8_t *name);
-void rtb_patchbay_node_free(rtb_patchbay_node_t *);
+void rtb_patchbay_node_free(struct rtb_patchbay_node *);
 
-rtb_patchbay_t *rtb_patchbay_new(void);
-void rtb_patchbay_free(rtb_patchbay_t *);
+struct rtb_patchbay *rtb_patchbay_new(void);
+void rtb_patchbay_free(struct rtb_patchbay *);

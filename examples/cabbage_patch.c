@@ -49,11 +49,11 @@
  */
 
 struct cabbage_patch_state {
-	rtb_t *rtb;
-	rtb_win_t *win;
+	struct rutabaga *rtb;
+	struct rtb_window *win;
 	pthread_mutex_t connection_from_gui;
 
-	rtb_patchbay_t *cp;
+	struct rtb_patchbay *cp;
 
 	jack_client_t *jc;
 
@@ -203,7 +203,7 @@ void client_add_port(struct jack_client *c, const char *name, int len,
 {
 	struct jack_client_port *p;
 	rtb_patchbay_port_type_t type;
-	rtb_patchbay_node_t *node;
+	struct rtb_patchbay_node *node;
 
 	p = malloc(sizeof(*p) + len + 1);
 	strncpy(p->name, name, len);
@@ -426,8 +426,8 @@ static void port_registration(jack_port_id_t port_id, int registered,
 	rtb_window_unlock(state.win);
 }
 
-static void port_connection(jack_port_id_t a_id, jack_port_id_t b_id, int cxn,
-		void *ctx)
+static void port_connection(jack_port_id_t a_id, jack_port_id_t b_id,
+		int cxn, void *ctx)
 {
 	jack_port_t *a = jack_port_by_id(state.jc, a_id);
 	jack_port_t *b = jack_port_by_id(state.jc, b_id);
@@ -462,7 +462,7 @@ static void port_connection(jack_port_id_t a_id, jack_port_id_t b_id, int cxn,
  * rutabaga shit
  */
 
-static int connection(rtb_obj_t *obj,
+static int connection(struct rtb_object *obj,
 		const struct rtb_event *_ev, void *ctx)
 {
 	const struct rtb_patchbay_event_connect *ev = (void *) _ev;
@@ -493,7 +493,7 @@ static int connection(rtb_obj_t *obj,
 	pthread_mutex_lock(&state.connection_from_gui);
 
 	if (!jack_connect(state.jc, from, to))
-		rtb_patchbay_connect_ports((rtb_patchbay_t *) obj,
+		rtb_patchbay_connect_ports((struct rtb_patchbay *) obj,
 				ev->from.port, ev->to.port);
 	else
 		printf(" !! couldn't connect %s to %s\n", from, to);
@@ -503,7 +503,7 @@ static int connection(rtb_obj_t *obj,
 	return 1;
 }
 
-static int disconnection(rtb_obj_t *obj,
+static int disconnection(struct rtb_object *obj,
 		const struct rtb_event *_ev, void *ctx)
 {
 	const struct rtb_patchbay_event_disconnect *ev = (void *) _ev;
@@ -524,7 +524,7 @@ static int disconnection(rtb_obj_t *obj,
 
 	pthread_mutex_lock(&state.connection_from_gui);
 	if (!jack_disconnect(state.jc, from, to))
-		rtb_patchbay_free_patch((rtb_patchbay_t *) obj, ev->patch);
+		rtb_patchbay_free_patch((struct rtb_patchbay *) obj, ev->patch);
 	else
 		printf(" !! couldn't disconnect %s from %s\n", from, to);
 	pthread_mutex_unlock(&state.connection_from_gui);
@@ -532,7 +532,7 @@ static int disconnection(rtb_obj_t *obj,
 	return 1;
 }
 
-static void init_patchbay(rtb_obj_t *parent)
+static void init_patchbay(struct rtb_object *parent)
 {
 	state.cp = rtb_patchbay_new();
 	rtb_container_add(parent, RTB_OBJECT(state.cp));

@@ -45,7 +45,7 @@ static struct rtb_object_implementation super;
  * drawing
  */
 
-static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
+static void draw(struct rtb_object *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
 
@@ -63,8 +63,8 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
  * object implementation
  */
 
-static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
-		rtb_ev_direction_t direction)
+static void recalculate(struct rtb_object *obj,
+		struct rtb_object *instigator, rtb_ev_direction_t direction)
 {
 	SELF_FROM(obj);
 
@@ -72,10 +72,10 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
 }
 
-static int handle_drag(rtb_patchbay_node_t *self,
+static int handle_drag(struct rtb_patchbay_node *self,
 		const struct rtb_drag_event *e)
 {
-	rtb_obj_t *obj = RTB_OBJECT(self);
+	struct rtb_object *obj = RTB_OBJECT(self);
 
 	switch (e->button) {
 	case RTB_MOUSE_BUTTON1:
@@ -91,7 +91,7 @@ static int handle_drag(rtb_patchbay_node_t *self,
 	}
 }
 
-static int on_event(rtb_obj_t *obj, const struct rtb_event *e)
+static int on_event(struct rtb_object *obj, const struct rtb_event *e)
 {
 	SELF_FROM(obj);
 
@@ -105,11 +105,12 @@ static int on_event(rtb_obj_t *obj, const struct rtb_event *e)
 	}
 }
 
-static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
+static void realize(struct rtb_object *obj,
+		struct rtb_object *parent, struct rtb_window *window)
 {
 	SELF_FROM(obj);
 
-	self->patchbay = (rtb_patchbay_t *) parent;
+	self->patchbay = (struct rtb_patchbay *) parent;
 
 	rtb_label_set_font(&self->name_label, &window->font_manager->fonts.big);
 
@@ -118,7 +119,7 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
 			"net.illest.rutabaga.widgets.patchbay.node");
 }
 
-static void size(rtb_obj_t *obj, const struct rtb_size *avail,
+static void size(struct rtb_object *obj, const struct rtb_size *avail,
 		struct rtb_size *want)
 {
 	SELF_FROM(obj);
@@ -135,13 +136,13 @@ static void size(rtb_obj_t *obj, const struct rtb_size *avail,
  * public API
  */
 
-void rtb_patchbay_node_set_name(rtb_patchbay_node_t *self,
+void rtb_patchbay_node_set_name(struct rtb_patchbay_node *self,
 		const rtb_utf8_t *name)
 {
 	rtb_label_set_text(&self->name_label, name);
 }
 
-void rtb_patchbay_node_init(rtb_patchbay_node_t *self)
+void rtb_patchbay_node_init(struct rtb_patchbay_node *self)
 {
 	rtb_obj_init(RTB_OBJECT(self), &super);
 	rtb_quad_init(&self->bg_quad);
@@ -206,7 +207,7 @@ void rtb_patchbay_node_init(rtb_patchbay_node_t *self)
 	rtb_obj_add_child(RTB_OBJECT(self), &self->container, RTB_ADD_TAIL);
 }
 
-void rtb_patchbay_node_fini(rtb_patchbay_node_t *self)
+void rtb_patchbay_node_fini(struct rtb_patchbay_node *self)
 {
 	rtb_quad_fini(&self->bg_quad);
 
@@ -222,10 +223,10 @@ void rtb_patchbay_node_fini(rtb_patchbay_node_t *self)
 	rtb_obj_fini(RTB_OBJECT(self));
 }
 
-rtb_patchbay_node_t *rtb_patchbay_node_new(rtb_patchbay_t *parent,
+struct rtb_patchbay_node *rtb_patchbay_node_new(struct rtb_patchbay *parent,
 		const rtb_utf8_t *name)
 {
-	rtb_patchbay_node_t *self = calloc(1, sizeof(*self));
+	struct rtb_patchbay_node *self = calloc(1, sizeof(*self));
 	rtb_patchbay_node_init(self);
 
 	if (name)
@@ -234,7 +235,7 @@ rtb_patchbay_node_t *rtb_patchbay_node_new(rtb_patchbay_t *parent,
 	return self;
 }
 
-void rtb_patchbay_node_free(rtb_patchbay_node_t *self)
+void rtb_patchbay_node_free(struct rtb_patchbay_node *self)
 {
 	rtb_patchbay_node_fini(self);
 	free(self);

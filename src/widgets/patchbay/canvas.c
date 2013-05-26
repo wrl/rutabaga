@@ -105,7 +105,8 @@ static void init_shaders()
 				PATCHBAY_CANVAS_FRAG_SHADER))
 		puts("rtb_patchbay: init_shaders() failed!");
 
-#define CACHE_UNIFORM_LOCATION(name) shader.uniform.name = glGetUniformLocation(shader.program, #name)
+#define CACHE_UNIFORM_LOCATION(name) \
+	shader.uniform.name = glGetUniformLocation(shader.program, #name)
 	CACHE_UNIFORM_LOCATION(texture);
 	CACHE_UNIFORM_LOCATION(tx_size);
 	CACHE_UNIFORM_LOCATION(tx_offset);
@@ -115,7 +116,7 @@ static void init_shaders()
 #undef CACHE_UNIFORM_LOCATION
 }
 
-static void load_tile(rtb_patchbay_t *self)
+static void load_tile(struct rtb_patchbay *self)
 {
 	if (!RTB_ASSET_IS_LOADED(&tile.asset)) {
 		if (rtb_asset_load(&tile.asset)) {
@@ -151,7 +152,7 @@ static const GLubyte box_indices[] = {
 	0, 1, 3, 2
 };
 
-static void cache_to_vbo(rtb_patchbay_t *self)
+static void cache_to_vbo(struct rtb_patchbay *self)
 {
 	GLfloat x, y, w, h, box[4][2];
 
@@ -177,10 +178,10 @@ static void cache_to_vbo(rtb_patchbay_t *self)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-static void draw_bg(rtb_patchbay_t *self)
+static void draw_bg(struct rtb_patchbay *self)
 {
-	rtb_obj_t *obj = RTB_OBJECT(self);
-	rtb_style_t *style = self->style;
+	struct rtb_object *obj = RTB_OBJECT(self);
+	struct rtb_style *style = self->style;
 
 	rtb_render_push(obj);
 	rtb_render_use_shader(obj, RTB_SHADER(&shader));
@@ -233,13 +234,13 @@ static void draw_line(GLfloat line[2][2])
 	glDrawArrays(GL_LINES, 0, 2);
 }
 
-static void draw_patches(rtb_patchbay_t *self)
+static void draw_patches(struct rtb_patchbay *self)
 {
 	GLfloat line[2][2];
 	int disconnect_in_progress = 0;
-	rtb_patchbay_patch_t *iter;
-	rtb_patchbay_port_t *from, *to;
-	rtb_obj_t *obj = RTB_OBJECT(self);
+	struct rtb_patchbay_patch *iter;
+	struct rtb_patchbay_port *from, *to;
+	struct rtb_object *obj = RTB_OBJECT(self);
 
 	rtb_render_push(obj);
 	rtb_render_set_position(obj, 0, 0);
@@ -313,7 +314,7 @@ static void draw_patches(rtb_patchbay_t *self)
 	rtb_render_pop(obj);
 }
 
-static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
+static void draw(struct rtb_object *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
 
@@ -327,8 +328,8 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
  * object implementation
  */
 
-static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
-		rtb_ev_direction_t direction)
+static void recalculate(struct rtb_object *obj,
+		struct rtb_object *instigator, rtb_ev_direction_t direction)
 {
 	SELF_FROM(obj);
 
@@ -337,9 +338,9 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 	cache_to_vbo(self);
 }
 
-static void reposition(rtb_patchbay_t *self, struct rtb_point *by)
+static void reposition(struct rtb_patchbay *self, struct rtb_point *by)
 {
-	rtb_obj_t *iter;
+	struct rtb_object *iter;
 
 	TAILQ_FOREACH(iter, &self->children, child) {
 		iter->x += by->x;
@@ -356,7 +357,7 @@ static void reposition(rtb_patchbay_t *self, struct rtb_point *by)
 	rtb_obj_mark_dirty(RTB_OBJECT(self));
 }
 
-static int handle_drag(rtb_patchbay_t *self, struct rtb_drag_event *e)
+static int handle_drag(struct rtb_patchbay *self, struct rtb_drag_event *e)
 {
 	struct rtb_point delta = {
 		e->delta.x,
@@ -375,7 +376,7 @@ static int handle_drag(rtb_patchbay_t *self, struct rtb_drag_event *e)
 	}
 }
 
-static int on_event(rtb_obj_t *obj, const struct rtb_event *e)
+static int on_event(struct rtb_object *obj, const struct rtb_event *e)
 {
 	SELF_FROM(obj);
 
@@ -390,7 +391,8 @@ static int on_event(rtb_obj_t *obj, const struct rtb_event *e)
 	}
 }
 
-static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
+static void realize(struct rtb_object *obj,
+		struct rtb_object *parent, struct rtb_window *window)
 {
 	SELF_FROM(obj);
 
@@ -407,7 +409,7 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
  * layout function
  */
 
-static void layout(rtb_obj_t *obj)
+static void layout(struct rtb_object *obj)
 {
 	rtb_layout_unmanaged(obj);
 }
@@ -416,9 +418,9 @@ static void layout(rtb_obj_t *obj)
  * public API
  */
 
-rtb_patchbay_t *rtb_patchbay_new()
+struct rtb_patchbay *rtb_patchbay_new()
 {
-	rtb_patchbay_t *self = calloc(1, sizeof(*self));
+	struct rtb_patchbay *self = calloc(1, sizeof(*self));
 
 	rtb_surface_init(RTB_SURFACE(self), &super);
 	TAILQ_INIT(&self->patches);
@@ -442,7 +444,7 @@ rtb_patchbay_t *rtb_patchbay_new()
 	return self;
 }
 
-void rtb_patchbay_free(rtb_patchbay_t *self)
+void rtb_patchbay_free(struct rtb_patchbay *self)
 {
 	if (self->bg_texture)
 		glDeleteTextures(1, &self->bg_texture);
