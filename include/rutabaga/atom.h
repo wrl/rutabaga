@@ -71,6 +71,8 @@ struct rtb_type_atom_descriptor {
  * public API
  */
 
+struct rtb_window;
+
 rtb_type_atom_descriptor_t *rtb_type_lookup(
 		struct rtb_window *win, const char *type_name);
 int rtb_is_type(rtb_type_atom_descriptor_t *desc, rtb_type_atom_t *atom);
