@@ -70,7 +70,7 @@ static void draw(struct rtb_object *obj, rtb_draw_state_t state)
  * event handlers
  */
 
-static int dispatch_click_event(rtb_button_t *self,
+static int dispatch_click_event(struct rtb_button *self,
 		const struct rtb_mouse_event *e)
 {
 	struct rtb_button_event event = *((struct rtb_button_event *) e);
@@ -82,7 +82,8 @@ static int dispatch_click_event(rtb_button_t *self,
 	return rtb_handle(RTB_OBJECT(self), RTB_EVENT(&event));
 }
 
-static int handle_key_press(rtb_button_t *self, const struct rtb_key_event *e)
+static int handle_key_press(struct rtb_button *self,
+		const struct rtb_key_event *e)
 {
 	struct rtb_button_event event = {
 		.type   = RTB_BUTTON_CLICK,
@@ -108,7 +109,7 @@ static int on_event(struct rtb_object *obj, const struct rtb_event *e)
 		return 1;
 
 	case RTB_KEY_PRESS:
-		if (handle_key_press(self, (struct rtb_key_event *) e))
+		if (handle_key_press(self, RTB_EVENT_AS(e, rtb_key_event)))
 			return 1;
 		break;
 
@@ -116,7 +117,7 @@ static int on_event(struct rtb_object *obj, const struct rtb_event *e)
 		if (((struct rtb_mouse_event *) e)->button != RTB_MOUSE_BUTTON1)
 			return 0;
 
-		return dispatch_click_event(self, (struct rtb_mouse_event *) e);
+		return dispatch_click_event(self, RTB_EVENT_AS(e, rtb_mouse_event));
 
 	default:
 		return super.event_cb(obj, e);
@@ -155,12 +156,12 @@ static void realize(struct rtb_object *obj,
  * public API
  */
 
-void rtb_button_set_label(rtb_button_t *self, const rtb_utf8_t *text)
+void rtb_button_set_label(struct rtb_button *self, const rtb_utf8_t *text)
 {
 	rtb_label_set_text(&self->label, text);
 }
 
-int rtb_button_init(rtb_button_t *self,
+int rtb_button_init(struct rtb_button *self,
 		struct rtb_object_implementation *impl)
 {
 	rtb_obj_init(RTB_OBJECT(self), &super);
@@ -188,16 +189,16 @@ int rtb_button_init(rtb_button_t *self,
 	return 0;
 }
 
-void rtb_button_fini(rtb_button_t *self)
+void rtb_button_fini(struct rtb_button *self)
 {
 	rtb_quad_fini(&self->bg_quad);
 	rtb_label_fini(&self->label);
 	rtb_obj_fini(RTB_OBJECT(self));
 }
 
-rtb_button_t *rtb_button_new(const rtb_utf8_t *label)
+struct rtb_button *rtb_button_new(const rtb_utf8_t *label)
 {
-	rtb_button_t *self = calloc(1, sizeof(*self));
+	struct rtb_button *self = calloc(1, sizeof(*self));
 	rtb_button_init(self, &self->impl);
 
 	if (label)
@@ -206,7 +207,7 @@ rtb_button_t *rtb_button_new(const rtb_utf8_t *label)
 	return self;
 }
 
-void rtb_button_free(rtb_button_t *self)
+void rtb_button_free(struct rtb_button *self)
 {
 	rtb_button_fini(self);
 	free(self);

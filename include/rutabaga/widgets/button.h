@@ -35,8 +35,6 @@
 
 #define RTB_BUTTON(x) RTB_UPCAST(x, rtb_button)
 
-typedef struct rtb_button rtb_button_t;
-
 typedef enum {
 	RTB_BUTTON_CLICK = 1
 } rtb_button_event_type_t;
@@ -53,9 +51,10 @@ struct rtb_button {
 	struct rtb_quad bg_quad;
 };
 
-void rtb_button_set_label(rtb_button_t *self, const rtb_utf8_t *text);
+void rtb_button_set_label(struct rtb_button *self, const rtb_utf8_t *text);
 
-int rtb_button_init(rtb_button_t *, struct rtb_object_implementation *impl);
-void rtb_button_fini(rtb_button_t *);
-rtb_button_t *rtb_button_new(const rtb_utf8_t *label);
-void rtb_button_free(rtb_button_t *);
+int rtb_button_init(struct rtb_button *,
+		struct rtb_object_implementation *impl);
+void rtb_button_fini(struct rtb_button *);
+struct rtb_button *rtb_button_new(const rtb_utf8_t *label);
+void rtb_button_free(struct rtb_button *);

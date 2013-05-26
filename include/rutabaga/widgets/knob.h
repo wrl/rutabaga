@@ -30,8 +30,6 @@
 #include "rutabaga/event.h"
 #include "rutabaga/mat4.h"
 
-typedef struct rtb_knob rtb_knob_t;
-
 #define RTB_KNOB(x) RTB_UPCAST(x, rtb_knob)
 
 typedef enum {
@@ -57,7 +55,7 @@ struct rtb_knob {
 	GLuint vbo[2];
 };
 
-void rtb_knob_set_value(rtb_knob_t *self, float new_value);
+void rtb_knob_set_value(struct rtb_knob *, float new_value);
 
-rtb_knob_t *rtb_knob_new(void);
-void rtb_knob_free(rtb_knob_t *self);
+struct rtb_knob *rtb_knob_new(void);
+void rtb_knob_free(struct rtb_knob *);

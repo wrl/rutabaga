@@ -66,9 +66,9 @@ rtb_utf8_t *rlabels[] = {
 	"this is fucking awesome"
 };
 
-rtb_knob_t *knob;
-rtb_button_t *last_button = NULL;
-rtb_text_input_t *input;
+struct rtb_knob *knob;
+struct rtb_button *last_button = NULL;
+struct rtb_text_input *input;
 
 int print_streeng(struct rtb_object *victim,
 		const struct rtb_event *e, void *ctx)
@@ -138,7 +138,7 @@ void distribute_demo(rtb_container_t *root)
 void setup_ui(rtb_container_t *root)
 {
 	rtb_container_t *upper, *lower;
-	rtb_button_t *buttons[6];
+	struct rtb_button *buttons[6];
 	int i;
 
 	upper = rtb_container_new();
@@ -178,7 +178,7 @@ void setup_ui(rtb_container_t *root)
 static int handle_input_key(struct rtb_object *obj,
 		const struct rtb_event *_ev, void *ctx)
 {
-	rtb_text_input_t *input = RTB_OBJECT_AS(obj, rtb_text_input);
+	struct rtb_text_input *input = RTB_OBJECT_AS(obj, rtb_text_input);
 	const struct rtb_key_event *ev = RTB_EVENT_AS(_ev, rtb_key_event);
 
 	switch (ev->keysym) {

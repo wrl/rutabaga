@@ -90,7 +90,7 @@ static void circle_vertex_array(GLfloat dest[][2], float r, int segments)
 	}
 }
 
-static void cache_to_vbo(rtb_knob_t *self)
+static void cache_to_vbo(struct rtb_knob *self)
 {
 	GLfloat w, h, indicator[2][2], circle[CIRCLE_SEGMENTS + 1][2];
 
@@ -164,7 +164,7 @@ static void draw(struct rtb_object *obj, rtb_draw_state_t state)
  * event dispatching
  */
 
-static int dispatch_value_change_event(rtb_knob_t *self)
+static int dispatch_value_change_event(struct rtb_knob *self)
 {
 	struct rtb_knob_event event = {
 		.type = KNOB_VALUE_CHANGE,
@@ -178,7 +178,7 @@ static int dispatch_value_change_event(rtb_knob_t *self)
  * event handling
  */
 
-static int handle_drag(rtb_knob_t *self, const struct rtb_drag_event *e)
+static int handle_drag(struct rtb_knob *self, const struct rtb_drag_event *e)
 {
 	float new_value;
 
@@ -197,7 +197,8 @@ static int handle_drag(rtb_knob_t *self, const struct rtb_drag_event *e)
 	return 1;
 }
 
-static int handle_mouse_down(rtb_knob_t *self, const struct rtb_mouse_event *e)
+static int handle_mouse_down(struct rtb_knob *self,
+		const struct rtb_mouse_event *e)
 {
 	switch (e->button) {
 	case RTB_MOUSE_BUTTON2:
@@ -213,7 +214,7 @@ static int handle_mouse_down(rtb_knob_t *self, const struct rtb_mouse_event *e)
 	}
 }
 
-static int handle_key(rtb_knob_t *self, const struct rtb_key_event *e)
+static int handle_key(struct rtb_knob *self, const struct rtb_key_event *e)
 {
 	float step;
 
@@ -291,7 +292,7 @@ static void init_circle_indices()
  * public API
  */
 
-void rtb_knob_set_value(rtb_knob_t *self, float new_value)
+void rtb_knob_set_value(struct rtb_knob *self, float new_value)
 {
 	self->value = fmin(fmax(new_value, 0.f), 1.f);
 
@@ -305,9 +306,9 @@ void rtb_knob_set_value(rtb_knob_t *self, float new_value)
 		dispatch_value_change_event(self);
 }
 
-rtb_knob_t *rtb_knob_new()
+struct rtb_knob *rtb_knob_new()
 {
-	rtb_knob_t *self = calloc(1, sizeof(rtb_knob_t));
+	struct rtb_knob *self = calloc(1, sizeof(struct rtb_knob));
 	rtb_obj_init(RTB_OBJECT(self), &super);
 
 	self->origin = 0.f;
@@ -327,7 +328,7 @@ rtb_knob_t *rtb_knob_new()
 	return self;
 }
 
-void rtb_knob_free(rtb_knob_t *self)
+void rtb_knob_free(struct rtb_knob *self)
 {
 	glDeleteBuffers(2, self->vbo);
 	rtb_obj_fini(RTB_OBJECT(self));

@@ -38,8 +38,6 @@
 
 #define RTB_TEXT_INPUT(x) RTB_UPCAST(x, rtb_text_input)
 
-typedef struct rtb_text_input rtb_text_input_t;
-
 struct rtb_text_input {
 	RTB_INHERIT(rtb_object);
 
@@ -54,12 +52,12 @@ struct rtb_text_input {
 	GLuint cursor_vbo;
 };
 
-int rtb_text_input_set_text(rtb_text_input_t *,
+int rtb_text_input_set_text(struct rtb_text_input *,
 		rtb_utf8_t *text, ssize_t nbytes);
-const rtb_utf8_t *rtb_text_input_get_text(rtb_text_input_t *);
+const rtb_utf8_t *rtb_text_input_get_text(struct rtb_text_input *);
 
-int rtb_text_input_init(struct rutabaga *, rtb_text_input_t *,
+int rtb_text_input_init(struct rutabaga *, struct rtb_text_input *,
 		struct rtb_object_implementation *impl);
-void rtb_text_input_fini(rtb_text_input_t *);
-rtb_text_input_t *rtb_text_input_new(struct rutabaga *);
-void rtb_text_input_free(rtb_text_input_t *);
+void rtb_text_input_fini(struct rtb_text_input *);
+struct rtb_text_input *rtb_text_input_new(struct rutabaga *);
+void rtb_text_input_free(struct rtb_text_input *);
