@@ -119,7 +119,7 @@ typedef enum {
  * events
  */
 
-struct rtb_event_key {
+struct rtb_key_event {
 	RTB_INHERIT(rtb_event);
 
 	rtb_modkey_t modkeys;

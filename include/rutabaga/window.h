@@ -33,8 +33,15 @@
 #include "rutabaga/shader.h"
 #include "rutabaga/surface.h"
 #include "rutabaga/mouse.h"
+#include "rutabaga/event.h"
 
 #define RTB_WINDOW(x) RTB_UPCAST(x, rtb_window)
+#define RTB_WINDOW_EVENT(x) RTB_UPCAST(x, rtb_event_window)
+
+struct rtb_event_window {
+	RTB_INHERIT(rtb_event);
+	rtb_win_t *window;
+};
 
 struct rtb_window {
 	RTB_INHERIT(rtb_surface);
@@ -52,9 +59,12 @@ struct rtb_window {
 
 	/* private ********************************/
 	rtb_t *rtb;
-	pthread_mutex_t lock;
+
 	int need_reconfigure;
-	rtb_mouse_t mouse;
+	pthread_mutex_t lock;
+
+	struct rtb_mouse mouse;
+
 	rtb_obj_t *focus;
 };
 

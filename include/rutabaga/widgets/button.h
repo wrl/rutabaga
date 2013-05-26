@@ -36,14 +36,13 @@
 #define RTB_BUTTON(x) RTB_UPCAST(x, rtb_button)
 
 typedef struct rtb_button rtb_button_t;
-typedef struct rtb_event_button rtb_ev_button_t;
 
 typedef enum {
-	BUTTON_CLICK = 1
-} rtb_ev_button_type_t;
+	RTB_BUTTON_CLICK = 1
+} rtb_button_event_type_t;
 
-struct rtb_event_button {
-	RTB_INHERIT(rtb_event_mouse);
+struct rtb_button_event {
+	RTB_INHERIT(rtb_mouse_event);
 };
 
 struct rtb_button {

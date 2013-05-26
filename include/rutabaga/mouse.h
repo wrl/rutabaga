@@ -54,7 +54,7 @@ typedef enum {
  * events
  */
 
-struct rtb_event_mouse {
+struct rtb_mouse_event {
 	RTB_INHERIT(rtb_event);
 
 	rtb_win_t *window;
@@ -64,8 +64,8 @@ struct rtb_event_mouse {
 	rtb_mouse_buttons_t button;
 };
 
-struct rtb_event_drag {
-	RTB_INHERIT(rtb_event_mouse);
+struct rtb_drag_event {
+	RTB_INHERIT(rtb_mouse_event);
 
 	struct rtb_point start;
 

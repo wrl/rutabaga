@@ -72,7 +72,8 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
 }
 
-static int handle_drag(rtb_patchbay_node_t *self, const rtb_ev_drag_t *e)
+static int handle_drag(rtb_patchbay_node_t *self,
+		const struct rtb_drag_event *e)
 {
 	rtb_obj_t *obj = RTB_OBJECT(self);
 
@@ -90,14 +91,14 @@ static int handle_drag(rtb_patchbay_node_t *self, const rtb_ev_drag_t *e)
 	}
 }
 
-static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
+static int on_event(rtb_obj_t *obj, const struct rtb_event *e)
 {
 	SELF_FROM(obj);
 
 	switch (e->type) {
 	case RTB_DRAG_START:
 	case RTB_DRAGGING:
-		return handle_drag(self, (rtb_ev_drag_t *) e);
+		return handle_drag(self, (struct rtb_drag_event *) e);
 
 	default:
 		return super.event_cb(obj, e);

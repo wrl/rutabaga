@@ -33,10 +33,11 @@
 #define RTB_IS_SYS_EVENT(x) (!!(x & RTB_EVENT_SYS_MASK))
 
 #define RTB_EVENT(x) RTB_UPCAST(x, rtb_event)
-#define RTB_EVENT_WINDOW(x) RTB_UPCAST(x, rtb_event_window)
+#define RTB_EVENT_AS(x, type) \
+	RTB_CONTAINER_OF(x, const struct type, RTB_INHERITED_MEMBER(rtb_event))
 
 /**
- * system event types
+ * base event types
  */
 
 typedef unsigned int rtb_ev_type_t;
@@ -80,23 +81,17 @@ typedef enum {
 	RTB_EVENT_SYNTHETIC  = 1
 } rtb_ev_source_t;
 
-typedef int (*rtb_event_cb_t)
-	(rtb_obj_t *obj, const rtb_ev_t *event, void *ctx);
-
-/**
- * structures
- */
-
 struct rtb_event {
 	rtb_ev_type_t type;
 	rtb_ev_source_t source;
 };
 
-struct rtb_event_window {
-	RTB_INHERIT(rtb_event);
+/**
+ * handling
+ */
 
-	rtb_win_t *window;
-};
+typedef int (*rtb_event_cb_t)
+	(rtb_obj_t *obj, const struct rtb_event *event, void *ctx);
 
 struct rtb_event_handler {
 	rtb_ev_type_t type;
@@ -111,8 +106,8 @@ struct rtb_event_handler {
  * public API
  */
 
-int rtb_handle(rtb_obj_t *victim, const rtb_ev_t *event);
-rtb_obj_t *rtb_dispatch_raw(rtb_obj_t *victim, rtb_ev_t *event);
+int rtb_handle(rtb_obj_t *victim, const struct rtb_event *event);
+rtb_obj_t *rtb_dispatch_raw(rtb_obj_t *victim, struct rtb_event *event);
 rtb_obj_t *rtb_dispatch_simple(rtb_obj_t *victim, rtb_ev_type_t type);
 
 int rtb_attach(rtb_obj_t *victim, rtb_ev_type_t type, rtb_event_cb_t handler,

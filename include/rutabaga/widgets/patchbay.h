@@ -110,15 +110,12 @@ struct rtb_patchbay {
  * events
  */
 
-typedef struct rtb_event_patchbay_connect rtb_ev_patchbay_connect_t;
-typedef struct rtb_event_patchbay_disconnect rtb_ev_patchbay_disconnect_t;
-
 typedef enum {
 	RTB_PATCHBAY_CONNECT,
 	RTB_PATCHBAY_DISCONNECT
-} rtb_ev_patchbay_type_t;
+} rtb_patchbay_event_type_t;
 
-struct rtb_event_patchbay_connect {
+struct rtb_patchbay_event_connect {
 	RTB_INHERIT(rtb_event);
 
 	struct {
@@ -127,9 +124,8 @@ struct rtb_event_patchbay_connect {
 	} from, to;
 };
 
-struct rtb_event_patchbay_disconnect {
-	RTB_INHERIT(rtb_event_patchbay_connect);
-
+struct rtb_patchbay_event_disconnect {
+	RTB_INHERIT(rtb_patchbay_event_connect);
 	rtb_patchbay_patch_t *patch;
 };
 

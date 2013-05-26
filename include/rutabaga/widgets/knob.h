@@ -31,17 +31,15 @@
 #include "rutabaga/mat4.h"
 
 typedef struct rtb_knob rtb_knob_t;
-typedef struct rtb_event_knob rtb_ev_knob_t;
 
 #define RTB_KNOB(x) RTB_UPCAST(x, rtb_knob)
 
 typedef enum {
 	KNOB_VALUE_CHANGE = 1
-} rtb_ev_knob_type_t;
+} rtb_knob_event_type_t;
 
-struct rtb_event_knob {
+struct rtb_knob_event {
 	RTB_INHERIT(rtb_event);
-
 	float value;
 };
 

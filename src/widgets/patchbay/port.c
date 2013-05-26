@@ -81,7 +81,7 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 
 static void dispatch_disconnect(rtb_patchbay_patch_t *patch)
 {
-	rtb_ev_patchbay_disconnect_t ev = {
+	struct rtb_patchbay_event_disconnect ev = {
 		.type = RTB_PATCHBAY_DISCONNECT,
 
 		.patch     = patch,
@@ -98,7 +98,7 @@ static void dispatch_disconnect(rtb_patchbay_patch_t *patch)
 static void dispatch_connect(rtb_patchbay_port_t *from,
 		rtb_patchbay_port_t *to)
 {
-	rtb_ev_patchbay_connect_t ev = {
+	struct rtb_patchbay_event_connect ev = {
 		.type = RTB_PATCHBAY_CONNECT,
 
 		.from.node = from->node,
@@ -136,7 +136,8 @@ static void handle_connection(rtb_patchbay_port_t *a, rtb_patchbay_port_t *b)
 		dispatch_connect(from, to);
 }
 
-static void start_patching(rtb_patchbay_port_t *self, rtb_ev_mouse_t *e)
+static void start_patching(rtb_patchbay_port_t *self,
+		struct rtb_mouse_event *e)
 {
 	rtb_patchbay_t *patchbay = self->node->patchbay;
 
@@ -155,7 +156,8 @@ static void stop_patching(rtb_patchbay_port_t *self)
 	patchbay->patch_in_progress.to   = NULL;
 }
 
-static int handle_drag(rtb_patchbay_port_t *self, const rtb_ev_drag_t *e)
+static int handle_drag(rtb_patchbay_port_t *self,
+		const struct rtb_drag_event *e)
 {
 	rtb_patchbay_t *patchbay = self->node->patchbay;
 
@@ -199,7 +201,7 @@ static int handle_drag(rtb_patchbay_port_t *self, const rtb_ev_drag_t *e)
 	}
 }
 
-static int handle_mouse(rtb_patchbay_port_t *self, rtb_ev_mouse_t *e)
+static int handle_mouse(rtb_patchbay_port_t *self, struct rtb_mouse_event *e)
 {
 	if (e->button != RTB_MOUSE_BUTTON1)
 		return 0;
@@ -239,14 +241,14 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
 			"net.illest.rutabaga.widgets.patchbay.port");
 }
 
-static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
+static int on_event(rtb_obj_t *obj, const struct rtb_event *e)
 {
 	SELF_FROM(obj);
 
 	switch (e->type) {
 	case RTB_MOUSE_DOWN:
 	case RTB_MOUSE_UP:
-		if (handle_mouse(self, (rtb_ev_mouse_t *) e)) {
+		if (handle_mouse(self, (struct rtb_mouse_event *) e)) {
 			rtb_obj_mark_dirty(RTB_OBJECT(self->node->patchbay));
 			return 1;
 		}
@@ -258,7 +260,7 @@ static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
 	case RTB_DRAG_START:
 	case RTB_DRAG_DROP:
 	case RTB_DRAGGING:
-		if (handle_drag(self, (rtb_ev_drag_t *) e)) {
+		if (handle_drag(self, (struct rtb_drag_event *) e)) {
 			rtb_obj_mark_dirty(RTB_OBJECT(self->node->patchbay));
 			return 1;
 		}

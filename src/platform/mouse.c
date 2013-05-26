@@ -39,7 +39,7 @@ static rtb_obj_t *dispatch_drag_event(rtb_win_t *win, rtb_ev_type_t type,
 		rtb_obj_t *also_dispatch_to, int button, int x, int y)
 {
 	struct rtb_mouse_button *b = &win->mouse.button[button];
-	rtb_ev_drag_t ev = {
+	struct rtb_drag_event ev = {
 		.type = type,
 		.window = win,
 
@@ -72,7 +72,7 @@ static void dispatch_drag_enter(rtb_win_t *win, rtb_obj_t *dispatch_to,
 	struct rtb_mouse_button *b;
 	int i;
 
-	rtb_ev_drag_t ev = {
+	struct rtb_drag_event ev = {
 		.type = RTB_DRAG_ENTER,
 		.window = win,
 
@@ -103,7 +103,7 @@ static void dispatch_drag_leave(rtb_win_t *win, rtb_obj_t *dispatch_to,
 	struct rtb_mouse_button *b;
 	int i;
 
-	rtb_ev_drag_t ev = {
+	struct rtb_drag_event ev = {
 		.type = RTB_DRAG_LEAVE,
 		.window = win,
 
@@ -131,7 +131,7 @@ static void dispatch_drag_leave(rtb_win_t *win, rtb_obj_t *dispatch_to,
 static rtb_obj_t *dispatch_click_event(rtb_win_t *window, rtb_obj_t *target,
 		int button, int x, int y)
 {
-	rtb_ev_mouse_t ev = {
+	struct rtb_mouse_event ev = {
 		.type = RTB_MOUSE_CLICK,
 		.window = window,
 		.target = target,
@@ -148,7 +148,7 @@ static rtb_obj_t *dispatch_click_event(rtb_win_t *window, rtb_obj_t *target,
 static rtb_obj_t *dispatch_simple_mouse_event(rtb_win_t *window,
 		rtb_obj_t *target, rtb_ev_type_t type, int button, int x, int y)
 {
-	rtb_ev_mouse_t ev = {
+	struct rtb_mouse_event ev = {
 		.type = type,
 		.window = window,
 		.target = target,
@@ -169,7 +169,7 @@ static rtb_obj_t *dispatch_simple_mouse_event(rtb_win_t *window,
 static void mouse_down(rtb_win_t *window, rtb_obj_t *target,
 		int button, int x, int y)
 {
-	rtb_mouse_t *mouse = &window->mouse;
+	struct rtb_mouse *mouse = &window->mouse;
 	struct rtb_mouse_button *b = &mouse->button[button];
 
 	b->state  = DOWN;
@@ -182,7 +182,7 @@ static void mouse_down(rtb_win_t *window, rtb_obj_t *target,
 static void mouse_up(rtb_win_t *window, rtb_obj_t *target,
 		int button, int x, int y)
 {
-	rtb_mouse_t *mouse = &window->mouse;
+	struct rtb_mouse *mouse = &window->mouse;
 	struct rtb_mouse_button *b = &mouse->button[button];
 
 	if (rtb_obj_in_tree(b->target, target))

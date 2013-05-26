@@ -204,7 +204,8 @@ static void post_change(rtb_text_input_t *self)
 			rtb_text_buffer_get_text(&self->text));
 }
 
-static int handle_key_press(rtb_text_input_t *self, const rtb_ev_key_t *e)
+static int handle_key_press(rtb_text_input_t *self,
+		const struct rtb_key_event *e)
 {
 	switch (e->keysym) {
 	case RTB_KEY_NORMAL:
@@ -257,7 +258,7 @@ static int handle_key_press(rtb_text_input_t *self, const rtb_ev_key_t *e)
 	return 1;
 }
 
-static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
+static int on_event(rtb_obj_t *obj, const struct rtb_event *e)
 {
 	SELF_FROM(obj);
 
@@ -267,7 +268,7 @@ static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
 		return 1;
 
 	case RTB_KEY_PRESS:
-		if (handle_key_press(self, (rtb_ev_key_t *) e))
+		if (handle_key_press(self, RTB_EVENT_AS(e, rtb_key_event)))
 			return 1;
 		break;
 

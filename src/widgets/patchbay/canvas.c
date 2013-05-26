@@ -356,7 +356,7 @@ static void reposition(rtb_patchbay_t *self, struct rtb_point *by)
 	rtb_obj_mark_dirty(RTB_OBJECT(self));
 }
 
-static int handle_drag(rtb_patchbay_t *self, rtb_ev_drag_t *e)
+static int handle_drag(rtb_patchbay_t *self, struct rtb_drag_event *e)
 {
 	struct rtb_point delta = {
 		e->delta.x,
@@ -375,14 +375,14 @@ static int handle_drag(rtb_patchbay_t *self, rtb_ev_drag_t *e)
 	}
 }
 
-static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
+static int on_event(rtb_obj_t *obj, const struct rtb_event *e)
 {
 	SELF_FROM(obj);
 
 	switch (e->type) {
 	case RTB_DRAG_START:
 	case RTB_DRAGGING:
-		if (handle_drag(self, (rtb_ev_drag_t *) e))
+		if (handle_drag(self, (struct rtb_drag_event *) e))
 			return 1;
 
 	default:

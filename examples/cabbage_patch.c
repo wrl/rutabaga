@@ -462,9 +462,10 @@ static void port_connection(jack_port_id_t a_id, jack_port_id_t b_id, int cxn,
  * rutabaga shit
  */
 
-static int connection(rtb_obj_t *obj, const rtb_ev_t *_ev, void *ctx)
+static int connection(rtb_obj_t *obj,
+		const struct rtb_event *_ev, void *ctx)
 {
-	const rtb_ev_patchbay_connect_t *ev = (void *) _ev;
+	const struct rtb_patchbay_event_connect *ev = (void *) _ev;
 	char *from, *to;
 	int len;
 
@@ -502,9 +503,10 @@ static int connection(rtb_obj_t *obj, const rtb_ev_t *_ev, void *ctx)
 	return 1;
 }
 
-static int disconnection(rtb_obj_t *obj, const rtb_ev_t *_ev, void *ctx)
+static int disconnection(rtb_obj_t *obj,
+		const struct rtb_event *_ev, void *ctx)
 {
-	const rtb_ev_patchbay_disconnect_t *ev = (void *) _ev;
+	const struct rtb_patchbay_event_disconnect *ev = (void *) _ev;
 	char *from, *to;
 	int len;
 

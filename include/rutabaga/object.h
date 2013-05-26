@@ -56,7 +56,8 @@ typedef enum {
  */
 
 typedef void (*rtb_draw_cb_t)(rtb_obj_t *obj, rtb_draw_state_t state);
-typedef int  (*rtb_internal_event_cb_t)(rtb_obj_t *obj, const rtb_ev_t *event);
+typedef int  (*rtb_internal_event_cb_t)(rtb_obj_t *obj,
+		const struct rtb_event *event);
 typedef void (*rtb_realize_cb_t)(rtb_obj_t *obj, rtb_obj_t *parent,
 		rtb_win_t *window);
 typedef void (*rtb_layout_cb_t)(rtb_obj_t *);
@@ -119,7 +120,7 @@ struct rtb_object {
 	TAILQ_ENTRY(rtb_object) render_entry;
 };
 
-int rtb_obj_deliver_event(rtb_obj_t *, const rtb_ev_t *e);
+int rtb_obj_deliver_event(rtb_obj_t *, const struct rtb_event *e);
 void rtb_obj_draw(rtb_obj_t *, rtb_draw_state_t state);
 void rtb_obj_realize(rtb_obj_t *, rtb_obj_t *parent,
 		rtb_surface_t *surface, rtb_win_t *window);

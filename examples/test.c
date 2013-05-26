@@ -70,9 +70,9 @@ rtb_knob_t *knob;
 rtb_button_t *last_button = NULL;
 rtb_text_input_t *input;
 
-int print_streeng(rtb_obj_t *victim, const rtb_ev_t *e, void *ctx)
+int print_streeng(rtb_obj_t *victim, const struct rtb_event *e, void *ctx)
 {
-	rtb_ev_mouse_t *mv = (void *) e;
+	const struct rtb_mouse_event *mv = (void *) e;
 	int i;
 
 	printf("(%f, %f) click!\n", mv->cursor.x, mv->cursor.y);
@@ -86,18 +86,18 @@ int print_streeng(rtb_obj_t *victim, const rtb_ev_t *e, void *ctx)
 	return 0;
 }
 
-int knob_value(rtb_obj_t *victim, const rtb_ev_t *e, void *unused)
+int knob_value(rtb_obj_t *victim, const struct rtb_event *e, void *unused)
 {
 	if (victim != RTB_OBJECT(knob)) {
 		knob = (void *) knob;
 		printf("\n");
 	}
 
-	printf(" :: value: %f\n", ((rtb_ev_knob_t *) e)->value);
+	printf(" :: value: %f\n", ((struct rtb_knob_event *) e)->value);
 	return 0;
 }
 
-int report(rtb_obj_t *victim, const rtb_ev_t *e, void *user_data)
+int report(rtb_obj_t *victim, const struct rtb_event *e, void *user_data)
 {
 	puts("calc");
 	return 0;
@@ -156,7 +156,8 @@ void setup_ui(rtb_container_t *root)
 		buttons[i] = rtb_button_new(NULL);
 		rtb_button_set_label(buttons[i], labels[i]);
 
-		rtb_attach(RTB_OBJECT(buttons[i]), BUTTON_CLICK, print_streeng, NULL);
+		rtb_attach(RTB_OBJECT(buttons[i]),
+				RTB_BUTTON_CLICK, print_streeng, NULL);
 	}
 
 	rtb_container_add(upper, RTB_OBJECT(buttons[0]));
@@ -175,7 +176,7 @@ static int handle_input_key(struct rtb_object *obj,
 		const struct rtb_event *_ev, void *ctx)
 {
 	rtb_text_input_t *input = RTB_OBJECT_AS(obj, rtb_text_input);
-	rtb_ev_key_t *ev = (void *) _ev;
+	const struct rtb_key_event *ev = RTB_EVENT_AS(_ev, rtb_key_event);
 
 	switch (ev->keysym) {
 	case RTB_KEY_ENTER:
@@ -204,7 +205,7 @@ void add_input(rtb_t *rtb, rtb_container_t *root)
 	rtb_obj_add_child(root, RTB_OBJECT(input), RTB_ADD_TAIL);
 }
 
-static void print_modkeys(const rtb_ev_key_t *ev)
+static void print_modkeys(const struct rtb_key_event *ev)
 {
 	if (!ev->modkeys)
 		return;
@@ -228,7 +229,7 @@ static void print_modkeys(const rtb_ev_key_t *ev)
 static int handle_key_press(struct rtb_object *victim,
 		const struct rtb_event *e, void *ctx)
 {
-	struct rtb_event_key *ev = (void *) e;
+	const struct rtb_key_event *ev = RTB_EVENT_AS(e, rtb_key_event);
 
 	print_modkeys(ev);
 

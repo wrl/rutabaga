@@ -166,7 +166,7 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 
 static int dispatch_value_change_event(rtb_knob_t *self)
 {
-	rtb_ev_knob_t event = {
+	struct rtb_knob_event event = {
 		.type = KNOB_VALUE_CHANGE,
 		.value = self->value * (self->max - self->min),
 	};
@@ -178,7 +178,7 @@ static int dispatch_value_change_event(rtb_knob_t *self)
  * event handling
  */
 
-static int handle_drag(rtb_knob_t *self, rtb_ev_drag_t *e)
+static int handle_drag(rtb_knob_t *self, const struct rtb_drag_event *e)
 {
 	float new_value;
 
@@ -197,7 +197,7 @@ static int handle_drag(rtb_knob_t *self, rtb_ev_drag_t *e)
 	return 1;
 }
 
-static int handle_mouse_down(rtb_knob_t *self, rtb_ev_mouse_t *e)
+static int handle_mouse_down(rtb_knob_t *self, const struct rtb_mouse_event *e)
 {
 	switch (e->button) {
 	case RTB_MOUSE_BUTTON2:
@@ -213,7 +213,7 @@ static int handle_mouse_down(rtb_knob_t *self, rtb_ev_mouse_t *e)
 	}
 }
 
-static int handle_key(rtb_knob_t *self, rtb_ev_key_t *e)
+static int handle_key(rtb_knob_t *self, const struct rtb_key_event *e)
 {
 	float step;
 
@@ -240,20 +240,20 @@ static int handle_key(rtb_knob_t *self, rtb_ev_key_t *e)
 	}
 }
 
-static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
+static int on_event(rtb_obj_t *obj, const struct rtb_event *e)
 {
 	SELF_FROM(obj);
 
 	switch (e->type) {
 	case RTB_DRAG_START:
 	case RTB_DRAGGING:
-		return handle_drag(self, (rtb_ev_drag_t *) e);
+		return handle_drag(self, RTB_EVENT_AS(e, rtb_drag_event));
 
 	case RTB_MOUSE_DOWN:
-		return handle_mouse_down(self, (rtb_ev_mouse_t *) e);
+		return handle_mouse_down(self, RTB_EVENT_AS(e, rtb_mouse_event));
 
 	case RTB_KEY_PRESS:
-		return handle_key(self, (rtb_ev_key_t *) e);
+		return handle_key(self, RTB_EVENT_AS(e, rtb_key_event));
 
 	default:
 		return super.event_cb(obj, e);

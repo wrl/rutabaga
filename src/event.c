@@ -72,18 +72,18 @@ int replace_handler(rtb_obj_t *obj, struct rtb_event_handler *with)
  * public API
  */
 
-int rtb_handle(rtb_obj_t *victim, const rtb_ev_t *ev)
+int rtb_handle(rtb_obj_t *victim, const struct rtb_event *event)
 {
 	const struct rtb_event_handler *h;
 
-	if (!(h = find_handler_for(victim, ev->type)))
+	if (!(h = find_handler_for(victim, event->type)))
 		return 0;
 
-	h->callback.cb(victim, ev, h->callback.ctx);
+	h->callback.cb(victim, event, h->callback.ctx);
 	return 1;
 }
 
-rtb_obj_t *rtb_dispatch_raw(rtb_obj_t *victim, rtb_ev_t *event)
+rtb_obj_t *rtb_dispatch_raw(rtb_obj_t *victim, struct rtb_event *event)
 {
 	while (!rtb_obj_deliver_event(victim, event) && victim->parent)
 		victim = victim->parent;
@@ -93,7 +93,7 @@ rtb_obj_t *rtb_dispatch_raw(rtb_obj_t *victim, rtb_ev_t *event)
 
 rtb_obj_t *rtb_dispatch_simple(rtb_obj_t *victim, rtb_ev_type_t type)
 {
-	rtb_ev_t event = {
+	struct rtb_event event = {
 		.type = type
 	};
 

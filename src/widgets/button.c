@@ -70,21 +70,22 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
  * event handlers
  */
 
-static int dispatch_click_event(rtb_button_t *self, const rtb_ev_mouse_t *e)
+static int dispatch_click_event(rtb_button_t *self,
+		const struct rtb_mouse_event *e)
 {
-	rtb_ev_button_t event = *((rtb_ev_button_t *) e);
+	struct rtb_button_event event = *((struct rtb_button_event *) e);
 
-	event.type = BUTTON_CLICK;
+	event.type = RTB_BUTTON_CLICK;
 	event.cursor.x -= self->x;
 	event.cursor.y -= self->y;
 
 	return rtb_handle(RTB_OBJECT(self), RTB_EVENT(&event));
 }
 
-static int handle_key_press(rtb_button_t *self, const rtb_ev_key_t *e)
+static int handle_key_press(rtb_button_t *self, const struct rtb_key_event *e)
 {
-	rtb_ev_button_t event = {
-		.type   = BUTTON_CLICK,
+	struct rtb_button_event event = {
+		.type   = RTB_BUTTON_CLICK,
 		.source = RTB_EVENT_SYNTHETIC
 	};
 
@@ -97,7 +98,7 @@ static int handle_key_press(rtb_button_t *self, const rtb_ev_key_t *e)
 	return 0;
 }
 
-static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
+static int on_event(rtb_obj_t *obj, const struct rtb_event *e)
 {
 	SELF_FROM(obj);
 
@@ -107,15 +108,15 @@ static int on_event(rtb_obj_t *obj, const rtb_ev_t *e)
 		return 1;
 
 	case RTB_KEY_PRESS:
-		if (handle_key_press(self, (rtb_ev_key_t *) e))
+		if (handle_key_press(self, (struct rtb_key_event *) e))
 			return 1;
 		break;
 
 	case RTB_MOUSE_CLICK:
-		if (((rtb_ev_mouse_t *) e)->button != RTB_MOUSE_BUTTON1)
+		if (((struct rtb_mouse_event *) e)->button != RTB_MOUSE_BUTTON1)
 			return 0;
 
-		return dispatch_click_event(self, (rtb_ev_mouse_t *) e);
+		return dispatch_click_event(self, (struct rtb_mouse_event *) e);
 
 	default:
 		return super.event_cb(obj, e);

@@ -139,7 +139,7 @@ static void draw(rtb_obj_t *self, rtb_draw_state_t state)
 	LAYOUT_DEBUG_DRAW_BOX(self);
 }
 
-static int on_event(rtb_obj_t *self, const rtb_ev_t *e)
+static int on_event(rtb_obj_t *self, const struct rtb_event *e)
 {
 	switch (e->type) {
 	case RTB_MOUSE_ENTER:
@@ -187,7 +187,7 @@ static void mark_dirty(rtb_obj_t *self)
  * public API
  */
 
-int rtb_obj_deliver_event(rtb_obj_t *self, const rtb_ev_t *e)
+int rtb_obj_deliver_event(rtb_obj_t *self, const struct rtb_event *e)
 {
 	int ret;
 

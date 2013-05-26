@@ -122,10 +122,3 @@ typedef struct rtb_style_props rtb_style_props_t;
 typedef struct rtb_font_manager rtb_font_manager_t;
 
 typedef struct rtb_event_handler rtb_ev_handler_t;
-
-typedef struct rtb_event       rtb_ev_t;
-typedef struct rtb_event_drag  rtb_ev_drag_t;
-typedef struct rtb_event_mouse rtb_ev_mouse_t;
-typedef struct rtb_event_key   rtb_ev_key_t;
-
-typedef struct rtb_mouse rtb_mouse_t;

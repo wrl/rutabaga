@@ -80,7 +80,7 @@ err_dfault:
  * object implementation
  */
 
-static int win_event(rtb_obj_t *obj, const rtb_ev_t *e)
+static int win_event(rtb_obj_t *obj, const struct rtb_event *e)
 {
 	SELF_FROM(obj);
 

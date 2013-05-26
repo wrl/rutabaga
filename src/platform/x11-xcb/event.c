@@ -167,7 +167,7 @@ static rtb_modkey_t modifier_state(struct xcb_rutabaga *xrtb)
 static void dispatch_key_event(struct xcb_window *win,
 		const xcb_key_press_event_t *ev, rtb_ev_type_t type)
 {
-	struct rtb_event_key rtb_ev = {.type = type};
+	struct rtb_key_event rtb_ev = {.type = type};
 	xcb_keysym_t sym;
 
 	sym = xkb_state_key_get_one_sym(win->xrtb->xkb_state, ev->detail);
