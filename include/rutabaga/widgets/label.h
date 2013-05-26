@@ -40,7 +40,7 @@ struct rtb_label {
 	/* private ********************************/
 	rtb_utf8_t *text;
 	struct rtb_font *font;
-	rtb_text_object_t *tobj;
+	struct rtb_text_object *tobj;
 };
 
 void rtb_label_set_font(rtb_label_t *self, struct rtb_font *font);
