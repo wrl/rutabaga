@@ -42,7 +42,7 @@ static const GLubyte quad_outline_indices[] = {
 	0, 1, 2, 3
 };
 
-static rtb_style_props_t *get_styleprops(rtb_obj_t *obj,
+static struct rtb_style_props *get_styleprops(rtb_obj_t *obj,
 		rtb_draw_state_t state)
 {
 	if (obj->style->available_styles & (1 << state))

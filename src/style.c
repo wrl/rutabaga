@@ -31,7 +31,7 @@
 
 #include "private/default_style.h"
 
-static rtb_style_t no_style = {
+static struct rtb_style no_style = {
 	.for_type = "couldn't find a style for this object",
 	.available_styles = RTB_STYLE_NORMAL,
 
@@ -43,7 +43,7 @@ static rtb_style_t no_style = {
 };
 
 
-static int style_resolve(rtb_win_t *window, rtb_style_t *style)
+static int style_resolve(struct rtb_window *window, struct rtb_style *style)
 {
 	style->resolved_type = rtb_type_lookup(window, style->for_type);
 	if (style->resolved_type)
@@ -51,8 +51,8 @@ static int style_resolve(rtb_win_t *window, rtb_style_t *style)
 	return -1;
 }
 
-static rtb_style_t *style_for_type(rtb_type_atom_t *atom,
-		rtb_style_t *style_list)
+static struct rtb_style *style_for_type(rtb_type_atom_t *atom,
+		struct rtb_style *style_list)
 {
 	for (; style_list->for_type; style_list++) {
 		if (style_list->resolved_type &&
@@ -67,7 +67,8 @@ static rtb_style_t *style_for_type(rtb_type_atom_t *atom,
  * public API
  */
 
-int rtb_style_resolve_list(rtb_win_t *win, rtb_style_t *style_list)
+int rtb_style_resolve_list(struct rtb_window *win,
+		struct rtb_style *style_list)
 {
 	int unresolved_styles = 0;
 
@@ -79,9 +80,10 @@ int rtb_style_resolve_list(rtb_win_t *win, rtb_style_t *style_list)
 	return unresolved_styles;
 }
 
-void rtb_style_apply_to_tree(rtb_obj_t *root, rtb_style_t *style_list)
+void rtb_style_apply_to_tree(struct rtb_object *root,
+		struct rtb_style *style_list)
 {
-	rtb_obj_t *iter;
+	struct rtb_object *iter;
 
 	if (!root->style)
 		root->style = style_for_type(RTB_TYPE_ATOM(root), style_list);
@@ -90,12 +92,13 @@ void rtb_style_apply_to_tree(rtb_obj_t *root, rtb_style_t *style_list)
 		rtb_style_apply_to_tree(iter, style_list);
 }
 
-rtb_style_t *rtb_style_for_object(rtb_obj_t *obj, rtb_style_t *style_list)
+struct rtb_style *rtb_style_for_object(struct rtb_object *obj,
+		struct rtb_style *style_list)
 {
 	return style_for_type(RTB_TYPE_ATOM(obj), style_list);
 }
 
-rtb_style_t *rtb_style_get_defaults(void)
+struct rtb_style *rtb_style_get_defaults(void)
 {
 	return default_style;
 }

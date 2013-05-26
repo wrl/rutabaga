@@ -101,8 +101,11 @@ struct rtb_style {
  * public API
  */
 
-void rtb_style_apply_to_tree(rtb_obj_t *root, rtb_style_t *style_list);
-rtb_style_t *rtb_style_for_object(rtb_obj_t *obj, rtb_style_t *style_list);
+void rtb_style_apply_to_tree(struct rtb_object *root,
+		struct rtb_style *style_list);
+struct rtb_style *rtb_style_for_object(struct rtb_object *obj,
+		struct rtb_style *style_list);
 
-int rtb_style_resolve_list(rtb_win_t *, rtb_style_t *style_list);
-rtb_style_t *rtb_style_get_defaults(void);
+int rtb_style_resolve_list(struct rtb_window *,
+		struct rtb_style *style_list);
+struct rtb_style *rtb_style_get_defaults(void);
