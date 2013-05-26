@@ -32,8 +32,6 @@
 
 #define RTB_LABEL(x) RTB_UPCAST(x, rtb_label)
 
-typedef struct rtb_label rtb_label_t;
-
 struct rtb_label {
 	RTB_INHERIT(rtb_object);
 
@@ -43,12 +41,12 @@ struct rtb_label {
 	struct rtb_text_object *tobj;
 };
 
-void rtb_label_set_font(rtb_label_t *self, struct rtb_font *font);
-void rtb_label_set_text(rtb_label_t *self, const rtb_utf8_t *text);
+void rtb_label_set_font(struct rtb_label *, struct rtb_font *font);
+void rtb_label_set_text(struct rtb_label *, const rtb_utf8_t *text);
 
-int rtb_label_init(rtb_label_t *label,
+int rtb_label_init(struct rtb_label *,
 		struct rtb_object_implementation *impl);
-void rtb_label_fini(rtb_label_t *self);
+void rtb_label_fini(struct rtb_label *);
 
-rtb_label_t *rtb_label_new(const rtb_utf8_t *text);
-void rtb_label_free(rtb_label_t *);
+struct rtb_label *rtb_label_new(const rtb_utf8_t *text);
+void rtb_label_free(struct rtb_label *);

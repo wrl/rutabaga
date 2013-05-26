@@ -47,7 +47,7 @@ struct rtb_text_input {
 	int cursor_position;
 	struct rtb_text_buffer text;
 
-	rtb_label_t label;
+	struct rtb_label label;
 	int label_offset;
 
 	struct rtb_quad bg_quad;

@@ -89,7 +89,7 @@ static void size(struct rtb_object *obj,
  * public
  */
 
-void rtb_label_set_font(rtb_label_t *self, struct rtb_font *font)
+void rtb_label_set_font(struct rtb_label *self, struct rtb_font *font)
 {
 	self->font = font;
 
@@ -102,7 +102,7 @@ void rtb_label_set_font(rtb_label_t *self, struct rtb_font *font)
 			RTB_DIRECTION_ROOTWARD);
 }
 
-void rtb_label_set_text(rtb_label_t *self, const rtb_utf8_t *text)
+void rtb_label_set_text(struct rtb_label *self, const rtb_utf8_t *text)
 {
 	if (self->text)
 		free(self->text);
@@ -117,7 +117,7 @@ void rtb_label_set_text(rtb_label_t *self, const rtb_utf8_t *text)
 			RTB_DIRECTION_ROOTWARD);
 }
 
-int rtb_label_init(rtb_label_t *self,
+int rtb_label_init(struct rtb_label *self,
 		struct rtb_object_implementation *impl)
 {
 	rtb_obj_init(RTB_OBJECT(self), &super);
@@ -143,7 +143,7 @@ int rtb_label_init(rtb_label_t *self,
 	return 0;
 }
 
-void rtb_label_fini(rtb_label_t *self)
+void rtb_label_fini(struct rtb_label *self)
 {
 	if (self->text)
 		free(self->text);
@@ -154,9 +154,9 @@ void rtb_label_fini(rtb_label_t *self)
 	rtb_obj_fini(RTB_OBJECT(self));
 }
 
-rtb_label_t *rtb_label_new(const rtb_utf8_t *text)
+struct rtb_label *rtb_label_new(const rtb_utf8_t *text)
 {
-	rtb_label_t *self = calloc(1, sizeof(*self));
+	struct rtb_label *self = calloc(1, sizeof(*self));
 	rtb_label_init(self, &self->impl);
 
 	if (text)
@@ -165,7 +165,7 @@ rtb_label_t *rtb_label_new(const rtb_utf8_t *text)
 	return self;
 }
 
-void rtb_label_free(rtb_label_t *self)
+void rtb_label_free(struct rtb_label *self)
 {
 	rtb_label_fini(self);
 	free(self);

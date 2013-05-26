@@ -49,7 +49,7 @@ struct rtb_button {
 	RTB_INHERIT(rtb_object);
 
 	/* private ********************************/
-	rtb_label_t label;
+	struct rtb_label label;
 	struct rtb_quad bg_quad;
 };
 
