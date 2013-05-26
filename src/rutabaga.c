@@ -40,19 +40,19 @@ struct wwrl_allocator stdlib_allocator = {
 	.realloc = realloc
 };
 
-void rtb_stop_event_loop(rtb_t *self)
+void rtb_stop_event_loop(struct rutabaga *self)
 {
 	self->run_event_loop = 0;
 }
 
-void rtb_destroy(rtb_t *self)
+void rtb_destroy(struct rutabaga *self)
 {
 	window_impl_rtb_free(self);
 }
 
-rtb_t *rtb_init(void)
+struct rutabaga *rtb_init(void)
 {
-	rtb_t *self = window_impl_rtb_alloc();
+	struct rutabaga *self = window_impl_rtb_alloc();
 
 	RTB_DICT_INIT(&self->atoms.type);
 

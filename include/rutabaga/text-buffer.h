@@ -43,5 +43,5 @@ int rtb_text_buffer_set_text(struct rtb_text_buffer *,
 		rtb_utf8_t *text, ssize_t nbytes);
 const rtb_utf8_t *rtb_text_buffer_get_text(struct rtb_text_buffer *);
 
-int rtb_text_buffer_init(rtb_t *, struct rtb_text_buffer *);
+int rtb_text_buffer_init(struct rutabaga *, struct rtb_text_buffer *);
 void rtb_text_buffer_fini(struct rtb_text_buffer *);

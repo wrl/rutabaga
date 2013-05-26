@@ -518,7 +518,7 @@ static int timespec_cmp(struct timespec *a, struct timespec *b,
 #define FRAME_NSEC (999999999 / FPS)
 #define FRAME_MSEC (999 / FPS)
 
-void rtb_event_loop(rtb_t *r)
+void rtb_event_loop(struct rutabaga *r)
 {
 	struct xcb_rutabaga *xrtb = (void *) r;
 	struct rtb_window *win = r->win;

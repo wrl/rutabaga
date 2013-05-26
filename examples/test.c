@@ -196,7 +196,7 @@ static int handle_input_key(struct rtb_object *obj,
 	return 1;
 }
 
-void add_input(rtb_t *rtb, rtb_container_t *root)
+void add_input(struct rutabaga *rtb, rtb_container_t *root)
 {
 	input = rtb_text_input_new(rtb);
 
@@ -241,7 +241,7 @@ static int handle_key_press(struct rtb_object *victim,
 		printf("numpad: %lc\n", ev->character);
 
 		if (ev->character == L'-')
-			rtb_stop_event_loop((rtb_t *) ctx);
+			rtb_stop_event_loop((struct rutabaga *) ctx);
 
 		break;
 

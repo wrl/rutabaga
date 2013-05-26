@@ -90,6 +90,8 @@ struct rtb_event {
  * handling
  */
 
+struct rtb_object;
+
 typedef int (*rtb_event_cb_t)
 	(struct rtb_object *obj, const struct rtb_event *event, void *ctx);
 

@@ -117,7 +117,7 @@ const rtb_utf8_t *rtb_text_buffer_get_text(struct rtb_text_buffer *self)
  * lifecycle
  */
 
-int rtb_text_buffer_init(rtb_t *rtb, struct rtb_text_buffer *self)
+int rtb_text_buffer_init(struct rutabaga *rtb, struct rtb_text_buffer *self)
 {
 	char null = '\0';
 

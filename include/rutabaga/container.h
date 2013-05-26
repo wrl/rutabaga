@@ -29,6 +29,8 @@
 #include "rutabaga/types.h"
 #include "rutabaga/object.h"
 
+typedef struct rtb_object rtb_container_t;
+
 void rtb_container_add(rtb_container_t *container, struct rtb_object *obj);
 
 int rtb_container_init(rtb_container_t *,

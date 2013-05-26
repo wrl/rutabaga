@@ -27,6 +27,7 @@
 #pragma once
 
 #include "rutabaga/rutabaga.h"
+#include "rutabaga/object.h"
 #include "rutabaga/geometry.h"
 
 void rtb_size_self(struct rtb_object *,

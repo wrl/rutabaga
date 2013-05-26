@@ -350,7 +350,7 @@ const rtb_utf8_t *rtb_text_input_get_text(rtb_text_input_t *self)
 	return rtb_text_buffer_get_text(&self->text);
 }
 
-int rtb_text_input_init(rtb_t *rtb, rtb_text_input_t *self,
+int rtb_text_input_init(struct rutabaga *rtb, rtb_text_input_t *self,
 		struct rtb_object_implementation *impl)
 {
 	rtb_obj_init(RTB_OBJECT(self), &super);
@@ -397,7 +397,7 @@ void rtb_text_input_fini(rtb_text_input_t *self)
 	rtb_obj_fini(RTB_OBJECT(self));
 }
 
-rtb_text_input_t *rtb_text_input_new(rtb_t *rtb)
+rtb_text_input_t *rtb_text_input_new(struct rutabaga *rtb)
 {
 	rtb_text_input_t *self = calloc(1, sizeof(*self));
 	rtb_text_input_init(rtb, self, &self->impl);

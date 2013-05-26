@@ -38,7 +38,7 @@
 #define ERR(...) fprintf(stderr, "rutabaga XCB: " __VA_ARGS__)
 
 struct xcb_rutabaga {
-	rtb_t rtb;
+	struct rutabaga rtb;
 
 	Display *dpy;
 	xcb_connection_t *xcb_conn;

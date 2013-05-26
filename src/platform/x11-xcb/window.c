@@ -142,7 +142,7 @@ static int get_core_kbd_id(xcb_connection_t *c)
 	return device_id;
 }
 
-rtb_t *window_impl_rtb_alloc()
+struct rutabaga *window_impl_rtb_alloc()
 {
 	struct xcb_rutabaga *self;
 	Display *dpy;
@@ -177,7 +177,7 @@ rtb_t *window_impl_rtb_alloc()
 	INTERN_ATOM(wm_delete_window, "WM_DELETE_WINDOW");
 #undef INTERN_ATOM
 
-	return (rtb_t *) self;
+	return (struct rutabaga *) self;
 
 err_keyboard_init:
 err_get_conn:
@@ -188,7 +188,7 @@ err_malloc:
 	return NULL;
 }
 
-void window_impl_rtb_free(rtb_t *rtb)
+void window_impl_rtb_free(struct rutabaga *rtb)
 {
 	struct xcb_rutabaga *self = (void *) rtb;
 

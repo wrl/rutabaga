@@ -31,19 +31,20 @@
  *      in order to get rid of this.
  *
  *      what i'm thinking:
- *          - rtb_t has its own `global` allocator for everything that's
- *            created underneath it.
- *          - anything that allocates memory needs a pointer to said rtb_t.
+ *          - struct rutabaga has its own `global` allocator for everything
+ *            that's created underneath it.
+ *          - anything that allocates memory needs a pointer to said
+ *            struct rutabaga.
  *
  *      this is going to suck because currently we don't need any reference
- *      to the rtb_t until an object is attached to the tree somewhere,
+ *      to the struct rutabaga until an object is attached to the tree somewhere,
  *      so this would require things like
  *
  *			rtb_button_new(const rtb_utf8_t *label);
  *
  *		to instead be
  *
- *			rtb_button_new(rtb_t *, const rtb_utf8_t *label);
+ *			rtb_button_new(struct rutabaga *, const rtb_utf8_t *label);
  */
 
 extern struct wwrl_allocator stdlib_allocator;

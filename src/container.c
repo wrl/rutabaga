@@ -27,6 +27,7 @@
 #include <stdlib.h>
 
 #include "rutabaga/rutabaga.h"
+#include "rutabaga/container.h"
 #include "rutabaga/object.h"
 #include "rutabaga/window.h"
 
