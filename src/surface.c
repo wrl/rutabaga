@@ -51,7 +51,7 @@ static struct rtb_object_implementation super;
  * object implementation
  */
 
-static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
+static void draw(struct rtb_object *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
 
@@ -61,8 +61,8 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 	rtb_render_pop(obj);
 }
 
-static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
-		rtb_ev_direction_t direction)
+static void recalculate(struct rtb_object *obj,
+		struct rtb_object *instigator, rtb_ev_direction_t direction)
 {
 	struct rtb_rect tex_coords = {
 		.as_float = {
@@ -102,14 +102,14 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 	rtb_surface_invalidate(self);
 }
 
-static void attach_child(rtb_obj_t *obj, rtb_obj_t *child)
+static void attach_child(struct rtb_object *obj, struct rtb_object *child)
 {
 	SELF_FROM(obj);
 	rtb_obj_realize(child, obj, self, self->window);
 }
 
-static void realize(rtb_obj_t *self, rtb_obj_t *parent,
-		rtb_win_t *window)
+static void realize(struct rtb_object *self,
+		struct rtb_object *parent, struct rtb_window *window)
 {
 	super.realize_cb(self, parent, window);
 	self->type = rtb_type_ref(window, self->type,
@@ -120,7 +120,7 @@ static void realize(rtb_obj_t *self, rtb_obj_t *parent,
  * public API
  */
 
-void rtb_surface_blit(rtb_surface_t *self)
+void rtb_surface_blit(struct rtb_surface *self)
 {
 	struct rtb_shader *shader = &self->window->shaders.surface;
 	rtb_obj_t *obj = RTB_OBJECT(self);
@@ -145,7 +145,8 @@ void rtb_surface_blit(rtb_surface_t *self)
 	LAYOUT_DEBUG_DRAW_BOX(obj);
 }
 
-void rtb_surface_draw_children(rtb_surface_t *self, rtb_draw_state_t state)
+void rtb_surface_draw_children(struct rtb_surface *self,
+		rtb_draw_state_t state)
 {
 	struct rtb_render_context *ctx = &self->render_ctx;
 	rtb_obj_t *iter;
@@ -204,13 +205,13 @@ void rtb_surface_draw_children(rtb_surface_t *self, rtb_draw_state_t state)
 	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 }
 
-void rtb_surface_invalidate(rtb_surface_t *self)
+void rtb_surface_invalidate(struct rtb_surface *self)
 {
 	self->surface_state = RTB_SURFACE_INVALID;
 	rtb_obj_mark_dirty(RTB_OBJECT(self));
 }
 
-int rtb_surface_init(rtb_surface_t *self,
+int rtb_surface_init(struct rtb_surface *self,
 		struct rtb_object_implementation *impl)
 {
 	struct rtb_object_implementation *obj_impl = &self->impl;
@@ -236,7 +237,7 @@ int rtb_surface_init(rtb_surface_t *self,
 	return 0;
 }
 
-void rtb_surface_fini(rtb_surface_t *self)
+void rtb_surface_fini(struct rtb_surface *self)
 {
 	rtb_quad_fini(&self->quad);
 

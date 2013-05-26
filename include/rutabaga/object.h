@@ -37,8 +37,6 @@
 #define RTB_OBJECT(x) RTB_UPCAST(x, rtb_object)
 #define RTB_OBJECT_AS(x, type) RTB_DOWNCAST(x, type, rtb_object)
 
-typedef struct rtb_object_implementation rtb_obj_impl_t;
-
 typedef enum {
 	/* all events, regardless of whether they are already handled by
 	 * the object in question, are passed to client code after the
@@ -55,18 +53,19 @@ typedef enum {
  * object implementation
  */
 
-typedef void (*rtb_draw_cb_t)(rtb_obj_t *obj, rtb_draw_state_t state);
-typedef int  (*rtb_internal_event_cb_t)(rtb_obj_t *obj,
+typedef void (*rtb_draw_cb_t)(struct rtb_object *obj, rtb_draw_state_t state);
+typedef int  (*rtb_internal_event_cb_t)(struct rtb_object *obj,
 		const struct rtb_event *event);
-typedef void (*rtb_realize_cb_t)(rtb_obj_t *obj, rtb_obj_t *parent,
-		rtb_win_t *window);
-typedef void (*rtb_layout_cb_t)(rtb_obj_t *);
-typedef void (*rtb_size_cb_t)(rtb_obj_t *obj,
+typedef void (*rtb_realize_cb_t)(struct rtb_object *obj,
+		struct rtb_object *parent, rtb_win_t *window);
+typedef void (*rtb_layout_cb_t)(struct rtb_object *);
+typedef void (*rtb_size_cb_t)(struct rtb_object *obj,
 		const struct rtb_size *avail, struct rtb_size *want);
-typedef void (*rtb_recalc_cb_t)(rtb_obj_t *obj,
-		rtb_obj_t *instigator, rtb_ev_direction_t direction);
-typedef void (*rtb_attach_child_cb_t)(rtb_obj_t *obj, rtb_obj_t *child);
-typedef void (*rtb_mark_dirty_cb_t)(rtb_obj_t *);
+typedef void (*rtb_recalc_cb_t)(struct rtb_object *obj,
+		struct rtb_object *instigator, rtb_ev_direction_t direction);
+typedef void (*rtb_attach_child_cb_t)(struct rtb_object *obj,
+		struct rtb_object *child);
+typedef void (*rtb_mark_dirty_cb_t)(struct rtb_object *);
 
 struct rtb_object_implementation {
 	rtb_size_cb_t size_cb;
@@ -95,7 +94,7 @@ struct rtb_object {
 
 	RTB_INHERIT_AS(rtb_object_implementation, impl);
 
-	rtb_style_t *style;
+	struct rtb_style *style;
 
 	/* XXX: should this stuff be in rtb_style_t? */
 	rtb_alignment_t align;
@@ -111,34 +110,34 @@ struct rtb_object {
 
 	int mouse_in;
 
-	rtb_obj_t *parent;
-	rtb_win_t *window;
-	rtb_surface_t *surface;
+	struct rtb_object  *parent;
+	struct rtb_window  *window;
+	struct rtb_surface *surface;
 
 	VECTOR(handlers, struct rtb_event_handler) handlers;
 	TAILQ_ENTRY(rtb_object) child;
 	TAILQ_ENTRY(rtb_object) render_entry;
 };
 
-int rtb_obj_deliver_event(rtb_obj_t *, const struct rtb_event *e);
-void rtb_obj_draw(rtb_obj_t *, rtb_draw_state_t state);
-void rtb_obj_realize(rtb_obj_t *, rtb_obj_t *parent,
-		rtb_surface_t *surface, rtb_win_t *window);
+int rtb_obj_deliver_event(struct rtb_object *, const struct rtb_event *e);
+void rtb_obj_draw(struct rtb_object *, rtb_draw_state_t state);
+void rtb_obj_realize(struct rtb_object *, struct rtb_object *parent,
+		struct rtb_surface *surface, struct rtb_window *window);
 
-void rtb_obj_mark_dirty(rtb_obj_t *);
-void rtb_obj_trigger_recalc(rtb_obj_t *, rtb_obj_t *instigator,
-		rtb_ev_direction_t direction);
+void rtb_obj_mark_dirty(struct rtb_object *);
+void rtb_obj_trigger_recalc(struct rtb_object *,
+		struct rtb_object *instigator, rtb_ev_direction_t direction);
 
-void rtb_obj_set_size_cb(rtb_obj_t *, rtb_size_cb_t size_cb);
-void rtb_obj_set_layout(rtb_obj_t *, rtb_layout_cb_t layout_cb);
-void rtb_obj_set_position_from_point(rtb_obj_t *, struct rtb_point *);
-void rtb_obj_set_position(rtb_obj_t *, float x, float y);
-void rtb_obj_set_size(rtb_obj_t *, struct rtb_size *);
+void rtb_obj_set_size_cb(struct rtb_object *, rtb_size_cb_t size_cb);
+void rtb_obj_set_layout(struct rtb_object *, rtb_layout_cb_t layout_cb);
+void rtb_obj_set_position_from_point(struct rtb_object *, struct rtb_point *);
+void rtb_obj_set_position(struct rtb_object *, float x, float y);
+void rtb_obj_set_size(struct rtb_object *, struct rtb_size *);
 
-int rtb_obj_in_tree(rtb_obj_t *root, rtb_obj_t *leaf);
-void rtb_obj_add_child(rtb_obj_t *parent, rtb_obj_t *child,
+int rtb_obj_in_tree(struct rtb_object *root, struct rtb_object *leaf);
+void rtb_obj_add_child(struct rtb_object *parent, struct rtb_object *child,
 		rtb_child_add_loc_t where);
-void rtb_obj_remove_child(rtb_obj_t *, rtb_obj_t *child);
+void rtb_obj_remove_child(struct rtb_object *, struct rtb_object *child);
 
-int rtb_obj_init(rtb_obj_t *, struct rtb_object_implementation *impl);
-void rtb_obj_fini(rtb_obj_t *);
+int rtb_obj_init(struct rtb_object *, struct rtb_object_implementation *impl);
+void rtb_obj_fini(struct rtb_object *);

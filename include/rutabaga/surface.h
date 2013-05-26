@@ -54,10 +54,10 @@ struct rtb_surface {
 	struct rtb_render_context render_ctx;
 };
 
-void rtb_surface_blit(rtb_surface_t *);
-void rtb_surface_draw_children(rtb_surface_t *, rtb_draw_state_t state);
-void rtb_surface_invalidate(rtb_surface_t *);
+void rtb_surface_blit(struct rtb_surface *);
+void rtb_surface_draw_children(struct rtb_surface *, rtb_draw_state_t state);
+void rtb_surface_invalidate(struct rtb_surface *);
 
-int rtb_surface_init(rtb_surface_t *,
+int rtb_surface_init(struct rtb_surface *,
 		struct rtb_object_implementation *impl);
-void rtb_surface_fini(rtb_surface_t *);
+void rtb_surface_fini(struct rtb_surface *);

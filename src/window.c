@@ -52,7 +52,7 @@
 
 static struct rtb_object_implementation super;
 
-static int initialize_shaders(rtb_win_t *self)
+static int initialize_shaders(struct rtb_window *self)
 {
 	struct rtb_shader *s;
 
@@ -80,7 +80,7 @@ err_dfault:
  * object implementation
  */
 
-static int win_event(rtb_obj_t *obj, const struct rtb_event *e)
+static int win_event(struct rtb_object *obj, const struct rtb_event *e)
 {
 	SELF_FROM(obj);
 
@@ -103,8 +103,8 @@ static int win_event(rtb_obj_t *obj, const struct rtb_event *e)
 	return super.event_cb(obj, e);
 }
 
-static void realize(rtb_obj_t *obj, rtb_obj_t *parent,
-		rtb_win_t *window)
+static void realize(struct rtb_object *obj, struct rtb_object *parent,
+		struct rtb_window *window)
 {
 	SELF_FROM(obj);
 
@@ -115,7 +115,7 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent,
 	rtb_style_resolve_list(self, self->style_list);
 }
 
-static void mark_dirty(rtb_obj_t *obj)
+static void mark_dirty(struct rtb_object *obj)
 {
 	return;
 }
@@ -124,9 +124,10 @@ static void mark_dirty(rtb_obj_t *obj)
  * public API
  */
 
-void rtb_window_focus_object(rtb_win_t *self, rtb_obj_t *focused)
+void rtb_window_focus_object(struct rtb_window *self,
+		struct rtb_object *focused)
 {
-	rtb_obj_t *unfocused = self->focus;
+	struct rtb_object *unfocused = self->focus;
 
 	self->focus = focused;
 	rtb_obj_mark_dirty(focused);
@@ -135,9 +136,9 @@ void rtb_window_focus_object(rtb_win_t *self, rtb_obj_t *focused)
 		rtb_obj_mark_dirty(unfocused);
 }
 
-void rtb_window_draw(rtb_win_t *self)
+void rtb_window_draw(struct rtb_window *self)
 {
-	rtb_style_props_t *style = &self->style->states[0];
+	struct rtb_style_props *style = &self->style->states[0];
 
 	glViewport(0, 0, self->w, self->h);
 
@@ -155,9 +156,9 @@ void rtb_window_draw(rtb_win_t *self)
 	window_impl_swap_buffers(self);
 }
 
-void rtb_window_reinit(rtb_win_t *self)
+void rtb_window_reinit(struct rtb_window *self)
 {
-	rtb_obj_t *obj = RTB_OBJECT(self);
+	struct rtb_object *obj = RTB_OBJECT(self);
 
 	self->x = self->y = 0.f;
 
@@ -166,12 +167,13 @@ void rtb_window_reinit(rtb_win_t *self)
 	if (!self->window)
 		rtb_obj_realize(obj, NULL, RTB_SURFACE(self), self);
 	else
-		rtb_obj_trigger_recalc(obj,obj, RTB_DIRECTION_LEAFWARD);
+		rtb_obj_trigger_recalc(obj, obj, RTB_DIRECTION_LEAFWARD);
 }
 
-rtb_win_t *rtb_window_open(rtb_t *r, int h, int w, const char *title)
+struct rtb_window *rtb_window_open(struct rutabaga *r,
+		int h, int w, const char *title)
 {
-	rtb_win_t *self;
+	struct rtb_window *self;
 
 	assert(r);
 	assert(h > 0);
@@ -210,7 +212,7 @@ err_window_impl:
 	return NULL;
 }
 
-void rtb_window_close(rtb_win_t *self)
+void rtb_window_close(struct rtb_window *self)
 {
 	assert(self);
 

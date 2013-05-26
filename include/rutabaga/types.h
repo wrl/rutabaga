@@ -113,7 +113,6 @@ typedef struct rutabaga    rtb_t;
 
 typedef struct rtb_object  rtb_obj_t;
 typedef struct rtb_object  rtb_container_t;
-typedef struct rtb_surface rtb_surface_t;
 typedef struct rtb_window  rtb_win_t;
 
 typedef struct rtb_style       rtb_style_t;

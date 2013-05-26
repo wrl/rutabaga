@@ -40,7 +40,7 @@
 
 struct rtb_event_window {
 	RTB_INHERIT(rtb_event);
-	rtb_win_t *window;
+	struct rtb_window *window;
 };
 
 struct rtb_window {
@@ -53,36 +53,36 @@ struct rtb_window {
 		struct rtb_shader surface;
 	} shaders;
 
-	rtb_style_t *style_list;
+	struct rtb_style *style_list;
 
 	mat4 identity;
 
 	/* private ********************************/
-	rtb_t *rtb;
+	struct rutabaga *rtb;
 
 	int need_reconfigure;
 	pthread_mutex_t lock;
 
 	struct rtb_mouse mouse;
-
-	rtb_obj_t *focus;
+	struct rtb_object *focus;
 };
 
-void rtb_window_lock(rtb_win_t *);
-void rtb_window_unlock(rtb_win_t *);
+void rtb_window_lock(struct rtb_window *);
+void rtb_window_unlock(struct rtb_window *);
 
-void rtb_window_draw(rtb_win_t *);
-void rtb_window_reinit(rtb_win_t *);
+void rtb_window_draw(struct rtb_window *);
+void rtb_window_reinit(struct rtb_window *);
 
-void rtb_window_focus_object(rtb_win_t *, rtb_obj_t *focused);
+void rtb_window_focus_object(struct rtb_window *,
+		struct rtb_object *focused);
 
-rtb_win_t *rtb_window_open(rtb_t *r,
+struct rtb_window *rtb_window_open(struct rutabaga *r,
 		int width, int height, const char *title);
-void rtb_window_close(rtb_win_t *);
+void rtb_window_close(struct rtb_window *);
 
-void window_impl_rtb_free(rtb_t *rtb);
-rtb_t *window_impl_rtb_alloc(void);
-void window_impl_swap_buffers(rtb_win_t *self);
-void window_impl_close(rtb_win_t *self);
-rtb_win_t *window_impl_open(rtb_t *r,
+void window_impl_rtb_free(struct rutabaga *rtb);
+struct rutabaga *window_impl_rtb_alloc(void);
+void window_impl_swap_buffers(struct rtb_window *self);
+void window_impl_close(struct rtb_window *self);
+struct rtb_window *window_impl_open(struct rutabaga *r,
 		int width, int height, const char *title);
