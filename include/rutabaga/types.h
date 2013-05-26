@@ -118,7 +118,3 @@ typedef struct rtb_window  rtb_win_t;
 
 typedef struct rtb_style       rtb_style_t;
 typedef struct rtb_style_props rtb_style_props_t;
-
-typedef struct rtb_font_manager rtb_font_manager_t;
-
-typedef struct rtb_event_handler rtb_ev_handler_t;

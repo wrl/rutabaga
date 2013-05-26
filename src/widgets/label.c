@@ -88,7 +88,7 @@ static void size(rtb_obj_t *obj, const struct rtb_size *avail,
  * public
  */
 
-void rtb_label_set_font(rtb_label_t *self, rtb_font_t *font)
+void rtb_label_set_font(rtb_label_t *self, struct rtb_font *font)
 {
 	self->font = font;
 

@@ -45,7 +45,7 @@ struct rtb_event_window {
 
 struct rtb_window {
 	RTB_INHERIT(rtb_surface);
-	rtb_font_manager_t *font_manager;
+	struct rtb_font_manager *font_manager;
 
 	/* public *********************************/
 	struct {

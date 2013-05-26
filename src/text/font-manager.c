@@ -56,8 +56,8 @@ static const rtb_utf32_t *cache =
 	L",.!?;"
 	L" [\\]^_@{|}~\"#$%&'()*+-/0123456789:<=>`";
 
-int rtb_font_manager_load_font(rtb_font_manager_t *fm, rtb_font_t *font,
-		const char *path, int size)
+int rtb_font_manager_load_font(struct rtb_font_manager *fm,
+		struct rtb_font *font, const char *path, int size)
 {
 	font->txfont = texture_font_new(fm->atlas, path, size);
 	if (!font->txfont) {
@@ -76,7 +76,7 @@ int rtb_font_manager_load_font(rtb_font_manager_t *fm, rtb_font_t *font,
 	return 0;
 }
 
-void rtb_font_manager_free_font(rtb_font_t *font)
+void rtb_font_manager_free_font(struct rtb_font *font)
 {
 	free(font->path);
 	texture_font_delete(font->txfont);
@@ -84,7 +84,7 @@ void rtb_font_manager_free_font(rtb_font_t *font)
 
 int rtb_font_manager_init(rtb_win_t *win)
 {
-	rtb_font_manager_t *fm;
+	struct rtb_font_manager *fm;
 
 	if (!(fm = calloc(1, sizeof(*fm)))) {
 		ERR("couldn't allocate font manager.\n");
@@ -137,7 +137,7 @@ err_calloc:
 
 void rtb_font_manager_fini(rtb_win_t *win)
 {
-	rtb_font_manager_t *fm = win->font_manager;
+	struct rtb_font_manager *fm = win->font_manager;
 
 	if (!fm)
 		return;

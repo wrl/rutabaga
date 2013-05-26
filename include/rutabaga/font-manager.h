@@ -31,8 +31,6 @@
 #include "freetype-gl/freetype-gl.h"
 #include "freetype-gl/vertex-buffer.h"
 
-typedef struct rtb_font rtb_font_t;
-
 struct rtb_font {
 	char *path;
 	int size;
@@ -40,7 +38,7 @@ struct rtb_font {
 	float lcd_gamma;
 
 	texture_font_t *txfont;
-	rtb_font_manager_t *fm;
+	struct rtb_font_manager *fm;
 };
 
 struct rtb_font_manager {
@@ -54,17 +52,17 @@ struct rtb_font_manager {
 	} shader;
 
 	struct {
-		rtb_font_t main;
-		rtb_font_t big;
-		rtb_font_t monospace;
+		struct rtb_font main;
+		struct rtb_font big;
+		struct rtb_font monospace;
 	} fonts;
 
 	texture_atlas_t *atlas;
 };
 
-int rtb_font_manager_load_font(rtb_font_manager_t *fm, rtb_font_t *font,
-		const char *path, int size);
-void rtb_font_manager_free_font(rtb_font_t *font);
+int rtb_font_manager_load_font(struct rtb_font_manager *fm,
+		struct rtb_font *font, const char *path, int size);
+void rtb_font_manager_free_font(struct rtb_font *font);
 
 int  rtb_font_manager_init(rtb_win_t *win);
 void rtb_font_manager_fini(rtb_win_t *win);

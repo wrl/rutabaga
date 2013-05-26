@@ -164,7 +164,7 @@ void rtb_text_object_render(rtb_text_object_t *self, rtb_obj_t *parent,
 		float x, float y, rtb_draw_state_t state)
 {
 	struct rtb_font_shader *shader;
-	rtb_font_manager_t *fm;
+	struct rtb_font_manager *fm;
 	texture_atlas_t *atlas;
 
 	if (!vertex_buffer_size(self->vertices))
@@ -191,8 +191,8 @@ void rtb_text_object_render(rtb_text_object_t *self, rtb_obj_t *parent,
 	vertex_buffer_render(self->vertices, GL_TRIANGLES);
 }
 
-rtb_text_object_t *rtb_text_object_new(rtb_font_manager_t *fm,
-		rtb_font_t *font, const rtb_utf8_t *text)
+rtb_text_object_t *rtb_text_object_new(struct rtb_font_manager *fm,
+		struct rtb_font *font, const rtb_utf8_t *text)
 {
 	rtb_text_object_t *self = calloc(1, sizeof(*self));
 

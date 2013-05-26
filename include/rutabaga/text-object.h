@@ -39,8 +39,8 @@ struct rutabaga_text_object {
 	GLfloat xpad, ypad;
 
 	vertex_buffer_t *vertices;
-	rtb_font_manager_t *fm;
-	rtb_font_t *font;
+	struct rtb_font_manager *fm;
+	struct rtb_font *font;
 };
 
 int rtb_text_object_get_glyph_rect(rtb_text_object_t *, int idx,
@@ -51,6 +51,6 @@ void rtb_text_object_update(rtb_text_object_t *, const rtb_utf8_t *text);
 void rtb_text_object_render(rtb_text_object_t *, rtb_obj_t *parent,
 		float x, float y, rtb_draw_state_t state);
 
-rtb_text_object_t *rtb_text_object_new(rtb_font_manager_t *fm,
-		rtb_font_t *font, const rtb_utf8_t *text);
+rtb_text_object_t *rtb_text_object_new(struct rtb_font_manager *fm,
+		struct rtb_font *font, const rtb_utf8_t *text);
 void rtb_text_object_free(rtb_text_object_t *self);
