@@ -72,9 +72,9 @@ struct rtb_type_atom_descriptor {
  */
 
 rtb_type_atom_descriptor_t *rtb_type_lookup(
-		rtb_win_t *win, const char *type_name);
+		struct rtb_window *win, const char *type_name);
 int rtb_is_type(rtb_type_atom_descriptor_t *desc, rtb_type_atom_t *atom);
 
-rtb_type_atom_descriptor_t *rtb_type_ref(rtb_win_t *win,
+rtb_type_atom_descriptor_t *rtb_type_ref(struct rtb_window *win,
 		rtb_type_atom_descriptor_t *super, const char *type_name);
 int rtb_type_unref(rtb_type_atom_descriptor_t *type);

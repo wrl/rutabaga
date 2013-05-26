@@ -437,7 +437,8 @@ int handle_generic_event(struct xcb_window *win,
 	return 0;
 }
 
-static int drain_xcb_event_queue(rtb_win_t *win, xcb_connection_t *conn)
+static int drain_xcb_event_queue(struct rtb_window *win,
+		xcb_connection_t *conn)
 {
 	xcb_generic_event_t *ev;
 	int ret;
@@ -520,9 +521,10 @@ static int timespec_cmp(struct timespec *a, struct timespec *b,
 void rtb_event_loop(rtb_t *r)
 {
 	struct xcb_rutabaga *xrtb = (void *) r;
+	struct rtb_window *win = r->win;
+
 	struct timespec next_frame, now, diff;
 	struct pollfd fds[1];
-	rtb_win_t *win = r->win;
 	int timeout_ms;
 
 	clock_gettime(CLOCK_MONOTONIC, &now);

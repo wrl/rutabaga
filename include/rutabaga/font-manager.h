@@ -42,7 +42,7 @@ struct rtb_font {
 };
 
 struct rtb_font_manager {
-	rtb_win_t *win;
+	struct rtb_window *win;
 
 	struct rtb_font_shader {
 		RTB_INHERIT(rtb_shader);
@@ -64,5 +64,5 @@ int rtb_font_manager_load_font(struct rtb_font_manager *fm,
 		struct rtb_font *font, const char *path, int size);
 void rtb_font_manager_free_font(struct rtb_font *font);
 
-int  rtb_font_manager_init(rtb_win_t *win);
-void rtb_font_manager_fini(rtb_win_t *win);
+int  rtb_font_manager_init(struct rtb_window *win);
+void rtb_font_manager_fini(struct rtb_window *win);

@@ -57,7 +57,7 @@ typedef enum {
 struct rtb_mouse_event {
 	RTB_INHERIT(rtb_event);
 
-	rtb_win_t *window;
+	struct rtb_window *window;
 	struct rtb_object *target;
 
 	struct rtb_point cursor;

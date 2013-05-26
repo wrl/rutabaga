@@ -263,8 +263,8 @@ static int handle_key_press(struct rtb_object *victim,
 
 int main(int argc, char **argv)
 {
-	rtb_t *delicious;
-	rtb_win_t *win;
+	struct rutabaga *delicious;
+	struct rtb_window *win;
 
 	srand(time(NULL));
 

@@ -82,7 +82,7 @@ void rtb_font_manager_free_font(struct rtb_font *font)
 	texture_font_delete(font->txfont);
 }
 
-int rtb_font_manager_init(rtb_win_t *win)
+int rtb_font_manager_init(struct rtb_window *win)
 {
 	struct rtb_font_manager *fm;
 
@@ -135,7 +135,7 @@ err_calloc:
 	return -1;
 }
 
-void rtb_font_manager_fini(rtb_win_t *win)
+void rtb_font_manager_fini(struct rtb_window *win)
 {
 	struct rtb_font_manager *fm = win->font_manager;
 

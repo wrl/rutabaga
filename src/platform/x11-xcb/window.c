@@ -229,7 +229,7 @@ static xcb_screen_t *find_xcb_screen(xcb_connection_t *c, int default_screen)
 #define GLX_BACK_BUFFER_AGE_EXT 0x20F4
 #endif
 
-void window_impl_swap_buffers(rtb_win_t *rwin)
+void window_impl_swap_buffers(struct rtb_window *rwin)
 {
 	struct xcb_window *self = (void *) rwin;
 	struct xcb_rutabaga *xrtb = self->xrtb;
@@ -329,7 +329,7 @@ static int set_xprop(xcb_connection_t *c, xcb_window_t win,
 	return 0;
 }
 
-void rtb_window_lock(rtb_win_t *rwin)
+void rtb_window_lock(struct rtb_window *rwin)
 {
 	struct xcb_window *self = (struct xcb_window *) rwin;
 
@@ -339,7 +339,7 @@ void rtb_window_lock(rtb_win_t *rwin)
 				self->xrtb->dpy, self->gl_draw, self->gl_draw, self->gl_ctx);
 }
 
-void rtb_window_unlock(rtb_win_t *rwin)
+void rtb_window_unlock(struct rtb_window *rwin)
 {
 	struct xcb_window *self = (struct xcb_window *) rwin;
 
@@ -348,7 +348,8 @@ void rtb_window_unlock(rtb_win_t *rwin)
 	XUnlockDisplay(self->xrtb->dpy);
 }
 
-rtb_win_t *window_impl_open(rtb_t *rtb, int w, int h, const char *title)
+struct rtb_window *window_impl_open(struct rutabaga *rtb,
+		int w, int h, const char *title)
 {
 	struct xcb_rutabaga *xrtb = (void *) rtb;
 	struct xcb_window *self;
@@ -487,7 +488,7 @@ rtb_win_t *window_impl_open(rtb_t *rtb, int w, int h, const char *title)
 			1, &xrtb->atoms.wm_delete_window);
 
 	free(fb_configs);
-	return (rtb_win_t *) self;
+	return RTB_WINDOW(self);
 
 err_win_map:
 err_gl_make_current:
@@ -507,7 +508,7 @@ err_malloc:
 	return NULL;
 }
 
-void window_impl_close(rtb_win_t *rwin)
+void window_impl_close(struct rtb_window *rwin)
 {
 	struct xcb_window *self = (void *) rwin;
 

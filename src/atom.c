@@ -148,7 +148,7 @@ static struct rtb_type_atom_descriptor *alloc_type_descriptor(
  * RTB_ATOM_TYPE public API
  */
 
-rtb_type_atom_descriptor_t *rtb_type_lookup(rtb_win_t *win,
+rtb_type_atom_descriptor_t *rtb_type_lookup(struct rtb_window *win,
 		const char *type_name)
 {
 	uint_t hash;
@@ -175,7 +175,7 @@ int rtb_is_type(rtb_type_atom_descriptor_t *desc, rtb_type_atom_t *atom)
 	return 0;
 }
 
-rtb_type_atom_descriptor_t *rtb_type_ref(rtb_win_t *win,
+rtb_type_atom_descriptor_t *rtb_type_ref(struct rtb_window *win,
 		rtb_type_atom_descriptor_t *super, const char *type_name)
 {
 	struct rtb_atom_dict *dict = &win->rtb->atoms.type;

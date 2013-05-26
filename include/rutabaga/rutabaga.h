@@ -42,7 +42,7 @@
 struct rutabaga {
 	/* private ********************************/
 	/* XXX: need to be able to handle several of these */
-	rtb_win_t *win;
+	struct rtb_window *win;
 	int run_event_loop;
 
 	struct {
@@ -52,7 +52,7 @@ struct rutabaga {
 	struct wwrl_allocator allocator;
 };
 
-void rtb_stop_event_loop(rtb_t *self);
+void rtb_stop_event_loop(struct rutabaga *);
 
-rtb_t *rtb_init(void);
-void rtb_destroy(rtb_t *rutabaga);
+struct rutabaga *rtb_init(void);
+void rtb_destroy(struct rutabaga *);

@@ -57,7 +57,7 @@ typedef void (*rtb_draw_cb_t)(struct rtb_object *obj, rtb_draw_state_t state);
 typedef int  (*rtb_internal_event_cb_t)(struct rtb_object *obj,
 		const struct rtb_event *event);
 typedef void (*rtb_realize_cb_t)(struct rtb_object *obj,
-		struct rtb_object *parent, rtb_win_t *window);
+		struct rtb_object *parent, struct rtb_window *window);
 typedef void (*rtb_layout_cb_t)(struct rtb_object *);
 typedef void (*rtb_size_cb_t)(struct rtb_object *obj,
 		const struct rtb_size *avail, struct rtb_size *want);

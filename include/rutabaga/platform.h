@@ -27,14 +27,18 @@
 #pragma once
 
 #include "rutabaga/types.h"
+#include "rutabaga/window.h"
 #include "rutabaga/mouse.h"
 
 /**
  * mouse
  */
 
-void rtb_platform_mouse_press(rtb_win_t *win, int buttons, int x, int y);
-void rtb_platform_mouse_release(rtb_win_t *win, int buttons, int x, int y);
-void rtb_platform_mouse_motion(rtb_win_t *win, int x, int y);
-void rtb_platform_mouse_enter_window(rtb_win_t *win, int x, int y);
-void rtb_platform_mouse_leave_window(rtb_win_t *win, int x, int y);
+void rtb_platform_mouse_press(struct rtb_window *win,
+		int buttons, int x, int y);
+void rtb_platform_mouse_release(struct rtb_window *win,
+		int buttons, int x, int y);
+void rtb_platform_mouse_motion(struct rtb_window *win, int x, int y);
+
+void rtb_platform_mouse_enter_window(struct rtb_window *win, int x, int y);
+void rtb_platform_mouse_leave_window(struct rtb_window *win, int x, int y);
