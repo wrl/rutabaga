@@ -48,8 +48,8 @@ int rtb_text_object_get_glyph_rect(rtb_text_object_t *, int idx,
 int rtb_text_object_count_glyphs(rtb_text_object_t *);
 
 void rtb_text_object_update(rtb_text_object_t *, const rtb_utf8_t *text);
-void rtb_text_object_render(rtb_text_object_t *, rtb_obj_t *parent,
-		float x, float y, rtb_draw_state_t state);
+void rtb_text_object_render(rtb_text_object_t *,
+		struct rtb_object *parent, float x, float y, rtb_draw_state_t state);
 
 rtb_text_object_t *rtb_text_object_new(struct rtb_font_manager *fm,
 		struct rtb_font *font, const rtb_utf8_t *text);

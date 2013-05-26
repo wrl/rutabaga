@@ -36,8 +36,8 @@ static struct rtb_object_implementation super;
  * object implementation
  */
 
-static void realize(rtb_obj_t *self, rtb_obj_t *parent,
-		rtb_win_t *window)
+static void realize(struct rtb_object *self,
+		struct rtb_object *parent, struct rtb_window *window)
 {
 	super.realize_cb(self, parent, window);
 	self->type = rtb_type_ref(window, self->type,
@@ -65,7 +65,7 @@ rtb_container_t *rtb_container_new()
 	return self;
 }
 
-void rtb_container_add(rtb_container_t *self, rtb_obj_t *obj)
+void rtb_container_add(rtb_container_t *self, struct rtb_object *obj)
 {
 	rtb_obj_add_child(self, obj, RTB_ADD_TAIL);
 }

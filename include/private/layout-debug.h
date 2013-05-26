@@ -26,7 +26,7 @@
 
 #ifdef RTB_LAYOUT_DEBUG
 
-void rtb_debug_draw_bounding_box(rtb_obj_t *);
+void rtb_debug_draw_bounding_box(struct rtb_object *);
 void rtb_debug_init(void);
 
 # define LAYOUT_DEBUG_DRAW_BOX(self) rtb_debug_draw_bounding_box(self)

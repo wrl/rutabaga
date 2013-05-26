@@ -91,7 +91,7 @@ struct rtb_event {
  */
 
 typedef int (*rtb_event_cb_t)
-	(rtb_obj_t *obj, const struct rtb_event *event, void *ctx);
+	(struct rtb_object *obj, const struct rtb_event *event, void *ctx);
 
 struct rtb_event_handler {
 	rtb_ev_type_t type;
@@ -106,12 +106,14 @@ struct rtb_event_handler {
  * public API
  */
 
-int rtb_handle(rtb_obj_t *victim, const struct rtb_event *event);
-rtb_obj_t *rtb_dispatch_raw(rtb_obj_t *victim, struct rtb_event *event);
-rtb_obj_t *rtb_dispatch_simple(rtb_obj_t *victim, rtb_ev_type_t type);
+int rtb_handle(struct rtb_object *target, const struct rtb_event *event);
+struct rtb_object *rtb_dispatch_raw(struct rtb_object *target,
+		struct rtb_event *event);
+struct rtb_object *rtb_dispatch_simple(struct rtb_object *target,
+		rtb_ev_type_t type);
 
-int rtb_attach(rtb_obj_t *victim, rtb_ev_type_t type, rtb_event_cb_t handler,
-		void *user_arg);
-void rtb_detach(rtb_obj_t *victim, rtb_ev_type_t type);
+int rtb_attach(struct rtb_object *target,
+		rtb_ev_type_t type, rtb_event_cb_t handler, void *user_arg);
+void rtb_detach(struct rtb_object *target, rtb_ev_type_t type);
 
-void rtb_event_loop(rtb_t *rutabaga);
+void rtb_event_loop(struct rutabaga *rutabaga);

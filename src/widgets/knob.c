@@ -118,7 +118,7 @@ static void cache_to_vbo(rtb_knob_t *self)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
+static void draw(struct rtb_object *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
 
@@ -240,7 +240,7 @@ static int handle_key(rtb_knob_t *self, const struct rtb_key_event *e)
 	}
 }
 
-static int on_event(rtb_obj_t *obj, const struct rtb_event *e)
+static int on_event(struct rtb_object *obj, const struct rtb_event *e)
 {
 	SELF_FROM(obj);
 
@@ -262,7 +262,8 @@ static int on_event(rtb_obj_t *obj, const struct rtb_event *e)
 	return 0;
 }
 
-static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
+static void realize(struct rtb_object *obj,
+		struct rtb_object *parent, struct rtb_window *window)
 {
 	SELF_FROM(obj);
 	super.realize_cb(obj, parent, window);

@@ -40,7 +40,7 @@
 
 static struct rtb_object_implementation super;
 
-static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
+static void draw(struct rtb_object *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
 
@@ -48,14 +48,15 @@ static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
 	super.draw_cb(obj, state);
 }
 
-static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
-		rtb_ev_direction_t direction)
+static void recalculate(struct rtb_object *obj,
+		struct rtb_object *instigator, rtb_ev_direction_t direction)
 {
 	super.recalc_cb(obj, instigator, direction);
 	obj->style = obj->parent->style;
 }
 
-static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
+static void realize(struct rtb_object *obj,
+		struct rtb_object *parent, struct rtb_window *window)
 {
 	SELF_FROM(obj);
 
@@ -70,8 +71,8 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
 			"net.illest.rutabaga.widgets.label");
 }
 
-static void size(rtb_obj_t *obj, const struct rtb_size *avail,
-		struct rtb_size *want)
+static void size(struct rtb_object *obj,
+		const struct rtb_size *avail, struct rtb_size *want)
 {
 	SELF_FROM(obj);
 

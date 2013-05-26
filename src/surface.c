@@ -123,7 +123,7 @@ static void realize(struct rtb_object *self,
 void rtb_surface_blit(struct rtb_surface *self)
 {
 	struct rtb_shader *shader = &self->window->shaders.surface;
-	rtb_obj_t *obj = RTB_OBJECT(self);
+	struct rtb_object *obj = RTB_OBJECT(self);
 
 	rtb_render_reset(obj);
 	rtb_render_use_shader(obj, shader);
@@ -149,7 +149,7 @@ void rtb_surface_draw_children(struct rtb_surface *self,
 		rtb_draw_state_t state)
 {
 	struct rtb_render_context *ctx = &self->render_ctx;
-	rtb_obj_t *iter;
+	struct rtb_object *iter;
 
 	GLint bound_fb;
 	GLint viewport[4];

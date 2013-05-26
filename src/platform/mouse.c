@@ -35,8 +35,9 @@
  * event dispatching
  */
 
-static rtb_obj_t *dispatch_drag_event(rtb_win_t *win, rtb_ev_type_t type,
-		rtb_obj_t *also_dispatch_to, int button, int x, int y)
+static struct rtb_object *dispatch_drag_event(struct rtb_window *win,
+		rtb_ev_type_t type, struct rtb_object *also_dispatch_to,
+		int button, int x, int y)
 {
 	struct rtb_mouse_button *b = &win->mouse.button[button];
 	struct rtb_drag_event ev = {
@@ -66,8 +67,8 @@ static rtb_obj_t *dispatch_drag_event(rtb_win_t *win, rtb_ev_type_t type,
 	return rtb_dispatch_raw(b->target, RTB_EVENT(&ev));
 }
 
-static void dispatch_drag_enter(rtb_win_t *win, rtb_obj_t *dispatch_to,
-		int x, int y)
+static void dispatch_drag_enter(struct rtb_window *win,
+		struct rtb_object *dispatch_to, int x, int y)
 {
 	struct rtb_mouse_button *b;
 	int i;
@@ -97,8 +98,8 @@ static void dispatch_drag_enter(rtb_win_t *win, rtb_obj_t *dispatch_to,
 	}
 }
 
-static void dispatch_drag_leave(rtb_win_t *win, rtb_obj_t *dispatch_to,
-		int x, int y)
+static void dispatch_drag_leave(struct rtb_window *win,
+		struct rtb_object *dispatch_to, int x, int y)
 {
 	struct rtb_mouse_button *b;
 	int i;
@@ -128,8 +129,8 @@ static void dispatch_drag_leave(rtb_win_t *win, rtb_obj_t *dispatch_to,
 	}
 }
 
-static rtb_obj_t *dispatch_click_event(rtb_win_t *window, rtb_obj_t *target,
-		int button, int x, int y)
+static struct rtb_object *dispatch_click_event(struct rtb_window *window,
+		struct rtb_object *target, int button, int x, int y)
 {
 	struct rtb_mouse_event ev = {
 		.type = RTB_MOUSE_CLICK,
@@ -145,8 +146,9 @@ static rtb_obj_t *dispatch_click_event(rtb_win_t *window, rtb_obj_t *target,
 	return rtb_dispatch_raw(target, RTB_EVENT(&ev));
 }
 
-static rtb_obj_t *dispatch_simple_mouse_event(rtb_win_t *window,
-		rtb_obj_t *target, rtb_ev_type_t type, int button, int x, int y)
+static struct rtb_object *dispatch_simple_mouse_event(
+		struct rtb_window *window, struct rtb_object *target,
+		rtb_ev_type_t type, int button, int x, int y)
 {
 	struct rtb_mouse_event ev = {
 		.type = type,
@@ -166,7 +168,7 @@ static rtb_obj_t *dispatch_simple_mouse_event(rtb_win_t *window,
  * state machine (one per mouse button)
  */
 
-static void mouse_down(rtb_win_t *window, rtb_obj_t *target,
+static void mouse_down(struct rtb_window *window, struct rtb_object *target,
 		int button, int x, int y)
 {
 	struct rtb_mouse *mouse = &window->mouse;
@@ -179,7 +181,7 @@ static void mouse_down(rtb_win_t *window, rtb_obj_t *target,
 	mouse->buttons_down |= 1 << button;
 }
 
-static void mouse_up(rtb_win_t *window, rtb_obj_t *target,
+static void mouse_up(struct rtb_window *window, struct rtb_object *target,
 		int button, int x, int y)
 {
 	struct rtb_mouse *mouse = &window->mouse;
@@ -195,7 +197,7 @@ static void mouse_up(rtb_win_t *window, rtb_obj_t *target,
 	mouse->buttons_down &= ~(1 << button);
 }
 
-static void drag(rtb_win_t *win, int x, int y)
+static void drag(struct rtb_window *win, int x, int y)
 {
 	struct rtb_mouse_button *b;
 	int i;
@@ -212,7 +214,8 @@ static void drag(rtb_win_t *win, int x, int y)
 			b->drag_start.x = x;
 			b->drag_start.y = y;
 
-			b->target = dispatch_drag_event(win, RTB_DRAG_START, NULL, i, x, y);
+			b->target = dispatch_drag_event(win,
+					RTB_DRAG_START, NULL, i, x, y);
 			break;
 
 		case DRAG:
@@ -225,12 +228,12 @@ static void drag(rtb_win_t *win, int x, int y)
 	}
 }
 
-static void retarget(rtb_win_t *win, int x, int y)
+static void retarget(struct rtb_window *win, int x, int y)
 {
-	rtb_obj_t *iter, *ret = win->mouse.object_underneath;
+	struct rtb_object *iter, *ret = win->mouse.object_underneath;
 	struct rtb_point cursor = {x, y};
 
-	while (ret != (rtb_obj_t *) win) {
+	while (ret != (struct rtb_object *) win) {
 		if (RTB_POINT_IN_RECT(cursor, *ret))
 			break;
 
@@ -265,9 +268,10 @@ push:
  * platform API
  */
 
-void rtb_platform_mouse_press(rtb_win_t *win, int button, int x, int y)
+void rtb_platform_mouse_press(struct rtb_window *win,
+		int button, int x, int y)
 {
-	rtb_obj_t *target;
+	struct rtb_object *target;
 
 	if (button > RTB_MOUSE_BUTTON_MAX)
 		return;
@@ -283,9 +287,10 @@ void rtb_platform_mouse_press(rtb_win_t *win, int button, int x, int y)
 		rtb_window_focus_object(win, target);
 }
 
-void rtb_platform_mouse_release(rtb_win_t *win, int button, int x, int y)
+void rtb_platform_mouse_release(struct rtb_window *win,
+		int button, int x, int y)
 {
-	rtb_obj_t *target;
+	struct rtb_object *target;
 
 	if (button > RTB_MOUSE_BUTTON_MAX)
 		return;
@@ -296,7 +301,7 @@ void rtb_platform_mouse_release(rtb_win_t *win, int button, int x, int y)
 	dispatch_simple_mouse_event(win, target, RTB_MOUSE_UP, button, x, y);
 }
 
-void rtb_platform_mouse_motion(rtb_win_t *win, int x, int y)
+void rtb_platform_mouse_motion(struct rtb_window *win, int x, int y)
 {
 	retarget(win, x, y);
 
@@ -307,7 +312,7 @@ void rtb_platform_mouse_motion(rtb_win_t *win, int x, int y)
 	win->mouse.y = y;
 }
 
-void rtb_platform_mouse_enter_window(rtb_win_t *win, int x, int y)
+void rtb_platform_mouse_enter_window(struct rtb_window *win, int x, int y)
 {
 	win->mouse_in = 1;
 	win->mouse.object_underneath = RTB_OBJECT(win);
@@ -317,9 +322,9 @@ void rtb_platform_mouse_enter_window(rtb_win_t *win, int x, int y)
 	rtb_platform_mouse_motion(win, x, y);
 }
 
-void rtb_platform_mouse_leave_window(rtb_win_t *win, int x, int y)
+void rtb_platform_mouse_leave_window(struct rtb_window *win, int x, int y)
 {
-	rtb_obj_t *underneath = win->mouse.object_underneath;
+	struct rtb_object *underneath = win->mouse.object_underneath;
 
 	while (underneath) {
 		underneath->mouse_in = 0;

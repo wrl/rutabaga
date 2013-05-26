@@ -119,7 +119,7 @@ static void update_cursor(rtb_text_input_t *self)
  * drawing
  */
 
-static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
+static void draw(struct rtb_object *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
 
@@ -258,7 +258,7 @@ static int handle_key_press(rtb_text_input_t *self,
 	return 1;
 }
 
-static int on_event(rtb_obj_t *obj, const struct rtb_event *e)
+static int on_event(struct rtb_object *obj, const struct rtb_event *e)
 {
 	SELF_FROM(obj);
 
@@ -278,8 +278,8 @@ static int on_event(rtb_obj_t *obj, const struct rtb_event *e)
 
 	return 0;
 }
-static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
-		rtb_ev_direction_t direction)
+static void recalculate(struct rtb_object *obj,
+		struct rtb_object *instigator, rtb_ev_direction_t direction)
 {
 	SELF_FROM(obj);
 
@@ -290,7 +290,8 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 	update_cursor(self);
 }
 
-static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
+static void realize(struct rtb_object *obj,
+		struct rtb_object *parent, struct rtb_window *window)
 {
 	SELF_FROM(obj);
 
@@ -302,13 +303,13 @@ static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
 	self->outer_pad.y = self->label.outer_pad.y;
 }
 
-static void layout(rtb_obj_t *obj)
+static void layout(struct rtb_object *obj)
 {
 	SELF_FROM(obj);
 
 	struct rtb_size avail, child;
 	struct rtb_point position;
-	rtb_obj_t *iter;
+	struct rtb_object *iter;
 	float ystart;
 
 	avail.w = obj->w - (obj->outer_pad.x * 2);

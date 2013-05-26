@@ -51,7 +51,7 @@ static struct rtb_object_implementation super;
  * drawing-related things
  */
 
-static void draw(rtb_obj_t *obj, rtb_draw_state_t state)
+static void draw(struct rtb_object *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
 
@@ -98,7 +98,7 @@ static int handle_key_press(rtb_button_t *self, const struct rtb_key_event *e)
 	return 0;
 }
 
-static int on_event(rtb_obj_t *obj, const struct rtb_event *e)
+static int on_event(struct rtb_object *obj, const struct rtb_event *e)
 {
 	SELF_FROM(obj);
 
@@ -125,8 +125,8 @@ static int on_event(rtb_obj_t *obj, const struct rtb_event *e)
 	return 0;
 }
 
-static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
-		rtb_ev_direction_t direction)
+static void recalculate(struct rtb_object *obj,
+		struct rtb_object *instigator, rtb_ev_direction_t direction)
 {
 	SELF_FROM(obj);
 
@@ -138,7 +138,8 @@ static void recalculate(rtb_obj_t *obj, rtb_obj_t *instigator,
 	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
 }
 
-static void realize(rtb_obj_t *obj, rtb_obj_t *parent, rtb_win_t *window)
+static void realize(struct rtb_object *obj,
+		struct rtb_object *parent, struct rtb_window *window)
 {
 	SELF_FROM(obj);
 

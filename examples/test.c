@@ -70,7 +70,8 @@ rtb_knob_t *knob;
 rtb_button_t *last_button = NULL;
 rtb_text_input_t *input;
 
-int print_streeng(rtb_obj_t *victim, const struct rtb_event *e, void *ctx)
+int print_streeng(struct rtb_object *victim,
+		const struct rtb_event *e, void *ctx)
 {
 	const struct rtb_mouse_event *mv = (void *) e;
 	int i;
@@ -86,7 +87,8 @@ int print_streeng(rtb_obj_t *victim, const struct rtb_event *e, void *ctx)
 	return 0;
 }
 
-int knob_value(rtb_obj_t *victim, const struct rtb_event *e, void *unused)
+int knob_value(struct rtb_object *victim,
+		const struct rtb_event *e, void *unused)
 {
 	if (victim != RTB_OBJECT(knob)) {
 		knob = (void *) knob;
@@ -97,7 +99,8 @@ int knob_value(rtb_obj_t *victim, const struct rtb_event *e, void *unused)
 	return 0;
 }
 
-int report(rtb_obj_t *victim, const struct rtb_event *e, void *user_data)
+int report(struct rtb_object *victim,
+		const struct rtb_event *e, void *user_data)
 {
 	puts("calc");
 	return 0;

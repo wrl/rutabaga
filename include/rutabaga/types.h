@@ -111,6 +111,5 @@ typedef int32_t rtb_utf32_t;
 
 typedef struct rutabaga    rtb_t;
 
-typedef struct rtb_object  rtb_obj_t;
 typedef struct rtb_object  rtb_container_t;
 typedef struct rtb_window  rtb_win_t;

@@ -160,8 +160,8 @@ void rtb_text_object_update(rtb_text_object_t *self, const rtb_utf8_t *text)
 	self->ypad = floorf(font->height / 2.f);
 }
 
-void rtb_text_object_render(rtb_text_object_t *self, rtb_obj_t *parent,
-		float x, float y, rtb_draw_state_t state)
+void rtb_text_object_render(rtb_text_object_t *self,
+		struct rtb_object *parent, float x, float y, rtb_draw_state_t state)
 {
 	struct rtb_font_shader *shader;
 	struct rtb_font_manager *fm;

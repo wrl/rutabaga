@@ -33,7 +33,7 @@
 #include "rutabaga/object.h"
 
 static const struct rtb_event_handler *find_handler_for(
-		rtb_obj_t *obj, rtb_ev_type_t type)
+		struct rtb_object *obj, rtb_ev_type_t type)
 {
 	struct rtb_event_handler *handlers;
 	int i, size;
@@ -48,7 +48,7 @@ static const struct rtb_event_handler *find_handler_for(
 	return NULL;
 }
 
-int replace_handler(rtb_obj_t *obj, struct rtb_event_handler *with)
+int replace_handler(struct rtb_object *obj, struct rtb_event_handler *with)
 {
 	struct rtb_event_handler *handlers;
 	int i, size;
@@ -72,36 +72,38 @@ int replace_handler(rtb_obj_t *obj, struct rtb_event_handler *with)
  * public API
  */
 
-int rtb_handle(rtb_obj_t *victim, const struct rtb_event *event)
+int rtb_handle(struct rtb_object *target, const struct rtb_event *event)
 {
 	const struct rtb_event_handler *h;
 
-	if (!(h = find_handler_for(victim, event->type)))
+	if (!(h = find_handler_for(target, event->type)))
 		return 0;
 
-	h->callback.cb(victim, event, h->callback.ctx);
+	h->callback.cb(target, event, h->callback.ctx);
 	return 1;
 }
 
-rtb_obj_t *rtb_dispatch_raw(rtb_obj_t *victim, struct rtb_event *event)
+struct rtb_object *rtb_dispatch_raw(struct rtb_object *target,
+		struct rtb_event *event)
 {
-	while (!rtb_obj_deliver_event(victim, event) && victim->parent)
-		victim = victim->parent;
+	while (!rtb_obj_deliver_event(target, event) && target->parent)
+		target = target->parent;
 
-	return victim;
+	return target;
 }
 
-rtb_obj_t *rtb_dispatch_simple(rtb_obj_t *victim, rtb_ev_type_t type)
+struct rtb_object *rtb_dispatch_simple(struct rtb_object *target,
+		rtb_ev_type_t type)
 {
 	struct rtb_event event = {
 		.type = type
 	};
 
-	return rtb_dispatch_raw(victim, &event);
+	return rtb_dispatch_raw(target, &event);
 }
 
-int rtb_attach(rtb_obj_t *victim, rtb_ev_type_t type, rtb_event_cb_t cb,
-		void *user_arg)
+int rtb_attach(struct rtb_object *target,
+		rtb_ev_type_t type, rtb_event_cb_t cb, void *user_arg)
 {
 	struct rtb_event_handler handler = {
 		.type         = type,
@@ -109,16 +111,16 @@ int rtb_attach(rtb_obj_t *victim, rtb_ev_type_t type, rtb_event_cb_t cb,
 		.callback.ctx = user_arg
 	};
 
-	assert(victim);
+	assert(target);
 	assert(cb);
 
-	if (!replace_handler(victim, &handler))
-		VECTOR_PUSH_BACK(&victim->handlers, &handler);
+	if (!replace_handler(target, &handler))
+		VECTOR_PUSH_BACK(&target->handlers, &handler);
 
 	return 0;
 }
 
-void rtb_detach(rtb_obj_t *obj, rtb_ev_type_t type)
+void rtb_detach(struct rtb_object *obj, rtb_ev_type_t type)
 {
 	const struct rtb_event_handler *handlers;
 	int i, size;

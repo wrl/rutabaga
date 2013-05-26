@@ -29,7 +29,7 @@
 #include "rutabaga/types.h"
 #include "rutabaga/object.h"
 
-void rtb_container_add(rtb_container_t *container, rtb_obj_t *obj);
+void rtb_container_add(rtb_container_t *container, struct rtb_object *obj);
 
 int rtb_container_init(rtb_container_t *,
 		struct rtb_object_implementation *impl);
