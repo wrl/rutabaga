@@ -35,12 +35,6 @@
 
 #define RTB_ATOM_DESCRIPTOR(x) RTB_UPCAST(x, rtb_atom_descriptor)
 
-typedef struct rtb_atom rtb_atom_t;
-typedef struct rtb_type_atom rtb_type_atom_t;
-
-typedef struct rtb_atom_descriptor rtb_atom_descriptor_t;
-typedef struct rtb_type_atom_descriptor rtb_type_atom_descriptor_t;
-
 typedef enum {
 	RTB_TYPE_ATOM
 } rtb_atom_metatype_t;
@@ -51,7 +45,7 @@ struct rtb_atom {
 
 struct rtb_type_atom {
 	RTB_INHERIT(rtb_atom);
-	rtb_type_atom_descriptor_t *type;
+	struct rtb_type_atom_descriptor *type;
 };
 
 struct rtb_atom_descriptor {
@@ -64,7 +58,7 @@ struct rtb_atom_descriptor {
 
 struct rtb_type_atom_descriptor {
 	RTB_INHERIT(rtb_atom_descriptor);
-	rtb_type_atom_descriptor_t *super[0];
+	struct rtb_type_atom_descriptor *super[0];
 };
 
 /**
@@ -73,10 +67,11 @@ struct rtb_type_atom_descriptor {
 
 struct rtb_window;
 
-rtb_type_atom_descriptor_t *rtb_type_lookup(
+struct rtb_type_atom_descriptor *rtb_type_lookup(
 		struct rtb_window *win, const char *type_name);
-int rtb_is_type(rtb_type_atom_descriptor_t *desc, rtb_type_atom_t *atom);
+int rtb_is_type(struct rtb_type_atom_descriptor *desc,
+		struct rtb_type_atom *atom);
 
-rtb_type_atom_descriptor_t *rtb_type_ref(struct rtb_window *win,
-		rtb_type_atom_descriptor_t *super, const char *type_name);
-int rtb_type_unref(rtb_type_atom_descriptor_t *type);
+struct rtb_type_atom_descriptor *rtb_type_ref(struct rtb_window *win,
+		struct rtb_type_atom_descriptor *super, const char *type_name);
+int rtb_type_unref(struct rtb_type_atom_descriptor *type);

@@ -51,7 +51,7 @@ static int style_resolve(struct rtb_window *window, struct rtb_style *style)
 	return -1;
 }
 
-static struct rtb_style *style_for_type(rtb_type_atom_t *atom,
+static struct rtb_style *style_for_type(struct rtb_type_atom *atom,
 		struct rtb_style *style_list)
 {
 	for (; style_list->for_type; style_list++) {

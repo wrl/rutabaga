@@ -94,7 +94,7 @@ struct rtb_style {
 	struct rtb_style_props states[RTB_DRAW_STATE_MAX + 1];
 
 	/* private ********************************/
-	rtb_type_atom_descriptor_t *resolved_type;
+	struct rtb_type_atom_descriptor *resolved_type;
 };
 
 /**
