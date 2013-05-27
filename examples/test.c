@@ -125,7 +125,8 @@ void distribute_demo(rtb_container_t *root)
 			knob->min = -1.f;
 			knob->max = 1.f;
 
-			rtb_attach(RTB_OBJECT(knob), KNOB_VALUE_CHANGE, knob_value, NULL);
+			rtb_register_handler(RTB_OBJECT(knob),
+					KNOB_VALUE_CHANGE, knob_value, NULL);
 			rtb_container_add(containers[i], RTB_OBJECT(knob));
 		}
 
@@ -159,7 +160,7 @@ void setup_ui(rtb_container_t *root)
 		buttons[i] = rtb_button_new(NULL);
 		rtb_button_set_label(buttons[i], labels[i]);
 
-		rtb_attach(RTB_OBJECT(buttons[i]),
+		rtb_register_handler(RTB_OBJECT(buttons[i]),
 				RTB_BUTTON_CLICK, print_streeng, NULL);
 	}
 
@@ -204,7 +205,8 @@ void add_input(struct rutabaga *rtb, rtb_container_t *root)
 
 	input->min_size.w = 200.f;
 
-	rtb_attach(RTB_OBJECT(input), RTB_KEY_PRESS, handle_input_key, NULL);
+	rtb_register_handler(RTB_OBJECT(input),
+			RTB_KEY_PRESS, handle_input_key, NULL);
 	rtb_obj_add_child(root, RTB_OBJECT(input), RTB_ADD_TAIL);
 }
 
@@ -277,7 +279,8 @@ int main(int argc, char **argv)
 	rtb_obj_set_size_cb(RTB_OBJECT(win), rtb_size_hfit_children);
 	rtb_obj_set_layout(RTB_OBJECT(win), rtb_layout_vpack_bottom);
 
-	rtb_attach(RTB_OBJECT(win), RTB_KEY_PRESS, handle_key_press, delicious);
+	rtb_register_handler(RTB_OBJECT(win),
+			RTB_KEY_PRESS, handle_key_press, delicious);
 
 	distribute_demo(RTB_OBJECT(delicious->win));
 	setup_ui(RTB_OBJECT(delicious->win));

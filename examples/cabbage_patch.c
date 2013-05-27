@@ -539,9 +539,9 @@ static void init_patchbay(struct rtb_object *parent)
 
 	rtb_obj_set_size_cb(RTB_OBJECT(state.cp), rtb_size_fill);
 
-	rtb_attach(RTB_OBJECT(state.cp),
+	rtb_register_handler(RTB_OBJECT(state.cp),
 			RTB_PATCHBAY_CONNECT, connection, NULL);
-	rtb_attach(RTB_OBJECT(state.cp),
+	rtb_register_handler(RTB_OBJECT(state.cp),
 			RTB_PATCHBAY_DISCONNECT, disconnection, NULL);
 }
 

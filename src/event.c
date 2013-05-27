@@ -102,7 +102,7 @@ struct rtb_object *rtb_dispatch_simple(struct rtb_object *target,
 	return rtb_dispatch_raw(target, &event);
 }
 
-int rtb_attach(struct rtb_object *target,
+int rtb_register_handler(struct rtb_object *target,
 		rtb_ev_type_t type, rtb_event_cb_t cb, void *user_arg)
 {
 	struct rtb_event_handler handler = {
@@ -120,19 +120,20 @@ int rtb_attach(struct rtb_object *target,
 	return 0;
 }
 
-void rtb_detach(struct rtb_object *obj, rtb_ev_type_t type)
+void rtb_unregister_handler(struct rtb_object *target,
+		rtb_ev_type_t type)
 {
 	const struct rtb_event_handler *handlers;
 	int i, size;
 
-	assert(obj);
+	assert(target);
 
-	handlers = obj->handlers.data;
-	size = obj->handlers.size;
+	handlers = target->handlers.data;
+	size = target->handlers.size;
 
 	for (i = 0; i < size; i++) {
 		if (handlers[i].type == type) {
-			VECTOR_ERASE(&obj->handlers, i);
+			VECTOR_ERASE(&target->handlers, i);
 			return;
 		}
 	}

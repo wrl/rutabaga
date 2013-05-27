@@ -114,8 +114,9 @@ struct rtb_object *rtb_dispatch_raw(struct rtb_object *target,
 struct rtb_object *rtb_dispatch_simple(struct rtb_object *target,
 		rtb_ev_type_t type);
 
-int rtb_attach(struct rtb_object *target,
-		rtb_ev_type_t type, rtb_event_cb_t handler, void *user_arg);
-void rtb_detach(struct rtb_object *target, rtb_ev_type_t type);
+int rtb_register_handler(struct rtb_object *on_object,
+		rtb_ev_type_t for_type, rtb_event_cb_t handler, void *context);
+void rtb_unregister_handler(struct rtb_object *on_object,
+		rtb_ev_type_t for_type);
 
 void rtb_event_loop(struct rutabaga *rutabaga);
