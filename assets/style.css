@@ -1,31 +1,20 @@
 @namespace rtb "net.illest.rutabaga";
 @namespace "net.illest.rutabaga.widgets";
 
-@font-face {
-	font-family: "Open Sans";
-	src: embed("fonts/open_sans/OpenSans-Regular.ttf");
-}
-
 /**
  * patchbay
  */
 
 patchbay {
 	color: #0D0D0F;
-	background: #000 embed('tile.tga') repeat;
+	background: #000;
 }
 
 patchbay::node,
 patchbay::port {
 	color: #FFF;
-	background: #18181C;
+	background: rgba(#18181C, .9);
 }
-
-/*
-patchbay::node .node-name {
-	font-size: 16pt;
-}
-*/
 
 /**
  * button
@@ -37,6 +26,7 @@ button {
 }
 
 button:hover {
+	color: #FFF;
 	background: #5C704C;
 }
 
@@ -59,13 +49,11 @@ knob {
  */
 
 rtb|window {
+	color: #FFF;
 	background: #18181C;
 }
 
 rtb|object {
-	font-family: "Open Sans";
-	font-size: 9pt;
-
 	color: #FFF;
 	background: #404F3C;
 }
