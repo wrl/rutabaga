@@ -1,0 +1,59 @@
+@namespace rtb "net.illest.rutabaga";
+@namespace "net.illest.rutabaga.widgets";
+
+/**
+ * patchbay
+ */
+
+patchbay {
+	color: #0D0D0F;
+	background: #000;
+}
+
+patchbay::node,
+patchbay::port {
+	color: #FFF;
+	background: rgba(#18181C, .9);
+}
+
+/**
+ * button
+ */
+
+button {
+	color: #FFF;
+	background: #404F3C;
+}
+
+button:hover {
+	color: #FFF;
+	background: #5C704C;
+}
+
+button:active {
+	color: rgba(#FFF, .7);
+	background: #364232;
+}
+
+/**
+ * knob
+ */
+
+knob {
+	color: #18181C;
+	background: #404F3C;
+}
+
+/**
+ * base widgets
+ */
+
+rtb|window {
+	color: #FFF;
+	background: #18181C;
+}
+
+rtb|object {
+	color: #FFF;
+	background: #404F3C;
+}
