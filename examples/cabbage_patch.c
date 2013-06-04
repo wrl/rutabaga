@@ -418,7 +418,7 @@ static void port_registration(jack_port_id_t port_id, int registered,
 
 	if (registered) {
 		client_add_port(client, port_name, strlen(port_name),
-				jack_port_flags(jack_port), RTB_ADD_HEAD);
+				jack_port_flags(jack_port), RTB_ADD_TAIL);
 	} else
 		if (port)
 			free_port(client, port);
