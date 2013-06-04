@@ -116,7 +116,7 @@ int rtb_font_manager_init(struct rtb_window *win)
 	if (rtb_font_manager_load_font(fm, &fm->fonts.main, FONT, 9) < 0)
 		goto err_main_font;
 
-	if (rtb_font_manager_load_font(fm, &fm->fonts.big, FONT, 16) < 0)
+	if (rtb_font_manager_load_font(fm, &fm->fonts.big, FONT, 15) < 0)
 		goto err_big_font;
 
 	fm->fonts.main.lcd_gamma = 2.2f;

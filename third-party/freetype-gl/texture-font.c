@@ -388,8 +388,10 @@ texture_font_load_glyphs( texture_font_t * self,
         else
             flags |= FT_LOAD_RENDER;
 
-        if( !self->hinting )
+        if (!self->hinting)
             flags |= FT_LOAD_NO_HINTING | FT_LOAD_NO_AUTOHINT;
+		else
+			flags |= FT_LOAD_FORCE_AUTOHINT;
 
         if( depth == 3 )
         {
