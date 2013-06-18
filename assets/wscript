@@ -1,0 +1,39 @@
+#!/usr/bin/env python
+
+import os
+import re
+
+sanitize_cvar = re.compile(r"[.,-]")
+
+def bin2h_task(bld, src):
+	var = sanitize_cvar.sub("_", src).upper()
+
+	bld(
+		rule="python ../python/bin2h.py -p static -v %s < ${SRC} > ${TGT}" % var,
+		source="{0}".format(src),
+		target="{0}.h".format(src),
+		name="assets",
+		export_includes=".",
+		update_outputs=True)
+
+def css2c_task(bld, src, dst):
+	bld(
+		rule="python ../python/css2c.py < ${SRC} > ${TGT}",
+		source="{0}".format(src),
+		target="{0}".format(dst),
+		name="assets",
+		export_includes=".",
+		update_outputs=True)
+
+
+def build(bld):
+	asset = lambda src: bin2h_task(bld, src)
+	stylesheet = lambda src, dst: css2c_task(bld, src, dst)
+
+	# textures
+
+	asset("tile.tga")
+
+	# default style
+
+	stylesheet("style.css", "default-style.h")

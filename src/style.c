@@ -29,7 +29,7 @@
 #include "rutabaga/window.h"
 #include "rutabaga/style.h"
 
-#include "private/default_style.h"
+#include "assets/default-style.h"
 
 static struct rtb_style no_style = {
 	.for_type = "couldn't find a style for this object",

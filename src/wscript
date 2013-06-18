@@ -20,22 +20,8 @@ def glsl2h_task(bld, dest):
 		update_outputs=True)
 
 
-sanitize_cvar = re.compile(r"[.,-]")
-
-def bin2h_task(bld, src):
-	var = sanitize_cvar.sub("_", src).upper()
-
-	bld(
-		rule="python ../python/bin2h.py -p static -v %s < ${SRC} > ${TGT}" % var,
-		source="../assets/{0}".format(src),
-		target="assets/{0}.h".format(src),
-		name="assets",
-		export_includes=".",
-		update_outputs=True)
-
-
 def build(bld):
-	bld(export_includes="../third-party/gl3w ../third-party .", name="private")
+	bld(export_includes="../third-party/gl3w ../third-party . ..", name="private")
 	bld(export_includes="../include", name="public")
 
 	objs = []
@@ -110,12 +96,6 @@ def build(bld):
 	shader("surface")
 	shader("text")
 	shader("patchbay-canvas")
-
-	# assets
-
-	asset = lambda src: bin2h_task(bld, src)
-
-	asset("tile.tga")
 
 	# outputs
 
