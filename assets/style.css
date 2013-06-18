@@ -10,10 +10,14 @@ patchbay {
 	background: #000;
 }
 
-patchbay::node,
-patchbay::port {
+patchbay::node {
 	color: #FFF;
 	background: rgba(#18181C, .9);
+}
+
+patchbay::port {
+	color: #FFF;
+	background: rgba(#404F3C, .9);
 }
 
 /**
