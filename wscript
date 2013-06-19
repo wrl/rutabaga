@@ -123,6 +123,6 @@ def configure(conf):
 		conf.define("RTB_LAYOUT_DEBUG", True)
 
 def build(bld):
-	bld.recurse("assets")
+	bld.recurse("style")
 	bld.recurse("src")
 	bld.recurse("examples")

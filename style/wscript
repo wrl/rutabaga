@@ -5,13 +5,14 @@ import re
 
 sanitize_cvar = re.compile(r"[.,-]")
 
-def bin2h_task(bld, src):
-	var = sanitize_cvar.sub("_", src).upper()
+def bin2h_task(bld, src, dst, var=None):
+	if not var:
+		var = sanitize_cvar.sub("_", os.path.basename(src)).upper()
 
 	bld(
 		rule="python ../python/bin2h.py -p static -v %s < ${SRC} > ${TGT}" % var,
 		source="{0}".format(src),
-		target="{0}.h".format(src),
+		target="{0}".format(dst),
 		name="assets",
 		export_includes=".",
 		update_outputs=True)
@@ -27,13 +28,13 @@ def css2c_task(bld, src, dst):
 
 
 def build(bld):
-	asset = lambda src: bin2h_task(bld, src)
+	asset = lambda src, dst: bin2h_task(bld, src, dst)
 	stylesheet = lambda src, dst: css2c_task(bld, src, dst)
 
 	# textures
 
-	asset("tile.tga")
+	asset("assets/tile.tga", "assets/tile.tga.h")
 
 	# default style
 
-	stylesheet("style.css", "default-style.h")
+	stylesheet("style.css", "definition.h")

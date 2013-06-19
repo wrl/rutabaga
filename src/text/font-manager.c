@@ -38,7 +38,7 @@
 #include FT_FREETYPE_H
 
 #define ERR(...) fprintf(stderr, "rutabaga: " __VA_ARGS__)
-#define FONT "./assets/fonts/open_sans/OpenSans-Regular.ttf"
+#define FONT "./style/fonts/open_sans/OpenSans-Regular.ttf"
 
 static const uint8_t lcd_weights[] = {
 	0x00,
