@@ -97,8 +97,14 @@ def main():
     print("{prefix}uint8_t {var}[] = {{".format(
         prefix=prefix, var=varname))
 
+    # py2/py3 bullshit
+    if hasattr(sys.stdin, "detach"):
+        in_file = sys.stdin.detach()
+    else:
+        in_file = sys.stdin
+
     nbytes = write_hex_data(
-            file_in=sys.stdin.detach(),
+            file_in=in_file,
             file_out=sys.stdout,
             line_start='\t',
             line_wrap=79-8)
