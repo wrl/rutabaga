@@ -9,6 +9,7 @@ let g:syntastic_c_include_dirs = [
 			\ "include",
 			\ "third-party",
 			\ "third-party/gl3w",
-			\ "build/src"]
+			\ "build/src",
+			\ "build"]
 
 set path+=include,third-party,third-party/gl3w,build/src,src

@@ -41,7 +41,6 @@ prelude = """\
 #pragma once
 
 #include "rutabaga/style.h"
-#include "private/util.h"
 """
 
 namespaces = {}

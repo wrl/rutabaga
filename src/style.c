@@ -29,6 +29,8 @@
 #include "rutabaga/window.h"
 #include "rutabaga/style.h"
 
+#include "private/util.h"
+
 #include "style/definition.h"
 
 static struct rtb_style no_style = {
