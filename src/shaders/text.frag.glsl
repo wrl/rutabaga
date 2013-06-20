@@ -123,7 +123,7 @@ void main()
 
 	float mx = max(r,b);
 	float mn = min(r,b);
-	vec4 color = vec4(vec3(r,g,b) * (1.0 - g), mx);
+	vec4 color = vec4(vec3(r,g,b) * (1.0 - g), mx - g);
 	color = color + vec4(gl_Color.rgb * g, g);
 
 	gl_FragColor = vec4(color.rgb, gl_Color.a*color.a);
