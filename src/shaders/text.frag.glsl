@@ -121,9 +121,10 @@ void main()
 		b = mix(current.r,  previous.b, z);
 	}
 
-	float t = max(max(r,g),b);
-	vec4 color = vec4(gl_Color.rgb, (r+g+b)/3.0);
-	color = t * color + ((1.0 - t) * vec4(r,g,b, min(min(r,g),b)));
+	float mx = max(r,b);
+	float mn = min(r,b);
+	vec4 color = vec4(vec3(r,g,b) * (1.0 - g), mx);
+	color = color + vec4(gl_Color.rgb * g, g);
 
 	gl_FragColor = vec4(color.rgb, gl_Color.a*color.a);
 }
