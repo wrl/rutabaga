@@ -120,6 +120,20 @@ static void realize(struct rtb_object *self,
  * public API
  */
 
+int rtb_surface_is_dirty(struct rtb_surface *self)
+{
+	struct rtb_render_context *ctx = &self->render_ctx;
+
+	if (self->surface_state == RTB_SURFACE_VALID &&
+			(!TAILQ_FIRST(&ctx->queues.next_frame) &&
+			 !TAILQ_FIRST(&ctx->queues.every_frame))) {
+		/* nothing to do. */
+		return 0;
+	}
+
+	return 1;
+}
+
 void rtb_surface_blit(struct rtb_surface *self)
 {
 	struct rtb_shader *shader = &self->window->shaders.surface;
@@ -154,12 +168,8 @@ void rtb_surface_draw_children(struct rtb_surface *self,
 	GLint bound_fb;
 	GLint viewport[4];
 
-	if (self->surface_state == RTB_SURFACE_VALID &&
-			(!TAILQ_FIRST(&ctx->queues.next_frame) &&
-			 !TAILQ_FIRST(&ctx->queues.every_frame))) {
-		/* nothing to do. */
+	if (!rtb_surface_is_dirty(self))
 		return;
-	}
 
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &bound_fb);
 	glGetIntegerv(GL_VIEWPORT, viewport);
