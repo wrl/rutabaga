@@ -87,6 +87,9 @@ def options(opt):
 	rtb_opts = opt.add_option_group("rutabaga options")
 	rtb_opts.add_option("--debug-layout", action="store_true", default=False,
 			help="when enabled, objects will draw their bounds in red.")
+	rtb_opts.add_option("--debug-frame", action="store_true", default=False,
+			help="when enabled, the rendering time for each frame (as"
+			     "reported by openGL) will be printed to stdout")
 
 def configure(conf):
 	separator()
@@ -121,6 +124,9 @@ def configure(conf):
 	if conf.options.debug_layout:
 		conf.env.RTB_LAYOUT_DEBUG = True
 		conf.define("RTB_LAYOUT_DEBUG", True)
+
+	if conf.options.debug_frame:
+		conf.define("_RTB_DEBUG_FRAME", True)
 
 def build(bld):
 	bld.recurse("style")

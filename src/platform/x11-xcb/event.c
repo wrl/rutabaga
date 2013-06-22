@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <wctype.h>
 #include <time.h>
+#include <sys/time.h>
 #include <poll.h>
 #include <math.h>
 
@@ -50,6 +51,11 @@
 #include "private/util.h"
 
 #include "xrtb.h"
+
+#ifndef GL_ARB_timer_query
+#define GL_TIME_ELAPSED 0x88BF
+#define GL_TIMESTAMP 0x8E28
+#endif
 
 #define FPS 60
 #define CAST_EVENT_TO(type) type *ev = (type *) _ev
@@ -527,6 +533,12 @@ void rtb_event_loop(struct rutabaga *r)
 	struct pollfd fds[1];
 	int timeout_ms;
 
+#ifdef _RTB_DEBUG_FRAME
+	GLuint frame_time_query, elapsed;
+
+	glGenQueries(1, &frame_time_query);
+#endif
+
 	clock_gettime(CLOCK_MONOTONIC, &now);
 	timespec_copy_inc(&next_frame, &now, -1);
 
@@ -555,10 +567,26 @@ void rtb_event_loop(struct rutabaga *r)
 		clock_gettime(CLOCK_MONOTONIC, &now);
 		if ((timespec_cmp(&next_frame, &now, 1000L) < 1) &&
 		    win->visibility != RTB_FULLY_OBSCURED) {
+
+#ifdef _RTB_DEBUG_FRAME
+			glBeginQuery(GL_TIME_ELAPSED, frame_time_query);
+
 			rtb_window_draw(win);
+
+			glEndQuery(GL_TIME_ELAPSED);
+			glGetQueryObjectuiv(frame_time_query, GL_QUERY_RESULT, &elapsed);
+
+			printf(" :: frame time: %dms\n", elapsed / 1000000);
+#else
+			rtb_window_draw(win);
+#endif
 			timespec_copy_inc(&next_frame, &now, FRAME_NSEC);
 		}
 
 		rtb_window_unlock(win);
 	}
+
+#ifdef _RTB_DEBUG_FRAME
+	glDeleteQueries(1, &frame_time_query);
+#endif
 }
