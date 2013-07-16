@@ -52,7 +52,8 @@
 
 static struct rtb_object_implementation super;
 
-static int initialize_shaders(struct rtb_window *self)
+static int
+initialize_shaders(struct rtb_window *self)
 {
 	struct rtb_shader *s;
 
@@ -80,7 +81,8 @@ err_dfault:
  * object implementation
  */
 
-static int win_event(struct rtb_object *obj, const struct rtb_event *e)
+static int
+win_event(struct rtb_object *obj, const struct rtb_event *e)
 {
 	SELF_FROM(obj);
 
@@ -103,7 +105,8 @@ static int win_event(struct rtb_object *obj, const struct rtb_event *e)
 	return super.event_cb(obj, e);
 }
 
-static void realize(struct rtb_object *obj, struct rtb_object *parent,
+static void
+realize(struct rtb_object *obj, struct rtb_object *parent,
 		struct rtb_window *window)
 {
 	SELF_FROM(obj);
@@ -115,7 +118,8 @@ static void realize(struct rtb_object *obj, struct rtb_object *parent,
 	rtb_style_resolve_list(self, self->style_list);
 }
 
-static void mark_dirty(struct rtb_object *obj)
+static void
+mark_dirty(struct rtb_object *obj)
 {
 	return;
 }
@@ -124,8 +128,8 @@ static void mark_dirty(struct rtb_object *obj)
  * public API
  */
 
-void rtb_window_focus_object(struct rtb_window *self,
-		struct rtb_object *focused)
+void
+rtb_window_focus_object(struct rtb_window *self, struct rtb_object *focused)
 {
 	struct rtb_object *unfocused = self->focus;
 
@@ -136,7 +140,8 @@ void rtb_window_focus_object(struct rtb_window *self,
 		rtb_obj_mark_dirty(unfocused);
 }
 
-void rtb_window_draw(struct rtb_window *self)
+void
+rtb_window_draw(struct rtb_window *self)
 {
 	struct rtb_style_props *style = &self->style->states[0];
 
@@ -156,7 +161,8 @@ void rtb_window_draw(struct rtb_window *self)
 	window_impl_swap_buffers(self);
 }
 
-void rtb_window_reinit(struct rtb_window *self)
+void
+rtb_window_reinit(struct rtb_window *self)
 {
 	struct rtb_object *obj = RTB_OBJECT(self);
 
@@ -170,7 +176,8 @@ void rtb_window_reinit(struct rtb_window *self)
 		rtb_obj_trigger_recalc(obj, obj, RTB_DIRECTION_LEAFWARD);
 }
 
-struct rtb_window *rtb_window_open(struct rutabaga *r,
+struct rtb_window *
+rtb_window_open(struct rutabaga *r,
 		int h, int w, const char *title)
 {
 	struct rtb_window *self;
@@ -212,7 +219,8 @@ err_window_impl:
 	return NULL;
 }
 
-void rtb_window_close(struct rtb_window *self)
+void
+rtb_window_close(struct rtb_window *self)
 {
 	assert(self);
 

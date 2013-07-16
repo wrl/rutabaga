@@ -40,7 +40,8 @@
 
 static struct rtb_object_implementation super;
 
-static void draw(struct rtb_object *obj, rtb_draw_state_t state)
+static void
+draw(struct rtb_object *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
 
@@ -48,15 +49,17 @@ static void draw(struct rtb_object *obj, rtb_draw_state_t state)
 	super.draw_cb(obj, state);
 }
 
-static void recalculate(struct rtb_object *obj,
-		struct rtb_object *instigator, rtb_ev_direction_t direction)
+static void
+recalculate(struct rtb_object *obj, struct rtb_object *instigator,
+		rtb_ev_direction_t direction)
 {
 	super.recalc_cb(obj, instigator, direction);
 	obj->style = obj->parent->style;
 }
 
-static void realize(struct rtb_object *obj,
-		struct rtb_object *parent, struct rtb_window *window)
+static void
+realize(struct rtb_object *obj, struct rtb_object *parent,
+		struct rtb_window *window)
 {
 	SELF_FROM(obj);
 
@@ -71,7 +74,8 @@ static void realize(struct rtb_object *obj,
 			"net.illest.rutabaga.widgets.label");
 }
 
-static void size(struct rtb_object *obj,
+static void
+size(struct rtb_object *obj,
 		const struct rtb_size *avail, struct rtb_size *want)
 {
 	SELF_FROM(obj);
@@ -89,7 +93,8 @@ static void size(struct rtb_object *obj,
  * public
  */
 
-void rtb_label_set_font(struct rtb_label *self, struct rtb_font *font)
+void
+rtb_label_set_font(struct rtb_label *self, struct rtb_font *font)
 {
 	self->font = font;
 
@@ -102,7 +107,8 @@ void rtb_label_set_font(struct rtb_label *self, struct rtb_font *font)
 			RTB_DIRECTION_ROOTWARD);
 }
 
-void rtb_label_set_text(struct rtb_label *self, const rtb_utf8_t *text)
+void
+rtb_label_set_text(struct rtb_label *self, const rtb_utf8_t *text)
 {
 	if (self->text)
 		free(self->text);
@@ -117,7 +123,8 @@ void rtb_label_set_text(struct rtb_label *self, const rtb_utf8_t *text)
 			RTB_DIRECTION_ROOTWARD);
 }
 
-int rtb_label_init(struct rtb_label *self,
+int
+rtb_label_init(struct rtb_label *self,
 		struct rtb_object_implementation *impl)
 {
 	rtb_obj_init(RTB_OBJECT(self), &super);
@@ -143,7 +150,8 @@ int rtb_label_init(struct rtb_label *self,
 	return 0;
 }
 
-void rtb_label_fini(struct rtb_label *self)
+void
+rtb_label_fini(struct rtb_label *self)
 {
 	if (self->text)
 		free(self->text);
@@ -154,7 +162,8 @@ void rtb_label_fini(struct rtb_label *self)
 	rtb_obj_fini(RTB_OBJECT(self));
 }
 
-struct rtb_label *rtb_label_new(const rtb_utf8_t *text)
+struct rtb_label *
+rtb_label_new(const rtb_utf8_t *text)
 {
 	struct rtb_label *self = calloc(1, sizeof(*self));
 	rtb_label_init(self, &self->impl);
@@ -165,7 +174,8 @@ struct rtb_label *rtb_label_new(const rtb_utf8_t *text)
 	return self;
 }
 
-void rtb_label_free(struct rtb_label *self)
+void
+rtb_label_free(struct rtb_label *self)
 {
 	rtb_label_fini(self);
 	free(self);

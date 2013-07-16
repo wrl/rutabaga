@@ -44,8 +44,8 @@ static struct rtb_object_implementation super;
  * private utility functions
  */
 
-static struct rtb_patchbay_patch *get_patch(struct rtb_patchbay_port *from,
-		struct rtb_patchbay_port *to)
+static struct rtb_patchbay_patch *
+get_patch(struct rtb_patchbay_port *from, struct rtb_patchbay_port *to)
 {
 	struct rtb_patchbay_patch *patch;
 
@@ -60,7 +60,8 @@ static struct rtb_patchbay_patch *get_patch(struct rtb_patchbay_port *from,
  * drawing
  */
 
-static void draw(struct rtb_object *obj, rtb_draw_state_t state)
+static void
+draw(struct rtb_object *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
 
@@ -79,7 +80,8 @@ static void draw(struct rtb_object *obj, rtb_draw_state_t state)
  * event dispatching
  */
 
-static void dispatch_disconnect(struct rtb_patchbay_patch *patch)
+static void
+dispatch_disconnect(struct rtb_patchbay_patch *patch)
 {
 	struct rtb_patchbay_event_disconnect ev = {
 		.type = RTB_PATCHBAY_DISCONNECT,
@@ -95,8 +97,8 @@ static void dispatch_disconnect(struct rtb_patchbay_patch *patch)
 	rtb_dispatch_raw(RTB_OBJECT(patch->to), RTB_EVENT(&ev));
 }
 
-static void dispatch_connect(struct rtb_patchbay_port *from,
-		struct rtb_patchbay_port *to)
+static void
+dispatch_connect(struct rtb_patchbay_port *from, struct rtb_patchbay_port *to)
 {
 	struct rtb_patchbay_event_connect ev = {
 		.type = RTB_PATCHBAY_CONNECT,
@@ -114,8 +116,8 @@ static void dispatch_connect(struct rtb_patchbay_port *from,
  * event handling
  */
 
-static void handle_connection(struct rtb_patchbay_port *a,
-		struct rtb_patchbay_port *b)
+static void
+handle_connection(struct rtb_patchbay_port *a, struct rtb_patchbay_port *b)
 {
 	struct rtb_patchbay_port *from, *to;
 	struct rtb_patchbay_patch *patch;
@@ -137,8 +139,8 @@ static void handle_connection(struct rtb_patchbay_port *a,
 		dispatch_connect(from, to);
 }
 
-static void start_patching(struct rtb_patchbay_port *self,
-		struct rtb_mouse_event *e)
+static void
+start_patching(struct rtb_patchbay_port *self, struct rtb_mouse_event *e)
 {
 	struct rtb_patchbay *patchbay = self->node->patchbay;
 
@@ -149,7 +151,8 @@ static void start_patching(struct rtb_patchbay_port *self,
 	patchbay->patch_in_progress.cursor.y = e->cursor.y;
 }
 
-static void stop_patching(struct rtb_patchbay_port *self)
+static void
+stop_patching(struct rtb_patchbay_port *self)
 {
 	struct rtb_patchbay *patchbay = self->node->patchbay;
 
@@ -157,8 +160,8 @@ static void stop_patching(struct rtb_patchbay_port *self)
 	patchbay->patch_in_progress.to   = NULL;
 }
 
-static int handle_drag(struct rtb_patchbay_port *self,
-		const struct rtb_drag_event *e)
+static int
+handle_drag(struct rtb_patchbay_port *self, const struct rtb_drag_event *e)
 {
 	struct rtb_patchbay *patchbay = self->node->patchbay;
 
@@ -202,8 +205,8 @@ static int handle_drag(struct rtb_patchbay_port *self,
 	}
 }
 
-static int handle_mouse(struct rtb_patchbay_port *self,
-		struct rtb_mouse_event *e)
+static int
+handle_mouse(struct rtb_patchbay_port *self, struct rtb_mouse_event *e)
 {
 	if (e->button != RTB_MOUSE_BUTTON1)
 		return 0;
@@ -225,8 +228,9 @@ static int handle_mouse(struct rtb_patchbay_port *self,
  * object implementation
  */
 
-static void recalculate(struct rtb_object *obj,
-		struct rtb_object *instigator, rtb_ev_direction_t direction)
+static void
+recalculate(struct rtb_object *obj, struct rtb_object *instigator,
+		rtb_ev_direction_t direction)
 {
 	SELF_FROM(obj);
 
@@ -234,8 +238,9 @@ static void recalculate(struct rtb_object *obj,
 	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
 }
 
-static void realize(struct rtb_object *obj,
-		struct rtb_object *parent, struct rtb_window *window)
+static void
+realize(struct rtb_object *obj, struct rtb_object *parent,
+		struct rtb_window *window)
 {
 	SELF_FROM(obj);
 
@@ -244,7 +249,8 @@ static void realize(struct rtb_object *obj,
 			"net.illest.rutabaga.widgets.patchbay.port");
 }
 
-static int on_event(struct rtb_object *obj, const struct rtb_event *e)
+static int
+on_event(struct rtb_object *obj, const struct rtb_event *e)
 {
 	SELF_FROM(obj);
 
@@ -276,7 +282,8 @@ static int on_event(struct rtb_object *obj, const struct rtb_event *e)
  * public API
  */
 
-int rtb_patchbay_are_ports_connected(struct rtb_patchbay_port *a,
+int
+rtb_patchbay_are_ports_connected(struct rtb_patchbay_port *a,
 		struct rtb_patchbay_port *b)
 {
 	struct rtb_patchbay_port *from, *to;
@@ -297,7 +304,8 @@ int rtb_patchbay_are_ports_connected(struct rtb_patchbay_port *a,
 	return 0;
 }
 
-void rtb_patchbay_free_patch(struct rtb_patchbay *self,
+void
+rtb_patchbay_free_patch(struct rtb_patchbay *self,
 		struct rtb_patchbay_patch *patch)
 {
 	TAILQ_REMOVE(&patch->to->patches,   patch, to_patch);
@@ -308,7 +316,8 @@ void rtb_patchbay_free_patch(struct rtb_patchbay *self,
 	rtb_obj_mark_dirty(RTB_OBJECT(self));
 }
 
-void rtb_patchbay_disconnect_ports(struct rtb_patchbay *self,
+void
+rtb_patchbay_disconnect_ports(struct rtb_patchbay *self,
 		struct rtb_patchbay_port *a, struct rtb_patchbay_port *b)
 {
 	struct rtb_patchbay_patch *patch;
@@ -329,8 +338,8 @@ void rtb_patchbay_disconnect_ports(struct rtb_patchbay *self,
 		rtb_patchbay_free_patch(self, patch);
 }
 
-struct rtb_patchbay_patch *rtb_patchbay_connect_ports(
-		struct rtb_patchbay *self,
+struct rtb_patchbay_patch *
+rtb_patchbay_connect_ports(struct rtb_patchbay *self,
 		struct rtb_patchbay_port *a, struct rtb_patchbay_port *b)
 {
 	struct rtb_patchbay_patch *patch;
@@ -365,7 +374,8 @@ struct rtb_patchbay_patch *rtb_patchbay_connect_ports(
 	return patch;
 }
 
-int rtb_patchbay_port_init(struct rtb_patchbay_port *self,
+int
+rtb_patchbay_port_init(struct rtb_patchbay_port *self,
 		struct rtb_patchbay_node *node, const rtb_utf8_t *name,
 		rtb_patchbay_port_type_t type, rtb_child_add_loc_t location)
 {
@@ -402,7 +412,8 @@ int rtb_patchbay_port_init(struct rtb_patchbay_port *self,
 	return 0;
 }
 
-void rtb_patchbay_port_fini(struct rtb_patchbay_port *self)
+void
+rtb_patchbay_port_fini(struct rtb_patchbay_port *self)
 {
 	struct rtb_patchbay_patch *patch;
 

@@ -41,7 +41,8 @@ typedef int (*loader_func)(struct rtb_asset *asset);
  * uncompressed
  */
 
-static int load_ext(struct rtb_asset *asset)
+static int
+load_ext(struct rtb_asset *asset)
 {
 	FILE *f;
 	int size;
@@ -68,7 +69,8 @@ err_fopen:
 	return -1;
 }
 
-static int load_emb(struct rtb_asset *asset)
+static int
+load_emb(struct rtb_asset *asset)
 {
 	asset->buffer.data = asset->embedded.base;
 	asset->buffer.size = asset->embedded.size;
@@ -80,12 +82,14 @@ static int load_emb(struct rtb_asset *asset)
  * xz
  */
 
-static int load_emb_xz(struct rtb_asset *asset)
+static int
+load_emb_xz(struct rtb_asset *asset)
 {
 	return -1;
 }
 
-static int load_ext_xz(struct rtb_asset *asset)
+static int
+load_ext_xz(struct rtb_asset *asset)
 {
 	return -1;
 }
@@ -101,7 +105,8 @@ static loader_func loaders[] = {
  * public API
  */
 
-int rtb_asset_load(struct rtb_asset *asset)
+int
+rtb_asset_load(struct rtb_asset *asset)
 {
 	int loader;
 
@@ -122,7 +127,8 @@ int rtb_asset_load(struct rtb_asset *asset)
 	return 0;
 }
 
-void rtb_asset_free(struct rtb_asset *asset)
+void
+rtb_asset_free(struct rtb_asset *asset)
 {
 	assert(asset->loaded && asset->buffer.data);
 

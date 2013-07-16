@@ -45,7 +45,8 @@ typedef unsigned int uint_t;
 #define __forceinline inline
 #endif
 
-unsigned int hash_meiyan(const char *str, size_t wrdlen)
+static unsigned int
+hash_meiyan(const char *str, size_t wrdlen)
 {
 	const unsigned int PRIME = 709607;
 	unsigned int hash32 = 2166136261;
@@ -82,7 +83,8 @@ unsigned int hash_meiyan(const char *str, size_t wrdlen)
  * nedtries stuff
  */
 
-static size_t dict_key_func(const struct rtb_atom_descriptor *node)
+static size_t
+dict_key_func(const struct rtb_atom_descriptor *node)
 {
 	return node->dict_entry.hash;
 }
@@ -91,8 +93,8 @@ NEDTRIE_GENERATE(static, rtb_atom_dict, rtb_atom_descriptor,
 		dict_entry.trie_entry, dict_key_func,
 		NEDTRIE_NOBBLEZEROS(rtb_atom_dict));
 
-static struct rtb_type_atom_descriptor *find_type_descriptor(
-		struct rtb_atom_dict *dict,
+static struct rtb_type_atom_descriptor *
+find_type_descriptor(struct rtb_atom_dict *dict,
 		uint_t hash, const char *type_name, size_t len)
 {
 	struct rtb_atom_descriptor needle = {.dict_entry.hash = hash}, *ret;
@@ -105,8 +107,8 @@ static struct rtb_type_atom_descriptor *find_type_descriptor(
 	return (struct rtb_type_atom_descriptor *) ret;
 }
 
-static struct rtb_type_atom_descriptor *alloc_type_descriptor(
-		uint_t hash, const char *type_name, size_t len,
+static struct rtb_type_atom_descriptor *
+alloc_type_descriptor(uint_t hash, const char *type_name, size_t len,
 		struct rtb_type_atom_descriptor *supertype)
 {
 	struct rtb_type_atom_descriptor *ret, **cursor;
@@ -149,8 +151,8 @@ static struct rtb_type_atom_descriptor *alloc_type_descriptor(
  * RTB_ATOM_TYPE public API
  */
 
-struct rtb_type_atom_descriptor *rtb_type_lookup(struct rtb_window *win,
-		const char *type_name)
+struct rtb_type_atom_descriptor *
+rtb_type_lookup(struct rtb_window *win, const char *type_name)
 {
 	uint_t hash;
 	int len;
@@ -161,7 +163,8 @@ struct rtb_type_atom_descriptor *rtb_type_lookup(struct rtb_window *win,
 	return find_type_descriptor(&win->rtb->atoms.type, hash, type_name, len);
 }
 
-int rtb_is_type(struct rtb_type_atom_descriptor *desc,
+int
+rtb_is_type(struct rtb_type_atom_descriptor *desc,
 		struct rtb_type_atom *atom)
 {
 	struct rtb_type_atom_descriptor *type_a, *type_b;
@@ -177,8 +180,9 @@ int rtb_is_type(struct rtb_type_atom_descriptor *desc,
 	return 0;
 }
 
-struct rtb_type_atom_descriptor *rtb_type_ref(struct rtb_window *win,
-		struct rtb_type_atom_descriptor *super, const char *type_name)
+struct rtb_type_atom_descriptor *
+rtb_type_ref(struct rtb_window *win, struct rtb_type_atom_descriptor *super,
+		const char *type_name)
 {
 	struct rtb_atom_dict *dict = &win->rtb->atoms.type;
 	struct rtb_type_atom_descriptor *type, *supertype;
@@ -204,7 +208,8 @@ struct rtb_type_atom_descriptor *rtb_type_ref(struct rtb_window *win,
 	return type;
 }
 
-int rtb_type_unref(struct rtb_type_atom_descriptor *type)
+int
+rtb_type_unref(struct rtb_type_atom_descriptor *type)
 {
 	if (!type)
 		return -1;

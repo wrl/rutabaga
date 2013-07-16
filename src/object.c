@@ -51,8 +51,9 @@
  * private stuff
  */
 
-static int recalc_rootward(struct rtb_object *self,
-		struct rtb_object *instigator, rtb_ev_direction_t direction)
+static int
+recalc_rootward(struct rtb_object *self, struct rtb_object *instigator,
+		rtb_ev_direction_t direction)
 {
 	struct rtb_object *iter;
 	struct rtb_size inst_old_size = {
@@ -78,8 +79,9 @@ static int recalc_rootward(struct rtb_object *self,
 	return 1;
 }
 
-static void recalc_leafward(struct rtb_object *self,
-		struct rtb_object *instigator, rtb_ev_direction_t direction)
+static void
+recalc_leafward(struct rtb_object *self, struct rtb_object *instigator,
+		rtb_ev_direction_t direction)
 {
 	struct rtb_object *iter;
 
@@ -89,8 +91,9 @@ static void recalc_leafward(struct rtb_object *self,
 		iter->recalc_cb(iter, self, direction);
 }
 
-static void recalculate(struct rtb_object *self,
-		struct rtb_object *instigator, rtb_ev_direction_t direction)
+static void
+recalculate(struct rtb_object *self, struct rtb_object *instigator,
+		rtb_ev_direction_t direction)
 {
 	/* XXX: invariant: self->window->state != RTB_STATE_UNREALIZED */
 	if (!self->style)
@@ -120,7 +123,8 @@ static void recalculate(struct rtb_object *self,
  * drawing
  */
 
-static void draw(struct rtb_object *self, rtb_draw_state_t state)
+static void
+draw(struct rtb_object *self, rtb_draw_state_t state)
 {
 	struct rtb_object *iter;
 
@@ -139,7 +143,8 @@ static void draw(struct rtb_object *self, rtb_draw_state_t state)
 	LAYOUT_DEBUG_DRAW_BOX(self);
 }
 
-static int on_event(struct rtb_object *self, const struct rtb_event *e)
+static int
+on_event(struct rtb_object *self, const struct rtb_event *e)
 {
 	switch (e->type) {
 	case RTB_MOUSE_ENTER:
@@ -154,7 +159,8 @@ static int on_event(struct rtb_object *self, const struct rtb_event *e)
 	return 0;
 }
 
-static void realize(struct rtb_object *self, struct rtb_object *parent,
+static void
+realize(struct rtb_object *self, struct rtb_object *parent,
 		struct rtb_window *window)
 {
 	struct rtb_object *iter;
@@ -167,12 +173,14 @@ static void realize(struct rtb_object *self, struct rtb_object *parent,
 		self->attach_child(self, iter);
 }
 
-static void attach_child(struct rtb_object *self, struct rtb_object *child)
+static void
+attach_child(struct rtb_object *self, struct rtb_object *child)
 {
 	rtb_obj_realize(child, self, self->surface, self->window);
 }
 
-static void mark_dirty(struct rtb_object *self)
+static void
+mark_dirty(struct rtb_object *self)
 {
 	struct rtb_render_context *render_ctx = &self->surface->render_ctx;
 
@@ -187,7 +195,8 @@ static void mark_dirty(struct rtb_object *self)
  * public API
  */
 
-int rtb_obj_deliver_event(struct rtb_object *self, const struct rtb_event *e)
+int
+rtb_obj_deliver_event(struct rtb_object *self, const struct rtb_event *e)
 {
 	int ret;
 
@@ -219,7 +228,8 @@ int rtb_obj_deliver_event(struct rtb_object *self, const struct rtb_event *e)
 		return ret || rtb_handle(self, e);
 }
 
-void rtb_obj_draw(struct rtb_object *self, rtb_draw_state_t state)
+void
+rtb_obj_draw(struct rtb_object *self, rtb_draw_state_t state)
 {
 	struct rtb_window *window = self->window;
 
@@ -239,7 +249,8 @@ void rtb_obj_draw(struct rtb_object *self, rtb_draw_state_t state)
 	self->draw_cb(self, state);
 }
 
-void rtb_obj_realize(struct rtb_object *self, struct rtb_object *parent,
+void
+rtb_obj_realize(struct rtb_object *self, struct rtb_object *parent,
 		struct rtb_surface *surface, struct rtb_window *window)
 {
 	self->parent  = parent;
@@ -254,47 +265,55 @@ void rtb_obj_realize(struct rtb_object *self, struct rtb_object *parent,
 	self->state = RTB_STATE_REALIZED;
 }
 
-void rtb_obj_trigger_recalc(struct rtb_object *self,
-		struct rtb_object *instigator, rtb_ev_direction_t direction)
+void
+rtb_obj_trigger_recalc(struct rtb_object *self, struct rtb_object *instigator,
+		rtb_ev_direction_t direction)
 {
 	self->recalc_cb(self, instigator, direction);
 }
 
-void rtb_obj_mark_dirty(struct rtb_object *self)
+void
+rtb_obj_mark_dirty(struct rtb_object *self)
 {
 	self->mark_dirty(self);
 }
 
-void rtb_obj_set_size_cb(struct rtb_object *self, rtb_size_cb_t size_cb)
+void
+rtb_obj_set_size_cb(struct rtb_object *self, rtb_size_cb_t size_cb)
 {
 	self->size_cb = size_cb;
 }
 
-void rtb_obj_set_layout(struct rtb_object *self, rtb_layout_cb_t layout_cb)
+void
+rtb_obj_set_layout(struct rtb_object *self, rtb_layout_cb_t layout_cb)
 {
 	self->layout_cb = layout_cb;
 }
 
-void rtb_obj_set_position_from_point(struct rtb_object *self,
+void
+rtb_obj_set_position_from_point(struct rtb_object *self,
 		struct rtb_point *pos)
 {
 	self->x = floorf(pos->x);
 	self->y = floorf(pos->y);
 }
 
-void rtb_obj_set_position(struct rtb_object *self, float x, float y)
+void
+rtb_obj_set_position(struct rtb_object *self, float x, float y)
 {
 	struct rtb_point positition = {x, y};
 	rtb_obj_set_position_from_point(self, &positition);
 }
 
-void rtb_obj_set_size(struct rtb_object *self, struct rtb_size *sz)
+void
+rtb_obj_set_size(struct rtb_object *self, struct rtb_size *sz)
 {
 	self->w = sz->w;
 	self->h = sz->h;
 }
 
-int rtb_obj_in_tree(struct rtb_object *root, struct rtb_object *leaf)
+int
+rtb_obj_in_tree(struct rtb_object *root, struct rtb_object *leaf)
 {
 	for (; leaf; leaf = leaf->parent)
 		if (leaf == root)
@@ -303,7 +322,8 @@ int rtb_obj_in_tree(struct rtb_object *root, struct rtb_object *leaf)
 	return 0;
 }
 
-void rtb_obj_add_child(struct rtb_object *self, struct rtb_object *child,
+void
+rtb_obj_add_child(struct rtb_object *self, struct rtb_object *child,
 		rtb_child_add_loc_t where)
 {
 	assert(child->draw_cb);
@@ -324,7 +344,8 @@ void rtb_obj_add_child(struct rtb_object *self, struct rtb_object *child,
 	}
 }
 
-void rtb_obj_remove_child(struct rtb_object *self, struct rtb_object *child)
+void
+rtb_obj_remove_child(struct rtb_object *self, struct rtb_object *child)
 {
 	TAILQ_REMOVE(&self->children, child, child);
 
@@ -364,7 +385,8 @@ static struct rtb_object_implementation default_impl = {
 	.mark_dirty   = mark_dirty
 };
 
-int rtb_obj_init(struct rtb_object *self,
+int
+rtb_obj_init(struct rtb_object *self,
 		struct rtb_object_implementation *impl)
 {
 	struct rtb_object_implementation *obj_impl = &self->impl;
@@ -397,7 +419,8 @@ int rtb_obj_init(struct rtb_object *self,
 	return 0;
 }
 
-void rtb_obj_fini(struct rtb_object *self)
+void
+rtb_obj_fini(struct rtb_object *self)
 {
 	VECTOR_FREE(&self->handlers);
 	rtb_type_unref(self->type);

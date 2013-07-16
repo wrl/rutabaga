@@ -45,7 +45,8 @@ static struct rtb_style no_style = {
 };
 
 
-static int style_resolve(struct rtb_window *window, struct rtb_style *style)
+static int
+style_resolve(struct rtb_window *window, struct rtb_style *style)
 {
 	style->resolved_type = rtb_type_lookup(window, style->for_type);
 	if (style->resolved_type)
@@ -53,8 +54,8 @@ static int style_resolve(struct rtb_window *window, struct rtb_style *style)
 	return -1;
 }
 
-static struct rtb_style *style_for_type(struct rtb_type_atom *atom,
-		struct rtb_style *style_list)
+static struct rtb_style *
+style_for_type(struct rtb_type_atom *atom, struct rtb_style *style_list)
 {
 	for (; style_list->for_type; style_list++) {
 		if (style_list->resolved_type &&
@@ -69,8 +70,8 @@ static struct rtb_style *style_for_type(struct rtb_type_atom *atom,
  * public API
  */
 
-int rtb_style_resolve_list(struct rtb_window *win,
-		struct rtb_style *style_list)
+int
+rtb_style_resolve_list(struct rtb_window *win, struct rtb_style *style_list)
 {
 	int unresolved_styles = 0;
 
@@ -82,8 +83,8 @@ int rtb_style_resolve_list(struct rtb_window *win,
 	return unresolved_styles;
 }
 
-void rtb_style_apply_to_tree(struct rtb_object *root,
-		struct rtb_style *style_list)
+void
+rtb_style_apply_to_tree(struct rtb_object *root, struct rtb_style *style_list)
 {
 	struct rtb_object *iter;
 
@@ -94,13 +95,14 @@ void rtb_style_apply_to_tree(struct rtb_object *root,
 		rtb_style_apply_to_tree(iter, style_list);
 }
 
-struct rtb_style *rtb_style_for_object(struct rtb_object *obj,
-		struct rtb_style *style_list)
+struct rtb_style *
+rtb_style_for_object(struct rtb_object *obj, struct rtb_style *style_list)
 {
 	return style_for_type(RTB_TYPE_ATOM(obj), style_list);
 }
 
-struct rtb_style *rtb_style_get_defaults(void)
+struct rtb_style *
+rtb_style_get_defaults(void)
 {
 	return default_style;
 }

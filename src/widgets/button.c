@@ -51,7 +51,8 @@ static struct rtb_object_implementation super;
  * drawing-related things
  */
 
-static void draw(struct rtb_object *obj, rtb_draw_state_t state)
+static void
+draw(struct rtb_object *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
 
@@ -70,8 +71,8 @@ static void draw(struct rtb_object *obj, rtb_draw_state_t state)
  * event handlers
  */
 
-static int dispatch_click_event(struct rtb_button *self,
-		const struct rtb_mouse_event *e)
+static int
+dispatch_click_event(struct rtb_button *self, const struct rtb_mouse_event *e)
 {
 	struct rtb_button_event event = *((struct rtb_button_event *) e);
 
@@ -82,8 +83,8 @@ static int dispatch_click_event(struct rtb_button *self,
 	return rtb_handle(RTB_OBJECT(self), RTB_EVENT(&event));
 }
 
-static int handle_key_press(struct rtb_button *self,
-		const struct rtb_key_event *e)
+static int
+handle_key_press(struct rtb_button *self, const struct rtb_key_event *e)
 {
 	struct rtb_button_event event = {
 		.type   = RTB_BUTTON_CLICK,
@@ -99,7 +100,8 @@ static int handle_key_press(struct rtb_button *self,
 	return 0;
 }
 
-static int on_event(struct rtb_object *obj, const struct rtb_event *e)
+static int
+on_event(struct rtb_object *obj, const struct rtb_event *e)
 {
 	SELF_FROM(obj);
 
@@ -126,8 +128,9 @@ static int on_event(struct rtb_object *obj, const struct rtb_event *e)
 	return 0;
 }
 
-static void recalculate(struct rtb_object *obj,
-		struct rtb_object *instigator, rtb_ev_direction_t direction)
+static void
+recalculate(struct rtb_object *obj, struct rtb_object *instigator,
+		rtb_ev_direction_t direction)
 {
 	SELF_FROM(obj);
 
@@ -139,8 +142,9 @@ static void recalculate(struct rtb_object *obj,
 	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
 }
 
-static void realize(struct rtb_object *obj,
-		struct rtb_object *parent, struct rtb_window *window)
+static void
+realize(struct rtb_object *obj, struct rtb_object *parent,
+		struct rtb_window *window)
 {
 	SELF_FROM(obj);
 
@@ -156,12 +160,14 @@ static void realize(struct rtb_object *obj,
  * public API
  */
 
-void rtb_button_set_label(struct rtb_button *self, const rtb_utf8_t *text)
+void
+rtb_button_set_label(struct rtb_button *self, const rtb_utf8_t *text)
 {
 	rtb_label_set_text(&self->label, text);
 }
 
-int rtb_button_init(struct rtb_button *self,
+int
+rtb_button_init(struct rtb_button *self,
 		struct rtb_object_implementation *impl)
 {
 	rtb_obj_init(RTB_OBJECT(self), &super);
@@ -189,14 +195,16 @@ int rtb_button_init(struct rtb_button *self,
 	return 0;
 }
 
-void rtb_button_fini(struct rtb_button *self)
+void
+rtb_button_fini(struct rtb_button *self)
 {
 	rtb_quad_fini(&self->bg_quad);
 	rtb_label_fini(&self->label);
 	rtb_obj_fini(RTB_OBJECT(self));
 }
 
-struct rtb_button *rtb_button_new(const rtb_utf8_t *label)
+struct rtb_button *
+rtb_button_new(const rtb_utf8_t *label)
 {
 	struct rtb_button *self = calloc(1, sizeof(*self));
 	rtb_button_init(self, &self->impl);
@@ -207,7 +215,8 @@ struct rtb_button *rtb_button_new(const rtb_utf8_t *label)
 	return self;
 }
 
-void rtb_button_free(struct rtb_button *self)
+void
+rtb_button_free(struct rtb_button *self)
 {
 	rtb_button_fini(self);
 	free(self);

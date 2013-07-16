@@ -55,7 +55,8 @@ static const GLubyte line_indices[] = {
  * vbo wrangling
  */
 
-static void update_cursor(struct rtb_text_input *self)
+static void
+update_cursor(struct rtb_text_input *self)
 {
 	GLfloat x, y, h, line[2][2];
 	struct rtb_rect glyphs[2];
@@ -119,7 +120,8 @@ static void update_cursor(struct rtb_text_input *self)
  * drawing
  */
 
-static void draw(struct rtb_object *obj, rtb_draw_state_t state)
+static void
+draw(struct rtb_object *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
 
@@ -155,13 +157,15 @@ static void draw(struct rtb_object *obj, rtb_draw_state_t state)
  * text buffer
  */
 
-static void push_u32(struct rtb_text_input *self, rtb_utf32_t c)
+static void
+push_u32(struct rtb_text_input *self, rtb_utf32_t c)
 {
 	rtb_text_buffer_insert_u32(&self->text, self->cursor_position, c);
 	self->cursor_position++;
 }
 
-static int pop_u32(struct rtb_text_input *self)
+static int
+pop_u32(struct rtb_text_input *self)
 {
 	if (rtb_text_buffer_erase_char(&self->text, self->cursor_position))
 		return -1;
@@ -170,7 +174,8 @@ static int pop_u32(struct rtb_text_input *self)
 	return 0;
 }
 
-static int delete_u32(struct rtb_text_input *self)
+static int
+delete_u32(struct rtb_text_input *self)
 {
 	if (rtb_text_buffer_erase_char(&self->text, self->cursor_position + 1))
 		return -1;
@@ -182,7 +187,8 @@ static int delete_u32(struct rtb_text_input *self)
  * object implementation
  */
 
-static void fix_cursor(struct rtb_text_input *self)
+static void
+fix_cursor(struct rtb_text_input *self)
 {
 	struct rtb_rect glyph;
 
@@ -198,14 +204,15 @@ static void fix_cursor(struct rtb_text_input *self)
 	rtb_obj_mark_dirty(RTB_OBJECT(self));
 }
 
-static void post_change(struct rtb_text_input *self)
+static void
+post_change(struct rtb_text_input *self)
 {
 	rtb_label_set_text(&self->label,
 			rtb_text_buffer_get_text(&self->text));
 }
 
-static int handle_key_press(struct rtb_text_input *self,
-		const struct rtb_key_event *e)
+static int
+handle_key_press(struct rtb_text_input *self, const struct rtb_key_event *e)
 {
 	switch (e->keysym) {
 	case RTB_KEY_NORMAL:
@@ -258,7 +265,8 @@ static int handle_key_press(struct rtb_text_input *self,
 	return 1;
 }
 
-static int on_event(struct rtb_object *obj, const struct rtb_event *e)
+static int
+on_event(struct rtb_object *obj, const struct rtb_event *e)
 {
 	SELF_FROM(obj);
 
@@ -278,8 +286,9 @@ static int on_event(struct rtb_object *obj, const struct rtb_event *e)
 
 	return 0;
 }
-static void recalculate(struct rtb_object *obj,
-		struct rtb_object *instigator, rtb_ev_direction_t direction)
+static void
+recalculate(struct rtb_object *obj, struct rtb_object *instigator,
+		rtb_ev_direction_t direction)
 {
 	SELF_FROM(obj);
 
@@ -290,8 +299,9 @@ static void recalculate(struct rtb_object *obj,
 	update_cursor(self);
 }
 
-static void realize(struct rtb_object *obj,
-		struct rtb_object *parent, struct rtb_window *window)
+static void
+realize(struct rtb_object *obj, struct rtb_object *parent,
+		struct rtb_window *window)
 {
 	SELF_FROM(obj);
 
@@ -303,7 +313,8 @@ static void realize(struct rtb_object *obj,
 	self->outer_pad.y = self->label.outer_pad.y;
 }
 
-static void layout(struct rtb_object *obj)
+static void
+layout(struct rtb_object *obj)
 {
 	SELF_FROM(obj);
 
@@ -334,7 +345,8 @@ static void layout(struct rtb_object *obj)
  * public API
  */
 
-int rtb_text_input_set_text(struct rtb_text_input *self,
+int
+rtb_text_input_set_text(struct rtb_text_input *self,
 		rtb_utf8_t *text, ssize_t nbytes)
 {
 	rtb_text_buffer_set_text(&self->text, text, nbytes);
@@ -345,12 +357,14 @@ int rtb_text_input_set_text(struct rtb_text_input *self,
 	return 0;
 }
 
-const rtb_utf8_t *rtb_text_input_get_text(struct rtb_text_input *self)
+const rtb_utf8_t *
+rtb_text_input_get_text(struct rtb_text_input *self)
 {
 	return rtb_text_buffer_get_text(&self->text);
 }
 
-int rtb_text_input_init(struct rutabaga *rtb, struct rtb_text_input *self,
+int
+rtb_text_input_init(struct rutabaga *rtb, struct rtb_text_input *self,
 		struct rtb_object_implementation *impl)
 {
 	rtb_obj_init(RTB_OBJECT(self), &super);
@@ -386,7 +400,8 @@ int rtb_text_input_init(struct rutabaga *rtb, struct rtb_text_input *self,
 	return 0;
 }
 
-void rtb_text_input_fini(struct rtb_text_input *self)
+void
+rtb_text_input_fini(struct rtb_text_input *self)
 {
 	rtb_text_buffer_fini(&self->text);
 
@@ -397,7 +412,8 @@ void rtb_text_input_fini(struct rtb_text_input *self)
 	rtb_obj_fini(RTB_OBJECT(self));
 }
 
-struct rtb_text_input *rtb_text_input_new(struct rutabaga *rtb)
+struct rtb_text_input *
+rtb_text_input_new(struct rutabaga *rtb)
 {
 	struct rtb_text_input *self = calloc(1, sizeof(*self));
 	rtb_text_input_init(rtb, self, &self->impl);
@@ -405,7 +421,8 @@ struct rtb_text_input *rtb_text_input_new(struct rutabaga *rtb)
 	return self;
 }
 
-void rtb_text_input_free(struct rtb_text_input *self)
+void
+rtb_text_input_free(struct rtb_text_input *self)
 {
 	rtb_text_input_fini(self);
 	free(self);

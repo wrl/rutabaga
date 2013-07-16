@@ -48,7 +48,8 @@
 
 #define MIN_COLOR_CHANNEL_BITS 8
 
-static xcb_atom_t intern_atom(xcb_connection_t *c, const char *atom_name)
+static xcb_atom_t
+intern_atom(xcb_connection_t *c, const char *atom_name)
 {
 	xcb_intern_atom_cookie_t req;
 	xcb_intern_atom_reply_t *rep;
@@ -69,7 +70,8 @@ static xcb_atom_t intern_atom(xcb_connection_t *c, const char *atom_name)
 	return atom;
 }
 
-static int receive_xkb_events(xcb_connection_t *c)
+static int
+receive_xkb_events(xcb_connection_t *c)
 {
 	xcb_xkb_use_extension_cookie_t xkb_cookie;
 	xcb_xkb_use_extension_reply_t *xkb_reply;
@@ -112,7 +114,8 @@ static int receive_xkb_events(xcb_connection_t *c)
 	return 0;
 }
 
-static int get_xkb_event_id(xcb_connection_t *c)
+static int
+get_xkb_event_id(xcb_connection_t *c)
 {
 	const xcb_query_extension_reply_t *extdata;
 
@@ -122,7 +125,8 @@ static int get_xkb_event_id(xcb_connection_t *c)
 	return extdata->first_event;
 }
 
-static int get_core_kbd_id(xcb_connection_t *c)
+static int
+get_core_kbd_id(xcb_connection_t *c)
 {
 	xcb_xkb_get_device_info_cookie_t cookie;
 	xcb_xkb_get_device_info_reply_t *reply;
@@ -142,7 +146,8 @@ static int get_core_kbd_id(xcb_connection_t *c)
 	return device_id;
 }
 
-struct rutabaga *window_impl_rtb_alloc()
+struct rutabaga *
+window_impl_rtb_alloc()
 {
 	struct xcb_rutabaga *self;
 	Display *dpy;
@@ -188,7 +193,8 @@ err_malloc:
 	return NULL;
 }
 
-void window_impl_rtb_free(struct rutabaga *rtb)
+void
+window_impl_rtb_free(struct rutabaga *rtb)
 {
 	struct xcb_rutabaga *self = (void *) rtb;
 
@@ -197,7 +203,8 @@ void window_impl_rtb_free(struct rutabaga *rtb)
 	free(self);
 }
 
-static int init_gl(struct xcb_rutabaga *xrtb)
+static int
+init_gl(struct xcb_rutabaga *xrtb)
 {
 	int missing;
 
@@ -213,7 +220,8 @@ static int init_gl(struct xcb_rutabaga *xrtb)
 	return 0;
 }
 
-static xcb_screen_t *find_xcb_screen(xcb_connection_t *c, int default_screen)
+static xcb_screen_t *
+find_xcb_screen(xcb_connection_t *c, int default_screen)
 {
 	xcb_screen_iterator_t screen_iter;
 	int screen_num;
@@ -229,7 +237,8 @@ static xcb_screen_t *find_xcb_screen(xcb_connection_t *c, int default_screen)
 #define GLX_BACK_BUFFER_AGE_EXT 0x20F4
 #endif
 
-void window_impl_swap_buffers(struct rtb_window *rwin)
+void
+window_impl_swap_buffers(struct rtb_window *rwin)
 {
 	struct xcb_window *self = (void *) rwin;
 	struct xcb_rutabaga *xrtb = self->xrtb;
@@ -238,8 +247,8 @@ void window_impl_swap_buffers(struct rtb_window *rwin)
 	glFinish();
 }
 
-static GLXFBConfig find_reasonable_fb_config(
-		Display *dpy, GLXFBConfig *cfgs, int ncfgs)
+static GLXFBConfig
+find_reasonable_fb_config(Display *dpy, GLXFBConfig *cfgs, int ncfgs)
 {
 	struct {
 		struct {
@@ -309,7 +318,8 @@ static GLXFBConfig find_reasonable_fb_config(
 	return NULL; /* lol */
 }
 
-static int set_xprop(xcb_connection_t *c, xcb_window_t win,
+static int
+set_xprop(xcb_connection_t *c, xcb_window_t win,
 		xcb_atom_t prop, const char *value)
 {
 	xcb_void_cookie_t cookie;
@@ -329,7 +339,8 @@ static int set_xprop(xcb_connection_t *c, xcb_window_t win,
 	return 0;
 }
 
-void rtb_window_lock(struct rtb_window *rwin)
+void
+rtb_window_lock(struct rtb_window *rwin)
 {
 	struct xcb_window *self = (struct xcb_window *) rwin;
 
@@ -339,7 +350,8 @@ void rtb_window_lock(struct rtb_window *rwin)
 				self->xrtb->dpy, self->gl_draw, self->gl_draw, self->gl_ctx);
 }
 
-void rtb_window_unlock(struct rtb_window *rwin)
+void
+rtb_window_unlock(struct rtb_window *rwin)
 {
 	struct xcb_window *self = (struct xcb_window *) rwin;
 
@@ -348,7 +360,8 @@ void rtb_window_unlock(struct rtb_window *rwin)
 	XUnlockDisplay(self->xrtb->dpy);
 }
 
-struct rtb_window *window_impl_open(struct rutabaga *rtb,
+struct
+rtb_window *window_impl_open(struct rutabaga *rtb,
 		int w, int h, const char *title)
 {
 	struct xcb_rutabaga *xrtb = (void *) rtb;
@@ -508,7 +521,8 @@ err_malloc:
 	return NULL;
 }
 
-void window_impl_close(struct rtb_window *rwin)
+void
+window_impl_close(struct rtb_window *rwin)
 {
 	struct xcb_window *self = (void *) rwin;
 

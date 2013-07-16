@@ -47,7 +47,8 @@ struct text_vertex {
 	float shift;
 };
 
-int rtb_text_object_get_glyph_rect(struct rtb_text_object *self, int idx,
+int
+rtb_text_object_get_glyph_rect(struct rtb_text_object *self, int idx,
 		struct rtb_rect *rect)
 {
 	vector_t *vertices = self->vertices->vertices;
@@ -70,12 +71,14 @@ int rtb_text_object_get_glyph_rect(struct rtb_text_object *self, int idx,
 	return 0;
 }
 
-int rtb_text_object_count_glyphs(struct rtb_text_object *self)
+int
+rtb_text_object_count_glyphs(struct rtb_text_object *self)
 {
 	return vector_size(self->vertices->vertices) / 4;
 }
 
-void rtb_text_object_update(struct rtb_text_object *self,
+void
+rtb_text_object_update(struct rtb_text_object *self,
 		const rtb_utf8_t *text)
 {
 	texture_font_t *font = self->font->txfont;
@@ -161,7 +164,8 @@ void rtb_text_object_update(struct rtb_text_object *self,
 	self->ypad = floorf(font->height / 2.f);
 }
 
-void rtb_text_object_render(struct rtb_text_object *self,
+void
+rtb_text_object_render(struct rtb_text_object *self,
 		struct rtb_object *parent, float x, float y, rtb_draw_state_t state)
 {
 	struct rtb_font_shader *shader;
@@ -192,8 +196,9 @@ void rtb_text_object_render(struct rtb_text_object *self,
 	vertex_buffer_render(self->vertices, GL_TRIANGLES);
 }
 
-struct rtb_text_object *rtb_text_object_new(struct rtb_font_manager *fm,
-		struct rtb_font *font, const rtb_utf8_t *text)
+struct rtb_text_object *
+rtb_text_object_new(struct rtb_font_manager *fm, struct rtb_font *font,
+		const rtb_utf8_t *text)
 {
 	struct rtb_text_object *self = calloc(1, sizeof(*self));
 
@@ -213,7 +218,8 @@ struct rtb_text_object *rtb_text_object_new(struct rtb_font_manager *fm,
 	return self;
 }
 
-void rtb_text_object_free(struct rtb_text_object *self)
+void
+rtb_text_object_free(struct rtb_text_object *self)
 {
 	vertex_buffer_delete(self->vertices);
 	free(self);

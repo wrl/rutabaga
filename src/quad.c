@@ -27,7 +27,8 @@
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/quad.h"
 
-void rtb_quad_set_vertices(struct rtb_quad *self, struct rtb_rect *from)
+void
+rtb_quad_set_vertices(struct rtb_quad *self, struct rtb_rect *from)
 {
 	GLfloat v[4][2] = {
 		{from->x,  from->y},
@@ -41,7 +42,8 @@ void rtb_quad_set_vertices(struct rtb_quad *self, struct rtb_rect *from)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void rtb_quad_set_tex_coords(struct rtb_quad *self, struct rtb_rect *from)
+void
+rtb_quad_set_tex_coords(struct rtb_quad *self, struct rtb_rect *from)
 {
 	GLfloat v[4][2] = {
 		{from->x,  from->y},
@@ -58,13 +60,15 @@ void rtb_quad_set_tex_coords(struct rtb_quad *self, struct rtb_rect *from)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void rtb_quad_init(struct rtb_quad *self)
+void
+rtb_quad_init(struct rtb_quad *self)
 {
 	glGenBuffers(1, &self->vertices);
 	self->tex_coords = 0;
 }
 
-void rtb_quad_fini(struct rtb_quad *self)
+void
+rtb_quad_fini(struct rtb_quad *self)
 {
 #define FREE_BUFFER_IF_USED(buf) if (self->buf) glDeleteBuffers(1, &self->buf)
 

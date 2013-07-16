@@ -35,7 +35,8 @@
 
 #define UTF8_IS_CONTINUATION(byte) (((byte) & 0xC0) == 0x80)
 
-static int utf8_idx(struct rtb_text_buffer *self, int idx)
+static int
+utf8_idx(struct rtb_text_buffer *self, int idx)
 {
 	int u8_idx, size = self->size;
 
@@ -56,7 +57,8 @@ static int utf8_idx(struct rtb_text_buffer *self, int idx)
  * single character operations
  */
 
-int rtb_text_buffer_insert_u32(struct rtb_text_buffer *self,
+int
+rtb_text_buffer_insert_u32(struct rtb_text_buffer *self,
 		int after_idx, rtb_utf32_t c)
 {
 	rtb_utf8_t utf[6];
@@ -68,7 +70,8 @@ int rtb_text_buffer_insert_u32(struct rtb_text_buffer *self,
 	return 0;
 }
 
-int rtb_text_buffer_erase_char(struct rtb_text_buffer *self, int idx)
+int
+rtb_text_buffer_erase_char(struct rtb_text_buffer *self, int idx)
 {
 	const uint8_t *front, *utf8_seq;
 	int u8_idx, size = self->size;
@@ -93,7 +96,8 @@ int rtb_text_buffer_erase_char(struct rtb_text_buffer *self, int idx)
  * whole-buffer operations
  */
 
-int rtb_text_buffer_set_text(struct rtb_text_buffer *self,
+int
+rtb_text_buffer_set_text(struct rtb_text_buffer *self,
 		rtb_utf8_t *text, ssize_t nbytes)
 {
 	char null = '\0';
@@ -108,7 +112,8 @@ int rtb_text_buffer_set_text(struct rtb_text_buffer *self,
 	return 0;
 }
 
-const rtb_utf8_t *rtb_text_buffer_get_text(struct rtb_text_buffer *self)
+const rtb_utf8_t *
+rtb_text_buffer_get_text(struct rtb_text_buffer *self)
 {
 	return self->data;
 }
@@ -117,7 +122,8 @@ const rtb_utf8_t *rtb_text_buffer_get_text(struct rtb_text_buffer *self)
  * lifecycle
  */
 
-int rtb_text_buffer_init(struct rutabaga *rtb, struct rtb_text_buffer *self)
+int
+rtb_text_buffer_init(struct rutabaga *rtb, struct rtb_text_buffer *self)
 {
 	char null = '\0';
 
@@ -127,7 +133,8 @@ int rtb_text_buffer_init(struct rutabaga *rtb, struct rtb_text_buffer *self)
 	return 0;
 }
 
-void rtb_text_buffer_fini(struct rtb_text_buffer *self)
+void
+rtb_text_buffer_fini(struct rtb_text_buffer *self)
 {
 	VECTOR_FREE(self);
 }

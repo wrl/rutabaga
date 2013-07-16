@@ -38,14 +38,16 @@
  * size
  */
 
-void rtb_size_self(struct rtb_object *obj,
+void
+rtb_size_self(struct rtb_object *obj,
 		const struct rtb_size *avail, struct rtb_size *want)
 {
 	want->w = fmax(obj->w, obj->min_size.w);
 	want->h = fmax(obj->h, obj->min_size.h);
 }
 
-void rtb_size_hfit_children(struct rtb_object *obj,
+void
+rtb_size_hfit_children(struct rtb_object *obj,
 		const struct rtb_size *avail, struct rtb_size *want)
 {
 	struct rtb_object *iter;
@@ -65,7 +67,8 @@ void rtb_size_hfit_children(struct rtb_object *obj,
 	want->h = fmax(need.h, obj->min_size.h);
 }
 
-void rtb_size_vfit_children(struct rtb_object *obj,
+void
+rtb_size_vfit_children(struct rtb_object *obj,
 		const struct rtb_size *avail, struct rtb_size *want)
 {
 	struct rtb_object *iter;
@@ -85,21 +88,24 @@ void rtb_size_vfit_children(struct rtb_object *obj,
 	want->h = fmax(need.h, obj->min_size.h);
 }
 
-void rtb_size_hfill(struct rtb_object *obj,
+void
+rtb_size_hfill(struct rtb_object *obj,
 		const struct rtb_size *avail, struct rtb_size *want)
 {
 	rtb_size_hfit_children(obj, avail, want);
 	want->w = fmax(want->w, avail->w);
 }
 
-void rtb_size_vfill(struct rtb_object *obj,
+void
+rtb_size_vfill(struct rtb_object *obj,
 		const struct rtb_size *avail, struct rtb_size *want)
 {
 	rtb_size_vfit_children(obj, avail, want);
 	want->h = fmax(want->h, avail->h);
 }
 
-void rtb_size_fill(struct rtb_object *obj,
+void
+rtb_size_fill(struct rtb_object *obj,
 		const struct rtb_size *avail, struct rtb_size *want)
 {
 	want->w = avail->w;
@@ -110,7 +116,8 @@ void rtb_size_fill(struct rtb_object *obj,
  * static layout (i.e. don't change anything)
  */
 
-void rtb_layout_unmanaged(struct rtb_object *obj)
+void
+rtb_layout_unmanaged(struct rtb_object *obj)
 {
 	struct rtb_size avail, child;
 	struct rtb_object *iter;
@@ -128,7 +135,8 @@ void rtb_layout_unmanaged(struct rtb_object *obj)
  * vertical pack
  */
 
-void rtb_layout_vpack_top(struct rtb_object *obj)
+void
+rtb_layout_vpack_top(struct rtb_object *obj)
 {
 	struct rtb_size avail, child;
 	struct rtb_point position;
@@ -155,7 +163,8 @@ void rtb_layout_vpack_top(struct rtb_object *obj)
 	}
 }
 
-void rtb_layout_vpack_middle(struct rtb_object *obj)
+void
+rtb_layout_vpack_middle(struct rtb_object *obj)
 {
 	float children_height, xstart;
 	struct rtb_size avail, child;
@@ -191,7 +200,8 @@ void rtb_layout_vpack_middle(struct rtb_object *obj)
 	}
 }
 
-void rtb_layout_vpack_bottom(struct rtb_object *obj)
+void
+rtb_layout_vpack_bottom(struct rtb_object *obj)
 {
 	struct rtb_size avail, child;
 	struct rtb_point position;
@@ -223,7 +233,8 @@ void rtb_layout_vpack_bottom(struct rtb_object *obj)
  * horizontal pack
  */
 
-void rtb_layout_hpack_left(struct rtb_object *obj)
+void
+rtb_layout_hpack_left(struct rtb_object *obj)
 {
 	struct rtb_size avail, child;
 	struct rtb_point position;
@@ -248,7 +259,8 @@ void rtb_layout_hpack_left(struct rtb_object *obj)
 	}
 }
 
-void rtb_layout_hpack_center(struct rtb_object *obj)
+void
+rtb_layout_hpack_center(struct rtb_object *obj)
 {
 	struct rtb_size avail, child;
 	float children_width, ystart;
@@ -284,7 +296,8 @@ void rtb_layout_hpack_center(struct rtb_object *obj)
 	}
 }
 
-void rtb_layout_hpack_right(struct rtb_object *obj)
+void
+rtb_layout_hpack_right(struct rtb_object *obj)
 {
 	struct rtb_size avail, child;
 	float ystart;
@@ -333,7 +346,8 @@ void hdistribute_one(struct rtb_object *obj, int child_width)
 	rtb_obj_set_position_from_point(only_child, &position);
 }
 
-static void hdistribute_many(struct rtb_object *obj,
+static void
+hdistribute_many(struct rtb_object *obj,
 		int children, int child0_width, int children_width)
 {
 	float xoff, yoff, w, pad;
@@ -367,7 +381,8 @@ static void hdistribute_many(struct rtb_object *obj,
 	iter->x = obj->x + avail.w + obj->outer_pad.x - iter->w;
 }
 
-void rtb_layout_hdistribute(struct rtb_object *obj)
+void
+rtb_layout_hdistribute(struct rtb_object *obj)
 {
 	int children, children_width, child0_width;
 	struct rtb_size avail, child;

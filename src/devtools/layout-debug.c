@@ -36,7 +36,8 @@ static const GLubyte box_indices[] = {
 	0, 1, 2, 3, 0
 };
 
-static void cache_to_vbo(struct rtb_object *self)
+static void
+cache_to_vbo(struct rtb_object *self)
 {
 	GLfloat x, y, w, h, box[4][2];
 
@@ -60,7 +61,8 @@ static void cache_to_vbo(struct rtb_object *self)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(box), box, GL_STREAM_DRAW);
 }
 
-void rtb_debug_draw_bounding_box(struct rtb_object *self)
+void
+rtb_debug_draw_bounding_box(struct rtb_object *self)
 {
 	rtb_render_push(self);
 	rtb_render_set_position(self, 0.f, 0.f);
@@ -84,7 +86,8 @@ void rtb_debug_draw_bounding_box(struct rtb_object *self)
 	rtb_render_pop(self);
 }
 
-void rtb_debug_init(void)
+void
+rtb_debug_init(void)
 {
 	if (!vbo)
 		glGenBuffers(1, &vbo);

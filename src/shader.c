@@ -34,7 +34,8 @@
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/shader.h"
 
-static void print_shader_error(GLuint shader)
+static void
+print_shader_error(GLuint shader)
 {
 	GLint log_length;
 	char *buf;
@@ -51,7 +52,8 @@ static void print_shader_error(GLuint shader)
 			"openGL said:\n     %s\n\n", buf);
 }
 
-static void print_program_error(GLuint program)
+static void
+print_program_error(GLuint program)
 {
 	GLint log_length;
 	char *buf;
@@ -68,7 +70,8 @@ static void print_program_error(GLuint program)
 			"openGL said:\n     %s\n\n", buf);
 }
 
-static GLuint shader_link(struct rtb_shader *shader)
+static GLuint
+shader_link(struct rtb_shader *shader)
 {
 	GLuint program;
 	GLint status;
@@ -91,7 +94,8 @@ static GLuint shader_link(struct rtb_shader *shader)
 	return 0;
 }
 
-static GLuint glsl_compile(GLenum type, const char *source)
+static GLuint
+glsl_compile(GLenum type, const char *source)
 {
 	GLuint shader;
 	GLint status;
@@ -113,7 +117,8 @@ static GLuint glsl_compile(GLenum type, const char *source)
  * public API
  */
 
-int rtb_shader_create(struct rtb_shader *shader,
+int
+rtb_shader_create(struct rtb_shader *shader,
 		const char *vertex_src, const char *fragment_src)
 {
 	GLuint program;
@@ -149,7 +154,8 @@ int rtb_shader_create(struct rtb_shader *shader,
 	return status;
 }
 
-void rtb_shader_free(struct rtb_shader *shader)
+void
+rtb_shader_free(struct rtb_shader *shader)
 {
 	glDetachShader(shader->program, shader->vertex_shader);
 	glDetachShader(shader->program, shader->fragment_shader);

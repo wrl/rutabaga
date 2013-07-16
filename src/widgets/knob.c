@@ -65,7 +65,8 @@ static GLushort circle_indices[CIRCLE_SEGMENTS + 2] = {[1] = 0};
  * drawing
  */
 
-static void circle_vertex_array(GLfloat dest[][2], float r, int segments)
+static void
+circle_vertex_array(GLfloat dest[][2], float r, int segments)
 {
 	/* borrowed from http://slabode.exofire.net/circle_draw.shtml, thanks! */
 
@@ -90,7 +91,8 @@ static void circle_vertex_array(GLfloat dest[][2], float r, int segments)
 	}
 }
 
-static void cache_to_vbo(struct rtb_knob *self)
+static void
+cache_to_vbo(struct rtb_knob *self)
 {
 	GLfloat w, h, indicator[2][2], circle[CIRCLE_SEGMENTS + 1][2];
 
@@ -118,7 +120,8 @@ static void cache_to_vbo(struct rtb_knob *self)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-static void draw(struct rtb_object *obj, rtb_draw_state_t state)
+static void
+draw(struct rtb_object *obj, rtb_draw_state_t state)
 {
 	SELF_FROM(obj);
 
@@ -164,7 +167,8 @@ static void draw(struct rtb_object *obj, rtb_draw_state_t state)
  * event dispatching
  */
 
-static int dispatch_value_change_event(struct rtb_knob *self)
+static int
+dispatch_value_change_event(struct rtb_knob *self)
 {
 	struct rtb_knob_event event = {
 		.type = KNOB_VALUE_CHANGE,
@@ -178,7 +182,8 @@ static int dispatch_value_change_event(struct rtb_knob *self)
  * event handling
  */
 
-static int handle_drag(struct rtb_knob *self, const struct rtb_drag_event *e)
+static int
+handle_drag(struct rtb_knob *self, const struct rtb_drag_event *e)
 {
 	float new_value;
 
@@ -197,8 +202,8 @@ static int handle_drag(struct rtb_knob *self, const struct rtb_drag_event *e)
 	return 1;
 }
 
-static int handle_mouse_down(struct rtb_knob *self,
-		const struct rtb_mouse_event *e)
+static int
+handle_mouse_down(struct rtb_knob *self, const struct rtb_mouse_event *e)
 {
 	switch (e->button) {
 	case RTB_MOUSE_BUTTON2:
@@ -214,7 +219,8 @@ static int handle_mouse_down(struct rtb_knob *self,
 	}
 }
 
-static int handle_key(struct rtb_knob *self, const struct rtb_key_event *e)
+static int
+handle_key(struct rtb_knob *self, const struct rtb_key_event *e)
 {
 	float step;
 
@@ -241,7 +247,8 @@ static int handle_key(struct rtb_knob *self, const struct rtb_key_event *e)
 	}
 }
 
-static int on_event(struct rtb_object *obj, const struct rtb_event *e)
+static int
+on_event(struct rtb_object *obj, const struct rtb_event *e)
 {
 	SELF_FROM(obj);
 
@@ -263,8 +270,9 @@ static int on_event(struct rtb_object *obj, const struct rtb_event *e)
 	return 0;
 }
 
-static void realize(struct rtb_object *obj,
-		struct rtb_object *parent, struct rtb_window *window)
+static void
+realize(struct rtb_object *obj, struct rtb_object *parent,
+		struct rtb_window *window)
 {
 	SELF_FROM(obj);
 	super.realize_cb(obj, parent, window);
@@ -275,7 +283,8 @@ static void realize(struct rtb_object *obj,
 	cache_to_vbo(self);
 }
 
-static void init_circle_indices()
+static void
+init_circle_indices()
 {
 	int i;
 
@@ -292,7 +301,8 @@ static void init_circle_indices()
  * public API
  */
 
-void rtb_knob_set_value(struct rtb_knob *self, float new_value)
+void
+rtb_knob_set_value(struct rtb_knob *self, float new_value)
 {
 	self->value = fmin(fmax(new_value, 0.f), 1.f);
 
@@ -306,7 +316,8 @@ void rtb_knob_set_value(struct rtb_knob *self, float new_value)
 		dispatch_value_change_event(self);
 }
 
-struct rtb_knob *rtb_knob_new()
+struct rtb_knob *
+rtb_knob_new()
 {
 	struct rtb_knob *self = calloc(1, sizeof(struct rtb_knob));
 	rtb_obj_init(RTB_OBJECT(self), &super);
@@ -328,7 +339,8 @@ struct rtb_knob *rtb_knob_new()
 	return self;
 }
 
-void rtb_knob_free(struct rtb_knob *self)
+void
+rtb_knob_free(struct rtb_knob *self)
 {
 	glDeleteBuffers(2, self->vbo);
 	rtb_obj_fini(RTB_OBJECT(self));

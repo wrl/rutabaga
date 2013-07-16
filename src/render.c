@@ -42,8 +42,8 @@ static const GLubyte quad_outline_indices[] = {
 	0, 1, 2, 3
 };
 
-static struct rtb_style_props *get_styleprops(struct rtb_object *obj,
-		rtb_draw_state_t state)
+static struct rtb_style_props *
+get_styleprops(struct rtb_object *obj, rtb_draw_state_t state)
 {
 	if (obj->style->available_styles & (1 << state))
 		return &obj->style->states[state];
@@ -57,7 +57,8 @@ static struct rtb_style_props *get_styleprops(struct rtb_object *obj,
  * shader variables
  */
 
-void rtb_render_use_style_bg(struct rtb_object *obj, rtb_draw_state_t state)
+void
+rtb_render_use_style_bg(struct rtb_object *obj, rtb_draw_state_t state)
 {
 	struct rtb_rgb_color *color = &(get_styleprops(obj, state))->bg;
 
@@ -68,7 +69,8 @@ void rtb_render_use_style_bg(struct rtb_object *obj, rtb_draw_state_t state)
 			color->a);
 }
 
-void rtb_render_use_style_fg(struct rtb_object *obj, rtb_draw_state_t state)
+void
+rtb_render_use_style_fg(struct rtb_object *obj, rtb_draw_state_t state)
 {
 	struct rtb_rgb_color *color = &(get_styleprops(obj, state))->fg;
 
@@ -79,18 +81,21 @@ void rtb_render_use_style_fg(struct rtb_object *obj, rtb_draw_state_t state)
 			color->a);
 }
 
-void rtb_render_set_color(struct rtb_object *obj,
+void
+rtb_render_set_color(struct rtb_object *obj,
 		GLfloat r, GLfloat g, GLfloat b, GLfloat a)
 {
 	glUniform4f(CONTEXT.shader->color, r, g, b, a);
 }
 
-void rtb_render_set_position(struct rtb_object *obj, float x, float y)
+void
+rtb_render_set_position(struct rtb_object *obj, float x, float y)
 {
 	glUniform2f(CONTEXT.shader->offset, x, y);
 }
 
-void rtb_render_set_modelview(struct rtb_object *obj, const GLfloat *matrix)
+void
+rtb_render_set_modelview(struct rtb_object *obj, const GLfloat *matrix)
 {
 	glUniformMatrix4fv(CONTEXT.shader->matrices.modelview,
 		1, GL_FALSE, matrix);
@@ -100,7 +105,8 @@ void rtb_render_set_modelview(struct rtb_object *obj, const GLfloat *matrix)
  * quad drawing
  */
 
-static void render_quad(struct rtb_object *obj, struct rtb_quad *quad,
+static void
+render_quad(struct rtb_object *obj, struct rtb_quad *quad,
 		GLenum mode, const GLubyte *indices, GLsizei count)
 {
 	struct rtb_shader *shader = CONTEXT.shader;
@@ -129,19 +135,22 @@ static void render_quad(struct rtb_object *obj, struct rtb_quad *quad,
 		glDisableVertexAttribArray(shader->tex_coord);
 }
 
-void rtb_render_quad_outline(struct rtb_object *obj, struct rtb_quad *quad)
+void
+rtb_render_quad_outline(struct rtb_object *obj, struct rtb_quad *quad)
 {
 	render_quad(obj, quad, GL_LINE_LOOP,
 			quad_outline_indices, ARRAY_LENGTH(quad_outline_indices));
 }
 
-void rtb_render_quad(struct rtb_object *obj, struct rtb_quad *quad)
+void
+rtb_render_quad(struct rtb_object *obj, struct rtb_quad *quad)
 {
 	render_quad(obj, quad, GL_TRIANGLE_STRIP,
 			quad_tri_indices, ARRAY_LENGTH(quad_tri_indices));
 }
 
-void rtb_render_clear(struct rtb_object *obj)
+void
+rtb_render_clear(struct rtb_object *obj)
 {
 	glClearColor(0.f, 0.f, 0.f, 0.f);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -151,7 +160,8 @@ void rtb_render_clear(struct rtb_object *obj)
  * state changes
  */
 
-void rtb_render_use_shader(struct rtb_object *obj, struct rtb_shader *shader)
+void
+rtb_render_use_shader(struct rtb_object *obj, struct rtb_shader *shader)
 {
 	GLuint program;
 
@@ -169,7 +179,8 @@ void rtb_render_use_shader(struct rtb_object *obj, struct rtb_shader *shader)
 		1, GL_FALSE, obj->window->identity.data);
 }
 
-void rtb_render_reset(struct rtb_object *obj)
+void
+rtb_render_reset(struct rtb_object *obj)
 {
 	rtb_render_use_shader(obj, NULL);
 
@@ -183,12 +194,14 @@ void rtb_render_reset(struct rtb_object *obj)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void rtb_render_push(struct rtb_object *obj)
+void
+rtb_render_push(struct rtb_object *obj)
 {
 	rtb_render_reset(obj);
 }
 
-void rtb_render_pop(struct rtb_object *obj)
+void
+rtb_render_pop(struct rtb_object *obj)
 {
 	glUseProgram(0);
 }

@@ -65,21 +65,22 @@
  * mouse events
  */
 
-static void handle_mouse_enter(struct xcb_window *win,
-		const xcb_generic_event_t *_ev)
+static void
+handle_mouse_enter(struct xcb_window *win, const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_enter_notify_event_t);
 	rtb_platform_mouse_enter_window(RTB_WINDOW(win), ev->event_x, ev->event_y);
 }
 
-static void handle_mouse_leave(struct xcb_window *win,
-		const xcb_generic_event_t *_ev)
+static void
+handle_mouse_leave(struct xcb_window *win, const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_leave_notify_event_t);
 	rtb_platform_mouse_leave_window(RTB_WINDOW(win), ev->event_x, ev->event_y);
 }
 
-static void handle_mouse_button_press(struct xcb_window *win,
+static void
+handle_mouse_button_press(struct xcb_window *win,
 		const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_button_press_event_t);
@@ -112,7 +113,8 @@ dont_handle:
 		free(reply);
 }
 
-static void handle_mouse_button_release(struct xcb_window *win,
+static void
+handle_mouse_button_release(struct xcb_window *win,
 		const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_button_release_event_t);
@@ -142,8 +144,8 @@ static void handle_mouse_button_release(struct xcb_window *win,
 			button, ev->event_x, ev->event_y);
 }
 
-static void handle_mouse_motion(struct xcb_window *win,
-		const xcb_generic_event_t *_ev)
+static void
+handle_mouse_motion(struct xcb_window *win, const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_motion_notify_event_t);
 
@@ -154,7 +156,8 @@ static void handle_mouse_motion(struct xcb_window *win,
  * keyboard events
  */
 
-static rtb_modkey_t modifier_state(struct xcb_rutabaga *xrtb)
+static rtb_modkey_t
+modifier_state(struct xcb_rutabaga *xrtb)
 {
 #define MOD_ACTIVE(xkb_mod, rtb_mod) \
 	((xkb_state_mod_index_is_active(xrtb->xkb_state, \
@@ -170,7 +173,8 @@ static rtb_modkey_t modifier_state(struct xcb_rutabaga *xrtb)
 #undef MOD_ACTIVE
 }
 
-static void dispatch_key_event(struct xcb_window *win,
+static void
+dispatch_key_event(struct xcb_window *win,
 		const xcb_key_press_event_t *ev, rtb_ev_type_t type)
 {
 	struct rtb_key_event rtb_ev = {.type = type};
@@ -196,8 +200,8 @@ static void dispatch_key_event(struct xcb_window *win,
 	rtb_dispatch_raw(RTB_OBJECT(win), RTB_EVENT(&rtb_ev));
 }
 
-static int handle_key_press(struct xcb_window *win,
-		const xcb_generic_event_t *_ev)
+static int
+handle_key_press(struct xcb_window *win, const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_key_press_event_t);
 
@@ -206,8 +210,8 @@ static int handle_key_press(struct xcb_window *win,
 	return 0;
 }
 
-static int handle_key_release(struct xcb_window *win,
-		const xcb_generic_event_t *_ev)
+static int
+handle_key_release(struct xcb_window *win, const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_key_release_event_t);
 
@@ -216,8 +220,8 @@ static int handle_key_release(struct xcb_window *win,
 	return 0;
 }
 
-static void handle_mapping_notify(struct xcb_window *win,
-		xcb_generic_event_t *_ev)
+static void
+handle_mapping_notify(struct xcb_window *win, xcb_generic_event_t *_ev)
 {
 	struct xcb_window *xwin = (void *) win;
 
@@ -228,8 +232,8 @@ static void handle_mapping_notify(struct xcb_window *win,
  * window structure events
  */
 
-static void handle_visibility_notify(struct xcb_window *win,
-		xcb_generic_event_t *_ev)
+static void
+handle_visibility_notify(struct xcb_window *win, xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_visibility_notify_event_t);
 
@@ -248,8 +252,8 @@ static void handle_visibility_notify(struct xcb_window *win,
 	}
 }
 
-static void handle_configure_notify(struct xcb_window *win,
-		xcb_generic_event_t *_ev)
+static void
+handle_configure_notify(struct xcb_window *win, xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_configure_notify_event_t);
 
@@ -262,8 +266,8 @@ static void handle_configure_notify(struct xcb_window *win,
 	}
 }
 
-static void handle_client_message(struct xcb_window *win,
-		xcb_generic_event_t *_ev)
+static void
+handle_client_message(struct xcb_window *win, xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_client_message_event_t);
 	struct xcb_window *xwin = (void *) win;
@@ -280,8 +284,8 @@ static void handle_client_message(struct xcb_window *win,
  * bullshit xkb fuck
  */
 
-static int handle_xkb_new_keyboard(struct xcb_window *win,
-		xcb_generic_event_t *_ev)
+static int
+handle_xkb_new_keyboard(struct xcb_window *win, xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_xkb_new_keyboard_notify_event_t);
 
@@ -291,8 +295,8 @@ static int handle_xkb_new_keyboard(struct xcb_window *win,
 	return 0;
 }
 
-static int handle_xkb_state_notify(struct xcb_window *win,
-		xcb_generic_event_t *_ev)
+static int
+handle_xkb_state_notify(struct xcb_window *win, xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_xkb_state_notify_event_t);
 
@@ -307,8 +311,8 @@ static int handle_xkb_state_notify(struct xcb_window *win,
 	return 0;
 }
 
-static int handle_xkb_event(struct xcb_window *win,
-		xcb_generic_event_t *_ev)
+static int
+handle_xkb_event(struct xcb_window *win, xcb_generic_event_t *_ev)
 {
 	int type = ((xcb_xkb_new_keyboard_notify_event_t *) _ev)->xkbType;
 
@@ -329,7 +333,8 @@ static int handle_xkb_event(struct xcb_window *win,
  * ~mystery~ events
  */
 
-static int handle_secret_xlib_event(Display *dpy, xcb_generic_event_t *ev)
+static int
+handle_secret_xlib_event(Display *dpy, xcb_generic_event_t *ev)
 {
 	unsigned int response_type = ev->response_type & ~0x80;
 	int (*proc)(Display *, XEvent *, xEvent *);
@@ -356,8 +361,8 @@ static int handle_secret_xlib_event(Display *dpy, xcb_generic_event_t *ev)
  * actual event loop
  */
 
-int handle_generic_event(struct xcb_window *win,
-		xcb_generic_event_t *ev)
+int
+handle_generic_event(struct xcb_window *win, xcb_generic_event_t *ev)
 {
 	int type = ev->response_type & ~0x80;
 
@@ -443,8 +448,8 @@ int handle_generic_event(struct xcb_window *win,
 	return 0;
 }
 
-static int drain_xcb_event_queue(struct rtb_window *win,
-		xcb_connection_t *conn)
+static int
+drain_xcb_event_queue(struct rtb_window *win, xcb_connection_t *conn)
 {
 	xcb_generic_event_t *ev;
 	int ret;
@@ -467,10 +472,13 @@ static int drain_xcb_event_queue(struct rtb_window *win,
 
 /**
  * timespec utils
+ *
+ * timespec_copy_inc(), timespec_diff(), and timespec_cmp() are made
+ * available under the creative commons CC0 (i.e. public domain)
  */
 
-static void timespec_copy_inc(struct timespec *dst, struct timespec *src,
-		long by_nsec)
+static void
+timespec_copy_inc(struct timespec *dst, struct timespec *src, long by_nsec)
 {
 	dst->tv_sec  = src->tv_sec;
 	dst->tv_nsec = src->tv_nsec + by_nsec;
@@ -484,8 +492,8 @@ static void timespec_copy_inc(struct timespec *dst, struct timespec *src,
 	}
 }
 
-static void timespec_diff(struct timespec *diff,
-		struct timespec *a, struct timespec *b)
+static void
+timespec_diff(struct timespec *diff, struct timespec *a, struct timespec *b)
 {
 	diff->tv_sec  = a->tv_sec  - b->tv_sec;
 	diff->tv_nsec = a->tv_nsec - b->tv_nsec;
@@ -497,8 +505,8 @@ static void timespec_diff(struct timespec *diff,
  *
  * finest granularity is 1 nanosecond, coarsest is 1 second.
  */
-static int timespec_cmp(struct timespec *a, struct timespec *b,
-		long granularity)
+static int
+timespec_cmp(struct timespec *a, struct timespec *b, long granularity)
 {
 	struct timespec diff;
 	int64_t nsec_diff;
@@ -524,7 +532,8 @@ static int timespec_cmp(struct timespec *a, struct timespec *b,
 #define FRAME_NSEC (999999999 / FPS)
 #define FRAME_MSEC (999 / FPS)
 
-void rtb_event_loop(struct rutabaga *r)
+void
+rtb_event_loop(struct rutabaga *r)
 {
 	struct xcb_rutabaga *xrtb = (void *) r;
 	struct rtb_window *win = r->win;
