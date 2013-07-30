@@ -501,6 +501,8 @@ rtb_window *window_impl_open(struct rutabaga *rtb,
 			1, &xrtb->atoms.wm_delete_window);
 
 	free(fb_configs);
+
+	pthread_mutex_init(&self->lock, NULL);
 	return RTB_WINDOW(self);
 
 err_win_map:

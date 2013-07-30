@@ -192,7 +192,6 @@ rtb_window_open(struct rutabaga *r,
 		goto err_window_impl;
 
 	rtb_surface_init(RTB_SURFACE(self), &super);
-	pthread_mutex_init(&self->lock, NULL);
 
 	self->style_list = rtb_style_get_defaults();
 
