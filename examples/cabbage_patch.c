@@ -356,7 +356,8 @@ static void list_ports(jack_client_t *jc)
 		clp = client_get_port(client, port_name, len);
 
 		for (j = 0; cxns[j]; j++)
-			connect(jc, clp, cxns[j]);
+			if (*cxns[j])
+				connect(jc, clp, cxns[j]);
 
 		jack_free(cxns);
 	}
