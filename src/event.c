@@ -30,16 +30,16 @@
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/event.h"
-#include "rutabaga/object.h"
+#include "rutabaga/element.h"
 
 static const struct rtb_event_handler *
-find_handler_for(struct rtb_object *obj, rtb_ev_type_t type)
+find_handler_for(struct rtb_element *elem, rtb_ev_type_t type)
 {
 	struct rtb_event_handler *handlers;
 	int i, size;
 
-	handlers = obj->handlers.data;
-	size = obj->handlers.size;
+	handlers = elem->handlers.data;
+	size = elem->handlers.size;
 
 	for (i = 0; i < size; i++)
 		if (handlers[i].type == type)
@@ -49,13 +49,13 @@ find_handler_for(struct rtb_object *obj, rtb_ev_type_t type)
 }
 
 static int
-replace_handler(struct rtb_object *obj, struct rtb_event_handler *with)
+replace_handler(struct rtb_element *elem, struct rtb_event_handler *with)
 {
 	struct rtb_event_handler *handlers;
 	int i, size;
 
-	handlers = obj->handlers.data;
-	size = obj->handlers.size;
+	handlers = elem->handlers.data;
+	size = elem->handlers.size;
 
 	for (i = 0; i < size; i++) {
 		/* if there's already a handler defined for this event type,
@@ -74,7 +74,7 @@ replace_handler(struct rtb_object *obj, struct rtb_event_handler *with)
  */
 
 int
-rtb_handle(struct rtb_object *target, const struct rtb_event *event)
+rtb_handle(struct rtb_element *target, const struct rtb_event *event)
 {
 	const struct rtb_event_handler *h;
 
@@ -85,17 +85,17 @@ rtb_handle(struct rtb_object *target, const struct rtb_event *event)
 	return 1;
 }
 
-struct rtb_object *
-rtb_dispatch_raw(struct rtb_object *target, struct rtb_event *event)
+struct rtb_element *
+rtb_dispatch_raw(struct rtb_element *target, struct rtb_event *event)
 {
-	while (!rtb_obj_deliver_event(target, event) && target->parent)
+	while (!rtb_elem_deliver_event(target, event) && target->parent)
 		target = target->parent;
 
 	return target;
 }
 
-struct rtb_object *
-rtb_dispatch_simple(struct rtb_object *target, rtb_ev_type_t type)
+struct rtb_element *
+rtb_dispatch_simple(struct rtb_element *target, rtb_ev_type_t type)
 {
 	struct rtb_event event = {
 		.type = type
@@ -105,7 +105,7 @@ rtb_dispatch_simple(struct rtb_object *target, rtb_ev_type_t type)
 }
 
 int
-rtb_register_handler(struct rtb_object *target, rtb_ev_type_t type,
+rtb_register_handler(struct rtb_element *target, rtb_ev_type_t type,
 		rtb_event_cb_t cb, void *user_arg)
 {
 	struct rtb_event_handler handler = {
@@ -124,7 +124,7 @@ rtb_register_handler(struct rtb_object *target, rtb_ev_type_t type,
 }
 
 void
-rtb_unregister_handler(struct rtb_object *target, rtb_ev_type_t type)
+rtb_unregister_handler(struct rtb_element *target, rtb_ev_type_t type)
 {
 	const struct rtb_event_handler *handlers;
 	int i, size;

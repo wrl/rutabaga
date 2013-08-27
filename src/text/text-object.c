@@ -27,7 +27,7 @@
 #include <stdlib.h>
 
 #include "rutabaga/rutabaga.h"
-#include "rutabaga/object.h"
+#include "rutabaga/element.h"
 #include "rutabaga/window.h"
 #include "rutabaga/render.h"
 #include "rutabaga/shader.h"
@@ -166,7 +166,7 @@ rtb_text_object_update(struct rtb_text_object *self,
 
 void
 rtb_text_object_render(struct rtb_text_object *self,
-		struct rtb_object *parent, float x, float y, rtb_draw_state_t state)
+		struct rtb_element *parent, float x, float y, rtb_draw_state_t state)
 {
 	struct rtb_font_shader *shader;
 	struct rtb_font_manager *fm;

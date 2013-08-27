@@ -49,13 +49,13 @@
 #include "shaders/patchbay-canvas.glsl.h"
 #include "style/assets/tile.tga.h"
 
-#define SELF_FROM(obj) \
-	struct rtb_patchbay *self = RTB_OBJECT_AS(obj, rtb_patchbay)
+#define SELF_FROM(elem) \
+	struct rtb_patchbay *self = RTB_OBJECT_AS(elem, rtb_patchbay)
 
 #define CONNECTION_COLOR	RGB(0x404F3C)
 #define DISCONNECT_COLOR	RGB(0x69181B)
 
-static struct rtb_object_implementation super;
+static struct rtb_element_implementation super;
 
 /**
  * custom openGL stuff
@@ -184,12 +184,12 @@ cache_to_vbo(struct rtb_patchbay *self)
 static void
 draw_bg(struct rtb_patchbay *self)
 {
-	struct rtb_object *obj = RTB_OBJECT(self);
+	struct rtb_element *elem = RTB_OBJECT(self);
 	struct rtb_style *style = self->style;
 
-	rtb_render_push(obj);
-	rtb_render_use_shader(obj, RTB_SHADER(&shader));
-	rtb_render_set_position(obj, 0, 0);
+	rtb_render_push(elem);
+	rtb_render_use_shader(elem, RTB_SHADER(&shader));
+	rtb_render_set_position(elem, 0, 0);
 
 	/* draw the background */
 	glBindBuffer(GL_ARRAY_BUFFER, self->bg_vbo[0]);
@@ -224,7 +224,7 @@ draw_bg(struct rtb_patchbay *self)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	rtb_render_pop(obj);
+	rtb_render_pop(elem);
 }
 
 static void
@@ -246,10 +246,10 @@ draw_patches(struct rtb_patchbay *self)
 	int disconnect_in_progress = 0;
 	struct rtb_patchbay_patch *iter;
 	struct rtb_patchbay_port *from, *to;
-	struct rtb_object *obj = RTB_OBJECT(self);
+	struct rtb_element *elem = RTB_OBJECT(self);
 
-	rtb_render_push(obj);
-	rtb_render_set_position(obj, 0, 0);
+	rtb_render_push(elem);
+	rtb_render_set_position(elem, 0, 0);
 
 	glEnable(GL_LINE_SMOOTH);
 	glLineWidth(3.5f);
@@ -272,9 +272,9 @@ draw_patches(struct rtb_patchbay *self)
 			continue;
 		} else if (self->patch_in_progress.from == from ||
 				self->patch_in_progress.from == to)
-			rtb_render_set_color(obj, CONNECTION_COLOR, .9f);
+			rtb_render_set_color(elem, CONNECTION_COLOR, .9f);
 		else
-			rtb_render_set_color(obj, CONNECTION_COLOR, .6f);
+			rtb_render_set_color(elem, CONNECTION_COLOR, .6f);
 
 		draw_line(line);
 	}
@@ -305,11 +305,11 @@ draw_patches(struct rtb_patchbay *self)
 		}
 
 		if (disconnect_in_progress)
-			rtb_render_set_color(obj, DISCONNECT_COLOR, .9f);
+			rtb_render_set_color(elem, DISCONNECT_COLOR, .9f);
 		else if (to)
-			rtb_render_set_color(obj, CONNECTION_COLOR, .8f);
+			rtb_render_set_color(elem, CONNECTION_COLOR, .8f);
 		else
-			rtb_render_set_color(obj, CONNECTION_COLOR, .4f);
+			rtb_render_set_color(elem, CONNECTION_COLOR, .4f);
 
 		draw_line(line);
 	}
@@ -317,31 +317,31 @@ draw_patches(struct rtb_patchbay *self)
 	glDisableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	rtb_render_pop(obj);
+	rtb_render_pop(elem);
 }
 
 static void
-draw(struct rtb_object *obj, rtb_draw_state_t state)
+draw(struct rtb_element *elem, rtb_draw_state_t state)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
 	draw_bg(self);
 	draw_patches(self);
 
-	super.draw_cb(obj, state);
+	super.draw_cb(elem, state);
 }
 
 /**
- * object implementation
+ * element implementation
  */
 
 static void
-recalculate(struct rtb_object *obj, struct rtb_object *instigator,
+recalculate(struct rtb_element *elem, struct rtb_element *instigator,
 		rtb_ev_direction_t direction)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
-	super.recalc_cb(obj, instigator, direction);
+	super.recalc_cb(elem, instigator, direction);
 	rtb_surface_invalidate(RTB_SURFACE(self));
 	cache_to_vbo(self);
 }
@@ -349,13 +349,13 @@ recalculate(struct rtb_object *obj, struct rtb_object *instigator,
 static void
 reposition(struct rtb_patchbay *self, struct rtb_point *by)
 {
-	struct rtb_object *iter;
+	struct rtb_element *iter;
 
 	TAILQ_FOREACH(iter, &self->children, child) {
 		iter->x += by->x;
 		iter->y += by->y;
 
-		rtb_obj_trigger_recalc(iter, RTB_OBJECT(self),
+		rtb_elem_trigger_recalc(iter, RTB_OBJECT(self),
 				RTB_DIRECTION_LEAFWARD);
 	}
 
@@ -363,7 +363,7 @@ reposition(struct rtb_patchbay *self, struct rtb_point *by)
 	self->texture_offset.y -= by->y;
 
 	rtb_surface_invalidate(RTB_SURFACE(self));
-	rtb_obj_mark_dirty(RTB_OBJECT(self));
+	rtb_elem_mark_dirty(RTB_OBJECT(self));
 }
 
 static int
@@ -387,9 +387,9 @@ handle_drag(struct rtb_patchbay *self, struct rtb_drag_event *e)
 }
 
 static int
-on_event(struct rtb_object *obj, const struct rtb_event *e)
+on_event(struct rtb_element *elem, const struct rtb_event *e)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
 	switch (e->type) {
 	case RTB_DRAG_START:
@@ -398,23 +398,23 @@ on_event(struct rtb_object *obj, const struct rtb_event *e)
 			return 1;
 
 	default:
-		return super.event_cb(obj, e);
+		return super.event_cb(elem, e);
 	}
 }
 
 static void
-realize(struct rtb_object *obj, struct rtb_object *parent,
+realize(struct rtb_element *elem, struct rtb_element *parent,
 		struct rtb_window *window)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
-	super.realize_cb(obj, parent, window);
+	super.realize_cb(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.patchbay");
 
 	cache_to_vbo(self);
 
-	rtb_layout_vpack_top(obj);
+	rtb_layout_vpack_top(elem);
 }
 
 /**
@@ -422,9 +422,9 @@ realize(struct rtb_object *obj, struct rtb_object *parent,
  */
 
 static void
-layout(struct rtb_object *obj)
+layout(struct rtb_element *elem)
 {
-	rtb_layout_unmanaged(obj);
+	rtb_layout_unmanaged(elem);
 }
 
 /**

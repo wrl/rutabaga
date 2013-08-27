@@ -27,12 +27,12 @@
 #pragma once
 
 #include "rutabaga/types.h"
-#include "rutabaga/object.h"
+#include "rutabaga/element.h"
 
-typedef struct rtb_object rtb_container_t;
+typedef struct rtb_element rtb_container_t;
 
-void rtb_container_add(rtb_container_t *container, struct rtb_object *obj);
+void rtb_container_add(rtb_container_t *container, struct rtb_element *elem);
 
 int rtb_container_init(rtb_container_t *,
-		struct rtb_object_implementation *impl);
+		struct rtb_element_implementation *impl);
 rtb_container_t *rtb_container_new(void);

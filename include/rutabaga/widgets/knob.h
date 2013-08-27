@@ -42,7 +42,7 @@ struct rtb_knob_event {
 };
 
 struct rtb_knob {
-	RTB_INHERIT(rtb_object);
+	RTB_INHERIT(rtb_element);
 
 	/* public *********************************/
 	float origin;

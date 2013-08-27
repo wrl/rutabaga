@@ -27,7 +27,7 @@
 #pragma once
 
 #include "rutabaga/rutabaga.h"
-#include "rutabaga/object.h"
+#include "rutabaga/element.h"
 #include "rutabaga/event.h"
 #include "rutabaga/quad.h"
 
@@ -44,7 +44,7 @@ struct rtb_button_event {
 };
 
 struct rtb_button {
-	RTB_INHERIT(rtb_object);
+	RTB_INHERIT(rtb_element);
 
 	/* private ********************************/
 	struct rtb_label label;
@@ -54,7 +54,7 @@ struct rtb_button {
 void rtb_button_set_label(struct rtb_button *self, const rtb_utf8_t *text);
 
 int rtb_button_init(struct rtb_button *,
-		struct rtb_object_implementation *impl);
+		struct rtb_element_implementation *impl);
 void rtb_button_fini(struct rtb_button *);
 struct rtb_button *rtb_button_new(const rtb_utf8_t *label);
 void rtb_button_free(struct rtb_button *);

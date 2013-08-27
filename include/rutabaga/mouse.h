@@ -58,7 +58,7 @@ struct rtb_mouse_event {
 	RTB_INHERIT(rtb_event);
 
 	struct rtb_window *window;
-	struct rtb_object *target;
+	struct rtb_element *target;
 
 	struct rtb_point cursor;
 	rtb_mouse_buttons_t button;
@@ -82,13 +82,13 @@ struct rtb_drag_event {
 struct rtb_mouse {
 	RTB_INHERIT(rtb_point);
 
-	struct rtb_object *object_underneath;
+	struct rtb_element *element_underneath;
 
 	struct rtb_mouse_button {
 		struct rtb_point drag_last;
 		struct rtb_point drag_start;
 
-		struct rtb_object *target;
+		struct rtb_element *target;
 
 		enum {
 			UP,

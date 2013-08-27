@@ -40,12 +40,12 @@
 #include "private/util.h"
 #include "private/utf8.h"
 
-#define SELF_FROM(obj) \
-	struct rtb_text_input *self = RTB_OBJECT_AS(obj, rtb_text_input)
+#define SELF_FROM(elem) \
+	struct rtb_text_input *self = RTB_OBJECT_AS(elem, rtb_text_input)
 
 #define UTF8_IS_CONTINUATION(byte) (((byte) & 0xC0) == 0x80)
 
-static struct rtb_object_implementation super;
+static struct rtb_element_implementation super;
 
 static const GLubyte line_indices[] = {
 	0, 1
@@ -84,7 +84,7 @@ update_cursor(struct rtb_text_input *self)
 		self->label_offset += self->inner_rect.x2 - self->label.x2;
 		self->label_offset = MIN(self->label_offset, 0);
 
-		rtb_obj_trigger_recalc(RTB_OBJECT(self), RTB_OBJECT(self),
+		rtb_elem_trigger_recalc(RTB_OBJECT(self), RTB_OBJECT(self),
 				RTB_DIRECTION_LEAFWARD);
 		return;
 	}
@@ -97,7 +97,7 @@ update_cursor(struct rtb_text_input *self)
 		else
 			self->label_offset += self->inner_rect.x2 - x;
 
-		rtb_obj_trigger_recalc(RTB_OBJECT(self), RTB_OBJECT(self),
+		rtb_elem_trigger_recalc(RTB_OBJECT(self), RTB_OBJECT(self),
 				RTB_DIRECTION_LEAFWARD);
 		return;
 	}
@@ -121,17 +121,17 @@ update_cursor(struct rtb_text_input *self)
  */
 
 static void
-draw(struct rtb_object *obj, rtb_draw_state_t state)
+draw(struct rtb_element *elem, rtb_draw_state_t state)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
-	rtb_render_push(obj);
-	rtb_render_clear(obj);
+	rtb_render_push(elem);
+	rtb_render_clear(elem);
 
-	super.draw_cb(obj, state);
+	super.draw_cb(elem, state);
 
-	rtb_render_reset(obj);
-	rtb_render_set_position(obj, 0, 0);
+	rtb_render_reset(elem);
+	rtb_render_set_position(elem, 0, 0);
 
 	if (self->window->focus == RTB_OBJECT(self)) {
 		glBindBuffer(GL_ARRAY_BUFFER, self->cursor_vbo);
@@ -140,17 +140,17 @@ draw(struct rtb_object *obj, rtb_draw_state_t state)
 
 		glLineWidth(1.f);
 
-		rtb_render_set_color(obj, 1.f, 1.f, 1.f, 1.f);
+		rtb_render_set_color(elem, 1.f, 1.f, 1.f, 1.f);
 
 		glDrawArrays(GL_LINES, 0, 2);
 	}
 
-	rtb_render_use_style_bg(obj, state);
+	rtb_render_use_style_bg(elem, state);
 	glLineWidth(2.f);
 
-	rtb_render_quad_outline(obj, &self->bg_quad);
+	rtb_render_quad_outline(elem, &self->bg_quad);
 
-	rtb_render_pop(obj);
+	rtb_render_pop(elem);
 }
 
 /**
@@ -184,7 +184,7 @@ delete_u32(struct rtb_text_input *self)
 }
 
 /**
- * object implementation
+ * element implementation
  */
 
 static void
@@ -201,7 +201,7 @@ fix_cursor(struct rtb_text_input *self)
 			rtb_text_object_count_glyphs(self->label.tobj);
 
 	update_cursor(self);
-	rtb_obj_mark_dirty(RTB_OBJECT(self));
+	rtb_elem_mark_dirty(RTB_OBJECT(self));
 }
 
 static void
@@ -266,9 +266,9 @@ handle_key_press(struct rtb_text_input *self, const struct rtb_key_event *e)
 }
 
 static int
-on_event(struct rtb_object *obj, const struct rtb_event *e)
+on_event(struct rtb_element *elem, const struct rtb_event *e)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
 	switch (e->type) {
 	case RTB_MOUSE_CLICK:
@@ -281,18 +281,18 @@ on_event(struct rtb_object *obj, const struct rtb_event *e)
 		break;
 
 	default:
-		return super.event_cb(obj, e);
+		return super.event_cb(elem, e);
 	}
 
 	return 0;
 }
 static void
-recalculate(struct rtb_object *obj, struct rtb_object *instigator,
+recalculate(struct rtb_element *elem, struct rtb_element *instigator,
 		rtb_ev_direction_t direction)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
-	super.recalc_cb(obj, instigator, direction);
+	super.recalc_cb(elem, instigator, direction);
 	self->outer_pad.y = self->label.outer_pad.y;
 
 	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
@@ -300,12 +300,12 @@ recalculate(struct rtb_object *obj, struct rtb_object *instigator,
 }
 
 static void
-realize(struct rtb_object *obj, struct rtb_object *parent,
+realize(struct rtb_element *elem, struct rtb_element *parent,
 		struct rtb_window *window)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
-	super.realize_cb(obj, parent, window);
+	super.realize_cb(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.text-input");
 
@@ -314,30 +314,30 @@ realize(struct rtb_object *obj, struct rtb_object *parent,
 }
 
 static void
-layout(struct rtb_object *obj)
+layout(struct rtb_element *elem)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
 	struct rtb_size avail, child;
 	struct rtb_point position;
-	struct rtb_object *iter;
+	struct rtb_element *iter;
 	float ystart;
 
-	avail.w = obj->w - (obj->outer_pad.x * 2);
-	avail.h = obj->h - (obj->outer_pad.y * 2);
+	avail.w = elem->w - (elem->outer_pad.x * 2);
+	avail.h = elem->h - (elem->outer_pad.y * 2);
 
-	position.x = obj->x + obj->outer_pad.x + self->label_offset;
-	ystart = obj->y + obj->outer_pad.y;
+	position.x = elem->x + elem->outer_pad.x + self->label_offset;
+	ystart = elem->y + elem->outer_pad.y;
 
-	TAILQ_FOREACH(iter, &obj->children, child) {
+	TAILQ_FOREACH(iter, &elem->children, child) {
 		iter->size_cb(iter, &avail, &child);
 		position.y = ystart + valign(avail.h, child.h, iter->align);
 
-		rtb_obj_set_position_from_point(iter, &position);
-		rtb_obj_set_size(iter, &child);
+		rtb_elem_set_position_from_point(iter, &position);
+		rtb_elem_set_size(iter, &child);
 
-		avail.w    -= child.w + obj->inner_pad.x;
-		position.x += child.w + obj->inner_pad.x;
+		avail.w    -= child.w + elem->inner_pad.x;
+		position.x += child.w + elem->inner_pad.x;
 	}
 }
 
@@ -365,13 +365,13 @@ rtb_text_input_get_text(struct rtb_text_input *self)
 
 int
 rtb_text_input_init(struct rutabaga *rtb, struct rtb_text_input *self,
-		struct rtb_object_implementation *impl)
+		struct rtb_element_implementation *impl)
 {
-	rtb_obj_init(RTB_OBJECT(self), &super);
+	rtb_elem_init(RTB_OBJECT(self), &super);
 	rtb_quad_init(&self->bg_quad);
 
 	rtb_label_init(&self->label, &self->label.impl);
-	rtb_obj_add_child(RTB_OBJECT(self), RTB_OBJECT(&self->label),
+	rtb_elem_add_child(RTB_OBJECT(self), RTB_OBJECT(&self->label),
 			RTB_ADD_HEAD);
 
 	rtb_text_buffer_init(rtb, &self->text);
@@ -409,7 +409,7 @@ rtb_text_input_fini(struct rtb_text_input *self)
 	glDeleteBuffers(1, &self->cursor_vbo);
 
 	rtb_label_fini(&self->label);
-	rtb_obj_fini(RTB_OBJECT(self));
+	rtb_elem_fini(RTB_OBJECT(self));
 }
 
 struct rtb_text_input *

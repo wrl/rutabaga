@@ -57,9 +57,9 @@
 	 (char *)(void *){ptr} - offsetof(type, member))
 #endif
 
-#define RTB_UPCAST(obj, to) (&(obj)->RTB_INHERITED_MEMBER(to))
-#define RTB_DOWNCAST(obj, to, from)		\
-	RTB_CONTAINER_OF(obj, struct to, RTB_INHERITED_MEMBER(from))
+#define RTB_UPCAST(x, to) (&(x)->RTB_INHERITED_MEMBER(to))
+#define RTB_DOWNCAST(x, to, from)		\
+	RTB_CONTAINER_OF(x, struct to, RTB_INHERITED_MEMBER(from))
 
 /**
  * enumerations

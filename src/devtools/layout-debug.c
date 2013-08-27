@@ -37,7 +37,7 @@ static const GLubyte box_indices[] = {
 };
 
 static void
-cache_to_vbo(struct rtb_object *self)
+cache_to_vbo(struct rtb_element *self)
 {
 	GLfloat x, y, w, h, box[4][2];
 
@@ -62,7 +62,7 @@ cache_to_vbo(struct rtb_object *self)
 }
 
 void
-rtb_debug_draw_bounding_box(struct rtb_object *self)
+rtb_debug_draw_bounding_box(struct rtb_element *self)
 {
 	rtb_render_push(self);
 	rtb_render_set_position(self, 0.f, 0.f);

@@ -30,7 +30,7 @@
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/text-buffer.h"
-#include "rutabaga/object.h"
+#include "rutabaga/element.h"
 #include "rutabaga/event.h"
 #include "rutabaga/quad.h"
 
@@ -39,7 +39,7 @@
 #define RTB_TEXT_INPUT(x) RTB_UPCAST(x, rtb_text_input)
 
 struct rtb_text_input {
-	RTB_INHERIT(rtb_object);
+	RTB_INHERIT(rtb_element);
 
 	/* private ********************************/
 	int cursor_position;
@@ -57,7 +57,7 @@ int rtb_text_input_set_text(struct rtb_text_input *,
 const rtb_utf8_t *rtb_text_input_get_text(struct rtb_text_input *);
 
 int rtb_text_input_init(struct rutabaga *, struct rtb_text_input *,
-		struct rtb_object_implementation *impl);
+		struct rtb_element_implementation *impl);
 void rtb_text_input_fini(struct rtb_text_input *);
 struct rtb_text_input *rtb_text_input_new(struct rutabaga *);
 void rtb_text_input_free(struct rtb_text_input *);

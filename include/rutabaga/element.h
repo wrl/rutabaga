@@ -34,40 +34,46 @@
 #include "bsd/queue.h"
 #include "wwrl/vector.h"
 
-#define RTB_OBJECT(x) RTB_UPCAST(x, rtb_object)
-#define RTB_OBJECT_AS(x, type) RTB_DOWNCAST(x, type, rtb_object)
+#define RTB_OBJECT(x) RTB_UPCAST(x, rtb_element)
+#define RTB_OBJECT_AS(x, type) RTB_DOWNCAST(x, type, rtb_element)
 
 typedef enum {
 	/* all events, regardless of whether they are already handled by
-	 * the object in question, are passed to client code after the
-	 * object's event_cb has been run. */
-	RTB_OBJ_FLAG_EVENT_SNOOP = 0x01,
-} rtb_obj_flags_t;
+	 * the element in question, are passed to client code after the
+	 * element's event_cb has been run. */
+	RTB_ELEM_FLAG_EVENT_SNOOP = 0x01,
+} rtb_elem_flags_t;
 
 typedef enum {
 	RTB_STATE_UNREALIZED = 0,
 	RTB_STATE_REALIZED   = 1
-} rtb_obj_state_t;
+} rtb_elem_state_t;
 
 /**
- * object implementation
+ * element implementation
  */
 
-typedef void (*rtb_draw_cb_t)(struct rtb_object *obj, rtb_draw_state_t state);
-typedef int  (*rtb_internal_event_cb_t)(struct rtb_object *obj,
-		const struct rtb_event *event);
-typedef void (*rtb_realize_cb_t)(struct rtb_object *obj,
-		struct rtb_object *parent, struct rtb_window *window);
-typedef void (*rtb_layout_cb_t)(struct rtb_object *);
-typedef void (*rtb_size_cb_t)(struct rtb_object *obj,
-		const struct rtb_size *avail, struct rtb_size *want);
-typedef void (*rtb_recalc_cb_t)(struct rtb_object *obj,
-		struct rtb_object *instigator, rtb_ev_direction_t direction);
-typedef void (*rtb_attach_child_cb_t)(struct rtb_object *obj,
-		struct rtb_object *child);
-typedef void (*rtb_mark_dirty_cb_t)(struct rtb_object *);
+typedef void (*rtb_draw_cb_t)
+	(struct rtb_element *elem, rtb_draw_state_t state);
+typedef int  (*rtb_internal_event_cb_t)
+	(struct rtb_element *elem, const struct rtb_event *event);
+typedef void (*rtb_realize_cb_t)
+	(struct rtb_element *elem, struct rtb_element *parent,
+	 struct rtb_window *window);
+typedef void (*rtb_layout_cb_t)
+	(struct rtb_element *);
+typedef void (*rtb_size_cb_t)
+	(struct rtb_element *elem, const struct rtb_size *avail,
+	 struct rtb_size *want);
+typedef void (*rtb_recalc_cb_t)
+	(struct rtb_element *elem,
+	 struct rtb_element *instigator, rtb_ev_direction_t direction);
+typedef void (*rtb_attach_child_cb_t)
+	(struct rtb_element *elem, struct rtb_element *child);
+typedef void (*rtb_mark_dirty_cb_t)
+	(struct rtb_element *);
 
-struct rtb_object_implementation {
+struct rtb_element_implementation {
 	rtb_size_cb_t size_cb;
 	rtb_layout_cb_t layout_cb;
 	rtb_draw_cb_t draw_cb;
@@ -79,10 +85,10 @@ struct rtb_object_implementation {
 };
 
 /**
- * and finally rtb_object itself
+ * and finally rtb_element itself
  */
 
-struct rtb_object {
+struct rtb_element {
 	RTB_INHERIT(rtb_type_atom);
 
 	/* public *********************************/
@@ -90,9 +96,9 @@ struct rtb_object {
 	struct rtb_size min_size;
 	struct rtb_size max_size;
 
-	rtb_obj_flags_t flags;
+	rtb_elem_flags_t flags;
 
-	RTB_INHERIT_AS(rtb_object_implementation, impl);
+	RTB_INHERIT_AS(rtb_element_implementation, impl);
 
 	struct rtb_style *style;
 
@@ -101,43 +107,43 @@ struct rtb_object {
 	struct rtb_padding outer_pad;
 	struct rtb_padding inner_pad;
 
-	TAILQ_HEAD(children, rtb_object) children;
+	TAILQ_HEAD(children, rtb_element) children;
 
 	/* private ********************************/
-	rtb_obj_state_t state;
+	rtb_elem_state_t state;
 	struct rtb_rect inner_rect;
 	rtb_visibility_t visibility;
 
 	int mouse_in;
 
-	struct rtb_object  *parent;
+	struct rtb_element  *parent;
 	struct rtb_window  *window;
 	struct rtb_surface *surface;
 
 	VECTOR(handlers, struct rtb_event_handler) handlers;
-	TAILQ_ENTRY(rtb_object) child;
-	TAILQ_ENTRY(rtb_object) render_entry;
+	TAILQ_ENTRY(rtb_element) child;
+	TAILQ_ENTRY(rtb_element) render_entry;
 };
 
-int rtb_obj_deliver_event(struct rtb_object *, const struct rtb_event *e);
-void rtb_obj_draw(struct rtb_object *, rtb_draw_state_t state);
-void rtb_obj_realize(struct rtb_object *, struct rtb_object *parent,
+int rtb_elem_deliver_event(struct rtb_element *, const struct rtb_event *e);
+void rtb_elem_draw(struct rtb_element *, rtb_draw_state_t state);
+void rtb_elem_realize(struct rtb_element *, struct rtb_element *parent,
 		struct rtb_surface *surface, struct rtb_window *window);
 
-void rtb_obj_mark_dirty(struct rtb_object *);
-void rtb_obj_trigger_recalc(struct rtb_object *,
-		struct rtb_object *instigator, rtb_ev_direction_t direction);
+void rtb_elem_mark_dirty(struct rtb_element *);
+void rtb_elem_trigger_recalc(struct rtb_element *,
+		struct rtb_element *instigator, rtb_ev_direction_t direction);
 
-void rtb_obj_set_size_cb(struct rtb_object *, rtb_size_cb_t size_cb);
-void rtb_obj_set_layout(struct rtb_object *, rtb_layout_cb_t layout_cb);
-void rtb_obj_set_position_from_point(struct rtb_object *, struct rtb_point *);
-void rtb_obj_set_position(struct rtb_object *, float x, float y);
-void rtb_obj_set_size(struct rtb_object *, struct rtb_size *);
+void rtb_elem_set_size_cb(struct rtb_element *, rtb_size_cb_t size_cb);
+void rtb_elem_set_layout(struct rtb_element *, rtb_layout_cb_t layout_cb);
+void rtb_elem_set_position_from_point(struct rtb_element *, struct rtb_point *);
+void rtb_elem_set_position(struct rtb_element *, float x, float y);
+void rtb_elem_set_size(struct rtb_element *, struct rtb_size *);
 
-int rtb_obj_in_tree(struct rtb_object *root, struct rtb_object *leaf);
-void rtb_obj_add_child(struct rtb_object *parent, struct rtb_object *child,
+int rtb_elem_in_tree(struct rtb_element *root, struct rtb_element *leaf);
+void rtb_elem_add_child(struct rtb_element *parent, struct rtb_element *child,
 		rtb_child_add_loc_t where);
-void rtb_obj_remove_child(struct rtb_object *, struct rtb_object *child);
+void rtb_elem_remove_child(struct rtb_element *, struct rtb_element *child);
 
-int rtb_obj_init(struct rtb_object *, struct rtb_object_implementation *impl);
-void rtb_obj_fini(struct rtb_object *);
+int rtb_elem_init(struct rtb_element *, struct rtb_element_implementation *impl);
+void rtb_elem_fini(struct rtb_element *);

@@ -31,7 +31,7 @@
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/event.h"
-#include "rutabaga/object.h"
+#include "rutabaga/element.h"
 #include "rutabaga/layout.h"
 #include "rutabaga/container.h"
 #include "rutabaga/window.h"
@@ -47,10 +47,10 @@
 #include "shaders/surface.glsl.h"
 
 #define ERR(...) fprintf(stderr, "rutabaga: " __VA_ARGS__)
-#define SELF_FROM(obj) \
-	struct rtb_window *self = RTB_OBJECT_AS(obj, rtb_window)
+#define SELF_FROM(elem) \
+	struct rtb_window *self = RTB_OBJECT_AS(elem, rtb_window)
 
-static struct rtb_object_implementation super;
+static struct rtb_element_implementation super;
 
 static int
 initialize_shaders(struct rtb_window *self)
@@ -78,40 +78,40 @@ err_dfault:
 }
 
 /**
- * object implementation
+ * element implementation
  */
 
 static int
-win_event(struct rtb_object *obj, const struct rtb_event *e)
+win_event(struct rtb_element *elem, const struct rtb_event *e)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
 	switch (e->type) {
 	case RTB_WINDOW_CLOSE:
-		if (!rtb_handle(obj, e))
+		if (!rtb_handle(elem, e))
 			rtb_stop_event_loop(self->rtb);
 		return 1;
 
 	case RTB_KEY_PRESS:
 	case RTB_KEY_RELEASE:
 		if (self->focus && self->focus != RTB_OBJECT(self))
-			if (rtb_obj_deliver_event(self->focus, e))
+			if (rtb_elem_deliver_event(self->focus, e))
 				return 1;
 
-		if (rtb_handle(obj, e))
+		if (rtb_handle(elem, e))
 			return 1;
 	}
 
-	return super.event_cb(obj, e);
+	return super.event_cb(elem, e);
 }
 
 static void
-realize(struct rtb_object *obj, struct rtb_object *parent,
+realize(struct rtb_element *elem, struct rtb_element *parent,
 		struct rtb_window *window)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
-	super.realize_cb(obj, parent, window);
+	super.realize_cb(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.window");
 
@@ -119,7 +119,7 @@ realize(struct rtb_object *obj, struct rtb_object *parent,
 }
 
 static void
-mark_dirty(struct rtb_object *obj)
+mark_dirty(struct rtb_element *elem)
 {
 	return;
 }
@@ -129,15 +129,15 @@ mark_dirty(struct rtb_object *obj)
  */
 
 void
-rtb_window_focus_object(struct rtb_window *self, struct rtb_object *focused)
+rtb_window_focus_element(struct rtb_window *self, struct rtb_element *focused)
 {
-	struct rtb_object *unfocused = self->focus;
+	struct rtb_element *unfocused = self->focus;
 
 	self->focus = focused;
-	rtb_obj_mark_dirty(focused);
+	rtb_elem_mark_dirty(focused);
 
 	if (unfocused)
-		rtb_obj_mark_dirty(unfocused);
+		rtb_elem_mark_dirty(unfocused);
 }
 
 void
@@ -164,16 +164,16 @@ rtb_window_draw(struct rtb_window *self)
 void
 rtb_window_reinit(struct rtb_window *self)
 {
-	struct rtb_object *obj = RTB_OBJECT(self);
+	struct rtb_element *elem = RTB_OBJECT(self);
 
 	self->x = self->y = 0.f;
 
 	glScissor(0, 0, self->w, self->h);
 
 	if (!self->window)
-		rtb_obj_realize(obj, NULL, RTB_SURFACE(self), self);
+		rtb_elem_realize(elem, NULL, RTB_SURFACE(self), self);
 	else
-		rtb_obj_trigger_recalc(obj, obj, RTB_DIRECTION_LEAFWARD);
+		rtb_elem_trigger_recalc(elem, elem, RTB_DIRECTION_LEAFWARD);
 }
 
 struct rtb_window *
@@ -202,7 +202,7 @@ rtb_window_open(struct rutabaga *r,
 		goto err_font;
 
 	mat4_set_identity(&self->identity);
-	rtb_obj_set_layout(RTB_OBJECT(self), rtb_layout_vpack_top);
+	rtb_elem_set_layout(RTB_OBJECT(self), rtb_layout_vpack_top);
 
 	self->event_cb   = win_event;
 	self->mark_dirty = mark_dirty;

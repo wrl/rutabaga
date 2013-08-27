@@ -37,8 +37,8 @@
  *            struct rutabaga.
  *
  *      this is going to suck because currently we don't need any reference
- *      to the struct rutabaga until an object is attached to the tree somewhere,
- *      so this would require things like
+ *      to the struct rutabaga until an element is attached to the tree
+ *      somewhere, so this would require things like
  *
  *			rtb_button_new(const rtb_utf8_t *label);
  *

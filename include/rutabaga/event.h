@@ -90,10 +90,10 @@ struct rtb_event {
  * handling
  */
 
-struct rtb_object;
+struct rtb_element;
 
 typedef int (*rtb_event_cb_t)
-	(struct rtb_object *obj, const struct rtb_event *event, void *ctx);
+	(struct rtb_element *elem, const struct rtb_event *event, void *ctx);
 
 struct rtb_event_handler {
 	rtb_ev_type_t type;
@@ -108,15 +108,15 @@ struct rtb_event_handler {
  * public API
  */
 
-int rtb_handle(struct rtb_object *target, const struct rtb_event *event);
-struct rtb_object *rtb_dispatch_raw(struct rtb_object *target,
+int rtb_handle(struct rtb_element *target, const struct rtb_event *event);
+struct rtb_element *rtb_dispatch_raw(struct rtb_element *target,
 		struct rtb_event *event);
-struct rtb_object *rtb_dispatch_simple(struct rtb_object *target,
+struct rtb_element *rtb_dispatch_simple(struct rtb_element *target,
 		rtb_ev_type_t type);
 
-int rtb_register_handler(struct rtb_object *on_object,
+int rtb_register_handler(struct rtb_element *on_elem,
 		rtb_ev_type_t for_type, rtb_event_cb_t handler, void *context);
-void rtb_unregister_handler(struct rtb_object *on_object,
+void rtb_unregister_handler(struct rtb_element *on_elem,
 		rtb_ev_type_t for_type);
 
 void rtb_event_loop(struct rutabaga *rutabaga);

@@ -27,35 +27,35 @@
 #pragma once
 
 #include "rutabaga/rutabaga.h"
-#include "rutabaga/object.h"
+#include "rutabaga/element.h"
 #include "rutabaga/geometry.h"
 
-void rtb_size_self(struct rtb_object *,
+void rtb_size_self(struct rtb_element *,
 		const struct rtb_size *avail, struct rtb_size *want);
 
-void rtb_size_hfit_children(struct rtb_object *,
+void rtb_size_hfit_children(struct rtb_element *,
 		const struct rtb_size *avail, struct rtb_size *want);
 
-void rtb_size_vfit_children(struct rtb_object *,
+void rtb_size_vfit_children(struct rtb_element *,
 		const struct rtb_size *avail, struct rtb_size *want);
 
-void rtb_size_hfill(struct rtb_object *,
+void rtb_size_hfill(struct rtb_element *,
 		const struct rtb_size *avail, struct rtb_size *want);
 
-void rtb_size_vfill(struct rtb_object *,
+void rtb_size_vfill(struct rtb_element *,
 		const struct rtb_size *avail, struct rtb_size *want);
 
-void rtb_size_fill(struct rtb_object *,
+void rtb_size_fill(struct rtb_element *,
 		const struct rtb_size *avail, struct rtb_size *want);
 
-void rtb_layout_unmanaged(struct rtb_object *);
+void rtb_layout_unmanaged(struct rtb_element *);
 
-void rtb_layout_vpack_top(struct rtb_object *);
-void rtb_layout_vpack_middle(struct rtb_object *);
-void rtb_layout_vpack_bottom(struct rtb_object *);
+void rtb_layout_vpack_top(struct rtb_element *);
+void rtb_layout_vpack_middle(struct rtb_element *);
+void rtb_layout_vpack_bottom(struct rtb_element *);
 
-void rtb_layout_hpack_left(struct rtb_object *);
-void rtb_layout_hpack_center(struct rtb_object *);
-void rtb_layout_hpack_right(struct rtb_object *);
+void rtb_layout_hpack_left(struct rtb_element *);
+void rtb_layout_hpack_center(struct rtb_element *);
+void rtb_layout_hpack_right(struct rtb_element *);
 
-void rtb_layout_hdistribute(struct rtb_object *);
+void rtb_layout_hdistribute(struct rtb_element *);

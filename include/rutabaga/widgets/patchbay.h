@@ -27,7 +27,7 @@
 #pragma once
 
 #include "rutabaga/types.h"
-#include "rutabaga/object.h"
+#include "rutabaga/element.h"
 #include "rutabaga/surface.h"
 #include "rutabaga/event.h"
 #include "rutabaga/quad.h"
@@ -48,14 +48,14 @@ typedef enum {
 } rtb_patchbay_port_type_t;
 
 struct rtb_patchbay_node {
-	RTB_INHERIT(rtb_object);
+	RTB_INHERIT(rtb_element);
 
-	struct rtb_object node_ui;
+	struct rtb_element node_ui;
 
 	/* private ********************************/
-	struct rtb_object container;
-	struct rtb_object input_ports;
-	struct rtb_object output_ports;
+	struct rtb_element container;
+	struct rtb_element input_ports;
+	struct rtb_element output_ports;
 
 	struct rtb_quad bg_quad;
 	struct rtb_label name_label;
@@ -63,7 +63,7 @@ struct rtb_patchbay_node {
 };
 
 struct rtb_patchbay_port {
-	RTB_INHERIT(rtb_object);
+	RTB_INHERIT(rtb_element);
 
 	/* private ********************************/
 	struct rtb_quad bg_quad;

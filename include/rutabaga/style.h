@@ -101,9 +101,9 @@ struct rtb_style {
  * public API
  */
 
-void rtb_style_apply_to_tree(struct rtb_object *root,
+void rtb_style_apply_to_tree(struct rtb_element *root,
 		struct rtb_style *style_list);
-struct rtb_style *rtb_style_for_object(struct rtb_object *obj,
+struct rtb_style *rtb_style_for_element(struct rtb_element *elem,
 		struct rtb_style *style_list);
 
 int rtb_style_resolve_list(struct rtb_window *,

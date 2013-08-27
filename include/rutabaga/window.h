@@ -29,7 +29,7 @@
 #include <pthread.h>
 
 #include "rutabaga/types.h"
-#include "rutabaga/object.h"
+#include "rutabaga/element.h"
 #include "rutabaga/shader.h"
 #include "rutabaga/surface.h"
 #include "rutabaga/mouse.h"
@@ -64,7 +64,7 @@ struct rtb_window {
 	pthread_mutex_t lock;
 
 	struct rtb_mouse mouse;
-	struct rtb_object *focus;
+	struct rtb_element *focus;
 };
 
 void rtb_window_lock(struct rtb_window *);
@@ -73,8 +73,8 @@ void rtb_window_unlock(struct rtb_window *);
 void rtb_window_draw(struct rtb_window *);
 void rtb_window_reinit(struct rtb_window *);
 
-void rtb_window_focus_object(struct rtb_window *,
-		struct rtb_object *focused);
+void rtb_window_focus_element(struct rtb_window *,
+		struct rtb_element *focused);
 
 struct rtb_window *rtb_window_open(struct rutabaga *r,
 		int width, int height, const char *title);

@@ -48,7 +48,7 @@ int rtb_text_object_count_glyphs(struct rtb_text_object *);
 void rtb_text_object_update(struct rtb_text_object *,
 		const rtb_utf8_t *text);
 void rtb_text_object_render(struct rtb_text_object *,
-		struct rtb_object *parent, float x, float y, rtb_draw_state_t state);
+		struct rtb_element *parent, float x, float y, rtb_draw_state_t state);
 
 struct rtb_text_object *rtb_text_object_new(struct rtb_font_manager *fm,
 		struct rtb_font *font, const rtb_utf8_t *text);

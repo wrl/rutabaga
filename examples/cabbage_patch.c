@@ -108,7 +108,7 @@ struct jack_client *client_alloc(const char *name, int len, int physical)
 		c->x = 100.f;
 		c->y = 100.f;
 
-		rtb_obj_add_child(RTB_OBJECT(state.cp), RTB_OBJECT(c), RTB_ADD_TAIL);
+		rtb_elem_add_child(RTB_OBJECT(state.cp), RTB_OBJECT(c), RTB_ADD_TAIL);
 	}
 
 	return c;
@@ -463,7 +463,7 @@ static void port_connection(jack_port_id_t a_id, jack_port_id_t b_id,
  * rutabaga shit
  */
 
-static int connection(struct rtb_object *obj,
+static int connection(struct rtb_element *obj,
 		const struct rtb_event *_ev, void *ctx)
 {
 	const struct rtb_patchbay_event_connect *ev = (void *) _ev;
@@ -504,7 +504,7 @@ static int connection(struct rtb_object *obj,
 	return 1;
 }
 
-static int disconnection(struct rtb_object *obj,
+static int disconnection(struct rtb_element *obj,
 		const struct rtb_event *_ev, void *ctx)
 {
 	const struct rtb_patchbay_event_disconnect *ev = (void *) _ev;
@@ -533,12 +533,12 @@ static int disconnection(struct rtb_object *obj,
 	return 1;
 }
 
-static void init_patchbay(struct rtb_object *parent)
+static void init_patchbay(struct rtb_element *parent)
 {
 	state.cp = rtb_patchbay_new();
 	rtb_container_add(parent, RTB_OBJECT(state.cp));
 
-	rtb_obj_set_size_cb(RTB_OBJECT(state.cp), rtb_size_fill);
+	rtb_elem_set_size_cb(RTB_OBJECT(state.cp), rtb_size_fill);
 
 	rtb_register_handler(RTB_OBJECT(state.cp),
 			RTB_PATCHBAY_CONNECT, connection, NULL);
@@ -572,9 +572,9 @@ int main(int argc, char **argv)
 	rtb_patchbay_node_init(RTB_PATCHBAY_NODE(&state.system_out));
 	rtb_patchbay_node_set_name(RTB_PATCHBAY_NODE(&state.system_out), "system");
 
-	rtb_obj_add_child(RTB_OBJECT(state.cp),
+	rtb_elem_add_child(RTB_OBJECT(state.cp),
 			RTB_OBJECT(&state.system_in), RTB_ADD_TAIL);
-	rtb_obj_add_child(RTB_OBJECT(state.cp),
+	rtb_elem_add_child(RTB_OBJECT(state.cp),
 			RTB_OBJECT(&state.system_out), RTB_ADD_TAIL);
 
 	list_ports(state.jc);

@@ -27,7 +27,7 @@
 #pragma once
 
 #include "rutabaga/types.h"
-#include "rutabaga/object.h"
+#include "rutabaga/element.h"
 
 #define RTB_SHADER(x) RTB_UPCAST(x, rtb_shader)
 

@@ -35,10 +35,10 @@
 
 #include "private/util.h"
 
-static struct rtb_object_implementation super;
+static struct rtb_element_implementation super;
 
-#define SELF_FROM(obj) \
-	struct rtb_patchbay_port *self = RTB_OBJECT_AS(obj, rtb_patchbay_port)
+#define SELF_FROM(elem) \
+	struct rtb_patchbay_port *self = RTB_OBJECT_AS(elem, rtb_patchbay_port)
 
 /**
  * private utility functions
@@ -61,19 +61,19 @@ get_patch(struct rtb_patchbay_port *from, struct rtb_patchbay_port *to)
  */
 
 static void
-draw(struct rtb_object *obj, rtb_draw_state_t state)
+draw(struct rtb_element *elem, rtb_draw_state_t state)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
-	rtb_render_push(obj);
-	rtb_render_clear(obj);
-	rtb_render_set_position(obj, 0.f, 0.f);
-	rtb_render_use_style_bg(obj, state);
+	rtb_render_push(elem);
+	rtb_render_clear(elem);
+	rtb_render_set_position(elem, 0.f, 0.f);
+	rtb_render_use_style_bg(elem, state);
 
-	rtb_render_quad(obj, &self->bg_quad);
-	rtb_render_pop(obj);
+	rtb_render_quad(elem, &self->bg_quad);
+	rtb_render_pop(elem);
 
-	super.draw_cb(obj, state);
+	super.draw_cb(elem, state);
 }
 
 /**
@@ -225,24 +225,24 @@ handle_mouse(struct rtb_patchbay_port *self, struct rtb_mouse_event *e)
 }
 
 /**
- * object implementation
+ * element implementation
  */
 
 static void
-recalculate(struct rtb_object *obj, struct rtb_object *instigator,
+recalculate(struct rtb_element *elem, struct rtb_element *instigator,
 		rtb_ev_direction_t direction)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
-	super.recalc_cb(obj, instigator, direction);
+	super.recalc_cb(elem, instigator, direction);
 	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
 }
 
 static void
-realize(struct rtb_object *obj, struct rtb_object *parent,
+realize(struct rtb_element *elem, struct rtb_element *parent,
 		struct rtb_window *window)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
 	super.realize_cb(RTB_OBJECT(self), parent, window);
 	self->type = rtb_type_ref(window, self->type,
@@ -250,15 +250,15 @@ realize(struct rtb_object *obj, struct rtb_object *parent,
 }
 
 static int
-on_event(struct rtb_object *obj, const struct rtb_event *e)
+on_event(struct rtb_element *elem, const struct rtb_event *e)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
 	switch (e->type) {
 	case RTB_MOUSE_DOWN:
 	case RTB_MOUSE_UP:
 		if (handle_mouse(self, (struct rtb_mouse_event *) e)) {
-			rtb_obj_mark_dirty(RTB_OBJECT(self->node->patchbay));
+			rtb_elem_mark_dirty(RTB_OBJECT(self->node->patchbay));
 			return 1;
 		}
 
@@ -270,12 +270,12 @@ on_event(struct rtb_object *obj, const struct rtb_event *e)
 	case RTB_DRAG_DROP:
 	case RTB_DRAGGING:
 		if (handle_drag(self, (struct rtb_drag_event *) e)) {
-			rtb_obj_mark_dirty(RTB_OBJECT(self->node->patchbay));
+			rtb_elem_mark_dirty(RTB_OBJECT(self->node->patchbay));
 			return 1;
 		}
 	}
 
-	return super.event_cb(obj, e);
+	return super.event_cb(elem, e);
 }
 
 /**
@@ -313,7 +313,7 @@ rtb_patchbay_free_patch(struct rtb_patchbay *self,
 	TAILQ_REMOVE(&self->patches, patch, patchbay_patch);
 
 	free(patch);
-	rtb_obj_mark_dirty(RTB_OBJECT(self));
+	rtb_elem_mark_dirty(RTB_OBJECT(self));
 }
 
 void
@@ -370,7 +370,7 @@ rtb_patchbay_connect_ports(struct rtb_patchbay *self,
 	TAILQ_INSERT_TAIL(&from->patches, patch, from_patch);
 	TAILQ_INSERT_TAIL(&self->patches, patch, patchbay_patch);
 
-	rtb_obj_mark_dirty(RTB_OBJECT(self));
+	rtb_elem_mark_dirty(RTB_OBJECT(self));
 	return patch;
 }
 
@@ -379,13 +379,13 @@ rtb_patchbay_port_init(struct rtb_patchbay_port *self,
 		struct rtb_patchbay_node *node, const rtb_utf8_t *name,
 		rtb_patchbay_port_type_t type, rtb_child_add_loc_t location)
 {
-	rtb_obj_init(RTB_OBJECT(self), &super);
+	rtb_elem_init(RTB_OBJECT(self), &super);
 	rtb_quad_init(&self->bg_quad);
 	TAILQ_INIT(&self->patches);
 
 	rtb_label_init(&self->label, &self->label.impl);
 	rtb_label_set_text(&self->label, name);
-	rtb_obj_add_child(RTB_OBJECT(self), RTB_OBJECT(&self->label),
+	rtb_elem_add_child(RTB_OBJECT(self), RTB_OBJECT(&self->label),
 			RTB_ADD_HEAD);
 
 	self->port_type  = type;
@@ -403,10 +403,10 @@ rtb_patchbay_port_init(struct rtb_patchbay_port *self,
 
 	if (type == PORT_TYPE_INPUT) {
 		self->align = self->label.align = RTB_ALIGN_LEFT;
-		rtb_obj_add_child(&node->input_ports, RTB_OBJECT(self), location);
+		rtb_elem_add_child(&node->input_ports, RTB_OBJECT(self), location);
 	} else {
 		self->align = self->label.align = RTB_ALIGN_RIGHT;
-		rtb_obj_add_child(&node->output_ports, RTB_OBJECT(self), location);
+		rtb_elem_add_child(&node->output_ports, RTB_OBJECT(self), location);
 	}
 
 	return 0;
@@ -418,14 +418,14 @@ rtb_patchbay_port_fini(struct rtb_patchbay_port *self)
 	struct rtb_patchbay_patch *patch;
 
 	if (self->port_type == PORT_TYPE_INPUT)
-		rtb_obj_remove_child(&self->node->input_ports, RTB_OBJECT(self));
+		rtb_elem_remove_child(&self->node->input_ports, RTB_OBJECT(self));
 	else
-		rtb_obj_remove_child(&self->node->output_ports, RTB_OBJECT(self));
+		rtb_elem_remove_child(&self->node->output_ports, RTB_OBJECT(self));
 
 	while ((patch = TAILQ_FIRST(&self->patches)))
 		rtb_patchbay_free_patch(self->node->patchbay, patch);
 
 	rtb_quad_fini(&self->bg_quad);
 	rtb_label_fini(&self->label);
-	rtb_obj_fini(RTB_OBJECT(self));
+	rtb_elem_fini(RTB_OBJECT(self));
 }

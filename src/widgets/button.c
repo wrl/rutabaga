@@ -32,7 +32,7 @@
 #include <math.h>
 
 #include "rutabaga/rutabaga.h"
-#include "rutabaga/object.h"
+#include "rutabaga/element.h"
 #include "rutabaga/window.h"
 #include "rutabaga/render.h"
 #include "rutabaga/layout.h"
@@ -42,29 +42,29 @@
 #include "private/util.h"
 #include "rutabaga/widgets/button.h"
 
-#define SELF_FROM(obj) \
-	struct rtb_button *self = RTB_OBJECT_AS(obj, rtb_button)
+#define SELF_FROM(elem) \
+	struct rtb_button *self = RTB_OBJECT_AS(elem, rtb_button)
 
-static struct rtb_object_implementation super;
+static struct rtb_element_implementation super;
 
 /**
  * drawing-related things
  */
 
 static void
-draw(struct rtb_object *obj, rtb_draw_state_t state)
+draw(struct rtb_element *elem, rtb_draw_state_t state)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
-	rtb_render_push(obj);
-	rtb_render_clear(obj);
-	rtb_render_set_position(obj, 0, 0);
-	rtb_render_use_style_bg(obj, state);
+	rtb_render_push(elem);
+	rtb_render_clear(elem);
+	rtb_render_set_position(elem, 0, 0);
+	rtb_render_use_style_bg(elem, state);
 
-	rtb_render_quad(obj, &self->bg_quad);
+	rtb_render_quad(elem, &self->bg_quad);
 
-	super.draw_cb(obj, state);
-	rtb_render_pop(obj);
+	super.draw_cb(elem, state);
+	rtb_render_pop(elem);
 }
 
 /**
@@ -101,9 +101,9 @@ handle_key_press(struct rtb_button *self, const struct rtb_key_event *e)
 }
 
 static int
-on_event(struct rtb_object *obj, const struct rtb_event *e)
+on_event(struct rtb_element *elem, const struct rtb_event *e)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
 	switch (e->type) {
 	case RTB_MOUSE_DOWN:
@@ -122,19 +122,19 @@ on_event(struct rtb_object *obj, const struct rtb_event *e)
 		return dispatch_click_event(self, RTB_EVENT_AS(e, rtb_mouse_event));
 
 	default:
-		return super.event_cb(obj, e);
+		return super.event_cb(elem, e);
 	}
 
 	return 0;
 }
 
 static void
-recalculate(struct rtb_object *obj, struct rtb_object *instigator,
+recalculate(struct rtb_element *elem, struct rtb_element *instigator,
 		rtb_ev_direction_t direction)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
-	super.recalc_cb(obj, instigator, direction);
+	super.recalc_cb(elem, instigator, direction);
 
 	self->outer_pad.x = self->label.outer_pad.x;
 	self->outer_pad.y = self->label.outer_pad.y;
@@ -143,12 +143,12 @@ recalculate(struct rtb_object *obj, struct rtb_object *instigator,
 }
 
 static void
-realize(struct rtb_object *obj, struct rtb_object *parent,
+realize(struct rtb_element *elem, struct rtb_element *parent,
 		struct rtb_window *window)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
-	super.realize_cb(obj, parent, window);
+	super.realize_cb(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.button");
 
@@ -168,12 +168,12 @@ rtb_button_set_label(struct rtb_button *self, const rtb_utf8_t *text)
 
 int
 rtb_button_init(struct rtb_button *self,
-		struct rtb_object_implementation *impl)
+		struct rtb_element_implementation *impl)
 {
-	rtb_obj_init(RTB_OBJECT(self), &super);
+	rtb_elem_init(RTB_OBJECT(self), &super);
 
 	rtb_label_init(&self->label, &self->label.impl);
-	rtb_obj_add_child(RTB_OBJECT(self), RTB_OBJECT(&self->label),
+	rtb_elem_add_child(RTB_OBJECT(self), RTB_OBJECT(&self->label),
 			RTB_ADD_HEAD);
 
 	rtb_quad_init(&self->bg_quad);
@@ -200,7 +200,7 @@ rtb_button_fini(struct rtb_button *self)
 {
 	rtb_quad_fini(&self->bg_quad);
 	rtb_label_fini(&self->label);
-	rtb_obj_fini(RTB_OBJECT(self));
+	rtb_elem_fini(RTB_OBJECT(self));
 }
 
 struct rtb_button *

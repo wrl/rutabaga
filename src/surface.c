@@ -28,7 +28,7 @@
 #include <math.h>
 
 #include "rutabaga/rutabaga.h"
-#include "rutabaga/object.h"
+#include "rutabaga/element.h"
 #include "rutabaga/surface.h"
 #include "rutabaga/shader.h"
 #include "rutabaga/render.h"
@@ -38,32 +38,32 @@
 #include "private/util.h"
 #include "private/layout-debug.h"
 
-#define SELF_FROM(obj) \
-	struct rtb_surface *self = RTB_OBJECT_AS(obj, rtb_surface)
+#define SELF_FROM(elem) \
+	struct rtb_surface *self = RTB_OBJECT_AS(elem, rtb_surface)
 
 /**
  * internal stuff
  */
 
-static struct rtb_object_implementation super;
+static struct rtb_element_implementation super;
 
 /**
- * object implementation
+ * element implementation
  */
 
 static void
-draw(struct rtb_object *obj, rtb_draw_state_t state)
+draw(struct rtb_element *elem, rtb_draw_state_t state)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
-	rtb_render_push(obj);
+	rtb_render_push(elem);
 	rtb_surface_draw_children(self, state);
 	rtb_surface_blit(self);
-	rtb_render_pop(obj);
+	rtb_render_pop(elem);
 }
 
 static void
-recalculate(struct rtb_object *obj, struct rtb_object *instigator,
+recalculate(struct rtb_element *elem, struct rtb_element *instigator,
 		rtb_ev_direction_t direction)
 {
 	struct rtb_rect tex_coords = {
@@ -73,8 +73,8 @@ recalculate(struct rtb_object *obj, struct rtb_object *instigator,
 		}
 	};
 
-	SELF_FROM(obj);
-	super.recalc_cb(obj, instigator, direction);
+	SELF_FROM(elem);
+	super.recalc_cb(elem, instigator, direction);
 
 	if (self->w <= 0 || self->h <= 0)
 		return;
@@ -105,14 +105,14 @@ recalculate(struct rtb_object *obj, struct rtb_object *instigator,
 }
 
 static void
-attach_child(struct rtb_object *obj, struct rtb_object *child)
+attach_child(struct rtb_element *elem, struct rtb_element *child)
 {
-	SELF_FROM(obj);
-	rtb_obj_realize(child, obj, self, self->window);
+	SELF_FROM(elem);
+	rtb_elem_realize(child, elem, self, self->window);
 }
 
 static void
-realize(struct rtb_object *self, struct rtb_object *parent,
+realize(struct rtb_element *self, struct rtb_element *parent,
 		struct rtb_window *window)
 {
 	super.realize_cb(self, parent, window);
@@ -143,11 +143,11 @@ void
 rtb_surface_blit(struct rtb_surface *self)
 {
 	struct rtb_shader *shader = &self->window->shaders.surface;
-	struct rtb_object *obj = RTB_OBJECT(self);
+	struct rtb_element *elem = RTB_OBJECT(self);
 
-	rtb_render_reset(obj);
-	rtb_render_use_shader(obj, shader);
-	rtb_render_set_position(obj, 0, 0);
+	rtb_render_reset(elem);
+	rtb_render_use_shader(elem, shader);
+	rtb_render_set_position(elem, 0, 0);
 
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, self->texture);
@@ -156,20 +156,20 @@ rtb_surface_blit(struct rtb_surface *self)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-	rtb_render_quad(obj, &self->quad);
+	rtb_render_quad(elem, &self->quad);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glDisable(GL_TEXTURE_2D);
 
-	LAYOUT_DEBUG_DRAW_BOX(obj);
+	LAYOUT_DEBUG_DRAW_BOX(elem);
 }
 
 void
 rtb_surface_draw_children(struct rtb_surface *self, rtb_draw_state_t state)
 {
 	struct rtb_render_context *ctx = &self->render_ctx;
-	struct rtb_object *iter;
+	struct rtb_element *iter;
 
 	GLint bound_fb;
 	GLint viewport[4];
@@ -196,7 +196,7 @@ rtb_surface_draw_children(struct rtb_surface *self, rtb_draw_state_t state)
 		}
 
 		TAILQ_FOREACH(iter, &self->children, child)
-			rtb_obj_draw(iter, RTB_DRAW_NORMAL);
+			rtb_elem_draw(iter, RTB_DRAW_NORMAL);
 
 		self->surface_state = RTB_SURFACE_VALID;
 		break;
@@ -208,11 +208,11 @@ rtb_surface_draw_children(struct rtb_surface *self, rtb_draw_state_t state)
 			iter->render_entry.tqe_next = NULL;
 			iter->render_entry.tqe_prev = NULL;
 
-			rtb_obj_draw(iter, RTB_DRAW_NORMAL);
+			rtb_elem_draw(iter, RTB_DRAW_NORMAL);
 		}
 
 		TAILQ_FOREACH(iter, &ctx->queues.every_frame, render_entry)
-			rtb_obj_draw(iter, RTB_DRAW_NORMAL);
+			rtb_elem_draw(iter, RTB_DRAW_NORMAL);
 
 		break;
 	}
@@ -225,15 +225,15 @@ void
 rtb_surface_invalidate(struct rtb_surface *self)
 {
 	self->surface_state = RTB_SURFACE_INVALID;
-	rtb_obj_mark_dirty(RTB_OBJECT(self));
+	rtb_elem_mark_dirty(RTB_OBJECT(self));
 }
 
 int
 rtb_surface_init(struct rtb_surface *self,
-		struct rtb_object_implementation *impl)
+		struct rtb_element_implementation *impl)
 {
-	struct rtb_object_implementation *obj_impl = &self->impl;
-	rtb_obj_init(RTB_OBJECT(self), &super);
+	struct rtb_element_implementation *elem_impl = &self->impl;
+	rtb_elem_init(RTB_OBJECT(self), &super);
 	(*impl) = super;
 
 	do {
@@ -241,7 +241,7 @@ rtb_surface_init(struct rtb_surface *self,
 		impl->recalc_cb    = recalculate;
 		impl->attach_child = attach_child;
 		impl->realize_cb   = realize;
-	} while (impl != obj_impl && (impl = obj_impl));
+	} while (impl != elem_impl && (impl = elem_impl));
 
 	TAILQ_INIT(&self->render_ctx.queues.every_frame);
 	TAILQ_INIT(&self->render_ctx.queues.next_frame);
@@ -263,5 +263,5 @@ rtb_surface_fini(struct rtb_surface *self)
 	glDeleteFramebuffers(1, &self->fbo);
 	glDeleteTextures(1, &self->texture);
 
-	rtb_obj_fini(RTB_OBJECT(self));
+	rtb_elem_fini(RTB_OBJECT(self));
 }

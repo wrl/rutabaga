@@ -30,7 +30,7 @@
 #include <math.h>
 
 #include "rutabaga/rutabaga.h"
-#include "rutabaga/object.h"
+#include "rutabaga/element.h"
 #include "rutabaga/window.h"
 #include "rutabaga/render.h"
 #include "rutabaga/event.h"
@@ -40,8 +40,8 @@
 
 #include "private/util.h"
 
-#define SELF_FROM(obj) \
-	struct rtb_knob *self = RTB_OBJECT_AS(obj, rtb_knob)
+#define SELF_FROM(elem) \
+	struct rtb_knob *self = RTB_OBJECT_AS(elem, rtb_knob)
 
 #define MIN_DEGREES 35.f
 #define MAX_DEGREES (360.f - MIN_DEGREES)
@@ -53,7 +53,7 @@
 #define DELTA_VALUE_STEP_BUTTON1 .005f
 #define DELTA_VALUE_STEP_BUTTON3 .0005f
 
-struct rtb_object_implementation super;
+struct rtb_element_implementation super;
 
 static const GLubyte indicator_indices[] = {
 	0, 1
@@ -121,13 +121,13 @@ cache_to_vbo(struct rtb_knob *self)
 }
 
 static void
-draw(struct rtb_object *obj, rtb_draw_state_t state)
+draw(struct rtb_element *elem, rtb_draw_state_t state)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
-	rtb_render_push(obj);
-	rtb_render_clear(obj);
-	rtb_render_set_position(obj,
+	rtb_render_push(elem);
+	rtb_render_clear(elem);
+	rtb_render_set_position(elem,
 			self->x + ((self->w) / 2),
 			self->y + ((self->h) / 2));
 
@@ -136,14 +136,14 @@ draw(struct rtb_object *obj, rtb_draw_state_t state)
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
 	/* background */
-	rtb_render_use_style_bg(obj, state);
+	rtb_render_use_style_bg(elem, state);
 
 	glDrawElements(
 			GL_TRIANGLE_FAN, ARRAY_LENGTH(circle_indices),
 			GL_UNSIGNED_SHORT, circle_indices);
 
 	/* indicator */
-	rtb_render_use_style_fg(obj, state);
+	rtb_render_use_style_fg(elem, state);
 
 	glLineWidth(2.5f);
 
@@ -151,7 +151,7 @@ draw(struct rtb_object *obj, rtb_draw_state_t state)
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-	rtb_render_set_modelview(obj, self->modelview.data);
+	rtb_render_set_modelview(elem, self->modelview.data);
 
 	glDrawElements(
 			GL_LINES, ARRAY_LENGTH(indicator_indices),
@@ -160,7 +160,7 @@ draw(struct rtb_object *obj, rtb_draw_state_t state)
 	glDisableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	super.draw_cb(obj, state);
+	super.draw_cb(elem, state);
 }
 
 /**
@@ -248,9 +248,9 @@ handle_key(struct rtb_knob *self, const struct rtb_key_event *e)
 }
 
 static int
-on_event(struct rtb_object *obj, const struct rtb_event *e)
+on_event(struct rtb_element *elem, const struct rtb_event *e)
 {
-	SELF_FROM(obj);
+	SELF_FROM(elem);
 
 	switch (e->type) {
 	case RTB_DRAG_START:
@@ -264,18 +264,18 @@ on_event(struct rtb_object *obj, const struct rtb_event *e)
 		return handle_key(self, RTB_EVENT_AS(e, rtb_key_event));
 
 	default:
-		return super.event_cb(obj, e);
+		return super.event_cb(elem, e);
 	}
 
 	return 0;
 }
 
 static void
-realize(struct rtb_object *obj, struct rtb_object *parent,
+realize(struct rtb_element *elem, struct rtb_element *parent,
 		struct rtb_window *window)
 {
-	SELF_FROM(obj);
-	super.realize_cb(obj, parent, window);
+	SELF_FROM(elem);
+	super.realize_cb(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.knob");
 
@@ -310,7 +310,7 @@ rtb_knob_set_value(struct rtb_knob *self, float new_value)
 			MIN_DEGREES + (self->value * DEGREE_RANGE),
 			0.f, 0.f, 1.f);
 
-	rtb_obj_mark_dirty(RTB_OBJECT(self));
+	rtb_elem_mark_dirty(RTB_OBJECT(self));
 
 	if (self->state != RTB_STATE_UNREALIZED)
 		dispatch_value_change_event(self);
@@ -320,7 +320,7 @@ struct rtb_knob *
 rtb_knob_new()
 {
 	struct rtb_knob *self = calloc(1, sizeof(struct rtb_knob));
-	rtb_obj_init(RTB_OBJECT(self), &super);
+	rtb_elem_init(RTB_OBJECT(self), &super);
 
 	self->origin = 0.f;
 	self->min = 0.f;
@@ -343,6 +343,6 @@ void
 rtb_knob_free(struct rtb_knob *self)
 {
 	glDeleteBuffers(2, self->vbo);
-	rtb_obj_fini(RTB_OBJECT(self));
+	rtb_elem_fini(RTB_OBJECT(self));
 	free(self);
 }

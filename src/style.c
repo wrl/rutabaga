@@ -25,7 +25,7 @@
  */
 
 #include "rutabaga/rutabaga.h"
-#include "rutabaga/object.h"
+#include "rutabaga/element.h"
 #include "rutabaga/window.h"
 #include "rutabaga/style.h"
 
@@ -34,7 +34,7 @@
 #include "style/definition.h"
 
 static struct rtb_style no_style = {
-	.for_type = "couldn't find a style for this object",
+	.for_type = "couldn't find a style for this element",
 	.available_styles = RTB_STYLE_NORMAL,
 
 	.states = {
@@ -84,9 +84,9 @@ rtb_style_resolve_list(struct rtb_window *win, struct rtb_style *style_list)
 }
 
 void
-rtb_style_apply_to_tree(struct rtb_object *root, struct rtb_style *style_list)
+rtb_style_apply_to_tree(struct rtb_element *root, struct rtb_style *style_list)
 {
-	struct rtb_object *iter;
+	struct rtb_element *iter;
 
 	if (!root->style)
 		root->style = style_for_type(RTB_TYPE_ATOM(root), style_list);
@@ -96,9 +96,9 @@ rtb_style_apply_to_tree(struct rtb_object *root, struct rtb_style *style_list)
 }
 
 struct rtb_style *
-rtb_style_for_object(struct rtb_object *obj, struct rtb_style *style_list)
+rtb_style_for_element(struct rtb_element *elem, struct rtb_style *style_list)
 {
-	return style_for_type(RTB_TYPE_ATOM(obj), style_list);
+	return style_for_type(RTB_TYPE_ATOM(elem), style_list);
 }
 
 struct rtb_style *

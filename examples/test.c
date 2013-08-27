@@ -70,7 +70,7 @@ struct rtb_knob *knob;
 struct rtb_button *last_button = NULL;
 struct rtb_text_input *input;
 
-int print_streeng(struct rtb_object *victim,
+int print_streeng(struct rtb_element *victim,
 		const struct rtb_event *e, void *ctx)
 {
 	const struct rtb_mouse_event *mv = (void *) e;
@@ -87,7 +87,7 @@ int print_streeng(struct rtb_object *victim,
 	return 0;
 }
 
-int knob_value(struct rtb_object *victim,
+int knob_value(struct rtb_element *victim,
 		const struct rtb_event *e, void *unused)
 {
 	if (victim != RTB_OBJECT(knob)) {
@@ -99,7 +99,7 @@ int knob_value(struct rtb_object *victim,
 	return 0;
 }
 
-int report(struct rtb_object *victim,
+int report(struct rtb_element *victim,
 		const struct rtb_event *e, void *user_data)
 {
 	puts("calc");
@@ -114,8 +114,8 @@ void distribute_demo(rtb_container_t *root)
 	for (i = 0; i < ARRAY_LENGTH(containers); i++) {
 		containers[i] = rtb_container_new();
 
-		rtb_obj_set_size_cb(containers[i], rtb_size_hfill);
-		rtb_obj_set_layout(containers[i], rtb_layout_hdistribute);
+		rtb_elem_set_size_cb(containers[i], rtb_size_hfill);
+		rtb_elem_set_layout(containers[i], rtb_layout_hdistribute);
 
 		/* XXX: lol memory leak */
 		for (j = 0; j < i + 1; j++) {
@@ -145,11 +145,11 @@ void setup_ui(rtb_container_t *root)
 	upper = rtb_container_new();
 	lower = rtb_container_new();
 
-	rtb_obj_set_layout(upper, rtb_layout_hpack_center);
-	rtb_obj_set_size_cb(upper, rtb_size_hfill);
+	rtb_elem_set_layout(upper, rtb_layout_hpack_center);
+	rtb_elem_set_size_cb(upper, rtb_size_hfill);
 
-	rtb_obj_set_layout(lower, rtb_layout_hpack_right);
-	rtb_obj_set_size_cb(lower, rtb_size_hfill);
+	rtb_elem_set_layout(lower, rtb_layout_hpack_right);
+	rtb_elem_set_size_cb(lower, rtb_size_hfill);
 
 	upper->outer_pad.x =
 		upper->outer_pad.y =
@@ -176,7 +176,7 @@ void setup_ui(rtb_container_t *root)
 	rtb_container_add(root, lower);
 }
 
-static int handle_input_key(struct rtb_object *obj,
+static int handle_input_key(struct rtb_element *obj,
 		const struct rtb_event *_ev, void *ctx)
 {
 	struct rtb_text_input *input = RTB_OBJECT_AS(obj, rtb_text_input);
@@ -207,7 +207,7 @@ void add_input(struct rutabaga *rtb, rtb_container_t *root)
 
 	rtb_register_handler(RTB_OBJECT(input),
 			RTB_KEY_PRESS, handle_input_key, NULL);
-	rtb_obj_add_child(root, RTB_OBJECT(input), RTB_ADD_TAIL);
+	rtb_elem_add_child(root, RTB_OBJECT(input), RTB_ADD_TAIL);
 }
 
 static void print_modkeys(const struct rtb_key_event *ev)
@@ -231,7 +231,7 @@ static void print_modkeys(const struct rtb_key_event *ev)
 	printf("\n");
 }
 
-static int handle_key_press(struct rtb_object *victim,
+static int handle_key_press(struct rtb_element *victim,
 		const struct rtb_event *e, void *ctx)
 {
 	const struct rtb_key_event *ev = RTB_EVENT_AS(e, rtb_key_event);
@@ -276,8 +276,8 @@ int main(int argc, char **argv)
 	win->outer_pad.x = 5.f;
 	win->outer_pad.y = 5.f;
 
-	rtb_obj_set_size_cb(RTB_OBJECT(win), rtb_size_hfit_children);
-	rtb_obj_set_layout(RTB_OBJECT(win), rtb_layout_vpack_bottom);
+	rtb_elem_set_size_cb(RTB_OBJECT(win), rtb_size_hfit_children);
+	rtb_elem_set_layout(RTB_OBJECT(win), rtb_layout_vpack_bottom);
 
 	rtb_register_handler(RTB_OBJECT(win),
 			RTB_KEY_PRESS, handle_key_press, delicious);

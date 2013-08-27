@@ -27,13 +27,13 @@
 #pragma once
 
 #include "rutabaga/rutabaga.h"
+#include "rutabaga/element.h"
 #include "rutabaga/text-object.h"
-#include "rutabaga/object.h"
 
 #define RTB_LABEL(x) RTB_UPCAST(x, rtb_label)
 
 struct rtb_label {
-	RTB_INHERIT(rtb_object);
+	RTB_INHERIT(rtb_element);
 
 	/* private ********************************/
 	rtb_utf8_t *text;
@@ -45,7 +45,7 @@ void rtb_label_set_font(struct rtb_label *, struct rtb_font *font);
 void rtb_label_set_text(struct rtb_label *, const rtb_utf8_t *text);
 
 int rtb_label_init(struct rtb_label *,
-		struct rtb_object_implementation *impl);
+		struct rtb_element_implementation *impl);
 void rtb_label_fini(struct rtb_label *);
 
 struct rtb_label *rtb_label_new(const rtb_utf8_t *text);

@@ -28,17 +28,17 @@
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/container.h"
-#include "rutabaga/object.h"
+#include "rutabaga/element.h"
 #include "rutabaga/window.h"
 
-static struct rtb_object_implementation super;
+static struct rtb_element_implementation super;
 
 /**
- * object implementation
+ * element implementation
  */
 
 static void
-realize(struct rtb_object *self, struct rtb_object *parent,
+realize(struct rtb_element *self, struct rtb_element *parent,
 		struct rtb_window *window)
 {
 	super.realize_cb(self, parent, window);
@@ -58,7 +58,7 @@ rtb_container_new()
 	if (!self)
 		return NULL;
 
-	if (rtb_obj_init(self, &super)) {
+	if (rtb_elem_init(self, &super)) {
 		free(self);
 		return NULL;
 	}
@@ -69,7 +69,7 @@ rtb_container_new()
 }
 
 void
-rtb_container_add(rtb_container_t *self, struct rtb_object *obj)
+rtb_container_add(rtb_container_t *self, struct rtb_element *elem)
 {
-	rtb_obj_add_child(self, obj, RTB_ADD_TAIL);
+	rtb_elem_add_child(self, elem, RTB_ADD_TAIL);
 }
