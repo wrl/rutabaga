@@ -49,9 +49,10 @@ static int
 style_resolve(struct rtb_window *window, struct rtb_style *style)
 {
 	style->resolved_type = rtb_type_lookup(window, style->for_type);
-	if (style->resolved_type)
-		return 0;
-	return -1;
+	if (!style->resolved_type)
+		return -1;
+
+	return 0;
 }
 
 static struct rtb_style *

@@ -211,7 +211,7 @@ available_states = {
 c_repr = """\
 \t{{"{type}",
 \t\t{styles},
-    
+
 \t\t.states = {{
 {states}
 \t\t}}

@@ -431,11 +431,9 @@ layout(struct rtb_element *elem)
  * public API
  */
 
-struct rtb_patchbay *
-rtb_patchbay_new()
+int
+rtb_patchbay_init(struct rtb_patchbay *self)
 {
-	struct rtb_patchbay *self = calloc(1, sizeof(*self));
-
 	rtb_surface_init(RTB_SURFACE(self), &super);
 	TAILQ_INIT(&self->patches);
 
@@ -455,11 +453,11 @@ rtb_patchbay_new()
 
 	glGenBuffers(2, self->bg_vbo);
 
-	return self;
+	return 0;
 }
 
 void
-rtb_patchbay_free(struct rtb_patchbay *self)
+rtb_patchbay_fini(struct rtb_patchbay *self)
 {
 	if (self->bg_texture)
 		glDeleteTextures(1, &self->bg_texture);
@@ -474,6 +472,24 @@ rtb_patchbay_free(struct rtb_patchbay *self)
 	}
 
 	rtb_surface_fini(RTB_SURFACE(self));
+}
 
+struct rtb_patchbay *
+rtb_patchbay_new()
+{
+	struct rtb_patchbay *self = calloc(1, sizeof(*self));
+
+	if (rtb_patchbay_init(self)) {
+		free(self);
+		return NULL;
+	}
+
+	return self;
+}
+
+void
+rtb_patchbay_free(struct rtb_patchbay *self)
+{
+	rtb_patchbay_fini(self);
 	free(self);
 }

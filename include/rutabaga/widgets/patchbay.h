@@ -150,5 +150,7 @@ struct rtb_patchbay_node *rtb_patchbay_node_new(struct rtb_patchbay *parent,
 		const rtb_utf8_t *name);
 void rtb_patchbay_node_free(struct rtb_patchbay_node *);
 
+int rtb_patchbay_init(struct rtb_patchbay *);
+void rtb_patchbay_fini(struct rtb_patchbay *);
 struct rtb_patchbay *rtb_patchbay_new(void);
 void rtb_patchbay_free(struct rtb_patchbay *);

@@ -53,7 +53,7 @@ struct cabbage_patch_state {
 	struct rtb_window *win;
 	pthread_mutex_t connection_from_gui;
 
-	struct rtb_patchbay *cp;
+	struct rtb_patchbay cp;
 
 	jack_client_t *jc;
 
@@ -108,7 +108,8 @@ struct jack_client *client_alloc(const char *name, int len, int physical)
 		c->x = 100.f;
 		c->y = 100.f;
 
-		rtb_elem_add_child(RTB_OBJECT(state.cp), RTB_OBJECT(c), RTB_ADD_TAIL);
+		rtb_elem_add_child(RTB_OBJECT(&state.cp),
+				RTB_OBJECT(c), RTB_ADD_TAIL);
 	}
 
 	return c;
@@ -299,7 +300,7 @@ static void connect(jack_client_t *jc, struct jack_client_port *clp,
 	len = strlen(port_name);
 	other_clp = client_get_port(client, port_name, len);
 
-	rtb_patchbay_connect_ports(state.cp,
+	rtb_patchbay_connect_ports(&state.cp,
 			RTB_PATCHBAY_PORT(clp),
 			RTB_PATCHBAY_PORT(other_clp));
 }
@@ -448,11 +449,11 @@ static void port_connection(jack_port_id_t a_id, jack_port_id_t b_id,
 	rtb_window_lock(state.win);
 
 	if (cxn)
-		rtb_patchbay_connect_ports(state.cp,
+		rtb_patchbay_connect_ports(&state.cp,
 				RTB_PATCHBAY_PORT(port_a),
 				RTB_PATCHBAY_PORT(port_b));
 	else
-		rtb_patchbay_disconnect_ports(state.cp,
+		rtb_patchbay_disconnect_ports(&state.cp,
 				RTB_PATCHBAY_PORT(port_a),
 				RTB_PATCHBAY_PORT(port_b));
 
@@ -535,14 +536,14 @@ static int disconnection(struct rtb_element *obj,
 
 static void init_patchbay(struct rtb_element *parent)
 {
-	state.cp = rtb_patchbay_new();
-	rtb_container_add(parent, RTB_OBJECT(state.cp));
+	rtb_patchbay_init(&state.cp);
+	rtb_container_add(parent, RTB_OBJECT(&state.cp));
 
-	rtb_elem_set_size_cb(RTB_OBJECT(state.cp), rtb_size_fill);
+	rtb_elem_set_size_cb(RTB_OBJECT(&state.cp), rtb_size_fill);
 
-	rtb_register_handler(RTB_OBJECT(state.cp),
+	rtb_register_handler(RTB_OBJECT(&state.cp),
 			RTB_PATCHBAY_CONNECT, connection, NULL);
-	rtb_register_handler(RTB_OBJECT(state.cp),
+	rtb_register_handler(RTB_OBJECT(&state.cp),
 			RTB_PATCHBAY_DISCONNECT, disconnection, NULL);
 }
 
@@ -572,9 +573,9 @@ int main(int argc, char **argv)
 	rtb_patchbay_node_init(RTB_PATCHBAY_NODE(&state.system_out));
 	rtb_patchbay_node_set_name(RTB_PATCHBAY_NODE(&state.system_out), "system");
 
-	rtb_elem_add_child(RTB_OBJECT(state.cp),
+	rtb_elem_add_child(RTB_OBJECT(&state.cp),
 			RTB_OBJECT(&state.system_in), RTB_ADD_TAIL);
-	rtb_elem_add_child(RTB_OBJECT(state.cp),
+	rtb_elem_add_child(RTB_OBJECT(&state.cp),
 			RTB_OBJECT(&state.system_out), RTB_ADD_TAIL);
 
 	list_ports(state.jc);
@@ -595,7 +596,7 @@ int main(int argc, char **argv)
 	free_client_tailq();
 	fini_jack();
 
-	rtb_patchbay_free(state.cp);
+	rtb_patchbay_fini(&state.cp);
 	rtb_window_close(state.rtb->win);
 	rtb_destroy(state.rtb);
 

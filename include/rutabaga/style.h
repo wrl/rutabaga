@@ -44,8 +44,8 @@ typedef enum {
 
 struct rtb_style_texture_definition {
 	RTB_INHERIT(rtb_asset);
-
 	RTB_INHERIT_AS(rtb_size, size);
+
 	struct {
 		unsigned int left, right, top, bottom;
 	} padding;
