@@ -85,15 +85,8 @@ rtb_font_manager_free_font(struct rtb_font *font)
 }
 
 int
-rtb_font_manager_init(struct rtb_window *win)
+rtb_font_manager_init(struct rtb_font_manager *fm)
 {
-	struct rtb_font_manager *fm;
-
-	if (!(fm = calloc(1, sizeof(*fm)))) {
-		ERR("couldn't allocate font manager.\n");
-		goto err_calloc;
-	}
-
 	if (!rtb_shader_create(RTB_SHADER(&fm->shader),
 				TEXT_VERT_SHADER, TEXT_FRAG_SHADER)) {
 		ERR("couldn't compile text shader.\n");
@@ -125,32 +118,22 @@ rtb_font_manager_init(struct rtb_window *win)
 	fm->fonts.main.lcd_gamma = 2.2f;
 	fm->fonts.big.lcd_gamma  = 2.2f;
 
-	fm->win = win;
-	win->font_manager = fm;
 	return 0;
 
 err_big_font:
 	rtb_font_manager_free_font(&fm->fonts.main);
 err_main_font:
+	rtb_shader_free(RTB_SHADER(&fm->shader));
 err_shader:
-	free(fm);
-err_calloc:
 	return -1;
 }
 
 void
-rtb_font_manager_fini(struct rtb_window *win)
+rtb_font_manager_fini(struct rtb_font_manager *fm)
 {
-	struct rtb_font_manager *fm = win->font_manager;
-
-	if (!fm)
-		return;
-
 	rtb_font_manager_free_font(&fm->fonts.main);
 	rtb_font_manager_free_font(&fm->fonts.big);
 	texture_atlas_delete(fm->atlas);
 
 	rtb_shader_free(RTB_SHADER(&fm->shader));
-
-	free(fm);
 }

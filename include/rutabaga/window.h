@@ -34,6 +34,7 @@
 #include "rutabaga/surface.h"
 #include "rutabaga/mouse.h"
 #include "rutabaga/event.h"
+#include "rutabaga/font-manager.h"
 
 #define RTB_WINDOW(x) RTB_UPCAST(x, rtb_window)
 #define RTB_WINDOW_EVENT(x) RTB_UPCAST(x, rtb_event_window)
@@ -45,7 +46,7 @@ struct rtb_event_window {
 
 struct rtb_window {
 	RTB_INHERIT(rtb_surface);
-	struct rtb_font_manager *font_manager;
+	struct rtb_font_manager font_manager;
 
 	/* public *********************************/
 	struct {

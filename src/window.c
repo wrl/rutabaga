@@ -198,7 +198,7 @@ rtb_window_open(struct rutabaga *r,
 	if (initialize_shaders(self))
 		goto err_shaders;
 
-	if (rtb_font_manager_init(self))
+	if (rtb_font_manager_init(&self->font_manager))
 		goto err_font;
 
 	mat4_set_identity(&self->identity);
@@ -212,6 +212,8 @@ rtb_window_open(struct rutabaga *r,
 	return self;
 
 err_font:
+	rtb_shader_free(&self->shaders.surface);
+	rtb_shader_free(&self->shaders.dfault);
 err_shaders:
 	rtb_window_close(self);
 err_window_impl:
@@ -226,7 +228,7 @@ rtb_window_close(struct rtb_window *self)
 	rtb_shader_free(&self->shaders.surface);
 	rtb_shader_free(&self->shaders.dfault);
 
-	rtb_font_manager_fini(self);
+	rtb_font_manager_fini(&self->font_manager);
 	rtb_type_unref(self->type);
 
 	window_impl_close(self);

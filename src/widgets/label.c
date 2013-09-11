@@ -63,7 +63,7 @@ realize(struct rtb_element *elem, struct rtb_element *parent,
 {
 	SELF_FROM(elem);
 
-	self->tobj = rtb_text_object_new(window->font_manager,
+	self->tobj = rtb_text_object_new(&window->font_manager,
 			self->font, self->text);
 
 	self->outer_pad.x = self->tobj->xpad;
