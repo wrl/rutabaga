@@ -145,12 +145,12 @@ recalculate(struct rtb_element *elem, struct rtb_element *instigator,
 }
 
 static void
-realize(struct rtb_element *elem, struct rtb_element *parent,
-		struct rtb_window *window)
+attached(struct rtb_element *elem,
+		struct rtb_element *parent, struct rtb_window *window)
 {
 	SELF_FROM(elem);
 
-	super.realize_cb(elem, parent, window);
+	super.attached_cb(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.button");
 
@@ -187,12 +187,12 @@ rtb_button_init(struct rtb_button *self,
 	self->min_size.w = 70.f;
 	self->min_size.h = 26.f;
 
-	self->draw_cb    = draw;
-	self->event_cb   = on_event;
-	self->realize_cb = realize;
-	self->layout_cb  = rtb_layout_hpack_center;
-	self->size_cb    = rtb_size_hfit_children;
-	self->recalc_cb  = recalculate;
+	self->draw_cb     = draw;
+	self->event_cb    = on_event;
+	self->attached_cb = attached;
+	self->layout_cb   = rtb_layout_hpack_center;
+	self->size_cb     = rtb_size_hfit_children;
+	self->recalc_cb   = recalculate;
 
 	return 0;
 }

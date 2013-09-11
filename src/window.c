@@ -106,12 +106,12 @@ win_event(struct rtb_element *elem, const struct rtb_event *e)
 }
 
 static void
-realize(struct rtb_element *elem, struct rtb_element *parent,
-		struct rtb_window *window)
+attached(struct rtb_element *elem,
+		struct rtb_element *parent, struct rtb_window *window)
 {
 	SELF_FROM(elem);
 
-	super.realize_cb(elem, parent, window);
+	super.attached_cb(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.window");
 
@@ -204,9 +204,9 @@ rtb_window_open(struct rutabaga *r,
 	mat4_set_identity(&self->identity);
 	rtb_elem_set_layout(RTB_OBJECT(self), rtb_layout_vpack_top);
 
-	self->event_cb   = win_event;
-	self->mark_dirty = mark_dirty;
-	self->realize_cb = realize;
+	self->event_cb    = win_event;
+	self->mark_dirty  = mark_dirty;
+	self->attached_cb = attached;
 
 	r->win = self;
 	return self;

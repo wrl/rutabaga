@@ -60,8 +60,8 @@ recalculate(struct rtb_element *elem, struct rtb_element *instigator,
 }
 
 static void
-realize(struct rtb_element *elem, struct rtb_element *parent,
-		struct rtb_window *window)
+attached(struct rtb_element *elem,
+		struct rtb_element *parent, struct rtb_window *window)
 {
 	SELF_FROM(elem);
 
@@ -71,7 +71,7 @@ realize(struct rtb_element *elem, struct rtb_element *parent,
 	self->outer_pad.x = self->tobj->xpad;
 	self->outer_pad.y = self->tobj->ypad;
 
-	super.realize_cb(elem, parent, window);
+	super.attached_cb(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.label");
 }
@@ -134,15 +134,15 @@ rtb_label_init(struct rtb_label *self,
 	/* XXX: nasty */
 
 	(*impl) = super;
-	impl->draw_cb    = draw;
-	impl->realize_cb = realize;
-	impl->size_cb    = size;
+	impl->draw_cb     = draw;
+	impl->attached_cb = attached;
+	impl->size_cb     = size;
 
 	if (impl != (void *) self) {
-		self->draw_cb    = draw;
-		self->realize_cb = realize;
-		self->size_cb    = size;
-		self->recalc_cb  = recalculate;
+		self->draw_cb     = draw;
+		self->attached_cb = attached;
+		self->size_cb     = size;
+		self->recalc_cb   = recalculate;
 	}
 
 	self->text = NULL;

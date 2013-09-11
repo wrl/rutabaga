@@ -114,10 +114,10 @@ child_attached(struct rtb_element *elem, struct rtb_element *child)
 }
 
 static void
-realize(struct rtb_element *self, struct rtb_element *parent,
-		struct rtb_window *window)
+attached(struct rtb_element *self,
+		struct rtb_element *parent, struct rtb_window *window)
 {
-	super.realize_cb(self, parent, window);
+	super.attached_cb(self, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.surface");
 }
@@ -241,8 +241,8 @@ rtb_surface_init(struct rtb_surface *self,
 	do {
 		impl->draw_cb        = draw;
 		impl->recalc_cb      = recalculate;
+		impl->attached_cb    = attached;
 		impl->child_attached = child_attached;
-		impl->realize_cb     = realize;
 	} while (impl != elem_impl && (impl = elem_impl));
 
 	TAILQ_INIT(&self->render_ctx.queues.every_frame);

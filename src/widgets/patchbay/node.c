@@ -111,8 +111,8 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 }
 
 static void
-realize(struct rtb_element *elem, struct rtb_element *parent,
-		struct rtb_window *window)
+attached(struct rtb_element *elem,
+		struct rtb_element *parent, struct rtb_window *window)
 {
 	SELF_FROM(elem);
 
@@ -120,7 +120,7 @@ realize(struct rtb_element *elem, struct rtb_element *parent,
 
 	rtb_label_set_font(&self->name_label, &window->font_manager.fonts.big);
 
-	super.realize_cb(elem, parent, window);
+	super.attached_cb(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.patchbay.node");
 }
@@ -156,12 +156,12 @@ rtb_patchbay_node_init(struct rtb_patchbay_node *self)
 	rtb_elem_init(RTB_OBJECT(self), &super);
 	rtb_quad_init(&self->bg_quad);
 
-	self->realize_cb = realize;
-	self->event_cb   = on_event;
-	self->recalc_cb  = recalculate;
-	self->draw_cb    = draw;
-	self->size_cb    = size;
-	self->layout_cb  = rtb_layout_vpack_top;
+	self->attached_cb = attached;
+	self->event_cb    = on_event;
+	self->recalc_cb   = recalculate;
+	self->draw_cb     = draw;
+	self->size_cb     = size;
+	self->layout_cb   = rtb_layout_vpack_top;
 
 	self->min_size.w = 200.f;
 

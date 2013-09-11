@@ -162,8 +162,8 @@ on_event(struct rtb_element *self, const struct rtb_event *e)
 }
 
 static void
-realize(struct rtb_element *self, struct rtb_element *parent,
-		struct rtb_window *window)
+attached(struct rtb_element *self,
+		struct rtb_element *parent, struct rtb_window *window)
 {
 	struct rtb_element *iter;
 
@@ -173,6 +173,13 @@ realize(struct rtb_element *self, struct rtb_element *parent,
 
 	TAILQ_FOREACH(iter, &self->children, child)
 		self->child_attached(self, iter);
+}
+
+static void
+detached(struct rtb_element *self,
+		struct rtb_element *parent, struct rtb_window *window)
+{
+	return;
 }
 
 static void
@@ -204,7 +211,7 @@ rtb_elem_deliver_event(struct rtb_element *self, const struct rtb_event *e)
 
 	/* elements should not receive events before they've had their
 	 * realize() callback called. */
-	if (self->state == RTB_STATE_UNREALIZED)
+	if (self->state == RTB_STATE_UNATTACHED)
 		return 0;
 
 	switch (e->type) {
@@ -259,12 +266,12 @@ rtb_elem_realize(struct rtb_element *self, struct rtb_element *parent,
 	self->surface = surface;
 	self->window  = window;
 
-	self->realize_cb(self, parent, window);
+	self->attached_cb(self, parent, window);
 
-	if (!parent || parent->state != RTB_STATE_UNREALIZED)
+	if (!parent || parent->state != RTB_STATE_UNATTACHED)
 		self->recalc_cb(self, parent, RTB_DIRECTION_LEAFWARD);
 
-	self->state = RTB_STATE_REALIZED;
+	self->state = RTB_STATE_ATTACHED;
 }
 
 void
@@ -330,7 +337,8 @@ rtb_elem_add_child(struct rtb_element *self, struct rtb_element *child,
 {
 	assert(child->draw_cb);
 	assert(child->event_cb);
-	assert(child->realize_cb);
+	assert(child->attached_cb);
+	assert(child->detached_cb);
 	assert(child->layout_cb);
 	assert(child->size_cb);
 	assert(child->recalc_cb);
@@ -369,9 +377,11 @@ rtb_elem_remove_child(struct rtb_element *self, struct rtb_element *child)
 		self->window->mouse.element_underneath = self;
 	}
 
+	child->detached_cb(child, self, self->window);
+
 	child->parent = NULL;
 	child->style  = NULL;
-	child->state  = RTB_STATE_UNREALIZED;
+	child->state  = RTB_STATE_UNATTACHED;
 
 	self->recalc_cb(self, NULL, RTB_DIRECTION_LEAFWARD);
 }
@@ -379,7 +389,10 @@ rtb_elem_remove_child(struct rtb_element *self, struct rtb_element *child)
 static struct rtb_element_implementation base_impl = {
 	.draw_cb        = draw,
 	.event_cb       = on_event,
-	.realize_cb     = realize,
+
+	.attached_cb    = attached,
+	.detached_cb    = detached,
+
 	.layout_cb      = rtb_layout_hpack_left,
 	.size_cb        = rtb_size_self,
 	.recalc_cb      = recalculate,
@@ -403,7 +416,7 @@ rtb_elem_init(struct rtb_element *self,
 
 	self->metatype    = RTB_TYPE_ATOM;
 	self->style       = NULL;
-	self->state       = RTB_STATE_UNREALIZED;
+	self->state       = RTB_STATE_UNATTACHED;
 
 	self->outer_pad.x = RTB_DEFAULT_OUTER_XPAD;
 	self->outer_pad.y = RTB_DEFAULT_OUTER_YPAD;

@@ -271,11 +271,12 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 }
 
 static void
-realize(struct rtb_element *elem, struct rtb_element *parent,
-		struct rtb_window *window)
+attached(struct rtb_element *elem,
+		struct rtb_element *parent, struct rtb_window *window)
 {
 	SELF_FROM(elem);
-	super.realize_cb(elem, parent, window);
+
+	super.attached_cb(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.knob");
 
@@ -312,7 +313,7 @@ rtb_knob_set_value(struct rtb_knob *self, float new_value)
 
 	rtb_elem_mark_dirty(RTB_OBJECT(self));
 
-	if (self->state != RTB_STATE_UNREALIZED)
+	if (self->state != RTB_STATE_UNATTACHED)
 		dispatch_value_change_event(self);
 }
 
@@ -331,9 +332,9 @@ rtb_knob_new()
 
 	glGenBuffers(2, self->vbo);
 
-	self->draw_cb    = draw;
-	self->event_cb   = on_event;
-	self->realize_cb = realize;
+	self->draw_cb     = draw;
+	self->event_cb    = on_event;
+	self->attached_cb = attached;
 
 	init_circle_indices();
 	return self;

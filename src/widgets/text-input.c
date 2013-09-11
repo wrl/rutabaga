@@ -302,12 +302,12 @@ recalculate(struct rtb_element *elem, struct rtb_element *instigator,
 }
 
 static void
-realize(struct rtb_element *elem, struct rtb_element *parent,
-		struct rtb_window *window)
+attached(struct rtb_element *elem,
+		struct rtb_element *parent, struct rtb_window *window)
 {
 	SELF_FROM(elem);
 
-	super.realize_cb(elem, parent, window);
+	super.attached_cb(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.text-input");
 
@@ -389,12 +389,12 @@ rtb_text_input_init(struct rutabaga *rtb, struct rtb_text_input *self,
 	self->min_size.h = 30.f;
 	self->min_size.w = 150.f;
 
-	self->realize_cb = realize;
-	self->recalc_cb  = recalculate;
-	self->draw_cb    = draw;
-	self->size_cb    = rtb_size_self;
-	self->layout_cb  = layout;
-	self->event_cb   = on_event;
+	self->attached_cb = attached;
+	self->recalc_cb   = recalculate;
+	self->draw_cb     = draw;
+	self->size_cb     = rtb_size_self;
+	self->layout_cb   = layout;
+	self->event_cb    = on_event;
 
 	self->cursor_position = 0;
 	rtb_label_set_text(&self->label, "");

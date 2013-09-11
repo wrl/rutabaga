@@ -38,10 +38,10 @@ static struct rtb_element_implementation super;
  */
 
 static void
-realize(struct rtb_element *self, struct rtb_element *parent,
-		struct rtb_window *window)
+attached(struct rtb_element *self,
+		struct rtb_element *parent, struct rtb_window *window)
 {
-	super.realize_cb(self, parent, window);
+	super.attached_cb(self, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.container");
 }
@@ -63,7 +63,7 @@ rtb_container_new()
 		return NULL;
 	}
 
-	self->realize_cb = realize;
+	self->attached_cb = attached;
 
 	return self;
 }

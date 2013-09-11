@@ -241,12 +241,12 @@ recalculate(struct rtb_element *elem,
 }
 
 static void
-realize(struct rtb_element *elem, struct rtb_element *parent,
-		struct rtb_window *window)
+attached(struct rtb_element *elem,
+		struct rtb_element *parent, struct rtb_window *window)
 {
 	SELF_FROM(elem);
 
-	super.realize_cb(RTB_OBJECT(self), parent, window);
+	super.attached_cb(RTB_OBJECT(self), parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.patchbay.port");
 }
@@ -393,12 +393,12 @@ rtb_patchbay_port_init(struct rtb_patchbay_port *self,
 	self->port_type  = type;
 	self->node       = node;
 
-	self->draw_cb    = draw;
-	self->realize_cb = realize;
-	self->recalc_cb  = recalculate;
-	self->event_cb   = on_event;
-	self->size_cb    = rtb_size_hfill;
-	self->layout_cb  = rtb_layout_vpack_top;
+	self->draw_cb     = draw;
+	self->attached_cb = attached;
+	self->recalc_cb   = recalculate;
+	self->event_cb    = on_event;
+	self->size_cb     = rtb_size_hfill;
+	self->layout_cb   = rtb_layout_vpack_top;
 
 	self->outer_pad.x = 8.f;
 	self->outer_pad.y = 2.f;

@@ -405,12 +405,12 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 }
 
 static void
-realize(struct rtb_element *elem, struct rtb_element *parent,
-		struct rtb_window *window)
+attached(struct rtb_element *elem,
+		struct rtb_element *parent, struct rtb_window *window)
 {
 	SELF_FROM(elem);
 
-	super.realize_cb(elem, parent, window);
+	super.attached_cb(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.patchbay");
 
@@ -439,11 +439,11 @@ rtb_patchbay_init(struct rtb_patchbay *self)
 	rtb_surface_init(RTB_SURFACE(self), &super);
 	TAILQ_INIT(&self->patches);
 
-	self->draw_cb    = draw;
-	self->event_cb   = on_event;
-	self->realize_cb = realize;
-	self->layout_cb  = layout;
-	self->recalc_cb  = recalculate;
+	self->draw_cb     = draw;
+	self->event_cb    = on_event;
+	self->attached_cb = attached;
+	self->layout_cb   = layout;
+	self->recalc_cb   = recalculate;
 
 	init_shaders();
 	load_tile(self);
