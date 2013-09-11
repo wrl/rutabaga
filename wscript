@@ -129,6 +129,6 @@ def configure(conf):
 		conf.define("_RTB_DEBUG_FRAME", True)
 
 def build(bld):
-	bld.recurse("style")
+	bld.recurse("styles")
 	bld.recurse("src")
 	bld.recurse("examples")

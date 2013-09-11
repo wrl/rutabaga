@@ -31,7 +31,8 @@
 
 #include "private/util.h"
 
-#include "style/definition.h"
+/* default_style.h is generated as part of the build process */
+#include "styles/default/style.h"
 
 static struct rtb_style no_style = {
 	.for_type = "couldn't find a style for this element",

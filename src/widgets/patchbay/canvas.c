@@ -47,7 +47,7 @@
 #include "private/targa.h"
 
 #include "shaders/patchbay-canvas.glsl.h"
-#include "style/assets/tile.tga.h"
+#include "styles/default/assets/tile.tga.h"
 
 #define SELF_FROM(elem) \
 	struct rtb_patchbay *self = RTB_OBJECT_AS(elem, rtb_patchbay)

@@ -106,5 +106,3 @@ if __name__ == '__main__':
     import sys
     sys.stdout.write(process_shader(sys.stdin))
     sys.stdout.write("\n\n")
-
-    pass
