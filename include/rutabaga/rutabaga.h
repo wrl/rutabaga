@@ -54,5 +54,5 @@ struct rutabaga {
 
 void rtb_stop_event_loop(struct rutabaga *);
 
-struct rutabaga *rtb_init(void);
-void rtb_destroy(struct rutabaga *);
+struct rutabaga *rtb_new(void);
+void rtb_free(struct rutabaga *);

@@ -270,7 +270,7 @@ int main(int argc, char **argv)
 
 	srand(time(NULL));
 
-	assert(delicious = rtb_init());
+	assert(delicious = rtb_new());
 	assert((win = rtb_window_open(delicious, 450, 600, "~delicious~")));
 
 	win->outer_pad.x = 5.f;
@@ -289,5 +289,5 @@ int main(int argc, char **argv)
 	rtb_event_loop(delicious);
 
 	rtb_window_close(delicious->win);
-	rtb_destroy(delicious);
+	rtb_free(delicious);
 }

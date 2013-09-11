@@ -558,7 +558,7 @@ int main(int argc, char **argv)
 
 	pthread_mutex_init(&state.connection_from_gui, NULL);
 
-	assert(state.rtb = rtb_init());
+	assert(state.rtb = rtb_new());
 	assert((state.win = rtb_window_open(state.rtb, 1440, 768, "cabbage patch")));
 
 	state.win->outer_pad.x = 0.f;
@@ -598,7 +598,7 @@ int main(int argc, char **argv)
 
 	rtb_patchbay_fini(&state.cp);
 	rtb_window_close(state.rtb->win);
-	rtb_destroy(state.rtb);
+	rtb_free(state.rtb);
 
 	return EXIT_SUCCESS;
 }

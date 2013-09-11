@@ -46,14 +46,8 @@ rtb_stop_event_loop(struct rutabaga *self)
 	self->run_event_loop = 0;
 }
 
-void
-rtb_destroy(struct rutabaga *self)
-{
-	window_impl_rtb_free(self);
-}
-
 struct rutabaga *
-rtb_init(void)
+rtb_new(void)
 {
 	struct rutabaga *self = window_impl_rtb_alloc();
 
@@ -62,4 +56,10 @@ rtb_init(void)
 	memcpy(&self->allocator, &stdlib_allocator,
 			sizeof(self->allocator));
 	return self;
+}
+
+void
+rtb_free(struct rutabaga *self)
+{
+	window_impl_rtb_free(self);
 }
