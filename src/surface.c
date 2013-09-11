@@ -62,7 +62,7 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
 	rtb_render_pop(elem);
 }
 
-static void
+static int
 recalculate(struct rtb_element *elem, struct rtb_element *instigator,
 		rtb_ev_direction_t direction)
 {
@@ -77,7 +77,7 @@ recalculate(struct rtb_element *elem, struct rtb_element *instigator,
 	super.recalc_cb(elem, instigator, direction);
 
 	if (self->w <= 0 || self->h <= 0)
-		return;
+		return -1;
 
 	mat4_set_orthographic(&self->projection,
 			self->x, self->x + self->w,
@@ -102,10 +102,12 @@ recalculate(struct rtb_element *elem, struct rtb_element *instigator,
 	rtb_quad_set_tex_coords(&self->quad, &tex_coords);
 
 	rtb_surface_invalidate(self);
+
+	return 1;
 }
 
 static void
-attach_child(struct rtb_element *elem, struct rtb_element *child)
+child_attached(struct rtb_element *elem, struct rtb_element *child)
 {
 	SELF_FROM(elem);
 	rtb_elem_realize(child, elem, self, self->window);
@@ -237,10 +239,10 @@ rtb_surface_init(struct rtb_surface *self,
 	(*impl) = super;
 
 	do {
-		impl->draw_cb      = draw;
-		impl->recalc_cb    = recalculate;
-		impl->attach_child = attach_child;
-		impl->realize_cb   = realize;
+		impl->draw_cb        = draw;
+		impl->recalc_cb      = recalculate;
+		impl->child_attached = child_attached;
+		impl->realize_cb     = realize;
 	} while (impl != elem_impl && (impl = elem_impl));
 
 	TAILQ_INIT(&self->render_ctx.queues.every_frame);

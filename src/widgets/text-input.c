@@ -286,7 +286,7 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 
 	return 0;
 }
-static void
+static int
 recalculate(struct rtb_element *elem, struct rtb_element *instigator,
 		rtb_ev_direction_t direction)
 {
@@ -297,6 +297,8 @@ recalculate(struct rtb_element *elem, struct rtb_element *instigator,
 
 	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
 	update_cursor(self);
+
+	return 1;
 }
 
 static void

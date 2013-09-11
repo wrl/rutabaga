@@ -49,12 +49,14 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
 	super.draw_cb(elem, state);
 }
 
-static void
+static int
 recalculate(struct rtb_element *elem, struct rtb_element *instigator,
 		rtb_ev_direction_t direction)
 {
 	super.recalc_cb(elem, instigator, direction);
 	elem->style = elem->parent->style;
+
+	return 1;
 }
 
 static void

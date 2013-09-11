@@ -91,7 +91,7 @@ recalc_leafward(struct rtb_element *self, struct rtb_element *instigator,
 		iter->recalc_cb(iter, self, direction);
 }
 
-static void
+static int
 recalculate(struct rtb_element *self, struct rtb_element *instigator,
 		rtb_ev_direction_t direction)
 {
@@ -102,7 +102,7 @@ recalculate(struct rtb_element *self, struct rtb_element *instigator,
 	switch (direction) {
 	case RTB_DIRECTION_ROOTWARD:
 		if (!recalc_rootward(self, instigator, RTB_DIRECTION_ROOTWARD))
-			return;
+			return 0;
 		break;
 
 	case RTB_DIRECTION_LEAFWARD:
@@ -117,6 +117,8 @@ recalculate(struct rtb_element *self, struct rtb_element *instigator,
 	self->inner_rect.y  = self->y  + self->outer_pad.y;
 	self->inner_rect.x2 = self->x2 - self->outer_pad.x;
 	self->inner_rect.y2 = self->y2 - self->outer_pad.y;
+
+	return 1;
 }
 
 /**
@@ -170,11 +172,11 @@ realize(struct rtb_element *self, struct rtb_element *parent,
 	self->layout_cb(self);
 
 	TAILQ_FOREACH(iter, &self->children, child)
-		self->attach_child(self, iter);
+		self->child_attached(self, iter);
 }
 
 static void
-attach_child(struct rtb_element *self, struct rtb_element *child)
+child_attached(struct rtb_element *self, struct rtb_element *child)
 {
 	rtb_elem_realize(child, self, self->surface, self->window);
 }
@@ -279,13 +281,13 @@ rtb_elem_mark_dirty(struct rtb_element *self)
 }
 
 void
-rtb_elem_set_size_cb(struct rtb_element *self, rtb_size_cb_t size_cb)
+rtb_elem_set_size_cb(struct rtb_element *self, rtb_elem_cb_size_t size_cb)
 {
 	self->size_cb = size_cb;
 }
 
 void
-rtb_elem_set_layout(struct rtb_element *self, rtb_layout_cb_t layout_cb)
+rtb_elem_set_layout(struct rtb_element *self, rtb_elem_cb_layout_t layout_cb)
 {
 	self->layout_cb = layout_cb;
 }
@@ -339,7 +341,7 @@ rtb_elem_add_child(struct rtb_element *self, struct rtb_element *child,
 		TAILQ_INSERT_TAIL(&self->children, child, child);
 
 	if (self->window) {
-		self->attach_child(self, child);
+		self->child_attached(self, child);
 		self->recalc_cb(self, child, RTB_DIRECTION_ROOTWARD);
 	}
 }
@@ -374,15 +376,15 @@ rtb_elem_remove_child(struct rtb_element *self, struct rtb_element *child)
 	self->recalc_cb(self, NULL, RTB_DIRECTION_LEAFWARD);
 }
 
-static struct rtb_element_implementation default_impl = {
-	.draw_cb      = draw,
-	.event_cb     = on_event,
-	.realize_cb   = realize,
-	.layout_cb    = rtb_layout_hpack_left,
-	.size_cb      = rtb_size_self,
-	.recalc_cb    = recalculate,
-	.attach_child = attach_child,
-	.mark_dirty   = mark_dirty
+static struct rtb_element_implementation base_impl = {
+	.draw_cb        = draw,
+	.event_cb       = on_event,
+	.realize_cb     = realize,
+	.layout_cb      = rtb_layout_hpack_left,
+	.size_cb        = rtb_size_self,
+	.recalc_cb      = recalculate,
+	.child_attached = child_attached,
+	.mark_dirty     = mark_dirty
 };
 
 int
@@ -395,9 +397,9 @@ rtb_elem_init(struct rtb_element *self,
 	TAILQ_INIT(&self->children);
 
 	if (impl != elem_impl)
-		(*elem_impl) = default_impl;
+		(*elem_impl) = base_impl;
 
-	(*impl) = default_impl;
+	(*impl) = base_impl;
 
 	self->metatype    = RTB_TYPE_ATOM;
 	self->style       = NULL;

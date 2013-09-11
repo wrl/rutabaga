@@ -64,14 +64,16 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
  * element implementation
  */
 
-static void
-recalculate(struct rtb_element *elem, struct rtb_element *instigator,
-		rtb_ev_direction_t direction)
+static int
+recalculate(struct rtb_element *elem,
+		struct rtb_element *instigator, rtb_ev_direction_t direction)
 {
 	SELF_FROM(elem);
 
 	super.recalc_cb(elem, instigator, direction);
 	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
+
+	return 1;
 }
 
 static int

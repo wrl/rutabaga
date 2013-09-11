@@ -228,14 +228,16 @@ handle_mouse(struct rtb_patchbay_port *self, struct rtb_mouse_event *e)
  * element implementation
  */
 
-static void
-recalculate(struct rtb_element *elem, struct rtb_element *instigator,
-		rtb_ev_direction_t direction)
+static int
+recalculate(struct rtb_element *elem,
+		struct rtb_element *instigator, rtb_ev_direction_t direction)
 {
 	SELF_FROM(elem);
 
 	super.recalc_cb(elem, instigator, direction);
 	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
+
+	return 1;
 }
 
 static void

@@ -53,35 +53,107 @@ typedef enum {
  * element implementation
  */
 
-typedef void (*rtb_draw_cb_t)
+/**
+ * rtb_elem_cb_draw_t
+ * called when the element should redraw itself
+ */
+typedef void (*rtb_elem_cb_draw_t)
 	(struct rtb_element *elem, rtb_draw_state_t state);
-typedef int  (*rtb_internal_event_cb_t)
-	(struct rtb_element *elem, const struct rtb_event *event);
-typedef void (*rtb_realize_cb_t)
-	(struct rtb_element *elem, struct rtb_element *parent,
-	 struct rtb_window *window);
-typedef void (*rtb_layout_cb_t)
+
+/**
+ * rtb_elem_cb_internal_event_t
+ *
+ * called when the element should handle an event.
+ * distinct from rtb_event_cb_t because of the lack of a userdata
+ * pointer.
+ *
+ * a return value of 0 indicates that the element doesn't wish to
+ * handle the event, and it will be propagated rootward in the tree
+ * until. a return value of 1 indicates that the element has handled
+ * the event, and no propagation in the tree will take place.
+ */
+typedef int (*rtb_elem_cb_internal_event_t)
+	(struct rtb_element *, const struct rtb_event *event);
+
+/**
+ * rtb_elem_cb_realize_t
+ *
+ * called when the element is attached to the tree.
+ */
+typedef void (*rtb_elem_cb_realize_t)
+	(struct rtb_element *,
+	 struct rtb_element *parent, struct rtb_window *window);
+
+/**
+ * rtb_elem_cb_layout_t
+ *
+ * called when the element should layout its children.
+ */
+typedef void (*rtb_elem_cb_layout_t)
 	(struct rtb_element *);
-typedef void (*rtb_size_cb_t)
-	(struct rtb_element *elem, const struct rtb_size *avail,
-	 struct rtb_size *want);
-typedef void (*rtb_recalc_cb_t)
+
+/**
+ * rtb_elem_cb_size_t
+ *
+ * called when the element should report its desired size.
+ */
+typedef void (*rtb_elem_cb_size_t)
+	(struct rtb_element *,
+	 const struct rtb_size *avail, struct rtb_size *want);
+
+/**
+ * rtb_elem_cb_recalc_t
+ *
+ * called when an element needs to respond to a layout change
+ * caused by an element above it somewhere in the tree, generally
+ * by a containing element changing size.
+ *
+ * should return 1 if recalculation was necessary, 0 if none was,
+ * and -1 in an exceptional condition (for example, if an element
+ * is less than 1 pixel square in size).
+ *
+ * the exceptional condition will not be handled or propagated up
+ * the tree, but can be useful for debugging.
+ */
+typedef int (*rtb_elem_cb_recalc_t)
 	(struct rtb_element *elem,
 	 struct rtb_element *instigator, rtb_ev_direction_t direction);
-typedef void (*rtb_attach_child_cb_t)
+
+/**
+ * rtb_elem_cb_child_attached_t
+ *
+ * called when `child` is attached directly under `elem`.
+ *
+ * it is not propagated up the tree. for example, let's consider
+ * two elements, `a` and `b`, and that `b` is a child element of `a`.
+ * if a third element, `c`, is added under `b`, then only `b`'s
+ * child_attached callback will be called. (it will not propagate rootward
+ * to `a`).
+ */
+typedef void (*rtb_elem_cb_child_attached_t)
 	(struct rtb_element *elem, struct rtb_element *child);
-typedef void (*rtb_mark_dirty_cb_t)
+
+/**
+ * rtb_elem_cb_marked_dirty_t
+ *
+ * called when a redraw has been requested of an element. generally,
+ * an element will add itself to its surface's renderqueue to be
+ * repainted on the next frame, but in special cases (for example,
+ * the implementation of a surface itself), this behavior can be
+ * changed.
+ */
+typedef void (*rtb_elem_cb_marked_dirty_t)
 	(struct rtb_element *);
 
 struct rtb_element_implementation {
-	rtb_size_cb_t size_cb;
-	rtb_layout_cb_t layout_cb;
-	rtb_draw_cb_t draw_cb;
-	rtb_realize_cb_t realize_cb;
-	rtb_internal_event_cb_t event_cb;
-	rtb_recalc_cb_t recalc_cb;
-	rtb_attach_child_cb_t attach_child;
-	rtb_mark_dirty_cb_t mark_dirty;
+	rtb_elem_cb_size_t size_cb;
+	rtb_elem_cb_layout_t layout_cb;
+	rtb_elem_cb_draw_t draw_cb;
+	rtb_elem_cb_realize_t realize_cb;
+	rtb_elem_cb_internal_event_t event_cb;
+	rtb_elem_cb_recalc_t recalc_cb;
+	rtb_elem_cb_child_attached_t child_attached;
+	rtb_elem_cb_marked_dirty_t mark_dirty;
 };
 
 /**
@@ -134,8 +206,8 @@ void rtb_elem_mark_dirty(struct rtb_element *);
 void rtb_elem_trigger_recalc(struct rtb_element *,
 		struct rtb_element *instigator, rtb_ev_direction_t direction);
 
-void rtb_elem_set_size_cb(struct rtb_element *, rtb_size_cb_t size_cb);
-void rtb_elem_set_layout(struct rtb_element *, rtb_layout_cb_t layout_cb);
+void rtb_elem_set_size_cb(struct rtb_element *, rtb_elem_cb_size_t size_cb);
+void rtb_elem_set_layout(struct rtb_element *, rtb_elem_cb_layout_t layout_cb);
 void rtb_elem_set_position_from_point(struct rtb_element *, struct rtb_point *);
 void rtb_elem_set_position(struct rtb_element *, float x, float y);
 void rtb_elem_set_size(struct rtb_element *, struct rtb_size *);
