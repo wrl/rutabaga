@@ -52,8 +52,8 @@
  */
 
 static int
-recalc_rootward(struct rtb_element *self, struct rtb_element *instigator,
-		rtb_ev_direction_t direction)
+recalc_rootward(struct rtb_element *self,
+		struct rtb_element *instigator, rtb_ev_direction_t direction)
 {
 	struct rtb_element *iter;
 	struct rtb_size inst_old_size = {
@@ -80,8 +80,8 @@ recalc_rootward(struct rtb_element *self, struct rtb_element *instigator,
 }
 
 static void
-recalc_leafward(struct rtb_element *self, struct rtb_element *instigator,
-		rtb_ev_direction_t direction)
+recalc_leafward(struct rtb_element *self,
+		struct rtb_element *instigator, rtb_ev_direction_t direction)
 {
 	struct rtb_element *iter;
 
@@ -92,10 +92,10 @@ recalc_leafward(struct rtb_element *self, struct rtb_element *instigator,
 }
 
 static int
-recalculate(struct rtb_element *self, struct rtb_element *instigator,
-		rtb_ev_direction_t direction)
+recalculate(struct rtb_element *self,
+		struct rtb_element *instigator, rtb_ev_direction_t direction)
 {
-	/* XXX: invariant: self->window->state != RTB_STATE_UNREALIZED */
+	/* XXX: invariant: self->window->state != RTB_STATE_UNATTACHED */
 	if (!self->style)
 		self->style = rtb_style_for_element(self, self->window->style_list);
 
@@ -167,12 +167,17 @@ attached(struct rtb_element *self,
 {
 	struct rtb_element *iter;
 
+	self->parent = parent;
+	self->window = window;
+
 	self->type = rtb_type_ref(window, NULL, "net.illest.rutabaga.element");
 
 	self->layout_cb(self);
 
 	TAILQ_FOREACH(iter, &self->children, child)
 		self->child_attached(self, iter);
+
+	self->state = RTB_STATE_ATTACHED;
 }
 
 static void
@@ -185,7 +190,8 @@ detached(struct rtb_element *self,
 static void
 child_attached(struct rtb_element *self, struct rtb_element *child)
 {
-	rtb_elem_realize(child, self, self->surface, self->window);
+	child->surface = self->surface;
+	child->attached_cb(child, self, self->window);
 }
 
 static void
@@ -209,8 +215,8 @@ rtb_elem_deliver_event(struct rtb_element *self, const struct rtb_event *e)
 {
 	int ret;
 
-	/* elements should not receive events before they've had their
-	 * realize() callback called. */
+	/* elements should not receive events if they've not been attached
+	 * into the tree yet. */
 	if (self->state == RTB_STATE_UNATTACHED)
 		return 0;
 
@@ -256,22 +262,6 @@ rtb_elem_draw(struct rtb_element *self, rtb_draw_state_t state)
 	}
 
 	self->draw_cb(self, state);
-}
-
-void
-rtb_elem_realize(struct rtb_element *self, struct rtb_element *parent,
-		struct rtb_surface *surface, struct rtb_window *window)
-{
-	self->parent  = parent;
-	self->surface = surface;
-	self->window  = window;
-
-	self->attached_cb(self, parent, window);
-
-	if (!parent || parent->state != RTB_STATE_UNATTACHED)
-		self->recalc_cb(self, parent, RTB_DIRECTION_LEAFWARD);
-
-	self->state = RTB_STATE_ATTACHED;
 }
 
 void
@@ -322,7 +312,7 @@ rtb_elem_set_size(struct rtb_element *self, struct rtb_size *sz)
 }
 
 int
-rtb_elem_in_tree(struct rtb_element *root, struct rtb_element *leaf)
+rtb_elem_is_in_tree(struct rtb_element *root, struct rtb_element *leaf)
 {
 	for (; leaf; leaf = leaf->parent)
 		if (leaf == root)
@@ -369,7 +359,7 @@ rtb_elem_remove_child(struct rtb_element *self, struct rtb_element *child)
 
 			for (i = 0; i < RTB_MOUSE_BUTTON_MAX + 1; i++) {
 				b = &self->window->mouse.button[i];
-				if (rtb_elem_in_tree(child, b->target))
+				if (rtb_elem_is_in_tree(child, b->target))
 					b->target = self;
 			}
 		}

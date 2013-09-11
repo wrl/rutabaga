@@ -65,15 +65,15 @@ attached(struct rtb_element *elem,
 {
 	SELF_FROM(elem);
 
+	super.attached_cb(elem, parent, window);
+	self->type = rtb_type_ref(window, self->type,
+			"net.illest.rutabaga.widgets.label");
+
 	self->tobj = rtb_text_object_new(&window->font_manager,
 			self->font, self->text);
 
 	self->outer_pad.x = self->tobj->xpad;
 	self->outer_pad.y = self->tobj->ypad;
-
-	super.attached_cb(elem, parent, window);
-	self->type = rtb_type_ref(window, self->type,
-			"net.illest.rutabaga.widgets.label");
 }
 
 static void

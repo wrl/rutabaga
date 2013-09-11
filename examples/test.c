@@ -90,6 +90,8 @@ int print_streeng(struct rtb_element *victim,
 int knob_value(struct rtb_element *victim,
 		const struct rtb_event *e, void *unused)
 {
+	return 0;
+
 	if (victim != RTB_OBJECT(knob)) {
 		knob = (void *) knob;
 		printf("\n");

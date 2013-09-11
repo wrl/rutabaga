@@ -193,7 +193,7 @@ mouse_up(struct rtb_window *window, struct rtb_element *target,
 	struct rtb_mouse *mouse = &window->mouse;
 	struct rtb_mouse_button *b = &mouse->button[button];
 
-	if (rtb_elem_in_tree(b->target, target))
+	if (rtb_elem_is_in_tree(b->target, target))
 		dispatch_click_event(window, target, button, x, y);
 	else if (b->state == DRAG)
 		dispatch_drag_event(window, RTB_DRAG_DROP, target, button, x, y);

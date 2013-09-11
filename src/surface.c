@@ -110,7 +110,9 @@ static void
 child_attached(struct rtb_element *elem, struct rtb_element *child)
 {
 	SELF_FROM(elem);
-	rtb_elem_realize(child, elem, self, self->window);
+
+	child->surface = self;
+	child->attached_cb(child, RTB_OBJECT(self), self->window);
 }
 
 static void

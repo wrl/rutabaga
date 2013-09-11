@@ -171,9 +171,9 @@ rtb_window_reinit(struct rtb_window *self)
 	glScissor(0, 0, self->w, self->h);
 
 	if (!self->window)
-		rtb_elem_realize(elem, NULL, RTB_SURFACE(self), self);
-	else
-		rtb_elem_trigger_recalc(elem, elem, RTB_DIRECTION_LEAFWARD);
+		self->attached_cb(elem, NULL, self);
+
+	rtb_elem_trigger_recalc(elem, elem, RTB_DIRECTION_LEAFWARD);
 }
 
 struct rtb_window *
@@ -207,6 +207,8 @@ rtb_window_open(struct rutabaga *r,
 	self->event_cb    = win_event;
 	self->mark_dirty  = mark_dirty;
 	self->attached_cb = attached;
+
+	self->surface = RTB_SURFACE(self);
 
 	r->win = self;
 	return self;

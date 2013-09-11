@@ -215,8 +215,6 @@ struct rtb_element {
 
 int rtb_elem_deliver_event(struct rtb_element *, const struct rtb_event *e);
 void rtb_elem_draw(struct rtb_element *, rtb_draw_state_t state);
-void rtb_elem_realize(struct rtb_element *, struct rtb_element *parent,
-		struct rtb_surface *surface, struct rtb_window *window);
 
 void rtb_elem_mark_dirty(struct rtb_element *);
 void rtb_elem_trigger_recalc(struct rtb_element *,
@@ -228,7 +226,7 @@ void rtb_elem_set_position_from_point(struct rtb_element *, struct rtb_point *);
 void rtb_elem_set_position(struct rtb_element *, float x, float y);
 void rtb_elem_set_size(struct rtb_element *, struct rtb_size *);
 
-int rtb_elem_in_tree(struct rtb_element *root, struct rtb_element *leaf);
+int rtb_elem_is_in_tree(struct rtb_element *root, struct rtb_element *leaf);
 void rtb_elem_add_child(struct rtb_element *parent, struct rtb_element *child,
 		rtb_child_add_loc_t where);
 void rtb_elem_remove_child(struct rtb_element *, struct rtb_element *child);
