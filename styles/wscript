@@ -6,6 +6,8 @@ import os
 import re
 
 from css2c import RutabagaStylesheet
+from waflib.Configure import conf
+from waflib import TaskGen
 
 css2c_prelude = """\
 /**
@@ -59,30 +61,35 @@ def bin2h_task(bld, src, dst, var=None):
 		update_outputs=True)
 
 
-def do_css2c(task):
-	css = RutabagaStylesheet(task.inputs[0])
-	css.parse()
-
+def do_css2c(task, css):
 	task.outputs[0].write(
 			css2c_prelude + css.c_repr())
 
 
-def css2c_task(bld, style_name):
-	bld(
-		rule=do_css2c,
-		source="{0}/style.css".format(style_name),
-		target="{0}/style.h".format(style_name),
-		name='styles/{0}'.format(style_name),
-		export_includes=".",
-		update_outputs=True)
+#
+# XXX: this is a tremendous hack but i don't give a fuck
+#      maybe somebody who knows waf better than i do will
+#      fix it someday
+#
 
+@conf
+def rtb_style(self, style_name):
+	css_path = "{0}/style.css".format(style_name)
+	css_node = self.path.find_resource(css_path)
+
+	css = RutabagaStylesheet(css_node)
+	css.parse()
+
+	bin2h_task(self,
+			"default/assets/tile.tga",
+			"default/assets/tile.tga.h")
+
+	self(rule=lambda task: do_css2c(task, css),
+			source=css_path,
+			target="{0}/style.h".format(style_name),
+			name='styles/{0}'.format(style_name),
+			export_includes=".",
+			update_outputs=True)
 
 def build(bld):
-	asset = lambda src, dst: bin2h_task(bld, src, dst)
-	style = lambda style_name: css2c_task(bld, style_name)
-
-	# textures
-	asset("default/assets/tile.tga", "default/assets/tile.tga.h")
-
-	# default style
-	style("default")
+	bld.rtb_style("default")
