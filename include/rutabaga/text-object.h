@@ -37,6 +37,7 @@ struct rtb_text_object {
 	GLfloat xpad, ypad;
 
 	vertex_buffer_t *vertices;
+
 	struct rtb_font_manager *fm;
 	struct rtb_font *font;
 };

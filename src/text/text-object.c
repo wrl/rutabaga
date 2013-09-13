@@ -82,6 +82,7 @@ rtb_text_object_update(struct rtb_text_object *self,
 		const rtb_utf8_t *text)
 {
 	texture_font_t *font = self->font->txfont;
+
 	float x0, y0, x1, y1;
 	float x, y;
 
@@ -158,7 +159,7 @@ rtb_text_object_update(struct rtb_text_object *self,
 
 	vertex_buffer_upload(self->vertices);
 	self->h = font->height;
-	self->w = ceilf(x1);
+	self->w = roundf(x);
 
 	self->xpad = floorf(font->size * 2.f);
 	self->ypad = floorf(font->height / 2.f);

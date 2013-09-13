@@ -71,7 +71,7 @@ update_cursor(struct rtb_text_input *self)
 
 		if (rtb_text_object_get_glyph_rect(self->label.tobj,
 					self->cursor_position + 1, &glyphs[1]))
-			x = glyphs[0].x2;
+			x = self->label.tobj->w;
 		else
 			x = glyphs[1].x;
 	} else
