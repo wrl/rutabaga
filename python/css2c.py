@@ -2,7 +2,9 @@
 
 from __future__ import print_function
 
+import os
 import sys
+import re
 from collections import OrderedDict
 
 from tinycss.parsing import ParseError, remove_whitespace
@@ -15,12 +17,25 @@ all = [
     "RutabagaStylesheet"
 ]
 
+sanitize_cvar = re.compile(r"[^A-Za-z0-9_]+")
+
 class RutabagaStyleProperty(object):
     def __init__(self, stylesheet, name, tokens):
         raise NotImplementedError
 
     def c_repr(self):
         raise NotImplementedError
+
+class RutabagaAsset(object):
+    pass
+
+class RutabagaExternalAsset(object):
+    def __init__(self, path):
+        self.path = path
+
+    def __repr__(self):
+        return '<{0.__class__.__name__} for {1}>'\
+                .format(self, self.path)
 
 class RutabagaEmbeddedAsset(object):
     def __init__(self, path, variable_name):
@@ -47,6 +62,12 @@ class RutabagaTexture(object):
         self.stylesheet = stylesheet
 
 class RutabagaExternalTexture(RutabagaTexture):
+    def __init__(self, stylesheet, path):
+        super(RutabagaExternalTexture, self).__init__(stylesheet, path)
+
+        self.asset = RutabagaExternalAsset(path)
+        self.stylesheet.external_assets.append(self.asset)
+
     c_repr_tpl = """\
 {{
 \t\t\t\t\t.location = RTB_ASSET_EXTERNAL,
@@ -56,13 +77,13 @@ class RutabagaExternalTexture(RutabagaTexture):
 \t\t\t\t}}"""
 
     def c_repr(self):
-        return self.c_repr_tpl.format(self.path)
+        return self.c_repr_tpl.format(self.asset.path)
 
 class RutabagaEmbeddedTexture(RutabagaTexture):
     def __init__(self, stylesheet, path):
         super(RutabagaEmbeddedTexture, self).__init__(stylesheet, path)
 
-        self.texture_var = "TILE_TGA"
+        self.texture_var = sanitize_cvar.sub("_", path).upper()
         self.stylesheet.embedded_assets.append(
             RutabagaEmbeddedAsset(path, self.texture_var))
 
@@ -278,7 +299,9 @@ class RutabagaStylesheet(object):
 
         self.styles = OrderedDict()
         self.namespaces = {}
+
         self.embedded_assets = []
+        self.external_assets = []
 
         if autoparse:
             self.parse()

@@ -46,12 +46,7 @@ css2c_prelude = """\
 
 """
 
-sanitize_cvar = re.compile(r"[.,-]")
-
-def bin2h_task(bld, src, dst, var=None):
-	if not var:
-		var = sanitize_cvar.sub("_", os.path.basename(src)).upper()
-
+def bin2h_task(bld, src, dst, var):
 	bld(
 		rule="python ../python/bin2h.py -p static -v %s < '${SRC}' > '${TGT}'" % var,
 		source=[src],
@@ -62,8 +57,7 @@ def bin2h_task(bld, src, dst, var=None):
 
 
 def do_css2c(task, css):
-	task.outputs[0].write(
-			css2c_prelude + css.c_repr())
+	task.outputs[0].write(css2c_prelude + css.c_repr())
 
 
 #
@@ -86,6 +80,12 @@ def rtb_style(self, style_name):
 
 		bin2h_task(self, in_path, out_path, asset.variable_name)
 		asset.header_path = "styles/" + out_path
+
+	for asset in css.external_assets:
+		# transform external asset paths into absolute paths
+		path = "{0}/{1}".format(style_name, asset.path)
+		node = self.path.find_resource(path)
+		asset.path = node.abspath()
 
 	self(rule=lambda task: do_css2c(task, css),
 			source=css_path,
