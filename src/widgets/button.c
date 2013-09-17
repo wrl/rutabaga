@@ -43,7 +43,7 @@
 #include "rutabaga/widgets/button.h"
 
 #define SELF_FROM(elem) \
-	struct rtb_button *self = RTB_OBJECT_AS(elem, rtb_button)
+	struct rtb_button *self = RTB_ELEMENT_AS(elem, rtb_button)
 
 static struct rtb_element_implementation super;
 
@@ -80,7 +80,7 @@ dispatch_click_event(struct rtb_button *self, const struct rtb_mouse_event *e)
 	event.cursor.x -= self->x;
 	event.cursor.y -= self->y;
 
-	return rtb_handle(RTB_OBJECT(self), RTB_EVENT(&event));
+	return rtb_handle(RTB_ELEMENT(self), RTB_EVENT(&event));
 }
 
 static int
@@ -93,7 +93,7 @@ handle_key_press(struct rtb_button *self, const struct rtb_key_event *e)
 
 	if ((e->keysym == RTB_KEY_NORMAL && e->character == ' ')
 			|| (e->keysym == RTB_KEY_ENTER)) {
-		rtb_handle(RTB_OBJECT(self), RTB_EVENT(&event));
+		rtb_handle(RTB_ELEMENT(self), RTB_EVENT(&event));
 		return 1;
 	}
 
@@ -172,10 +172,10 @@ int
 rtb_button_init(struct rtb_button *self,
 		struct rtb_element_implementation *impl)
 {
-	rtb_elem_init(RTB_OBJECT(self), &super);
+	rtb_elem_init(RTB_ELEMENT(self), &super);
 
 	rtb_label_init(&self->label, &self->label.impl);
-	rtb_elem_add_child(RTB_OBJECT(self), RTB_OBJECT(&self->label),
+	rtb_elem_add_child(RTB_ELEMENT(self), RTB_ELEMENT(&self->label),
 			RTB_ADD_HEAD);
 
 	rtb_quad_init(&self->bg_quad);
@@ -202,7 +202,7 @@ rtb_button_fini(struct rtb_button *self)
 {
 	rtb_quad_fini(&self->bg_quad);
 	rtb_label_fini(&self->label);
-	rtb_elem_fini(RTB_OBJECT(self));
+	rtb_elem_fini(RTB_ELEMENT(self));
 }
 
 struct rtb_button *

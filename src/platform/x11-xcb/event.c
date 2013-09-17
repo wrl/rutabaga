@@ -197,7 +197,7 @@ dispatch_key_event(struct xcb_window *win,
 	}
 
 	rtb_ev.modkeys = modifier_state(win->xrtb);
-	rtb_dispatch_raw(RTB_OBJECT(win), RTB_EVENT(&rtb_ev));
+	rtb_dispatch_raw(RTB_ELEMENT(win), RTB_EVENT(&rtb_ev));
 }
 
 static int
@@ -277,7 +277,7 @@ handle_client_message(struct xcb_window *win, xcb_generic_event_t *_ev)
 	};
 
 	if (ev->data.data32[0] == xwin->xrtb->atoms.wm_delete_window)
-		rtb_dispatch_raw(RTB_OBJECT(win), RTB_EVENT(&rev));
+		rtb_dispatch_raw(RTB_ELEMENT(win), RTB_EVENT(&rev));
 }
 
 /**

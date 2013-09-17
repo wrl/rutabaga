@@ -41,7 +41,7 @@
 #include "private/util.h"
 
 #define SELF_FROM(elem) \
-	struct rtb_knob *self = RTB_OBJECT_AS(elem, rtb_knob)
+	struct rtb_knob *self = RTB_ELEMENT_AS(elem, rtb_knob)
 
 #define MIN_DEGREES 35.f
 #define MAX_DEGREES (360.f - MIN_DEGREES)
@@ -175,7 +175,7 @@ dispatch_value_change_event(struct rtb_knob *self)
 		.value = self->value * (self->max - self->min),
 	};
 
-	return rtb_handle(RTB_OBJECT(self), RTB_EVENT(&event));
+	return rtb_handle(RTB_ELEMENT(self), RTB_EVENT(&event));
 }
 
 /**
@@ -187,7 +187,7 @@ handle_drag(struct rtb_knob *self, const struct rtb_drag_event *e)
 {
 	float new_value;
 
-	if (e->target != RTB_OBJECT(self))
+	if (e->target != RTB_ELEMENT(self))
 		return 0;
 
 	new_value = self->value;
@@ -311,7 +311,7 @@ rtb_knob_set_value(struct rtb_knob *self, float new_value)
 			MIN_DEGREES + (self->value * DEGREE_RANGE),
 			0.f, 0.f, 1.f);
 
-	rtb_elem_mark_dirty(RTB_OBJECT(self));
+	rtb_elem_mark_dirty(RTB_ELEMENT(self));
 
 	if (self->state != RTB_STATE_UNATTACHED)
 		dispatch_value_change_event(self);
@@ -321,7 +321,7 @@ struct rtb_knob *
 rtb_knob_new()
 {
 	struct rtb_knob *self = calloc(1, sizeof(struct rtb_knob));
-	rtb_elem_init(RTB_OBJECT(self), &super);
+	rtb_elem_init(RTB_ELEMENT(self), &super);
 
 	self->origin = 0.f;
 	self->min = 0.f;
@@ -344,6 +344,6 @@ void
 rtb_knob_free(struct rtb_knob *self)
 {
 	glDeleteBuffers(2, self->vbo);
-	rtb_elem_fini(RTB_OBJECT(self));
+	rtb_elem_fini(RTB_ELEMENT(self));
 	free(self);
 }

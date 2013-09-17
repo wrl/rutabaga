@@ -36,7 +36,7 @@
 #include "rutabaga/widgets/label.h"
 
 #define SELF_FROM(elem) \
-	struct rtb_label *self = RTB_OBJECT_AS(elem, rtb_label)
+	struct rtb_label *self = RTB_ELEMENT_AS(elem, rtb_label)
 
 static struct rtb_element_implementation super;
 
@@ -105,7 +105,7 @@ rtb_label_set_font(struct rtb_label *self, struct rtb_font *font)
 
 	self->tobj->font = font;
 	rtb_text_object_update(self->tobj, self->text);
-	rtb_elem_trigger_recalc(self->parent, RTB_OBJECT(self),
+	rtb_elem_trigger_recalc(self->parent, RTB_ELEMENT(self),
 			RTB_DIRECTION_ROOTWARD);
 }
 
@@ -121,7 +121,7 @@ rtb_label_set_text(struct rtb_label *self, const rtb_utf8_t *text)
 		return;
 
 	rtb_text_object_update(self->tobj, self->text);
-	rtb_elem_trigger_recalc(self->parent, RTB_OBJECT(self),
+	rtb_elem_trigger_recalc(self->parent, RTB_ELEMENT(self),
 			RTB_DIRECTION_ROOTWARD);
 }
 
@@ -129,7 +129,7 @@ int
 rtb_label_init(struct rtb_label *self,
 		struct rtb_element_implementation *impl)
 {
-	rtb_elem_init(RTB_OBJECT(self), &super);
+	rtb_elem_init(RTB_ELEMENT(self), &super);
 
 	/* XXX: nasty */
 
@@ -161,7 +161,7 @@ rtb_label_fini(struct rtb_label *self)
 	if (self->tobj)
 		rtb_text_object_free(self->tobj);
 
-	rtb_elem_fini(RTB_OBJECT(self));
+	rtb_elem_fini(RTB_ELEMENT(self));
 }
 
 struct rtb_label *

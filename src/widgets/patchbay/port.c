@@ -38,7 +38,7 @@
 static struct rtb_element_implementation super;
 
 #define SELF_FROM(elem) \
-	struct rtb_patchbay_port *self = RTB_OBJECT_AS(elem, rtb_patchbay_port)
+	struct rtb_patchbay_port *self = RTB_ELEMENT_AS(elem, rtb_patchbay_port)
 
 /**
  * private utility functions
@@ -94,7 +94,7 @@ dispatch_disconnect(struct rtb_patchbay_patch *patch)
 		.to.port   = patch->to
 	};
 
-	rtb_dispatch_raw(RTB_OBJECT(patch->to), RTB_EVENT(&ev));
+	rtb_dispatch_raw(RTB_ELEMENT(patch->to), RTB_EVENT(&ev));
 }
 
 static void
@@ -109,7 +109,7 @@ dispatch_connect(struct rtb_patchbay_port *from, struct rtb_patchbay_port *to)
 		.to.port   = to
 	};
 
-	rtb_dispatch_raw(RTB_OBJECT(to), RTB_EVENT(&ev));
+	rtb_dispatch_raw(RTB_ELEMENT(to), RTB_EVENT(&ev));
 }
 
 /**
@@ -246,7 +246,7 @@ attached(struct rtb_element *elem,
 {
 	SELF_FROM(elem);
 
-	super.attached_cb(RTB_OBJECT(self), parent, window);
+	super.attached_cb(RTB_ELEMENT(self), parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.patchbay.port");
 }
@@ -260,7 +260,7 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 	case RTB_MOUSE_DOWN:
 	case RTB_MOUSE_UP:
 		if (handle_mouse(self, (struct rtb_mouse_event *) e)) {
-			rtb_elem_mark_dirty(RTB_OBJECT(self->node->patchbay));
+			rtb_elem_mark_dirty(RTB_ELEMENT(self->node->patchbay));
 			return 1;
 		}
 
@@ -272,7 +272,7 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 	case RTB_DRAG_DROP:
 	case RTB_DRAGGING:
 		if (handle_drag(self, (struct rtb_drag_event *) e)) {
-			rtb_elem_mark_dirty(RTB_OBJECT(self->node->patchbay));
+			rtb_elem_mark_dirty(RTB_ELEMENT(self->node->patchbay));
 			return 1;
 		}
 	}
@@ -315,7 +315,7 @@ rtb_patchbay_free_patch(struct rtb_patchbay *self,
 	TAILQ_REMOVE(&self->patches, patch, patchbay_patch);
 
 	free(patch);
-	rtb_elem_mark_dirty(RTB_OBJECT(self));
+	rtb_elem_mark_dirty(RTB_ELEMENT(self));
 }
 
 void
@@ -372,7 +372,7 @@ rtb_patchbay_connect_ports(struct rtb_patchbay *self,
 	TAILQ_INSERT_TAIL(&from->patches, patch, from_patch);
 	TAILQ_INSERT_TAIL(&self->patches, patch, patchbay_patch);
 
-	rtb_elem_mark_dirty(RTB_OBJECT(self));
+	rtb_elem_mark_dirty(RTB_ELEMENT(self));
 	return patch;
 }
 
@@ -381,13 +381,13 @@ rtb_patchbay_port_init(struct rtb_patchbay_port *self,
 		struct rtb_patchbay_node *node, const rtb_utf8_t *name,
 		rtb_patchbay_port_type_t type, rtb_child_add_loc_t location)
 {
-	rtb_elem_init(RTB_OBJECT(self), &super);
+	rtb_elem_init(RTB_ELEMENT(self), &super);
 	rtb_quad_init(&self->bg_quad);
 	TAILQ_INIT(&self->patches);
 
 	rtb_label_init(&self->label, &self->label.impl);
 	rtb_label_set_text(&self->label, name);
-	rtb_elem_add_child(RTB_OBJECT(self), RTB_OBJECT(&self->label),
+	rtb_elem_add_child(RTB_ELEMENT(self), RTB_ELEMENT(&self->label),
 			RTB_ADD_HEAD);
 
 	self->port_type  = type;
@@ -405,10 +405,10 @@ rtb_patchbay_port_init(struct rtb_patchbay_port *self,
 
 	if (type == PORT_TYPE_INPUT) {
 		self->align = self->label.align = RTB_ALIGN_LEFT;
-		rtb_elem_add_child(&node->input_ports, RTB_OBJECT(self), location);
+		rtb_elem_add_child(&node->input_ports, RTB_ELEMENT(self), location);
 	} else {
 		self->align = self->label.align = RTB_ALIGN_RIGHT;
-		rtb_elem_add_child(&node->output_ports, RTB_OBJECT(self), location);
+		rtb_elem_add_child(&node->output_ports, RTB_ELEMENT(self), location);
 	}
 
 	return 0;
@@ -420,14 +420,14 @@ rtb_patchbay_port_fini(struct rtb_patchbay_port *self)
 	struct rtb_patchbay_patch *patch;
 
 	if (self->port_type == PORT_TYPE_INPUT)
-		rtb_elem_remove_child(&self->node->input_ports, RTB_OBJECT(self));
+		rtb_elem_remove_child(&self->node->input_ports, RTB_ELEMENT(self));
 	else
-		rtb_elem_remove_child(&self->node->output_ports, RTB_OBJECT(self));
+		rtb_elem_remove_child(&self->node->output_ports, RTB_ELEMENT(self));
 
 	while ((patch = TAILQ_FIRST(&self->patches)))
 		rtb_patchbay_free_patch(self->node->patchbay, patch);
 
 	rtb_quad_fini(&self->bg_quad);
 	rtb_label_fini(&self->label);
-	rtb_elem_fini(RTB_OBJECT(self));
+	rtb_elem_fini(RTB_ELEMENT(self));
 }

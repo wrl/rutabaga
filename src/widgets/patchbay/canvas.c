@@ -49,7 +49,7 @@
 #include "shaders/patchbay-canvas.glsl.h"
 
 #define SELF_FROM(elem) \
-	struct rtb_patchbay *self = RTB_OBJECT_AS(elem, rtb_patchbay)
+	struct rtb_patchbay *self = RTB_ELEMENT_AS(elem, rtb_patchbay)
 
 #define CONNECTION_COLOR	RGB(0x404F3C)
 #define DISCONNECT_COLOR	RGB(0x69181B)
@@ -171,7 +171,7 @@ cache_to_vbo(struct rtb_patchbay *self)
 static void
 draw_bg(struct rtb_patchbay *self)
 {
-	struct rtb_element *elem = RTB_OBJECT(self);
+	struct rtb_element *elem = RTB_ELEMENT(self);
 	struct rtb_style *style = self->style;
 
 	rtb_render_push(elem);
@@ -233,7 +233,7 @@ draw_patches(struct rtb_patchbay *self)
 	int disconnect_in_progress = 0;
 	struct rtb_patchbay_patch *iter;
 	struct rtb_patchbay_port *from, *to;
-	struct rtb_element *elem = RTB_OBJECT(self);
+	struct rtb_element *elem = RTB_ELEMENT(self);
 
 	rtb_render_push(elem);
 	rtb_render_set_position(elem, 0, 0);
@@ -349,7 +349,7 @@ reposition(struct rtb_patchbay *self, struct rtb_point *by)
 		iter->x += by->x;
 		iter->y += by->y;
 
-		rtb_elem_trigger_recalc(iter, RTB_OBJECT(self),
+		rtb_elem_trigger_recalc(iter, RTB_ELEMENT(self),
 				RTB_DIRECTION_LEAFWARD);
 	}
 
@@ -357,7 +357,7 @@ reposition(struct rtb_patchbay *self, struct rtb_point *by)
 	self->texture_offset.y -= by->y;
 
 	rtb_surface_invalidate(RTB_SURFACE(self));
-	rtb_elem_mark_dirty(RTB_OBJECT(self));
+	rtb_elem_mark_dirty(RTB_ELEMENT(self));
 }
 
 static int
@@ -374,7 +374,7 @@ handle_drag(struct rtb_patchbay *self, struct rtb_drag_event *e)
 		return 1;
 
 	default:
-		if (e->target == RTB_OBJECT(self))
+		if (e->target == RTB_ELEMENT(self))
 			return 1;
 		return 0;
 	}

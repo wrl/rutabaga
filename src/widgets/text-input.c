@@ -41,7 +41,7 @@
 #include "private/utf8.h"
 
 #define SELF_FROM(elem) \
-	struct rtb_text_input *self = RTB_OBJECT_AS(elem, rtb_text_input)
+	struct rtb_text_input *self = RTB_ELEMENT_AS(elem, rtb_text_input)
 
 #define UTF8_IS_CONTINUATION(byte) (((byte) & 0xC0) == 0x80)
 
@@ -84,7 +84,7 @@ update_cursor(struct rtb_text_input *self)
 		self->label_offset += self->inner_rect.x2 - self->label.x2;
 		self->label_offset = MIN(self->label_offset, 0);
 
-		rtb_elem_trigger_recalc(RTB_OBJECT(self), RTB_OBJECT(self),
+		rtb_elem_trigger_recalc(RTB_ELEMENT(self), RTB_ELEMENT(self),
 				RTB_DIRECTION_LEAFWARD);
 		return;
 	}
@@ -97,7 +97,7 @@ update_cursor(struct rtb_text_input *self)
 		else
 			self->label_offset += self->inner_rect.x2 - x;
 
-		rtb_elem_trigger_recalc(RTB_OBJECT(self), RTB_OBJECT(self),
+		rtb_elem_trigger_recalc(RTB_ELEMENT(self), RTB_ELEMENT(self),
 				RTB_DIRECTION_LEAFWARD);
 		return;
 	}
@@ -133,7 +133,7 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
 	rtb_render_reset(elem);
 	rtb_render_set_position(elem, 0, 0);
 
-	if (self->window->focus == RTB_OBJECT(self)) {
+	if (self->window->focus == RTB_ELEMENT(self)) {
 		glBindBuffer(GL_ARRAY_BUFFER, self->cursor_vbo);
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
@@ -201,7 +201,7 @@ fix_cursor(struct rtb_text_input *self)
 			rtb_text_object_count_glyphs(self->label.tobj);
 
 	update_cursor(self);
-	rtb_elem_mark_dirty(RTB_OBJECT(self));
+	rtb_elem_mark_dirty(RTB_ELEMENT(self));
 }
 
 static void
@@ -369,11 +369,11 @@ int
 rtb_text_input_init(struct rutabaga *rtb, struct rtb_text_input *self,
 		struct rtb_element_implementation *impl)
 {
-	rtb_elem_init(RTB_OBJECT(self), &super);
+	rtb_elem_init(RTB_ELEMENT(self), &super);
 	rtb_quad_init(&self->bg_quad);
 
 	rtb_label_init(&self->label, &self->label.impl);
-	rtb_elem_add_child(RTB_OBJECT(self), RTB_OBJECT(&self->label),
+	rtb_elem_add_child(RTB_ELEMENT(self), RTB_ELEMENT(&self->label),
 			RTB_ADD_HEAD);
 
 	rtb_text_buffer_init(rtb, &self->text);
@@ -411,7 +411,7 @@ rtb_text_input_fini(struct rtb_text_input *self)
 	glDeleteBuffers(1, &self->cursor_vbo);
 
 	rtb_label_fini(&self->label);
-	rtb_elem_fini(RTB_OBJECT(self));
+	rtb_elem_fini(RTB_ELEMENT(self));
 }
 
 struct rtb_text_input *

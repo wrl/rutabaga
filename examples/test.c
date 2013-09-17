@@ -92,7 +92,7 @@ int knob_value(struct rtb_element *victim,
 {
 	return 0;
 
-	if (victim != RTB_OBJECT(knob)) {
+	if (victim != RTB_ELEMENT(knob)) {
 		knob = (void *) knob;
 		printf("\n");
 	}
@@ -127,9 +127,9 @@ void distribute_demo(rtb_container_t *root)
 			knob->min = -1.f;
 			knob->max = 1.f;
 
-			rtb_register_handler(RTB_OBJECT(knob),
+			rtb_register_handler(RTB_ELEMENT(knob),
 					KNOB_VALUE_CHANGE, knob_value, NULL);
-			rtb_container_add(containers[i], RTB_OBJECT(knob));
+			rtb_container_add(containers[i], RTB_ELEMENT(knob));
 		}
 
 		knob = NULL;
@@ -162,17 +162,17 @@ void setup_ui(rtb_container_t *root)
 		buttons[i] = rtb_button_new(NULL);
 		rtb_button_set_label(buttons[i], labels[i]);
 
-		rtb_register_handler(RTB_OBJECT(buttons[i]),
+		rtb_register_handler(RTB_ELEMENT(buttons[i]),
 				RTB_BUTTON_CLICK, print_streeng, NULL);
 	}
 
-	rtb_container_add(upper, RTB_OBJECT(buttons[0]));
-	rtb_container_add(upper, RTB_OBJECT(buttons[1]));
-	rtb_container_add(upper, RTB_OBJECT(buttons[2]));
+	rtb_container_add(upper, RTB_ELEMENT(buttons[0]));
+	rtb_container_add(upper, RTB_ELEMENT(buttons[1]));
+	rtb_container_add(upper, RTB_ELEMENT(buttons[2]));
 
-	rtb_container_add(lower, RTB_OBJECT(buttons[3]));
-	rtb_container_add(lower, RTB_OBJECT(buttons[4]));
-	rtb_container_add(lower, RTB_OBJECT(buttons[5]));
+	rtb_container_add(lower, RTB_ELEMENT(buttons[3]));
+	rtb_container_add(lower, RTB_ELEMENT(buttons[4]));
+	rtb_container_add(lower, RTB_ELEMENT(buttons[5]));
 
 	rtb_container_add(root, upper);
 	rtb_container_add(root, lower);
@@ -181,7 +181,7 @@ void setup_ui(rtb_container_t *root)
 static int handle_input_key(struct rtb_element *obj,
 		const struct rtb_event *_ev, void *ctx)
 {
-	struct rtb_text_input *input = RTB_OBJECT_AS(obj, rtb_text_input);
+	struct rtb_text_input *input = RTB_ELEMENT_AS(obj, rtb_text_input);
 	const struct rtb_key_event *ev = RTB_EVENT_AS(_ev, rtb_key_event);
 
 	switch (ev->keysym) {
@@ -207,9 +207,9 @@ void add_input(struct rutabaga *rtb, rtb_container_t *root)
 
 	input->min_size.w = 200.f;
 
-	rtb_register_handler(RTB_OBJECT(input),
+	rtb_register_handler(RTB_ELEMENT(input),
 			RTB_KEY_PRESS, handle_input_key, NULL);
-	rtb_elem_add_child(root, RTB_OBJECT(input), RTB_ADD_TAIL);
+	rtb_elem_add_child(root, RTB_ELEMENT(input), RTB_ADD_TAIL);
 }
 
 static void print_modkeys(const struct rtb_key_event *ev)
@@ -278,15 +278,15 @@ int main(int argc, char **argv)
 	win->outer_pad.x = 5.f;
 	win->outer_pad.y = 5.f;
 
-	rtb_elem_set_size_cb(RTB_OBJECT(win), rtb_size_hfit_children);
-	rtb_elem_set_layout(RTB_OBJECT(win), rtb_layout_vpack_bottom);
+	rtb_elem_set_size_cb(RTB_ELEMENT(win), rtb_size_hfit_children);
+	rtb_elem_set_layout(RTB_ELEMENT(win), rtb_layout_vpack_bottom);
 
-	rtb_register_handler(RTB_OBJECT(win),
+	rtb_register_handler(RTB_ELEMENT(win),
 			RTB_KEY_PRESS, handle_key_press, delicious);
 
-	distribute_demo(RTB_OBJECT(delicious->win));
-	setup_ui(RTB_OBJECT(delicious->win));
-	add_input(delicious, RTB_OBJECT(delicious->win));
+	distribute_demo(RTB_ELEMENT(delicious->win));
+	setup_ui(RTB_ELEMENT(delicious->win));
+	add_input(delicious, RTB_ELEMENT(delicious->win));
 
 	rtb_event_loop(delicious);
 

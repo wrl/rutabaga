@@ -39,7 +39,7 @@
 #include "private/layout-debug.h"
 
 #define SELF_FROM(elem) \
-	struct rtb_surface *self = RTB_OBJECT_AS(elem, rtb_surface)
+	struct rtb_surface *self = RTB_ELEMENT_AS(elem, rtb_surface)
 
 /**
  * internal stuff
@@ -112,7 +112,7 @@ child_attached(struct rtb_element *elem, struct rtb_element *child)
 	SELF_FROM(elem);
 
 	child->surface = self;
-	child->attached_cb(child, RTB_OBJECT(self), self->window);
+	child->attached_cb(child, RTB_ELEMENT(self), self->window);
 }
 
 static void
@@ -147,7 +147,7 @@ void
 rtb_surface_blit(struct rtb_surface *self)
 {
 	struct rtb_shader *shader = &self->window->shaders.surface;
-	struct rtb_element *elem = RTB_OBJECT(self);
+	struct rtb_element *elem = RTB_ELEMENT(self);
 
 	rtb_render_reset(elem);
 	rtb_render_use_shader(elem, shader);
@@ -190,7 +190,7 @@ rtb_surface_draw_children(struct rtb_surface *self, rtb_draw_state_t state)
 	switch (self->surface_state) {
 	case RTB_SURFACE_INVALID:
 		glDisable(GL_SCISSOR_TEST);
-		rtb_render_clear(RTB_OBJECT(self));
+		rtb_render_clear(RTB_ELEMENT(self));
 
 		while ((iter = TAILQ_FIRST(&ctx->queues.next_frame))) {
 			TAILQ_REMOVE(&ctx->queues.next_frame, iter, render_entry);
@@ -229,7 +229,7 @@ void
 rtb_surface_invalidate(struct rtb_surface *self)
 {
 	self->surface_state = RTB_SURFACE_INVALID;
-	rtb_elem_mark_dirty(RTB_OBJECT(self));
+	rtb_elem_mark_dirty(RTB_ELEMENT(self));
 }
 
 int
@@ -237,7 +237,7 @@ rtb_surface_init(struct rtb_surface *self,
 		struct rtb_element_implementation *impl)
 {
 	struct rtb_element_implementation *elem_impl = &self->impl;
-	rtb_elem_init(RTB_OBJECT(self), &super);
+	rtb_elem_init(RTB_ELEMENT(self), &super);
 	(*impl) = super;
 
 	do {
@@ -267,5 +267,5 @@ rtb_surface_fini(struct rtb_surface *self)
 	glDeleteFramebuffers(1, &self->fbo);
 	glDeleteTextures(1, &self->texture);
 
-	rtb_elem_fini(RTB_OBJECT(self));
+	rtb_elem_fini(RTB_ELEMENT(self));
 }

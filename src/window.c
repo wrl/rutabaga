@@ -48,7 +48,7 @@
 
 #define ERR(...) fprintf(stderr, "rutabaga: " __VA_ARGS__)
 #define SELF_FROM(elem) \
-	struct rtb_window *self = RTB_OBJECT_AS(elem, rtb_window)
+	struct rtb_window *self = RTB_ELEMENT_AS(elem, rtb_window)
 
 static struct rtb_element_implementation super;
 
@@ -94,7 +94,7 @@ win_event(struct rtb_element *elem, const struct rtb_event *e)
 
 	case RTB_KEY_PRESS:
 	case RTB_KEY_RELEASE:
-		if (self->focus && self->focus != RTB_OBJECT(self))
+		if (self->focus && self->focus != RTB_ELEMENT(self))
 			if (rtb_elem_deliver_event(self->focus, e))
 				return 1;
 
@@ -154,9 +154,9 @@ rtb_window_draw(struct rtb_window *self)
 			style->bg.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	rtb_render_push(RTB_OBJECT(self));
-	self->draw_cb(RTB_OBJECT(self), RTB_DRAW_NORMAL);
-	rtb_render_pop(RTB_OBJECT(self));
+	rtb_render_push(RTB_ELEMENT(self));
+	self->draw_cb(RTB_ELEMENT(self), RTB_DRAW_NORMAL);
+	rtb_render_pop(RTB_ELEMENT(self));
 
 	window_impl_swap_buffers(self);
 }
@@ -164,7 +164,7 @@ rtb_window_draw(struct rtb_window *self)
 void
 rtb_window_reinit(struct rtb_window *self)
 {
-	struct rtb_element *elem = RTB_OBJECT(self);
+	struct rtb_element *elem = RTB_ELEMENT(self);
 
 	self->x = self->y = 0.f;
 
@@ -202,7 +202,7 @@ rtb_window_open(struct rutabaga *r,
 		goto err_font;
 
 	mat4_set_identity(&self->identity);
-	rtb_elem_set_layout(RTB_OBJECT(self), rtb_layout_vpack_top);
+	rtb_elem_set_layout(RTB_ELEMENT(self), rtb_layout_vpack_top);
 
 	self->event_cb    = win_event;
 	self->mark_dirty  = mark_dirty;

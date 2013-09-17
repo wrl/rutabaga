@@ -327,9 +327,9 @@ void
 rtb_platform_mouse_enter_window(struct rtb_window *win, int x, int y)
 {
 	win->mouse_in = 1;
-	win->mouse.element_underneath = RTB_OBJECT(win);
+	win->mouse.element_underneath = RTB_ELEMENT(win);
 
-	dispatch_simple_mouse_event(win, RTB_OBJECT(win),
+	dispatch_simple_mouse_event(win, RTB_ELEMENT(win),
 			RTB_MOUSE_ENTER, -1, x, y);
 	rtb_platform_mouse_motion(win, x, y);
 }

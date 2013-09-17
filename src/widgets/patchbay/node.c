@@ -35,7 +35,7 @@
 #include "private/util.h"
 
 #define SELF_FROM(elem) \
-	struct rtb_patchbay_node *self = RTB_OBJECT_AS(elem, rtb_patchbay_node)
+	struct rtb_patchbay_node *self = RTB_ELEMENT_AS(elem, rtb_patchbay_node)
 
 #define LABEL_PADDING		15.f
 
@@ -79,7 +79,7 @@ recalculate(struct rtb_element *elem,
 static int
 handle_drag(struct rtb_patchbay_node *self, const struct rtb_drag_event *e)
 {
-	struct rtb_element *elem = RTB_OBJECT(self);
+	struct rtb_element *elem = RTB_ELEMENT(self);
 
 	switch (e->button) {
 	case RTB_MOUSE_BUTTON1:
@@ -134,7 +134,7 @@ size(struct rtb_element *elem,
 
 	rtb_size_vfit_children(elem, avail, want);
 
-	self->name_label.size_cb(RTB_OBJECT(&self->name_label),
+	self->name_label.size_cb(RTB_ELEMENT(&self->name_label),
 			avail, &label_size);
 	want->w = fmax(want->w, label_size.w + (LABEL_PADDING * 2.f));
 }
@@ -153,7 +153,7 @@ rtb_patchbay_node_set_name(struct rtb_patchbay_node *self,
 void
 rtb_patchbay_node_init(struct rtb_patchbay_node *self)
 {
-	rtb_elem_init(RTB_OBJECT(self), &super);
+	rtb_elem_init(RTB_ELEMENT(self), &super);
 	rtb_quad_init(&self->bg_quad);
 
 	self->attached_cb = attached;
@@ -211,9 +211,9 @@ rtb_patchbay_node_init(struct rtb_patchbay_node *self)
 	rtb_elem_add_child(&self->container, &self->node_ui, RTB_ADD_TAIL);
 	rtb_elem_add_child(&self->container, &self->output_ports, RTB_ADD_TAIL);
 
-	rtb_elem_add_child(RTB_OBJECT(self), RTB_OBJECT(&self->name_label),
+	rtb_elem_add_child(RTB_ELEMENT(self), RTB_ELEMENT(&self->name_label),
 			RTB_ADD_HEAD);
-	rtb_elem_add_child(RTB_OBJECT(self), &self->container, RTB_ADD_TAIL);
+	rtb_elem_add_child(RTB_ELEMENT(self), &self->container, RTB_ADD_TAIL);
 }
 
 void
@@ -221,7 +221,7 @@ rtb_patchbay_node_fini(struct rtb_patchbay_node *self)
 {
 	rtb_quad_fini(&self->bg_quad);
 
-	rtb_elem_remove_child(RTB_OBJECT(self->patchbay), RTB_OBJECT(self));
+	rtb_elem_remove_child(RTB_ELEMENT(self->patchbay), RTB_ELEMENT(self));
 
 	rtb_label_fini(&self->name_label);
 
@@ -230,7 +230,7 @@ rtb_patchbay_node_fini(struct rtb_patchbay_node *self)
 	rtb_elem_fini(&self->node_ui);
 	rtb_elem_fini(&self->container);
 
-	rtb_elem_fini(RTB_OBJECT(self));
+	rtb_elem_fini(RTB_ELEMENT(self));
 }
 
 struct rtb_patchbay_node *

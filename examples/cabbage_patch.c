@@ -108,8 +108,8 @@ struct jack_client *client_alloc(const char *name, int len, int physical)
 		c->x = 100.f;
 		c->y = 100.f;
 
-		rtb_elem_add_child(RTB_OBJECT(&state.cp),
-				RTB_OBJECT(c), RTB_ADD_TAIL);
+		rtb_elem_add_child(RTB_ELEMENT(&state.cp),
+				RTB_ELEMENT(c), RTB_ADD_TAIL);
 	}
 
 	return c;
@@ -537,13 +537,13 @@ static int disconnection(struct rtb_element *obj,
 static void init_patchbay(struct rtb_element *parent)
 {
 	rtb_patchbay_init(&state.cp);
-	rtb_container_add(parent, RTB_OBJECT(&state.cp));
+	rtb_container_add(parent, RTB_ELEMENT(&state.cp));
 
-	rtb_elem_set_size_cb(RTB_OBJECT(&state.cp), rtb_size_fill);
+	rtb_elem_set_size_cb(RTB_ELEMENT(&state.cp), rtb_size_fill);
 
-	rtb_register_handler(RTB_OBJECT(&state.cp),
+	rtb_register_handler(RTB_ELEMENT(&state.cp),
 			RTB_PATCHBAY_CONNECT, connection, NULL);
-	rtb_register_handler(RTB_OBJECT(&state.cp),
+	rtb_register_handler(RTB_ELEMENT(&state.cp),
 			RTB_PATCHBAY_DISCONNECT, disconnection, NULL);
 }
 
@@ -566,17 +566,17 @@ int main(int argc, char **argv)
 
 	TAILQ_INIT(&clients);
 
-	init_patchbay(RTB_OBJECT(state.win));
+	init_patchbay(RTB_ELEMENT(state.win));
 
 	rtb_patchbay_node_init(RTB_PATCHBAY_NODE(&state.system_in));
 	rtb_patchbay_node_set_name(RTB_PATCHBAY_NODE(&state.system_in), "system");
 	rtb_patchbay_node_init(RTB_PATCHBAY_NODE(&state.system_out));
 	rtb_patchbay_node_set_name(RTB_PATCHBAY_NODE(&state.system_out), "system");
 
-	rtb_elem_add_child(RTB_OBJECT(&state.cp),
-			RTB_OBJECT(&state.system_in), RTB_ADD_TAIL);
-	rtb_elem_add_child(RTB_OBJECT(&state.cp),
-			RTB_OBJECT(&state.system_out), RTB_ADD_TAIL);
+	rtb_elem_add_child(RTB_ELEMENT(&state.cp),
+			RTB_ELEMENT(&state.system_in), RTB_ADD_TAIL);
+	rtb_elem_add_child(RTB_ELEMENT(&state.cp),
+			RTB_ELEMENT(&state.system_out), RTB_ADD_TAIL);
 
 	list_ports(state.jc);
 

@@ -34,8 +34,8 @@
 #include "bsd/queue.h"
 #include "wwrl/vector.h"
 
-#define RTB_OBJECT(x) RTB_UPCAST(x, rtb_element)
-#define RTB_OBJECT_AS(x, type) RTB_DOWNCAST(x, type, rtb_element)
+#define RTB_ELEMENT(x) RTB_UPCAST(x, rtb_element)
+#define RTB_ELEMENT_AS(x, type) RTB_DOWNCAST(x, type, rtb_element)
 
 typedef enum {
 	/* all events, regardless of whether they are already handled by
