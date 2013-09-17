@@ -47,7 +47,6 @@
 #include "private/targa.h"
 
 #include "shaders/patchbay-canvas.glsl.h"
-#include "styles/default/assets/tile.tga.h"
 
 #define SELF_FROM(elem) \
 	struct rtb_patchbay *self = RTB_OBJECT_AS(elem, rtb_patchbay)
@@ -61,24 +60,8 @@ static struct rtb_element_implementation super;
  * custom openGL stuff
  */
 
-struct tile {
-	struct rtb_asset asset;
-	const struct targa_header *img;
-	const void *img_data;
-};
-
-struct tile tile = {
-	.asset = {
-		.location = RTB_ASSET_EMBEDDED,
-		.compression = RTB_ASSET_UNCOMPRESSED,
-
-		.embedded.base = TILE_TGA,
-		.embedded.size = TILE_TGA_SIZE
-	},
-
-	.img = NULL,
-	.img_data = NULL
-};
+/* XXX: XXX */
+int tile_width, tile_height;
 
 static struct {
 	RTB_INHERIT(rtb_shader);
@@ -118,32 +101,36 @@ init_shaders()
 }
 
 static void
-load_tile(struct rtb_patchbay *self)
+load_tile(struct rtb_style_texture_definition *definition,
+		GLuint into_texture)
 {
-	if (!RTB_ASSET_IS_LOADED(&tile.asset)) {
-		if (rtb_asset_load(&tile.asset)) {
+	const struct targa_header *img;
+	const void *img_data;
+
+	if (!RTB_ASSET_IS_LOADED(RTB_ASSET(definition))) {
+		if (rtb_asset_load(RTB_ASSET(definition))) {
 			printf(" [!] couldn't load tile, aiee!\n");
 			return;
 		}
-
-		tile.img = RTB_ASSET_DATA(&tile.asset);
-		tile.img_data = &tile.img[1] +
-			(tile.img->id_length +
-			 (tile.img->cmap_len * tile.img->cmap_bpp));
 	}
 
-	glGenTextures(1, &self->bg_texture);
-	glBindTexture(GL_TEXTURE_2D, self->bg_texture);
+	img = RTB_ASSET_DATA(RTB_ASSET(definition));
+	img_data = &img[1] + (img->id_length + (img->cmap_len * img->cmap_bpp));
+
+	glBindTexture(GL_TEXTURE_2D, into_texture);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
-			tile.img->width, tile.img->height,
+			img->width, img->height,
 			0, GL_BGRA, GL_UNSIGNED_BYTE,
-			tile.img_data);
+			img_data);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	tile_width = img->width;
+	tile_height = img->height;
 }
 
 /**
@@ -199,7 +186,7 @@ draw_bg(struct rtb_patchbay *self)
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, self->bg_texture);
 	glUniform1i(shader.uniform.texture, 0);
-	glUniform2f(shader.uniform.tx_size, tile.img->width, tile.img->height);
+	glUniform2f(shader.uniform.tx_size, tile_width, tile_height);
 	glUniform2f(shader.uniform.tx_offset,
 			roundf(self->texture_offset.x),
 			roundf(self->texture_offset.y));
@@ -342,6 +329,11 @@ recalculate(struct rtb_element *elem,
 	SELF_FROM(elem);
 
 	super.recalc_cb(elem, instigator, direction);
+
+	if (self->style)
+		load_tile(&self->style->states[RTB_DRAW_NORMAL].texture,
+				self->bg_texture);
+
 	rtb_surface_invalidate(RTB_SURFACE(self));
 	cache_to_vbo(self);
 
@@ -446,13 +438,13 @@ rtb_patchbay_init(struct rtb_patchbay *self)
 	self->recalc_cb   = recalculate;
 
 	init_shaders();
-	load_tile(self);
 
 	self->patch_in_progress.from = NULL;
 
 	self->texture_offset.x =
 		self->texture_offset.y = 0.f;
 
+	glGenTextures(1, &self->bg_texture);
 	glGenBuffers(2, self->bg_vbo);
 
 	return 0;
@@ -461,18 +453,7 @@ rtb_patchbay_init(struct rtb_patchbay *self)
 void
 rtb_patchbay_fini(struct rtb_patchbay *self)
 {
-	if (self->bg_texture)
-		glDeleteTextures(1, &self->bg_texture);
-
-	/* if ref_count is one, this is the last patchbay allocated, and
-	 * the type will be freed by the subsequent rtb_surface_fini(). */
-	if (self->type->ref_count == 1 && RTB_ASSET_IS_LOADED(&tile.asset)) {
-		rtb_asset_free(&tile.asset);
-
-		tile.img = NULL;
-		tile.img_data = NULL;
-	}
-
+	glDeleteTextures(1, &self->bg_texture);
 	rtb_surface_fini(RTB_SURFACE(self));
 }
 

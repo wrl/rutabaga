@@ -28,6 +28,8 @@
 
 #include <unistd.h>
 
+#define RTB_ASSET(x) RTB_UPCAST(x, rtb_asset)
+
 #define RTB_ASSET_IS_LOADED(a) ((a)->loaded)
 #define RTB_ASSET_SIZE(a) ((a)->buffer.size)
 #define RTB_ASSET_DATA(a) ((a)->buffer.data)

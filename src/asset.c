@@ -59,6 +59,7 @@ load_ext(struct rtb_asset *asset)
 
 	asset->buffer.size = size;
 	asset->buffer.data = data = malloc(size);
+	asset->buffer.allocated = 1;
 
 	fread(data, 1, size, f);
 
