@@ -7,17 +7,18 @@
 
 patchbay {
 	color: #0D0D0F;
-	background: #000;
+	background-color: #000;
+	background-image: url("assets/tile.tga");
 }
 
 patchbay::node {
 	color: #FFF;
-	background: rgba(#18181C, .9);
+	background-color: rgba(#18181C, .9);
 }
 
 patchbay::port {
 	color: #FFF;
-	background: rgba(#404F3C, .9);
+	background-color: rgba(#404F3C, .9);
 }
 
 /**
@@ -26,17 +27,17 @@ patchbay::port {
 
 button {
 	color: #FFF;
-	background: #404F3C;
+	background-color: #404F3C;
 }
 
 button:hover {
 	color: #FFF;
-	background: #5C704C;
+	background-color: #5C704C;
 }
 
 button:active {
 	color: rgba(#FFF, .7);
-	background: #364232;
+	background-color: #364232;
 }
 
 /**
@@ -45,7 +46,7 @@ button:active {
 
 knob {
 	color: #18181C;
-	background: #404F3C;
+	background-color: #404F3C;
 }
 
 /**
@@ -54,10 +55,10 @@ knob {
 
 rtb|window {
 	color: #FFF;
-	background: #18181C;
+	background-color: #18181C;
 }
 
 rtb|element {
 	color: #FFF;
-	background: #404F3C;
+	background-color: #404F3C;
 }

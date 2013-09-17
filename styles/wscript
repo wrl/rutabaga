@@ -53,9 +53,9 @@ def bin2h_task(bld, src, dst, var=None):
 		var = sanitize_cvar.sub("_", os.path.basename(src)).upper()
 
 	bld(
-		rule="python ../python/bin2h.py -p static -v %s < ${SRC} > ${TGT}" % var,
-		source=src,
-		target=dst,
+		rule="python ../python/bin2h.py -p static -v %s < '${SRC}' > '${TGT}'" % var,
+		source=[src],
+		target=[dst],
 		name="styles/default/assets",
 		export_includes=".",
 		update_outputs=True)
@@ -80,9 +80,12 @@ def rtb_style(self, style_name):
 	css = RutabagaStylesheet(css_node)
 	css.parse()
 
-	bin2h_task(self,
-			"default/assets/tile.tga",
-			"default/assets/tile.tga.h")
+	for asset in css.embedded_assets:
+		in_path  = "{0}/{1}".format(style_name, asset.path)
+		out_path = in_path + ".h"
+
+		bin2h_task(self, in_path, out_path, asset.variable_name)
+		asset.header_path = "styles/" + out_path
 
 	self(rule=lambda task: do_css2c(task, css),
 			source=css_path,

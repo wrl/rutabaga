@@ -84,6 +84,7 @@ struct rtb_style_property_definition {
 
 struct rtb_style_props {
 	struct rtb_rgb_color fg, bg;
+	struct rtb_style_texture_definition texture;
 };
 
 struct rtb_style {

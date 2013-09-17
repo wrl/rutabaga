@@ -9,18 +9,110 @@ from tinycss.parsing import ParseError, remove_whitespace
 from tinycss_rutabaga import NamespaceRule, FontFaceRule, RutabagaCSSParser
 
 all = [
+    "ColorParseException",
+
     "RutabagaStyle",
-    "RutabagaStylesheet",
-    "ColorParseException"
+    "RutabagaStylesheet"
 ]
 
-def decl_dict(declarations):
-    ret = {}
+class RutabagaStyleProperty(object):
+    def __init__(self, stylesheet, name, tokens):
+        raise NotImplementedError
 
-    for d in declarations:
-        ret[d.name] = d.value
+    def c_repr(self):
+        raise NotImplementedError
 
-    return ret
+class RutabagaEmbeddedAsset(object):
+    def __init__(self, path, variable_name):
+        self.path = path
+        self.variable_name = variable_name
+        self.header_path = None
+
+    def __repr__(self):
+        if self.header_path:
+            return '<{0.__class__.__name__} embedding {1} as {2} (in {3})>'\
+                    .format(self, self.path, self.variable_name,
+                            self.header_path)
+        else:
+            return '<{0.__class__.__name__} embedding {1} as {2} (no header)>'\
+                    .format(self, self.path, self.variable_name)
+
+####
+# RutabagaTextureProperty
+####
+
+class RutabagaTexture(object):
+    def __init__(self, stylesheet, path):
+        self.path = path
+        self.stylesheet = stylesheet
+
+class RutabagaExternalTexture(RutabagaTexture):
+    c_repr_tpl = """\
+{{
+\t\t\t\t\t.location = RTB_ASSET_EXTERNAL,
+\t\t\t\t\t.compression = RTB_ASSET_UNCOMPRESSED,
+
+\t\t\t\t\t.external.path = "{0}"
+\t\t\t\t}}"""
+
+    def c_repr(self):
+        return self.c_repr_tpl.format(self.path)
+
+class RutabagaEmbeddedTexture(RutabagaTexture):
+    def __init__(self, stylesheet, path):
+        super(RutabagaEmbeddedTexture, self).__init__(stylesheet, path)
+
+        self.texture_var = "TILE_TGA"
+        self.stylesheet.embedded_assets.append(
+            RutabagaEmbeddedAsset(path, self.texture_var))
+
+    c_repr_tpl = """\
+{{
+\t\t\t\t\t.location = RTB_ASSET_EMBEDDED,
+\t\t\t\t\t.compression = RTB_ASSET_UNCOMPRESSED,
+
+\t\t\t\t\t.embedded.size = {0}_SIZE,
+\t\t\t\t\t.embedded.base = {0}
+\t\t\t\t}}"""
+
+    def c_repr(self):
+        return self.c_repr_tpl.format(self.texture_var)
+
+class RutabagaTextureProperty(RutabagaStyleProperty):
+    default_method = RutabagaEmbeddedTexture
+    method_map = {
+        "embed": RutabagaEmbeddedTexture,
+        "extern": RutabagaExternalTexture}
+
+    def __init__(self, stylesheet, name, tokens):
+        self.path = None
+        self.method = RutabagaTextureProperty.default_method
+
+        tok = tokens[0]
+
+        if tok.type == "URI":
+            self.path = tok.value
+
+        elif tok.type == "FUNCTION":
+            method_map = RutabagaTextureProperty.method_map
+            self.path = tok.content[0].value
+
+            try:
+                self.method = method_map[tok.function_name]
+            except KeyError:
+                raise ParseError(tok,
+                    "valid texture reference functions are {0}, and url()"\
+                        .format(", ".join(
+                            ["{0}()".format(f) for f in method_map])))
+
+        self.texture = self.method(stylesheet, self.path)
+
+    def c_repr(self):
+        return self.texture.c_repr()
+
+####
+# RutabagaRGBAProperty
+####
 
 class ColorParseException(Exception):
     pass
@@ -57,39 +149,37 @@ def parse_rgba_func(args):
 
         return [x.value for x in args]
 
-# XXX: hack
-prop_name_mapping = {
-    "color": "fg",
-    "background": "bg"
-}
-
-class RutabagaRGBAProperty(object):
-    def __init__(self, name, tokens):
+class RutabagaRGBAProperty(RutabagaStyleProperty):
+    def __init__(self, stylesheet, name, tokens):
         self.rgba = [0,0,0,1.0]
         self.name = name
 
-        if tokens[0].type == 'HASH':
-            try:
-                self.rgba[:3] = parse_hex(tokens[0].value)
-            except ColorParseException:
-                raise ParseError(tokens[0], "couldn't parse hex color")
+        tok = tokens[0]
 
-        elif tokens[0].type == 'FUNCTION' and tokens[0].function_name == 'rgba':
+        if tok.type == 'HASH':
             try:
-                self.rgba = parse_rgba_func(tokens[0].content)
+                self.rgba[:3] = parse_hex(tok.value)
             except ColorParseException:
-                raise ParseError(
-                    tokens[0], "function rgba() takes either 4 numeric"
-                    "arguments or a hex color and alpha")
+                raise ParseError(tok, "couldn't parse hex color")
+
+        elif tok.type == 'FUNCTION' and tok.function_name == 'rgba':
+            try:
+                self.rgba = parse_rgba_func(tok.content)
+            except ColorParseException:
+                raise ParseError(tok,
+                        "function rgba() takes either 4 numeric"
+                        "arguments or a hex color and alpha")
 
         else:
             raise ParseError(tokens[0], "expected hex color or rgba()")
 
+    c_repr_tpl = "{{{rgba[0]}, {rgba[1]}, {rgba[2]}, {rgba[3]}}}"
     def c_repr(self):
-        return '.{name} = {{{rgba[0]}, {rgba[1]}, {rgba[2]}, {rgba[3]}}}'.format(
-                name=prop_name_mapping[self.name],
-                rgba=self.rgba)
+        return self.c_repr_tpl.format(rgba=self.rgba)
 
+####
+# RutabagaStyle
+####
 
 state_mapping = {
     "normal": "RTB_DRAW_NORMAL",
@@ -105,14 +195,21 @@ available_states = {
     "active": "RTB_STYLE_ACTIVE"
 }
 
-style_types = {
-    "color":      RutabagaRGBAProperty,
-    "background": RutabagaRGBAProperty
+prop_mapping = {
+    "color":
+        ("fg", RutabagaRGBAProperty),
+
+    "background-color":
+        ("bg", RutabagaRGBAProperty),
+
+    "background-image":
+        ("texture", RutabagaTextureProperty)
 }
 
-
 class RutabagaStyle(object):
-    def __init__(self, type, normal_props):
+    def __init__(self, stylesheet, type, normal_props):
+        self.stylesheet = stylesheet
+
         self.type = type
         self.states = {}
 
@@ -126,10 +223,11 @@ class RutabagaStyle(object):
 
         for s in styles:
             try:
-                self.states[state][s] = style_types[s](s, styles[s])
+                self.states[state][s] = \
+                    prop_mapping[s][1](self.stylesheet, s, styles[s])
             except KeyError:
-                raise ParseError(
-                    styles[s][0], 'unknown property "{0}"'.format(s))
+                raise ParseError(styles[s][0],
+                        'unknown property "{0}"'.format(s))
 
     c_state_repr = """\
 \t\t\t[{state}] = {{
@@ -146,18 +244,32 @@ class RutabagaStyle(object):
 \t}}"""
 
     def c_repr(self):
-        states = [RutabagaStyle.c_state_repr.format(
-            state=state_mapping[s],
+        states = [self.c_state_repr.format(
+            state=state_mapping[state],
             styles=",\n".join(
-                ["\t\t\t\t" + self.states[s][sty].c_repr()
-                    for sty in self.states[s]]))
-            for s in self.states]
+                ["\t\t\t\t.{0} = {1}".format(
+                        prop_mapping[prop_name][0],
+                        self.states[state][prop_name].c_repr())
+                    for prop_name in self.states[state]]))
+            for state in self.states]
 
-        return RutabagaStyle.c_style_repr.format(
+        return type(self).c_style_repr.format(
             type=self.type,
             styles=' | '.join([available_states[s] for s in self.states]),
             states=",\n".join(states))
 
+
+####
+# RutabagaStylesheet
+####
+
+def decl_dict(declarations):
+    ret = {}
+
+    for d in declarations:
+        ret[d.name] = d.value
+
+    return ret
 
 class RutabagaStylesheet(object):
     def __init__(self, css_file, autoparse=False):
@@ -166,6 +278,7 @@ class RutabagaStylesheet(object):
 
         self.styles = OrderedDict()
         self.namespaces = {}
+        self.embedded_assets = []
 
         if autoparse:
             self.parse()
@@ -196,7 +309,7 @@ class RutabagaStylesheet(object):
 
                         self.styles[s].add_state(state, decls)
                     else:
-                        self.styles[s] = RutabagaStyle(s, decls)
+                        self.styles[s] = RutabagaStyle(self, s, decls)
 
         if css.errors:
             for error in css.errors:
@@ -272,13 +385,20 @@ class RutabagaStylesheet(object):
                 else:
                     bail(ptok)
 
+    c_include_tpl = '#include "{header}"'
+
     c_repr_tpl = """\
+{includes}
+
 static struct rtb_style {var_name}[] = {{
 {style_structs}
 }};"""
 
     def c_repr(self, var_name="default_style"):
-        return RutabagaStylesheet.c_repr_tpl.format(
+        return self.c_repr_tpl.format(
+            includes="\n".join(
+                [self.c_include_tpl.format(header=a.header_path)
+                    for a in self.embedded_assets]),
             var_name=var_name,
             style_structs=",\n\n".join(
                 [self.styles[s].c_repr() for s in self.styles]
