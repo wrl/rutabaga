@@ -27,9 +27,11 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-from rutabaga_css.stylesheet import RutabagaStylesheet
-from rutabaga_css.style import RutabagaStyle
+all = ["RutabagaStyleProperty"]
 
-all = [
-    "RutabagaStyle",
-    "RutabagaStylesheet"]
+class RutabagaStyleProperty(object):
+    def __init__(self, stylesheet, name, tokens):
+        raise NotImplementedError
+
+    def c_repr(self):
+        raise NotImplementedError

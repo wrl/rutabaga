@@ -27,9 +27,33 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-from rutabaga_css.stylesheet import RutabagaStylesheet
-from rutabaga_css.style import RutabagaStyle
-
 all = [
-    "RutabagaStyle",
-    "RutabagaStylesheet"]
+    "RutabagaAsset",
+    "RutabagaExternalAsset",
+    "RutabagaEmbeddedAsset"]
+
+class RutabagaAsset(object):
+    pass
+
+class RutabagaExternalAsset(object):
+    def __init__(self, path):
+        self.path = path
+
+    def __repr__(self):
+        return '<{0.__class__.__name__} for {1}>'\
+                .format(self, self.path)
+
+class RutabagaEmbeddedAsset(object):
+    def __init__(self, path, variable_name):
+        self.path = path
+        self.variable_name = variable_name
+        self.header_path = None
+
+    def __repr__(self):
+        if self.header_path:
+            return '<{0.__class__.__name__} embedding {1} as {2} (in {3})>'\
+                    .format(self, self.path, self.variable_name,
+                            self.header_path)
+        else:
+            return '<{0.__class__.__name__} embedding {1} as {2} (no header)>'\
+                    .format(self, self.path, self.variable_name)
