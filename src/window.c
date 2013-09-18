@@ -143,15 +143,18 @@ rtb_window_focus_element(struct rtb_window *self, struct rtb_element *focused)
 void
 rtb_window_draw(struct rtb_window *self)
 {
-	struct rtb_style_props *style = &self->style->states[0];
+	const struct rtb_style_property_definition *prop;
 
 	glViewport(0, 0, self->w, self->h);
 
+	prop = rtb_style_query_prop(self->style, RTB_DRAW_NORMAL,
+			"background-color", RTB_STYLE_PROP_COLOR);
+
 	glClearColor(
-			style->bg.r,
-			style->bg.g,
-			style->bg.b,
-			style->bg.a);
+			prop->color.r,
+			prop->color.g,
+			prop->color.b,
+			prop->color.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	rtb_render_push(RTB_ELEMENT(self));

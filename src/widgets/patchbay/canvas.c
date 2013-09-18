@@ -171,8 +171,8 @@ cache_to_vbo(struct rtb_patchbay *self)
 static void
 draw_bg(struct rtb_patchbay *self)
 {
+	const struct rtb_style_property_definition *prop;
 	struct rtb_element *elem = RTB_ELEMENT(self);
-	struct rtb_style *style = self->style;
 
 	rtb_render_push(elem);
 	rtb_render_use_shader(elem, RTB_SHADER(&shader));
@@ -191,17 +191,23 @@ draw_bg(struct rtb_patchbay *self)
 			roundf(self->texture_offset.x),
 			roundf(self->texture_offset.y));
 
+	prop = rtb_style_query_prop(self->style, RTB_DRAW_NORMAL,
+			"color", RTB_STYLE_PROP_COLOR);
+
 	glUniform4f(shader.uniform.front_color,
-			style->states[0].fg.r,
-			style->states[0].fg.g,
-			style->states[0].fg.b,
-			style->states[0].fg.a);
+			prop->color.r,
+			prop->color.g,
+			prop->color.b,
+			prop->color.a);
+
+	prop = rtb_style_query_prop(self->style, RTB_DRAW_NORMAL,
+			"background-color", RTB_STYLE_PROP_COLOR);
 
 	glUniform4f(shader.uniform.back_color,
-			style->states[0].bg.r,
-			style->states[0].bg.g,
-			style->states[0].bg.b,
-			style->states[0].bg.a);
+			prop->color.r,
+			prop->color.g,
+			prop->color.b,
+			prop->color.a);
 
 	glDrawElements(
 			GL_TRIANGLE_STRIP, ARRAY_LENGTH(box_indices),
@@ -326,13 +332,20 @@ static int
 recalculate(struct rtb_element *elem,
 		struct rtb_element *instigator, rtb_ev_direction_t direction)
 {
+	const struct rtb_style_property_definition *prop;
+
 	SELF_FROM(elem);
 
 	super.recalc_cb(elem, instigator, direction);
 
-	if (self->style)
-		load_tile(&self->style->states[RTB_DRAW_NORMAL].texture,
+	if (self->style) {
+		prop = rtb_style_query_prop(self->style, RTB_DRAW_NORMAL,
+				"background-image", RTB_STYLE_PROP_TEXTURE);
+
+		/* XXX: casting away const-ness */
+		load_tile((struct rtb_style_texture_definition *) &prop->texture,
 				self->bg_texture);
+	}
 
 	rtb_surface_invalidate(RTB_SURFACE(self));
 	cache_to_vbo(self);

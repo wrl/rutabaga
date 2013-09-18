@@ -31,17 +31,14 @@
 
 #include "private/util.h"
 
-/* default_style.h is generated as part of the build process */
+/* generated as part of the build process */
 #include "styles/default/style.h"
 
-static struct rtb_style no_style = {
-	.for_type = "couldn't find a style for this element",
-	.available_styles = RTB_STYLE_NORMAL,
-
-	.states = {
-		[RTB_DRAW_NORMAL] = {
-			.fg = {RGB(0x00FF00), 1.f},
-			.bg = {RGB(0xFF0000), 1.f}}
+const static struct rtb_style_property_definition fallbacks[RTB_STYLE_PROP_TYPE_COUNT] = {
+	[RTB_STYLE_PROP_COLOR] = {
+		.property_name = "<fallback>",
+		.type = RTB_STYLE_PROP_COLOR,
+		.color = {RGB(0xFF0000), 1.f}
 	}
 };
 
@@ -65,7 +62,32 @@ style_for_type(struct rtb_type_atom *atom, struct rtb_style *style_list)
 			return style_list;
 	}
 
-	return &no_style;
+	return NULL;
+}
+
+/**
+ * property queries
+ */
+
+const struct rtb_style_property_definition *rtb_style_query_prop(
+		struct rtb_style *style_list, rtb_draw_state_t state,
+		const char *property_name, rtb_style_prop_type_t type)
+{
+	struct rtb_style_property_definition *prop;
+
+	if (!style_list)
+		return &fallbacks[state];
+
+	if (!(style_list->available_styles & (1 << state)))
+		state = RTB_DRAW_NORMAL;
+
+	for (prop = style_list->properties[state];
+			!!prop->property_name; prop++)
+		if (!strcmp(prop->property_name, property_name)
+				&& prop->type == type)
+			return prop;
+
+	return &fallbacks[state];
 }
 
 /**

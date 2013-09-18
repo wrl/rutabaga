@@ -38,6 +38,16 @@ typedef enum {
 	RTB_STYLE_ACTIVE = 1 << RTB_DRAW_ACTIVE
 } rtb_style_states_t;
 
+typedef enum {
+	RTB_STYLE_PROP_COLOR = 0,
+	RTB_STYLE_PROP_FLOAT,
+	RTB_STYLE_PROP_INT,
+	RTB_STYLE_PROP_FONT,
+	RTB_STYLE_PROP_TEXTURE,
+
+	RTB_STYLE_PROP_TYPE_COUNT
+} rtb_style_prop_type_t;
+
 /**
  * property types
  */
@@ -55,21 +65,14 @@ struct rtb_rgb_color {
 	GLfloat r, g, b, a;
 };
 
-struct rtb_style_property {
-	char *name;
-
-	enum {
-		RTB_STYLE_PROP_COLOR,
-		RTB_STYLE_PROP_FLOAT,
-		RTB_STYLE_PROP_INT,
-		RTB_STYLE_PROP_FONT,
-		RTB_STYLE_PROP_TEXTURE
-	} type;
-};
+/**
+ * the meat and potatoes
+ */
 
 struct rtb_style_property_definition {
 	/* public *********************************/
-	char *for_prop;
+	char *property_name;
+	rtb_style_prop_type_t type;
 
 	union {
 		struct rtb_rgb_color color;
@@ -77,14 +80,6 @@ struct rtb_style_property_definition {
 		int i;
 		struct rtb_style_texture_definition texture;
 	};
-
-	/* private ********************************/
-	struct rtb_style_property *prop;
-};
-
-struct rtb_style_props {
-	struct rtb_rgb_color fg, bg;
-	struct rtb_style_texture_definition texture;
 };
 
 struct rtb_style {
@@ -92,7 +87,7 @@ struct rtb_style {
 	char *for_type;
 	rtb_style_states_t available_styles;
 
-	struct rtb_style_props states[RTB_DRAW_STATE_MAX + 1];
+	struct rtb_style_property_definition *properties[RTB_DRAW_STATE_COUNT];
 
 	/* private ********************************/
 	struct rtb_type_atom_descriptor *resolved_type;
@@ -101,6 +96,10 @@ struct rtb_style {
 /**
  * public API
  */
+
+const struct rtb_style_property_definition *rtb_style_query_prop(
+		struct rtb_style *style_list, rtb_draw_state_t state,
+		const char *property_name, rtb_style_prop_type_t type);
 
 void rtb_style_apply_to_tree(struct rtb_element *root,
 		struct rtb_style *style_list);

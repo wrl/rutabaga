@@ -69,12 +69,13 @@ class RutabagaExternalTexture(RutabagaTexture):
         self.stylesheet.external_assets.append(self.asset)
 
     c_repr_tpl = """\
-{{
-\t\t\t\t\t.location = RTB_ASSET_EXTERNAL,
-\t\t\t\t\t.compression = RTB_ASSET_UNCOMPRESSED,
+\t\t\t\t\t.type = RTB_STYLE_PROP_TEXTURE,
 
-\t\t\t\t\t.external.path = "{0}"
-\t\t\t\t}}"""
+\t\t\t\t\t.texture = {{
+\t\t\t\t\t\t.location = RTB_ASSET_EXTERNAL,
+\t\t\t\t\t\t.compression = RTB_ASSET_UNCOMPRESSED,
+
+\t\t\t\t\t\t.external.path = "{0}"}}"""
 
     def c_repr(self):
         return self.c_repr_tpl.format(self.asset.path)
@@ -88,13 +89,14 @@ class RutabagaEmbeddedTexture(RutabagaTexture):
             RutabagaEmbeddedAsset(path, self.texture_var))
 
     c_repr_tpl = """\
-{{
-\t\t\t\t\t.location = RTB_ASSET_EMBEDDED,
-\t\t\t\t\t.compression = RTB_ASSET_UNCOMPRESSED,
+\t\t\t\t\t.type = RTB_STYLE_PROP_TEXTURE,
 
-\t\t\t\t\t.embedded.size = {0}_SIZE,
-\t\t\t\t\t.embedded.base = {0}
-\t\t\t\t}}"""
+\t\t\t\t\t.texture = {{
+\t\t\t\t\t\t.location = RTB_ASSET_EMBEDDED,
+\t\t\t\t\t\t.compression = RTB_ASSET_UNCOMPRESSED,
+
+\t\t\t\t\t\t.embedded.size = {0}_SIZE,
+\t\t\t\t\t\t.embedded.base = {0}}}"""
 
     def c_repr(self):
         return self.c_repr_tpl.format(self.texture_var)
@@ -194,7 +196,15 @@ class RutabagaRGBAProperty(RutabagaStyleProperty):
         else:
             raise ParseError(tokens[0], "expected hex color or rgba()")
 
-    c_repr_tpl = "{{{rgba[0]}, {rgba[1]}, {rgba[2]}, {rgba[3]}}}"
+    c_repr_tpl = """\
+\t\t\t\t\t.type = RTB_STYLE_PROP_COLOR,
+
+\t\t\t\t\t.color = {{
+\t\t\t\t\t\t.r = {rgba[0]},
+\t\t\t\t\t\t.g = {rgba[1]},
+\t\t\t\t\t\t.b = {rgba[2]},
+\t\t\t\t\t\t.a = {rgba[3]}}}"""
+
     def c_repr(self):
         return self.c_repr_tpl.format(rgba=self.rgba)
 
@@ -217,14 +227,9 @@ available_states = {
 }
 
 prop_mapping = {
-    "color":
-        ("fg", RutabagaRGBAProperty),
-
-    "background-color":
-        ("bg", RutabagaRGBAProperty),
-
-    "background-image":
-        ("texture", RutabagaTextureProperty)
+    "color": RutabagaRGBAProperty,
+    "background-color": RutabagaRGBAProperty,
+    "background-image": RutabagaTextureProperty
 }
 
 class RutabagaStyle(object):
@@ -245,36 +250,42 @@ class RutabagaStyle(object):
         for s in styles:
             try:
                 self.states[state][s] = \
-                    prop_mapping[s][1](self.stylesheet, s, styles[s])
+                    prop_mapping[s](self.stylesheet, s, styles[s])
             except KeyError:
                 raise ParseError(styles[s][0],
                         'unknown property "{0}"'.format(s))
 
     c_state_repr = """\
-\t\t\t[{state}] = {{
-{styles}
+\t\t\t[{state}] = (struct rtb_style_property_definition []) {{
+{styles},
+
+\t\t\t\t{{NULL}}
 \t\t\t}}"""
 
     c_style_repr = """\
 \t{{"{type}",
 \t\t{styles},
 
-\t\t.states = {{
+\t\t.properties = {{
 {states}
 \t\t}}
 \t}}"""
 
+    c_prop_repr = """\
+\t\t\t\t{{"{0}",
+{1}}}"""
+
     def c_repr(self):
         states = [self.c_state_repr.format(
             state=state_mapping[state],
-            styles=",\n".join(
-                ["\t\t\t\t.{0} = {1}".format(
-                        prop_mapping[prop_name][0],
-                        self.states[state][prop_name].c_repr())
-                    for prop_name in self.states[state]]))
+            styles=",\n\n".join(
+                [self.c_prop_repr.format(
+                    prop_name,
+                    self.states[state][prop_name].c_repr())
+                for prop_name in self.states[state]]))
             for state in self.states]
 
-        return type(self).c_style_repr.format(
+        return self.c_style_repr.format(
             type=self.type,
             styles=' | '.join([available_states[s] for s in self.states]),
             states=",\n".join(states))

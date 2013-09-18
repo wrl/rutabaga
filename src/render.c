@@ -42,15 +42,6 @@ static const GLubyte quad_outline_indices[] = {
 	0, 1, 2, 3
 };
 
-static struct rtb_style_props *
-get_styleprops(struct rtb_element *elem, rtb_draw_state_t state)
-{
-	if (elem->style->available_styles & (1 << state))
-		return &elem->style->states[state];
-	else
-		return &elem->style->states[RTB_DRAW_NORMAL];
-}
-
 /**
  * public API
  *
@@ -60,7 +51,12 @@ get_styleprops(struct rtb_element *elem, rtb_draw_state_t state)
 void
 rtb_render_use_style_bg(struct rtb_element *elem, rtb_draw_state_t state)
 {
-	struct rtb_rgb_color *color = &(get_styleprops(elem, state))->bg;
+	const struct rtb_style_property_definition *prop;
+	const struct rtb_rgb_color *color;
+
+	prop = rtb_style_query_prop(elem->style, state,
+			"background-color", RTB_STYLE_PROP_COLOR);
+	color = &prop->color;
 
 	rtb_render_set_color(elem,
 			color->r,
@@ -72,7 +68,12 @@ rtb_render_use_style_bg(struct rtb_element *elem, rtb_draw_state_t state)
 void
 rtb_render_use_style_fg(struct rtb_element *elem, rtb_draw_state_t state)
 {
-	struct rtb_rgb_color *color = &(get_styleprops(elem, state))->fg;
+	const struct rtb_style_property_definition *prop;
+	const struct rtb_rgb_color *color;
+
+	prop = rtb_style_query_prop(elem->style, state,
+			"color", RTB_STYLE_PROP_COLOR);
+	color = &prop->color;
 
 	rtb_render_set_color(elem,
 			color->r,
