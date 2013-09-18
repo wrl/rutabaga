@@ -7,8 +7,8 @@ import sys
 import re
 from collections import OrderedDict
 
-from tinycss.parsing import ParseError, remove_whitespace
-from tinycss_rutabaga import NamespaceRule, FontFaceRule, RutabagaCSSParser
+from .tinycss.parsing import ParseError, remove_whitespace
+from .tinycss_rutabaga import NamespaceRule, FontFaceRule, RutabagaCSSParser
 
 all = [
     "ColorParseException",

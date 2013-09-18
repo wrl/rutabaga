@@ -1,7 +1,7 @@
 # coding: utf8
 
-from tinycss import *
-from tinycss.parsing import ParseError, remove_whitespace
+from .tinycss import *
+from .tinycss.parsing import ParseError, remove_whitespace
 
 all = ['NamespaceRule', 'FontFaceRule', 'RutabagaCSSParser']
 

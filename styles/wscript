@@ -5,7 +5,7 @@ from __future__ import print_function
 import os
 import re
 
-from css2c import RutabagaStylesheet
+from rutabaga_css.css2c import RutabagaStylesheet
 from waflib.Configure import conf
 from waflib import TaskGen
 
