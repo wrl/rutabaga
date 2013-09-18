@@ -167,7 +167,8 @@ rtb_text_object_update(struct rtb_text_object *self,
 
 void
 rtb_text_object_render(struct rtb_text_object *self,
-		struct rtb_element *parent, float x, float y, rtb_draw_state_t state)
+		struct rtb_element *parent, float x, float y,
+		const struct rtb_rgb_color *color)
 {
 	struct rtb_font_shader *shader;
 	struct rtb_font_manager *fm;
@@ -193,7 +194,8 @@ rtb_text_object_render(struct rtb_text_object *self,
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glUniform2f(shader->offset, x, y);
-	rtb_render_use_style_fg(parent, state);
+	rtb_render_set_color(parent,
+			color->r, color->g, color->b, color->a);
 	vertex_buffer_render(self->vertices, GL_TRIANGLES);
 }
 

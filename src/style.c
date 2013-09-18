@@ -69,17 +69,11 @@ style_for_type(struct rtb_type_atom *atom, struct rtb_style *style_list)
  * property queries
  */
 
-const struct rtb_style_property_definition *rtb_style_query_prop(
+const struct rtb_style_property_definition *query_int(
 		struct rtb_style *style_list, rtb_draw_state_t state,
 		const char *property_name, rtb_style_prop_type_t type)
 {
 	struct rtb_style_property_definition *prop;
-
-	if (!style_list)
-		return &fallbacks[state];
-
-	if (!(style_list->available_styles & (1 << state)))
-		state = RTB_DRAW_NORMAL;
 
 	for (prop = style_list->properties[state];
 			!!prop->property_name; prop++)
@@ -87,7 +81,53 @@ const struct rtb_style_property_definition *rtb_style_query_prop(
 				&& prop->type == type)
 			return prop;
 
-	return &fallbacks[state];
+	return NULL;
+}
+
+const struct rtb_style_property_definition *rtb_style_query_prop(
+		struct rtb_style *style_list, rtb_draw_state_t state,
+		const char *property_name, rtb_style_prop_type_t type)
+{
+	const struct rtb_style_property_definition *prop;
+
+	if (!style_list)
+		return &fallbacks[state];
+
+	if (!(style_list->available_styles & (1 << state)))
+		state = RTB_DRAW_NORMAL;
+
+	if (!(prop = query_int(style_list, state, property_name, type))
+			&& !(prop = query_int(style_list, RTB_DRAW_NORMAL,
+					property_name, type)))
+		return &fallbacks[type];
+
+	return prop;
+}
+
+const struct rtb_style_property_definition *rtb_style_query_prop_in_tree(
+		struct rtb_element *leaf, rtb_draw_state_t state,
+		const char *property_name, rtb_style_prop_type_t type)
+{
+	const struct rtb_style_property_definition *prop;
+	rtb_draw_state_t local_state;
+	struct rtb_style *style_list;
+	struct rtb_element *root;
+
+	for (prop = NULL, root = RTB_ELEMENT(leaf->window);
+			!prop && leaf != root; leaf = leaf->parent) {
+		style_list = leaf->style;
+		local_state = state;
+
+		if (!(style_list->available_styles & (1 << local_state)))
+			local_state = RTB_DRAW_NORMAL;
+
+		prop = query_int(style_list, local_state, property_name, type);
+	}
+
+	if (!prop)
+		return &fallbacks[type];
+
+	return prop;
 }
 
 /**

@@ -52,34 +52,28 @@ void
 rtb_render_use_style_bg(struct rtb_element *elem, rtb_draw_state_t state)
 {
 	const struct rtb_style_property_definition *prop;
-	const struct rtb_rgb_color *color;
-
 	prop = rtb_style_query_prop(elem->style, state,
 			"background-color", RTB_STYLE_PROP_COLOR);
-	color = &prop->color;
 
 	rtb_render_set_color(elem,
-			color->r,
-			color->g,
-			color->b,
-			color->a);
+			prop->color.r,
+			prop->color.g,
+			prop->color.b,
+			prop->color.a);
 }
 
 void
 rtb_render_use_style_fg(struct rtb_element *elem, rtb_draw_state_t state)
 {
 	const struct rtb_style_property_definition *prop;
-	const struct rtb_rgb_color *color;
-
 	prop = rtb_style_query_prop(elem->style, state,
 			"color", RTB_STYLE_PROP_COLOR);
-	color = &prop->color;
 
 	rtb_render_set_color(elem,
-			color->r,
-			color->g,
-			color->b,
-			color->a);
+			prop->color.r,
+			prop->color.g,
+			prop->color.b,
+			prop->color.a);
 }
 
 void

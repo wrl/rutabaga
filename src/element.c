@@ -256,7 +256,8 @@ rtb_elem_draw(struct rtb_element *self, rtb_draw_state_t state)
 	if (state == RTB_DRAW_NORMAL) {
 		if (window->focus == self)
 			state = RTB_DRAW_FOCUS;
-		else if (self->mouse_in &&
+
+		if (self->mouse_in &&
 				!(window->mouse.buttons_down & RTB_MOUSE_BUTTON1_MASK))
 			state = RTB_DRAW_HOVER;
 	}

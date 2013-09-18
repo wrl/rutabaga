@@ -32,6 +32,7 @@
 #include "rutabaga/element.h"
 #include "rutabaga/window.h"
 #include "rutabaga/render.h"
+#include "rutabaga/style.h"
 
 #include "rutabaga/widgets/label.h"
 
@@ -43,9 +44,15 @@ static struct rtb_element_implementation super;
 static void
 draw(struct rtb_element *elem, rtb_draw_state_t state)
 {
+	const struct rtb_style_property_definition *prop;
 	SELF_FROM(elem);
 
-	rtb_text_object_render(self->tobj, elem, self->x, self->y, state);
+	prop = rtb_style_query_prop_in_tree(self->parent, state,
+			"color", RTB_STYLE_PROP_COLOR);
+
+	rtb_text_object_render(self->tobj, elem,
+			self->x, self->y, &prop->color);
+
 	super.draw_cb(elem, state);
 }
 
@@ -54,8 +61,6 @@ recalculate(struct rtb_element *elem, struct rtb_element *instigator,
 		rtb_ev_direction_t direction)
 {
 	super.recalc_cb(elem, instigator, direction);
-	elem->style = elem->parent->style;
-
 	return 1;
 }
 

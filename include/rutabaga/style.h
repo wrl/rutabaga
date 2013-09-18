@@ -100,6 +100,9 @@ struct rtb_style {
 const struct rtb_style_property_definition *rtb_style_query_prop(
 		struct rtb_style *style_list, rtb_draw_state_t state,
 		const char *property_name, rtb_style_prop_type_t type);
+const struct rtb_style_property_definition *rtb_style_query_prop_in_tree(
+		struct rtb_element *leaf, rtb_draw_state_t state,
+		const char *property_name, rtb_style_prop_type_t type);
 
 void rtb_style_apply_to_tree(struct rtb_element *root,
 		struct rtb_style *style_list);
