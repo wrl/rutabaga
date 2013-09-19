@@ -76,7 +76,7 @@ class RutabagaEmbeddedTexture(RutabagaTexture):
 \t\t\t\t\t.texture = {{
 \t\t\t\t\t\t.location = RTB_ASSET_EMBEDDED,
 \t\t\t\t\t\t.compression = RTB_ASSET_UNCOMPRESSED,
-\t\t\t\t\t\t.embedded.size = {0}_SIZE,
+\t\t\t\t\t\t.embedded.size = sizeof({0}),
 \t\t\t\t\t\t.embedded.base = {0}}}"""
 
     def c_repr(self):

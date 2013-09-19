@@ -25,68 +25,68 @@ def build(bld):
 	bld(export_includes="../include", name="public")
 
 	objs = []
-	elem = lambda src: objs.append(src)
+	obj = lambda src: objs.append(src)
 
 	#
 	# platform
 	#
 
-	elem("platform/mouse.c")
+	obj("platform/mouse.c")
 
-	elem("platform/x11-xcb/event.c")
-	elem("platform/x11-xcb/window.c")
-	elem("platform/x11-xcb/keyboard.c")
+	obj("platform/x11-xcb/event.c")
+	obj("platform/x11-xcb/window.c")
+	obj("platform/x11-xcb/keyboard.c")
 
 	# common
 
-	elem("rutabaga.c")
-	elem("event.c")
-	elem("atom.c")
-	elem("quad.c")
+	obj("rutabaga.c")
+	obj("event.c")
+	obj("atom.c")
+	obj("quad.c")
 
-	elem("asset.c")
-	elem("style.c")
+	obj("asset.c")
+	obj("style.c")
 
-	elem("element.c")
-	elem("surface.c")
-	elem("window.c")
+	obj("element.c")
+	obj("surface.c")
+	obj("window.c")
 
-	elem("shader.c")
-	elem("render.c")
-	elem("mat4.c")
+	obj("shader.c")
+	obj("render.c")
+	obj("mat4.c")
 
-	elem("text/font-manager.c")
-	elem("text/text-object.c")
-	elem("text/text-buffer.c")
+	obj("text/font-manager.c")
+	obj("text/text-object.c")
+	obj("text/text-buffer.c")
 
-	elem("layout.c")
+	obj("layout.c")
 
 	if bld.env.RTB_LAYOUT_DEBUG:
-		elem("devtools/layout-debug.c")
+		obj("devtools/layout-debug.c")
 
 	# widgets
 
-	elem("container.c")
+	obj("container.c")
 
-	elem("widgets/label.c")
-	elem("widgets/button.c")
-	elem("widgets/knob.c")
-	elem("widgets/text-input.c")
+	obj("widgets/label.c")
+	obj("widgets/button.c")
+	obj("widgets/knob.c")
+	obj("widgets/text-input.c")
 
-	elem("widgets/patchbay/canvas.c")
-	elem("widgets/patchbay/node.c")
-	elem("widgets/patchbay/port.c")
+	obj("widgets/patchbay/canvas.c")
+	obj("widgets/patchbay/node.c")
+	obj("widgets/patchbay/port.c")
 
 	# third party
 
-	elem("../third-party/freetype-gl/texture-font.c")
-	elem("../third-party/freetype-gl/texture-atlas.c")
-	elem("../third-party/freetype-gl/vector.c")
+	obj("../third-party/freetype-gl/texture-font.c")
+	obj("../third-party/freetype-gl/texture-atlas.c")
+	obj("../third-party/freetype-gl/vector.c")
 
-	elem("../third-party/freetype-gl/vertex-buffer.c")
-	elem("../third-party/freetype-gl/vertex-attribute.c")
+	obj("../third-party/freetype-gl/vertex-buffer.c")
+	obj("../third-party/freetype-gl/vertex-attribute.c")
 
-	elem("../third-party/glloadgen/gl_core.3.0.c")
+	obj("../third-party/glloadgen/gl_core.3.0.c")
 
 	# shaders
 
@@ -107,6 +107,7 @@ def build(bld):
 			"private",
 			"shaders",
 			"public",
+			"styles",
 			"GL",
 			"FREETYPE2",
 			"X11",
