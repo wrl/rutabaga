@@ -8,116 +8,116 @@ from glsl2h import write_shader_header
 top = ".."
 
 def glsl2h_task(bld, dest):
-	def shader(task):
-		write_shader_header(task.outputs[0], task.inputs)
+    def shader(task):
+        write_shader_header(task.outputs[0], task.inputs)
 
-	bld(
-		rule=shader,
-		source=["shaders/{0}.{1}.glsl".format(dest, kind) for kind in ("vert", "frag")],
-		target="shaders/{0}.glsl.h".format(dest),
-		name="shaders",
-		export_includes=".",
-		update_outputs=True)
+    bld(
+        rule=shader,
+        source=["shaders/{0}.{1}.glsl".format(dest, kind) for kind in ("vert", "frag")],
+        target="shaders/{0}.glsl.h".format(dest),
+        name="shaders",
+        export_includes=".",
+        update_outputs=True)
 
 
 def build(bld):
-	bld(export_includes="../third-party/gl3w ../third-party . ..", name="private")
-	bld(export_includes="../include", name="public")
+    bld(export_includes="../third-party/gl3w ../third-party . ..", name="private")
+    bld(export_includes="../include", name="public")
 
-	objs = []
-	obj = lambda src: objs.append(src)
+    objs = []
+    obj = lambda src: objs.append(src)
 
-	#
-	# platform
-	#
+    #
+    # platform
+    #
 
-	obj("platform/mouse.c")
+    obj("platform/mouse.c")
 
-	obj("platform/x11-xcb/event.c")
-	obj("platform/x11-xcb/window.c")
-	obj("platform/x11-xcb/keyboard.c")
+    obj("platform/x11-xcb/event.c")
+    obj("platform/x11-xcb/window.c")
+    obj("platform/x11-xcb/keyboard.c")
 
-	# common
+    # common
 
-	obj("rutabaga.c")
-	obj("event.c")
-	obj("atom.c")
-	obj("quad.c")
+    obj("rutabaga.c")
+    obj("event.c")
+    obj("atom.c")
+    obj("quad.c")
 
-	obj("asset.c")
-	obj("style.c")
+    obj("asset.c")
+    obj("style.c")
 
-	obj("element.c")
-	obj("surface.c")
-	obj("window.c")
+    obj("element.c")
+    obj("surface.c")
+    obj("window.c")
 
-	obj("shader.c")
-	obj("render.c")
-	obj("mat4.c")
+    obj("shader.c")
+    obj("render.c")
+    obj("mat4.c")
 
-	obj("text/font-manager.c")
-	obj("text/text-object.c")
-	obj("text/text-buffer.c")
+    obj("text/font-manager.c")
+    obj("text/text-object.c")
+    obj("text/text-buffer.c")
 
-	obj("layout.c")
+    obj("layout.c")
 
-	if bld.env.RTB_LAYOUT_DEBUG:
-		obj("devtools/layout-debug.c")
+    if bld.env.RTB_LAYOUT_DEBUG:
+        obj("devtools/layout-debug.c")
 
-	# widgets
+    # widgets
 
-	obj("container.c")
+    obj("container.c")
 
-	obj("widgets/label.c")
-	obj("widgets/button.c")
-	obj("widgets/knob.c")
-	obj("widgets/text-input.c")
+    obj("widgets/label.c")
+    obj("widgets/button.c")
+    obj("widgets/knob.c")
+    obj("widgets/text-input.c")
 
-	obj("widgets/patchbay/canvas.c")
-	obj("widgets/patchbay/node.c")
-	obj("widgets/patchbay/port.c")
+    obj("widgets/patchbay/canvas.c")
+    obj("widgets/patchbay/node.c")
+    obj("widgets/patchbay/port.c")
 
-	# third party
+    # third party
 
-	obj("../third-party/freetype-gl/texture-font.c")
-	obj("../third-party/freetype-gl/texture-atlas.c")
-	obj("../third-party/freetype-gl/vector.c")
+    obj("../third-party/freetype-gl/texture-font.c")
+    obj("../third-party/freetype-gl/texture-atlas.c")
+    obj("../third-party/freetype-gl/vector.c")
 
-	obj("../third-party/freetype-gl/vertex-buffer.c")
-	obj("../third-party/freetype-gl/vertex-attribute.c")
+    obj("../third-party/freetype-gl/vertex-buffer.c")
+    obj("../third-party/freetype-gl/vertex-attribute.c")
 
-	obj("../third-party/glloadgen/gl_core.3.0.c")
+    obj("../third-party/glloadgen/gl_core.3.0.c")
 
-	# shaders
+    # shaders
 
-	shader = lambda dest: glsl2h_task(bld, dest)
+    shader = lambda dest: glsl2h_task(bld, dest)
 
-	shader("default")
-	shader("surface")
-	shader("text")
-	shader("patchbay-canvas")
+    shader("default")
+    shader("surface")
+    shader("text")
+    shader("patchbay-canvas")
 
-	# outputs
+    # outputs
 
-	bld.stlib(
-		source=objs,
+    bld.stlib(
+        source=objs,
 
-		lib=['m'],
-		use=[
-			"private",
-			"shaders",
-			"public",
-			"styles",
-			"GL",
-			"FREETYPE2",
-			"X11",
-			"XCB",
-			"XCB-XKB",
-			"XCB-KEYSYMS",
-			"XCB-ICCCM",
-			"XKBFILE",
-			"XKBCOMMON"],
+        lib=['m'],
+        use=[
+            "private",
+            "shaders",
+            "public",
+            "styles",
+            "GL",
+            "FREETYPE2",
+            "X11",
+            "XCB",
+            "XCB-XKB",
+            "XCB-KEYSYMS",
+            "XCB-ICCCM",
+            "XKBFILE",
+            "XKBCOMMON"],
 
-		target="rutabaga",
-		name="librutabaga",
-		vnum=bld.env.VERSION)
+        target="rutabaga",
+        name="librutabaga",
+        vnum=bld.env.VERSION)
