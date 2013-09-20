@@ -9,8 +9,10 @@ from rutabaga_css.asset import *
 
 from targa import *
 
-def do_css2c(task, css):
-    task.outputs[0].write(copyright + css2c_prelude + css.c_repr())
+def do_css2c(task):
+    task.outputs[0].write(
+        copyright + css2c_prelude
+        + task.inputs[0].rtb_stylesheet.c_repr())
 
 ####
 # bin2c
@@ -31,17 +33,13 @@ def bin2c(binary, line_wrap=79, line_start=''):
         line_start + ", ".join([hexesc.format(byte) for byte in line])
             for line in batch_gen(binary, bytes_per_line)])
 
-def img2c_task(task, variable_name, asset):
+def img2c_task(task):
     from os.path import splitext
 
-    binary = task.inputs[0].read(flags="rb")
+    img = task.inputs[0].img
+    c_var = task.inputs[0].c_variable
 
-    img = TargaImage()
-    img.from_bytes(binary)
     data = img.data
-
-    asset.prop.width  = img.width
-    asset.prop.height = img.height
 
     matches_extension = lambda ext: lambda i: splitext(i.name)[1] == ext
     output_file = lambda ext:\
@@ -53,19 +51,29 @@ def img2c_task(task, variable_name, asset):
     data_file.write(
         copyright + bin2h_prelude
         + '#include "{0}"\n\n'.format(header.relpath())
-        + "const uint8_t {0}[{1}] = {{\n".format(variable_name, len(data))
+        + "const uint8_t {0}[{1}] = {{\n".format(c_var, len(data))
         + bin2c(img.data, line_wrap=71, line_start='\t')
         + "\n};")
 
     header.write(
         copyright + bin2h_prelude
-        + "extern const uint8_t {0}[{1}];".format(variable_name, len(data)))
+        + "extern const uint8_t {0}[{1}];".format(c_var, len(data)))
 
 def img2c_rule(bld, src, var, asset):
+    node = bld.path.find_resource(src)
+
+    img = TargaImage()
+    img.from_bytes(node.read(flags="rb"))
+
+    node.c_variable = var
+    node.img = img
+
+    asset.prop.width  = img.width
+    asset.prop.height = img.height
+
     bld(
-        rule=lambda task: img2c_task(task, var, asset),
-        variable_name=var,
-        source=[src],
+        rule=img2c_task,
+        source=node,
         target=[src + ".h", src + ".c"],
         name="asset_sources",
         export_includes=".",
@@ -96,8 +104,8 @@ def rtb_style(bld, style_name):
     css_path = "{0}/style.css".format(style_name)
     css_node = bld.path.find_resource(css_path)
 
-    css = RutabagaStylesheet(css_node)
-    css.parse()
+    css = RutabagaStylesheet(css_node, autoparse=True)
+    css_node.rtb_stylesheet = css
 
     asset_stlib_sources = process_embedded_assets(bld, style_name, css)
 
@@ -113,11 +121,10 @@ def rtb_style(bld, style_name):
         target="assets")
 
     bld(
-        rule=lambda task: do_css2c(task, css),
-        source=css_path,
+        rule=do_css2c,
+        source=css_node,
         target="{0}/style.h".format(style_name),
         use="assets",
-        after="asset_sources",
         name="styles",
         export_includes=".",
         update_outputs=True)
