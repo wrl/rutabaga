@@ -60,7 +60,7 @@ int
 rtb_font_manager_load_font(struct rtb_font_manager *fm,
 		struct rtb_font *font, const char *path, int size)
 {
-	font->txfont = texture_font_new_from_file(fm->atlas, path, size);
+	font->txfont = texture_font_new_from_file(fm->atlas, size, path);
 	if (!font->txfont) {
 		ERR("couldn't load font \"%s\"\n", path);
 		return -1;

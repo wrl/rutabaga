@@ -226,10 +226,28 @@ typedef struct
      */
     texture_atlas_t * atlas;
 
-    /**
-     * Font filename
-     */
-    char * filename;
+	/**
+	 * font location
+	 */
+	enum {
+		TEXTURE_FONT_FILE = 0,
+		TEXTURE_FONT_MEMORY,
+	} location;
+
+	union {
+		/**
+		 * Font filename, for when location == TEXTURE_FONT_FILE
+		 */
+		char *filename;
+
+		/**
+		 * Font memory address, for when location == TEXTURE_FONT_MEMORY
+		 */
+		struct {
+			const void *base;
+			size_t size;
+		} memory;
+	};
 
     /**
      * Font size
@@ -333,8 +351,8 @@ typedef struct
  * @return A new empty font (no glyph inside yet)
  *
  */
-texture_font_t * texture_font_new_from_file(texture_atlas_t * atlas,
-		const char * filename, const float size );
+ texture_font_t *texture_font_new_from_file(texture_atlas_t *atlas,
+		 float pt_size, const char *filename);
 
 
 /**
