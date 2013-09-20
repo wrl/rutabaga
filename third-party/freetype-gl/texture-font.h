@@ -333,10 +333,8 @@ typedef struct
  * @return A new empty font (no glyph inside yet)
  *
  */
-  texture_font_t *
-  texture_font_new( texture_atlas_t * atlas,
-                    const char * filename,
-                    const float size );
+texture_font_t * texture_font_new_from_file(texture_atlas_t * atlas,
+		const char * filename, const float size );
 
 
 /**
