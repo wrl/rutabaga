@@ -30,7 +30,10 @@
 all = [
     "RutabagaAsset",
     "RutabagaExternalAsset",
-    "RutabagaEmbeddedAsset"]
+    "RutabagaEmbeddedAsset",
+    
+    "RutabagaEmbeddedTextureAsset",
+    "RutabagaEmbeddedFontAsset"]
 
 class RutabagaAsset(object):
     pass
@@ -44,10 +47,11 @@ class RutabagaExternalAsset(object):
                 .format(self, self.path)
 
 class RutabagaEmbeddedAsset(object):
-    def __init__(self, path, variable_name):
+    def __init__(self, path, variable_name, prop=None):
         self.path = path
         self.variable_name = variable_name
         self.header_path = None
+        self.prop = prop
 
     def __repr__(self):
         if self.header_path:
@@ -57,3 +61,9 @@ class RutabagaEmbeddedAsset(object):
         else:
             return '<{0.__class__.__name__} embedding {1} as {2} (no header)>'\
                     .format(self, self.path, self.variable_name)
+
+class RutabagaEmbeddedTextureAsset(RutabagaEmbeddedAsset):
+    pass
+
+class RutabagaEmbeddedFontAsset(RutabagaEmbeddedAsset):
+    pass

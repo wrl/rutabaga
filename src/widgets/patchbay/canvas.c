@@ -44,7 +44,6 @@
 #include "rutabaga/widgets/patchbay.h"
 
 #include "private/util.h"
-#include "private/targa.h"
 
 #include "shaders/patchbay-canvas.glsl.h"
 
@@ -59,9 +58,6 @@ static struct rtb_element_implementation super;
 /**
  * custom openGL stuff
  */
-
-/* XXX: XXX */
-int tile_width, tile_height;
 
 static struct {
 	RTB_INHERIT(rtb_shader);
@@ -104,9 +100,6 @@ static void
 load_tile(struct rtb_style_texture_definition *definition,
 		GLuint into_texture)
 {
-	const struct targa_header *img;
-	const void *img_data;
-
 	if (!RTB_ASSET_IS_LOADED(RTB_ASSET(definition))) {
 		if (rtb_asset_load(RTB_ASSET(definition))) {
 			printf(" [!] couldn't load tile, aiee!\n");
@@ -114,23 +107,17 @@ load_tile(struct rtb_style_texture_definition *definition,
 		}
 	}
 
-	img = RTB_ASSET_DATA(RTB_ASSET(definition));
-	img_data = &img[1] + (img->id_length + (img->cmap_len * img->cmap_bpp));
-
 	glBindTexture(GL_TEXTURE_2D, into_texture);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
-			img->width, img->height,
+			definition->w, definition->h,
 			0, GL_BGRA, GL_UNSIGNED_BYTE,
-			img_data);
+			RTB_ASSET_DATA(RTB_ASSET(definition)));
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
-
-	tile_width = img->width;
-	tile_height = img->height;
 }
 
 /**
@@ -183,10 +170,13 @@ draw_bg(struct rtb_patchbay *self)
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
+	prop = rtb_style_query_prop(self->style, RTB_DRAW_NORMAL,
+			"background-image", RTB_STYLE_PROP_TEXTURE);
+
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, self->bg_texture);
 	glUniform1i(shader.uniform.texture, 0);
-	glUniform2f(shader.uniform.tx_size, tile_width, tile_height);
+	glUniform2f(shader.uniform.tx_size, prop->texture.w, prop->texture.h);
 	glUniform2f(shader.uniform.tx_offset,
 			roundf(self->texture_offset.x),
 			roundf(self->texture_offset.y));

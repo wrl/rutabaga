@@ -2,6 +2,128 @@
 
 from __future__ import print_function
 
+from waflib.Configure import conf
+
+from rutabaga_css import RutabagaStylesheet
+from rutabaga_css.asset import *
+
+from targa import *
+
+def do_css2c(task, css):
+    task.outputs[0].write(copyright + css2c_prelude + css.c_repr())
+
+####
+# bin2c
+####
+
+def bin2c(binary, line_wrap=79, line_start=''):
+    from math import floor
+
+    hexesc = "0x{0:02X}"
+    bytes_per_line = floor(line_wrap / len(hexesc.format(0) + ", "))
+
+    # from http://stackoverflow.com/questions/760753#760857
+    def batch_gen(data, batch_size):
+        for i in range(0, len(data), batch_size):
+            yield data[i:i+batch_size]
+
+    return ",\n".join([
+        line_start + ", ".join([hexesc.format(byte) for byte in line])
+            for line in batch_gen(binary, bytes_per_line)])
+
+def img2c_task(task, variable_name, asset):
+    from os.path import splitext
+
+    binary = task.inputs[0].read(flags="rb")
+
+    img = TargaImage()
+    img.from_bytes(binary)
+    data = img.data
+
+    asset.prop.width  = img.width
+    asset.prop.height = img.height
+
+    matches_extension = lambda ext: lambda i: splitext(i.name)[1] == ext
+    output_file = lambda ext:\
+        next(filter(matches_extension(ext), task.outputs))
+
+    header = output_file(".h")
+    data_file = output_file(".c")
+
+    data_file.write(
+        copyright + bin2h_prelude
+        + '#include "{0}"\n\n'.format(header.relpath())
+        + "const uint8_t {0}[{1}] = {{\n".format(variable_name, len(data))
+        + bin2c(img.data, line_wrap=71, line_start='\t')
+        + "\n};")
+
+    header.write(
+        copyright + bin2h_prelude
+        + "extern const uint8_t {0}[{1}];".format(variable_name, len(data)))
+
+def img2c_rule(bld, src, var, asset):
+    bld(
+        rule=lambda task: img2c_task(task, var, asset),
+        variable_name=var,
+        source=[src],
+        target=[src + ".h", src + ".c"],
+        name="asset_sources",
+        export_includes=".",
+        update_outputs=True)
+
+####
+# css loader
+####
+
+def process_embedded_assets(bld, style_name, css):
+    sources = []
+
+    for asset in css.embedded_assets:
+        path  = "{0}/{1}".format(style_name, asset.path)
+
+        if type(asset) == RutabagaEmbeddedTextureAsset:
+            img2c_rule(bld, path, asset.variable_name, asset)
+
+        asset.header_path = "styles/{0}.h".format(path)
+        sources.append(path + ".c")
+
+    return sources
+
+@conf
+def rtb_style(bld, style_name):
+    """Parses a CSS file and generates build rules for embedding assets."""
+
+    css_path = "{0}/style.css".format(style_name)
+    css_node = bld.path.find_resource(css_path)
+
+    css = RutabagaStylesheet(css_node)
+    css.parse()
+
+    asset_stlib_sources = process_embedded_assets(bld, style_name, css)
+
+    for asset in css.external_assets:
+        # transform external asset paths into absolute paths
+        path = "{0}/{1}".format(style_name, asset.path)
+        node = bld.path.find_resource(path)
+        asset.path = node.abspath()
+
+    bld.stlib(
+        source=asset_stlib_sources,
+        includes="..",
+        target="assets")
+
+    bld(
+        rule=lambda task: do_css2c(task, css),
+        source=css_path,
+        target="{0}/style.h".format(style_name),
+        use="assets",
+        name="styles",
+        export_includes=".",
+        update_outputs=True)
+
+def build(bld):
+    bld.rtb_style("default")
+
 ####
 # some blocks of text
 ####
@@ -55,111 +177,3 @@ bin2h_prelude = """\
 #include <stdint.h>
 
 """
-
-####
-# meat and potatoes
-####
-
-from rutabaga_css import RutabagaStylesheet
-from waflib.Configure import conf
-from waflib.Task import Task
-
-def do_css2c(task, css):
-    task.outputs[0].write(copyright + css2c_prelude + css.c_repr())
-
-####
-# bin2c
-####
-
-def bin2c(binary, line_wrap=79, line_start=''):
-    from math import floor
-
-    hexesc = "0x{0:02X}"
-    bytes_per_line = floor(line_wrap / len(hexesc.format(0) + ", "))
-
-    # from http://stackoverflow.com/questions/760753#760857
-    def batch_gen(data, batch_size):
-        for i in range(0, len(data), batch_size):
-            yield data[i:i+batch_size]
-
-    return ",\n".join([
-        line_start + ", ".join([hexesc.format(byte) for byte in line])
-            for line in batch_gen(binary, bytes_per_line)])
-
-def bin2c_task(task, variable_name):
-    from os.path import splitext
-
-    binary = task.inputs[0].read(flags="rb")
-
-    matches_extension = lambda ext: lambda i: splitext(i.name)[1] == ext
-    output_file = lambda ext:\
-        next(filter(matches_extension(ext), task.outputs))
-
-    header = output_file(".h")
-    data_file = output_file(".c")
-
-    data_file.write(
-        copyright + bin2h_prelude
-        + '#include "{0}"\n\n'.format(header.relpath())
-        + "const uint8_t {0}[{1}] = {{\n".format(variable_name, len(binary))
-        + bin2c(binary, line_wrap=71, line_start='\t')
-        + "\n};")
-
-    header.write(
-        copyright + bin2h_prelude
-        + "extern const uint8_t {0}[{1}];".format(variable_name, len(binary)))
-
-def bin2c_rule(bld, src, var):
-    bld(
-        rule=lambda task: bin2c_task(task, var),
-        variable_name=var,
-        source=[src],
-        target=[src + ".h", src + ".c"],
-        export_includes=".",
-        update_outputs=True)
-
-####
-# css loader
-####
-
-@conf
-def rtb_style(bld, style_name):
-    """Parses a CSS file and generates build rules for embedding assets."""
-
-    css_path = "{0}/style.css".format(style_name)
-    css_node = bld.path.find_resource(css_path)
-
-    css = RutabagaStylesheet(css_node)
-    css.parse()
-
-    asset_stlib_sources = []
-
-    for asset in css.embedded_assets:
-        path  = "{0}/{1}".format(style_name, asset.path)
-        bin2c_rule(bld, path, asset.variable_name)
-        asset.header_path = "styles/{0}.h".format(path)
-
-        asset_stlib_sources.append(path + ".c")
-
-    for asset in css.external_assets:
-        # transform external asset paths into absolute paths
-        path = "{0}/{1}".format(style_name, asset.path)
-        node = bld.path.find_resource(path)
-        asset.path = node.abspath()
-
-    bld.stlib(
-        source=asset_stlib_sources,
-        includes="..",
-        target="assets")
-
-    bld(
-        rule=lambda task: do_css2c(task, css),
-        source=css_path,
-        target="{0}/style.h".format(style_name),
-        use="assets",
-        name="styles",
-        export_includes=".",
-        update_outputs=True)
-
-def build(bld):
-    bld.rtb_style("default")

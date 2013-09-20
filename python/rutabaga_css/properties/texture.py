@@ -67,20 +67,28 @@ class RutabagaEmbeddedTexture(RutabagaTexture):
     def __init__(self, stylesheet, path):
         super(RutabagaEmbeddedTexture, self).__init__(stylesheet, path)
 
+        self.width  = 0
+        self.height = 0
+
         self.texture_var = sanitize_cvar.sub("_", path).upper()
         self.stylesheet.embedded_assets.append(
-            RutabagaEmbeddedAsset(path, self.texture_var))
+            RutabagaEmbeddedTextureAsset(path, self.texture_var, self))
 
     c_repr_tpl = """\
 \t\t\t\t\t.type = RTB_STYLE_PROP_TEXTURE,
 \t\t\t\t\t.texture = {{
 \t\t\t\t\t\t.location = RTB_ASSET_EMBEDDED,
 \t\t\t\t\t\t.compression = RTB_ASSET_UNCOMPRESSED,
-\t\t\t\t\t\t.embedded.size = sizeof({0}),
-\t\t\t\t\t\t.embedded.base = {0}}}"""
+\t\t\t\t\t\t.embedded.base = {var},
+\t\t\t\t\t\t.embedded.size = sizeof({var}),
+\t\t\t\t\t\t.w = {width},
+\t\t\t\t\t\t.h = {height}}}"""
 
     def c_repr(self):
-        return self.c_repr_tpl.format(self.texture_var)
+        return self.c_repr_tpl.format(
+            var=self.texture_var,
+            width=self.width,
+            height=self.height)
 
 class RutabagaTextureProperty(RutabagaStyleProperty):
     default_method = RutabagaEmbeddedTexture
