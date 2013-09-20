@@ -117,6 +117,7 @@ def rtb_style(bld, style_name):
         source=css_path,
         target="{0}/style.h".format(style_name),
         use="assets",
+        after="asset_sources",
         name="styles",
         export_includes=".",
         update_outputs=True)
