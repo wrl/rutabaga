@@ -21,7 +21,7 @@ def glsl2h_task(bld, dest):
 
 
 def build(bld):
-    bld(export_includes="../third-party/gl3w ../third-party . ..", name="private")
+    bld(export_includes="../third-party/glloadgen ../third-party . ..", name="private")
     bld(export_includes="../include", name="public")
 
     objs = []
