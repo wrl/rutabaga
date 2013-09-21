@@ -52,6 +52,12 @@ typedef enum {
  * property types
  */
 
+struct rtb_style_font_definition {
+	RTB_INHERIT(rtb_asset);
+	const char *family;
+	const char *weight;
+};
+
 struct rtb_style_texture_definition {
 	RTB_INHERIT(rtb_asset);
 	RTB_INHERIT_AS(rtb_size, size);
@@ -79,6 +85,7 @@ struct rtb_style_property_definition {
 		float flt;
 		int i;
 		struct rtb_style_texture_definition texture;
+		struct rtb_style_font_definition *font;
 	};
 };
 

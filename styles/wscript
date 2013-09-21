@@ -33,39 +33,46 @@ def bin2c(binary, line_wrap=79, line_start=''):
         line_start + ", ".join([hexesc.format(byte) for byte in line])
             for line in batch_gen(binary, bytes_per_line)])
 
-def img2c_task(task):
-    from os.path import splitext
-
-    img = task.inputs[0].img
-    c_var = task.inputs[0].c_variable
-
-    data = img.data
-
-    matches_extension = lambda ext: lambda i: splitext(i.name)[1] == ext
-    output_file = lambda ext:\
-        next(filter(matches_extension(ext), task.outputs))
-
-    header = output_file(".h")
-    data_file = output_file(".c")
+def write_bin2c(header, data_file, data, var):
+    header.write(
+        copyright + bin2h_prelude
+        + "extern const uint8_t {0}[{1}];".format(var, len(data)))
 
     data_file.write(
         copyright + bin2h_prelude
         + '#include "{0}"\n\n'.format(header.relpath())
-        + "const uint8_t {0}[{1}] = {{\n".format(c_var, len(data))
-        + bin2c(img.data, line_wrap=71, line_start='\t')
+        + "const uint8_t {0}[{1}] = {{\n".format(var, len(data))
+        + bin2c(data, line_wrap=71, line_start='\t')
         + "\n};")
 
-    header.write(
-        copyright + bin2h_prelude
-        + "extern const uint8_t {0}[{1}];".format(c_var, len(data)))
+####
+# img2c
+####
 
-def img2c_rule(bld, src, var, asset):
+def matches_extension(ext):
+    from os.path import splitext
+    return lambda i: splitext(i.name)[1] == ext
+
+def img2c_task(task):
+    img = task.inputs[0].img
+    c_var = task.inputs[0].asset_var
+
+    output_file = lambda ext:\
+        next(filter(matches_extension(ext), task.outputs))
+
+    write_bin2c(
+        data_file=output_file(".c"),
+        header=output_file(".h"),
+        data=img.data,
+        var=c_var)
+
+def img2c_rule(bld, asset, src):
     node = bld.path.find_resource(src)
 
     img = TargaImage()
     img.from_bytes(node.read(flags="rb"))
 
-    node.c_variable = var
+    node.asset_var = asset.asset_var
     node.img = img
 
     asset.prop.width  = img.width
@@ -80,17 +87,55 @@ def img2c_rule(bld, src, var, asset):
         update_outputs=True)
 
 ####
+# font2c
+####
+
+def font2c_task(task):
+    c_var = task.inputs[0].asset_var
+    data = task.inputs[0].read(flags="rb")
+
+    output_file = lambda ext:\
+        next(filter(matches_extension(ext), task.outputs))
+
+    write_bin2c(
+        data_file=output_file(".c"),
+        header=output_file(".h"),
+        data=data,
+        var=c_var)
+
+def font2c_rule(bld, asset, src):
+    node = bld.path.find_resource(src)
+    node.asset_var = asset.asset_var
+
+    bld(
+        rule=font2c_task,
+        source=node,
+        target=[src + ".h", src + ".c"],
+        name="asset_sources",
+        export_includes=".",
+        update_outputs=True)
+
+####
 # css loader
 ####
 
 def process_embedded_assets(bld, style_name, css):
+    from rutabaga_css.properties.texture import RutabagaEmbeddedTextureAsset
+    from rutabaga_css.font import RutabagaEmbeddedFontAsset
+
     sources = []
 
     for asset in css.embedded_assets:
         path  = "{0}/{1}".format(style_name, asset.path)
 
         if type(asset) == RutabagaEmbeddedTextureAsset:
-            img2c_rule(bld, path, asset.variable_name, asset)
+            img2c_rule(bld, asset, path)
+
+        elif type(asset) == RutabagaEmbeddedFontAsset:
+            font2c_rule(bld, asset, path)
+
+        else:
+            print("???", type(asset))
 
         asset.header_path = "styles/{0}.h".format(path)
         sources.append(path + ".c")
@@ -183,5 +228,6 @@ bin2h_prelude = """\
  */
 
 #include <stdint.h>
+
 
 """

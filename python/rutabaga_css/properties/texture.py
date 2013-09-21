@@ -27,8 +27,6 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-import re
-
 from rutabaga_css.asset import *
 from rutabaga_css.prop import RutabagaStyleProperty
 
@@ -38,8 +36,6 @@ all = [
     "RutabagaEmbeddedTexture",
     
     "RutabagaTextureProperty"]
-
-sanitize_cvar = re.compile(r"[^A-Za-z0-9_]+")
 
 class RutabagaTexture(object):
     def __init__(self, stylesheet, path):
@@ -70,7 +66,7 @@ class RutabagaEmbeddedTexture(RutabagaTexture):
         self.width  = 0
         self.height = 0
 
-        self.texture_var = sanitize_cvar.sub("_", path).upper()
+        self.texture_var = sanitize_c_variable(path).upper()
         self.stylesheet.embedded_assets.append(
             RutabagaEmbeddedTextureAsset(path, self.texture_var, self))
 

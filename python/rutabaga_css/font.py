@@ -27,51 +27,45 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-import re
+from rutabaga_css.asset import *
 
 all = [
-    "RutabagaAsset",
-    "RutabagaExternalAsset",
-    "RutabagaEmbeddedAsset",
-    
-    "RutabagaEmbeddedTextureAsset",
-    "RutabagaEmbeddedFontAsset",
-    
-    "sanitize_c_variable"]
-
-sanitize_cvar = re.compile(r"[^A-Za-z0-9_]+")
-def sanitize_c_variable(v):
-    return sanitize_cvar.sub("_", v)
-
-class RutabagaAsset(object):
-    pass
-
-class RutabagaExternalAsset(RutabagaAsset):
-    def __init__(self, path):
-        self.path = path
-
-    def __repr__(self):
-        return '<{0.__class__.__name__} for {1}>'\
-                .format(self, self.path)
-
-class RutabagaEmbeddedAsset(RutabagaAsset):
-    def __init__(self, path, asset_var, prop=None):
-        self.path = path
-        self.asset_var = asset_var
-        self.header_path = None
-        self.prop = prop
-
-    def __repr__(self):
-        if self.header_path:
-            return '<{0.__class__.__name__} embedding {1} as {2} (in {3})>'\
-                    .format(self, self.path, self.asset_var,
-                            self.header_path)
-        else:
-            return '<{0.__class__.__name__} embedding {1} as {2} (no header)>'\
-                    .format(self, self.path, self.asset_var)
-
-class RutabagaEmbeddedTextureAsset(RutabagaEmbeddedAsset):
-    pass
+    "RutabagaFontFace",
+    "RutabagaEmbeddedFontAsset"]
 
 class RutabagaEmbeddedFontAsset(RutabagaEmbeddedAsset):
-    pass
+    def __init__(self, path, asset_var, descriptor_var):
+        RutabagaEmbeddedAsset.__init__(self, path, asset_var)
+        self.descriptor_var = descriptor_var
+
+class RutabagaFontFace(object):
+    def __init__(self, family):
+        from itertools import repeat
+
+        self.family = family
+        self.weights = {"normal": None}
+
+    def add_weight(self, stylesheet, weight_name, src):
+        cvar = sanitize_c_variable(self.family + "_" + weight_name)
+        asset = RutabagaEmbeddedFontAsset(src, cvar.upper(), cvar.lower())
+
+        self.weights[weight_name] = asset
+        stylesheet.embedded_assets.append(asset)
+
+    c_weight_repr = """\
+static struct rtb_style_font_definition {def_var} = {{
+\t.family = "{family}",
+\t.weight = "{weight}",
+\t.location = RTB_ASSET_EMBEDDED,
+\t.compression = RTB_ASSET_UNCOMPRESSED,
+\t.embedded.base = {asset_var},
+\t.embedded.size = sizeof({asset_var})
+}};"""
+
+    def c_repr(self):
+        return "\n\n".join([self.c_weight_repr.format(
+            family=self.family,
+            weight=weight,
+            def_var=self.weights[weight].descriptor_var,
+            asset_var=self.weights[weight].asset_var)
+                for weight in self.weights])

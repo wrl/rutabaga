@@ -35,6 +35,7 @@ from collections import OrderedDict
 
 from rutabaga_css.parser import *
 from rutabaga_css.style import RutabagaStyle
+from rutabaga_css.font import *
 
 all = ["RutabagaStylesheet"]
 
@@ -61,8 +62,37 @@ class RutabagaStylesheet(object):
         self.embedded_assets = []
         self.external_assets = []
 
+        self.fonts = {}
+
         if autoparse:
             self.parse()
+
+    def parse_font_face(self, rule):
+        decls = decl_dict(rule.declarations)
+
+        try:
+            family = decls["font-family"][0].value
+        except KeyError:
+            raise ParseError(rule,
+                    '"font-family" is a required property')
+
+        try:
+            src = decls["src"][0].value
+        except KeyError:
+            raise ParseError(rule,
+                    '"src" is a required property')
+
+        if family not in self.fonts:
+            self.fonts[family] = RutabagaFontFace(family)
+
+        font = self.fonts[family]
+
+        if "font-weight" in decls:
+            weight = decls["font-weight"][0].value
+        else:
+            weight = "normal"
+
+        font.add_weight(self, weight, src)
 
     def parse(self):
         self.in_namespace = None
@@ -76,7 +106,7 @@ class RutabagaStylesheet(object):
                     self.in_namespace = rule
 
             elif type(rule) == FontFaceRule:
-                pass
+                self.parse_font_face(rule)
 
             else:
                 sel = self.parse_selector(rule.selector)
@@ -172,6 +202,8 @@ class RutabagaStylesheet(object):
     c_repr_tpl = """\
 {includes}
 
+{fonts}
+
 static struct rtb_style {var_name}[] = {{
 {style_structs}
 }};"""
@@ -181,6 +213,11 @@ static struct rtb_style {var_name}[] = {{
             includes="\n".join(
                 [self.c_include_tpl.format(header=a.header_path)
                     for a in self.embedded_assets]),
+
+            fonts="\n".join(
+                [self.fonts[face].c_repr()
+                    for face in self.fonts]),
+
             var_name=var_name,
             style_structs=",\n\n".join(
                 [self.styles[s].c_repr() for s in self.styles]

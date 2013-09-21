@@ -1,6 +1,11 @@
 @namespace rtb "net.illest.rutabaga";
 @namespace "net.illest.rutabaga.widgets";
 
+@font-face {
+	font-family: "Open Sans";
+	src: url("fonts/open_sans/OpenSans-Regular.ttf");
+}
+
 /**
  * patchbay
  */
