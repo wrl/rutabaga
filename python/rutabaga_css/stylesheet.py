@@ -199,25 +199,26 @@ class RutabagaStylesheet(object):
 
     c_include_tpl = '#include "{header}"'
 
-    c_repr_tpl = """\
+    c_prelude = """\
 {includes}
 
-{fonts}
+{fonts}"""
 
-static struct rtb_style {var_name}[] = {{
+    def c_prelude(self):
+        return "\n\n".join((
+            "\n".join(
+                [self.c_include_tpl.format(header=a.header_path)
+                    for a in self.embedded_assets]),
+            "\n".join(
+                [self.fonts[face].c_repr() for face in self.fonts])))
+
+    c_repr_tpl = """\
+{{
 {style_structs}
 }};"""
 
-    def c_repr(self, var_name="default_style"):
+    def c_repr(self, var_name):
         return self.c_repr_tpl.format(
-            includes="\n".join(
-                [self.c_include_tpl.format(header=a.header_path)
-                    for a in self.embedded_assets]),
-
-            fonts="\n".join(
-                [self.fonts[face].c_repr()
-                    for face in self.fonts]),
-
             var_name=var_name,
             style_structs=",\n\n".join(
                 [self.styles[s].c_repr() for s in self.styles]

@@ -53,7 +53,7 @@ class RutabagaFontFace(object):
         stylesheet.embedded_assets.append(asset)
 
     c_weight_repr = """\
-static struct rtb_style_font_definition {def_var} = {{
+static struct rtb_style_font_definition {def_var} __attribute__((unused)) = {{
 \t.family = "{family}",
 \t.weight = "{weight}",
 \t.location = RTB_ASSET_EMBEDDED,
