@@ -118,7 +118,8 @@ attached(struct rtb_element *elem,
 
 	self->patchbay = (struct rtb_patchbay *) parent;
 
-	rtb_label_set_font(&self->name_label, &window->font_manager.fonts.big);
+	rtb_label_set_font(&self->name_label,
+			RTB_FONT(&window->font_manager.fonts.big));
 
 	super.attached_cb(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,

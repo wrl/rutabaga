@@ -57,8 +57,8 @@ static const rtb_utf32_t *cache =
 	L" [\\]^_@{|}~\"#$%&'()*+-/0123456789:<=>`";
 
 int
-rtb_font_manager_load_font(struct rtb_font_manager *fm,
-		struct rtb_font *font, const char *path, int size)
+rtb_font_manager_load_external_font(struct rtb_font_manager *fm,
+		struct rtb_external_font *font, const char *path, int size)
 {
 	font->txfont = texture_font_new_from_file(fm->atlas, size, path);
 	if (!font->txfont) {
@@ -78,7 +78,7 @@ rtb_font_manager_load_font(struct rtb_font_manager *fm,
 }
 
 void
-rtb_font_manager_free_font(struct rtb_font *font)
+rtb_font_manager_free_external_font(struct rtb_external_font *font)
 {
 	free(font->path);
 	texture_font_delete(font->txfont);
@@ -109,10 +109,10 @@ rtb_font_manager_init(struct rtb_font_manager *fm)
 	fm->atlas = texture_atlas_new(512, 512, 1);
 #endif
 
-	if (rtb_font_manager_load_font(fm, &fm->fonts.main, FONT, 9) < 0)
+	if (rtb_font_manager_load_external_font(fm, &fm->fonts.main, FONT, 9) < 0)
 		goto err_main_font;
 
-	if (rtb_font_manager_load_font(fm, &fm->fonts.big, FONT, 15) < 0)
+	if (rtb_font_manager_load_external_font(fm, &fm->fonts.big, FONT, 15) < 0)
 		goto err_big_font;
 
 	fm->fonts.main.lcd_gamma = 2.2f;
@@ -121,7 +121,7 @@ rtb_font_manager_init(struct rtb_font_manager *fm)
 	return 0;
 
 err_big_font:
-	rtb_font_manager_free_font(&fm->fonts.main);
+	rtb_font_manager_free_external_font(&fm->fonts.main);
 err_main_font:
 	rtb_shader_free(RTB_SHADER(&fm->shader));
 err_shader:
@@ -131,8 +131,8 @@ err_shader:
 void
 rtb_font_manager_fini(struct rtb_font_manager *fm)
 {
-	rtb_font_manager_free_font(&fm->fonts.main);
-	rtb_font_manager_free_font(&fm->fonts.big);
+	rtb_font_manager_free_external_font(&fm->fonts.main);
+	rtb_font_manager_free_external_font(&fm->fonts.big);
 	texture_atlas_delete(fm->atlas);
 
 	rtb_shader_free(RTB_SHADER(&fm->shader));

@@ -31,14 +31,20 @@
 #include "freetype-gl/freetype-gl.h"
 #include "freetype-gl/vertex-buffer.h"
 
-struct rtb_font {
-	char *path;
-	int size;
+#define RTB_FONT(x) RTB_UPCAST(x, rtb_font)
+#define RTB_FONT_AS(x, type) RTB_DOWNCAST(x, type, rtb_font)
 
+struct rtb_font {
+	int size;
 	float lcd_gamma;
 
 	texture_font_t *txfont;
 	struct rtb_font_manager *fm;
+};
+
+struct rtb_external_font {
+	RTB_INHERIT(rtb_font);
+	char *path;
 };
 
 struct rtb_font_manager {
@@ -50,17 +56,17 @@ struct rtb_font_manager {
 	} shader;
 
 	struct {
-		struct rtb_font main;
-		struct rtb_font big;
-		struct rtb_font monospace;
+		struct rtb_external_font main;
+		struct rtb_external_font big;
+		struct rtb_external_font monospace;
 	} fonts;
 
 	texture_atlas_t *atlas;
 };
 
-int rtb_font_manager_load_font(struct rtb_font_manager *fm,
-		struct rtb_font *font, const char *path, int size);
-void rtb_font_manager_free_font(struct rtb_font *font);
+int rtb_font_manager_load_external_font(struct rtb_font_manager *fm,
+		struct rtb_external_font *font, const char *path, int size);
+void rtb_font_manager_free_external_font(struct rtb_external_font *font);
 
 int rtb_font_manager_init(struct rtb_font_manager *);
 void rtb_font_manager_fini(struct rtb_font_manager *);

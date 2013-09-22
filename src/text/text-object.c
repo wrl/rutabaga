@@ -206,7 +206,7 @@ rtb_text_object_new(struct rtb_font_manager *fm, struct rtb_font *font,
 	struct rtb_text_object *self = calloc(1, sizeof(*self));
 
 	if (!font)
-		font = &fm->fonts.main;
+		font = RTB_FONT(&fm->fonts.main);
 
 	self->fm = fm;
 	self->vertices = vertex_buffer_new("vertex:2f,tex_coord:2f,subpixel_shift:1f");
