@@ -28,6 +28,7 @@
 #include "rutabaga/element.h"
 #include "rutabaga/window.h"
 #include "rutabaga/style.h"
+#include "rutabaga/asset.h"
 
 #include "private/util.h"
 
@@ -42,16 +43,65 @@ const static struct rtb_style_property_definition fallbacks[RTB_STYLE_PROP_TYPE_
 	}
 };
 
+/**
+ * style initialization
+ */
+
+static int
+load_texture(struct rtb_style_texture_definition *def)
+{
+	struct rtb_asset *asset = RTB_ASSET(def);
+
+	if (!RTB_ASSET_IS_LOADED(asset))
+		if (rtb_asset_load(asset))
+			return -1;
+
+	return 0;
+}
+
+static int
+load_assets(struct rtb_style_property_definition *property)
+{
+	int assets_loaded = 0;
+
+	for(; property->property_name; property++) {
+		switch (property->type) {
+		case RTB_STYLE_PROP_TEXTURE:
+			if (load_texture(&property->texture))
+				return -1;
+
+			assets_loaded++;
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	return assets_loaded;
+}
 
 static int
 style_resolve(struct rtb_window *window, struct rtb_style *style)
 {
+	rtb_draw_state_t state;
+
 	style->resolved_type = rtb_type_lookup(window, style->for_type);
 	if (!style->resolved_type)
 		return -1;
 
+	for (state = 0; state < RTB_DRAW_STATE_COUNT; state++) {
+		if (load_assets(style->properties[state]) < 0)
+			printf("rutabaga: error loading assets for %s\n",
+					style->for_type);
+	}
+
 	return 0;
 }
+
+/**
+ * queries
+ */
 
 static struct rtb_style *
 style_for_type(struct rtb_type_atom *atom, struct rtb_style *style_list)
@@ -64,10 +114,6 @@ style_for_type(struct rtb_type_atom *atom, struct rtb_style *style_list)
 
 	return NULL;
 }
-
-/**
- * property queries
- */
 
 const struct rtb_style_property_definition *query(
 		struct rtb_style *style_list, rtb_draw_state_t state,

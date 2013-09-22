@@ -50,14 +50,16 @@ prop_mapping = {
 }
 
 class RutabagaStyleState(object):
-    def __init__(self):
+    def __init__(self, stylesheet):
+        self.stylesheet = stylesheet
         self.props = OrderedDict()
         self.font  = None
 
-    def add_prop(self, stylesheet, prop_name, prop_value):
+    def add_prop(self, prop_name, prop_value):
         try:
             self.props[prop_name] = \
-                    prop_mapping[prop_name](stylesheet, prop_name, prop_value)
+                    prop_mapping[prop_name](self.stylesheet,
+                            prop_name, prop_value)
         except KeyError:
             raise ParseError(prop_value[0],
                         'unknown property "{0}"'.format(prop_name))
@@ -95,7 +97,7 @@ class RutabagaStyle(object):
         self.states = OrderedDict()
 
         for s in ("normal", "focus", "hover", "active"):
-            self.states[s] = RutabagaStyleState()
+            self.states[s] = RutabagaStyleState(stylesheet)
 
         self.add_state("normal", normal_props)
 
@@ -107,7 +109,7 @@ class RutabagaStyle(object):
             raise AttributeError('"{0}" is not a valid state'.format(state))
 
         for prop in props:
-            self.states[state].add_prop(self.stylesheet, prop, props[prop])
+            self.states[state].add_prop(prop, props[prop])
 
     c_style_repr = """\
 \t{{"{type}",

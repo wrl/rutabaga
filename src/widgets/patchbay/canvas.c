@@ -101,10 +101,8 @@ load_tile(struct rtb_style_texture_definition *definition,
 		GLuint into_texture)
 {
 	if (!RTB_ASSET_IS_LOADED(RTB_ASSET(definition))) {
-		if (rtb_asset_load(RTB_ASSET(definition))) {
-			printf(" [!] couldn't load tile, aiee!\n");
-			return;
-		}
+		printf(" [!] couldn't load tile, aiee!\n");
+		return;
 	}
 
 	glBindTexture(GL_TEXTURE_2D, into_texture);
