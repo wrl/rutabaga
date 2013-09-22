@@ -69,7 +69,7 @@ style_for_type(struct rtb_type_atom *atom, struct rtb_style *style_list)
  * property queries
  */
 
-const struct rtb_style_property_definition *query_int(
+const struct rtb_style_property_definition *query(
 		struct rtb_style *style_list, rtb_draw_state_t state,
 		const char *property_name, rtb_style_prop_type_t type)
 {
@@ -93,11 +93,8 @@ const struct rtb_style_property_definition *rtb_style_query_prop(
 	if (!style_list)
 		return &fallbacks[state];
 
-	if (!(style_list->available_styles & (1 << state)))
-		state = RTB_DRAW_NORMAL;
-
-	if (!(prop = query_int(style_list, state, property_name, type))
-			&& !(prop = query_int(style_list, RTB_DRAW_NORMAL,
+	if (!(prop = query(style_list, state, property_name, type))
+			&& !(prop = query(style_list, RTB_DRAW_NORMAL,
 					property_name, type)))
 		return &fallbacks[type];
 
@@ -118,16 +115,25 @@ const struct rtb_style_property_definition *rtb_style_query_prop_in_tree(
 		style_list = leaf->style;
 		local_state = state;
 
-		if (!(style_list->available_styles & (1 << local_state)))
-			local_state = RTB_DRAW_NORMAL;
-
-		prop = query_int(style_list, local_state, property_name, type);
+		if (!(prop = query(style_list, local_state, property_name, type))
+				&& (local_state != RTB_DRAW_NORMAL))
+			prop = query(style_list, RTB_DRAW_NORMAL, property_name, type);
 	}
 
 	if (!prop)
 		return &fallbacks[type];
 
 	return prop;
+}
+
+int
+rtb_style_elem_has_properties_for_state(struct rtb_element *elem,
+		rtb_draw_state_t state)
+{
+	if (elem->style->properties[state]->property_name)
+		return 1;
+
+	return 0;
 }
 
 /**

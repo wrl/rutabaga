@@ -32,13 +32,6 @@
 #include "rutabaga/atom.h"
 
 typedef enum {
-	RTB_STYLE_NORMAL = 1 << RTB_DRAW_NORMAL,
-	RTB_STYLE_FOCUS  = 1 << RTB_DRAW_FOCUS,
-	RTB_STYLE_HOVER  = 1 << RTB_DRAW_HOVER,
-	RTB_STYLE_ACTIVE = 1 << RTB_DRAW_ACTIVE
-} rtb_style_states_t;
-
-typedef enum {
 	RTB_STYLE_PROP_COLOR = 0,
 	RTB_STYLE_PROP_FLOAT,
 	RTB_STYLE_PROP_INT,
@@ -92,8 +85,6 @@ struct rtb_style_property_definition {
 struct rtb_style {
 	/* public *********************************/
 	char *for_type;
-	rtb_style_states_t available_styles;
-
 	struct rtb_style_property_definition *properties[RTB_DRAW_STATE_COUNT];
 
 	/* private ********************************/
@@ -110,6 +101,8 @@ const struct rtb_style_property_definition *rtb_style_query_prop(
 const struct rtb_style_property_definition *rtb_style_query_prop_in_tree(
 		struct rtb_element *leaf, rtb_draw_state_t state,
 		const char *property_name, rtb_style_prop_type_t type);
+int rtb_style_elem_has_properties_for_state(struct rtb_element *elem,
+		rtb_draw_state_t state);
 
 void rtb_style_apply_to_tree(struct rtb_element *root,
 		struct rtb_style *style_list);

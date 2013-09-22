@@ -63,7 +63,7 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
 
 	rtb_render_quad(elem, &self->bg_quad);
 
-	super.draw_cb(elem, state);
+	rtb_elem_draw_children(elem, state);
 	rtb_render_pop(elem);
 }
 

@@ -214,6 +214,7 @@ struct rtb_element {
 };
 
 int rtb_elem_deliver_event(struct rtb_element *, const struct rtb_event *e);
+void rtb_elem_draw_children(struct rtb_element *, rtb_draw_state_t state);
 void rtb_elem_draw(struct rtb_element *, rtb_draw_state_t state);
 
 void rtb_elem_mark_dirty(struct rtb_element *);

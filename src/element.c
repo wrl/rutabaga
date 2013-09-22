@@ -128,21 +128,7 @@ recalculate(struct rtb_element *self,
 static void
 draw(struct rtb_element *self, rtb_draw_state_t state)
 {
-	struct rtb_element *iter;
-
-	/* if the parent element (`self`, here) has a style defined for this
-	 * draw state, propagate the state to its children. otherwise, don't.
-	 *
-	 * XXX: this is kind of a shitty hack and i don't like it. */
-	if (self->style->available_styles & (1 << state)) {
-		TAILQ_FOREACH(iter, &self->children, child)
-			rtb_elem_draw(iter, state);
-	} else {
-		TAILQ_FOREACH(iter, &self->children, child)
-			rtb_elem_draw(iter, RTB_DRAW_NORMAL);
-	}
-
-	LAYOUT_DEBUG_DRAW_BOX(self);
+	rtb_elem_draw_children(self, RTB_DRAW_NORMAL);
 }
 
 static int
@@ -223,14 +209,14 @@ rtb_elem_deliver_event(struct rtb_element *self, const struct rtb_event *e)
 	switch (e->type) {
 	case RTB_MOUSE_ENTER:
 	case RTB_MOUSE_LEAVE:
-		if (self->style->available_styles & RTB_STYLE_HOVER)
+		if (rtb_style_elem_has_properties_for_state(self, RTB_DRAW_HOVER))
 			rtb_elem_mark_dirty(self);
 		break;
 
 	case RTB_MOUSE_DOWN:
 	case RTB_MOUSE_UP:
 	case RTB_DRAG_DROP:
-		if (self->style->available_styles & RTB_STYLE_FOCUS)
+		if (rtb_style_elem_has_properties_for_state(self, RTB_DRAW_ACTIVE))
 			rtb_elem_mark_dirty(self);
 		break;
 	}
@@ -241,6 +227,15 @@ rtb_elem_deliver_event(struct rtb_element *self, const struct rtb_event *e)
 		return rtb_handle(self, e) || ret;
 	else
 		return ret || rtb_handle(self, e);
+}
+
+void
+rtb_elem_draw_children(struct rtb_element *self, rtb_draw_state_t state)
+{
+	struct rtb_element *iter;
+
+	TAILQ_FOREACH(iter, &self->children, child)
+		rtb_elem_draw(iter, state);
 }
 
 void
@@ -263,6 +258,7 @@ rtb_elem_draw(struct rtb_element *self, rtb_draw_state_t state)
 	}
 
 	self->draw_cb(self, state);
+	LAYOUT_DEBUG_DRAW_BOX(self);
 }
 
 void

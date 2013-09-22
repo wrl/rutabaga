@@ -43,76 +43,82 @@ state_mapping = {
     "active": "RTB_DRAW_ACTIVE"
 }
 
-available_states = {
-    "normal": "RTB_STYLE_NORMAL",
-    "focus":  "RTB_STYLE_FOCUS",
-    "hover":  "RTB_STYLE_HOVER",
-    "active": "RTB_STYLE_ACTIVE"
-}
-
 prop_mapping = {
     "color": RutabagaRGBAProperty,
     "background-color": RutabagaRGBAProperty,
     "background-image": RutabagaTextureProperty
 }
 
+class RutabagaStyleState(object):
+    def __init__(self):
+        self.props = OrderedDict()
+        self.font  = None
+
+    def add_prop(self, stylesheet, prop_name, prop_value):
+        try:
+            self.props[prop_name] = \
+                    prop_mapping[prop_name](stylesheet, prop_name, prop_value)
+        except KeyError:
+            raise ParseError(prop_value[0],
+                        'unknown property "{0}"'.format(prop_name))
+
+    c_state_repr = """\
+\t\t\t[{state}] = (struct rtb_style_property_definition []) {{
+{properties}
+\t\t\t}}"""
+
+    c_empty_state_repr = """\
+\t\t\t[{state}] = (struct rtb_style_property_definition []) {{{{NULL}}}}"""
+
+    c_prop_repr = """\
+\t\t\t\t{{"{0}",
+{1}}}"""
+
+    def c_repr(self, state_name):
+        if not self.props:
+            return self.c_empty_state_repr.format(
+                    state=state_mapping[state_name])
+
+        return self.c_state_repr.format(
+            state=state_mapping[state_name],
+            properties=",\n\n".join(
+                [self.c_prop_repr.format(
+                    prop_name, self.props[prop_name].c_repr())
+                    for prop_name in self.props]
+                + ["\t\t\t\t{NULL}"]))
+
 class RutabagaStyle(object):
     def __init__(self, stylesheet, type, normal_props):
         self.stylesheet = stylesheet
 
         self.type = type
-        self.states = {}
+        self.states = OrderedDict()
+
+        for s in ("normal", "focus", "hover", "active"):
+            self.states[s] = RutabagaStyleState()
 
         self.add_state("normal", normal_props)
 
     def __repr__(self):
         return ('<{0.__class__.__name__} for {0.type}>'.format(self))
 
-    def add_state(self, state, styles):
-        self.states[state] = OrderedDict()
-
+    def add_state(self, state, props):
         if state not in state_mapping.keys():
             raise AttributeError('"{0}" is not a valid state'.format(state))
 
-        for s in styles:
-            try:
-                self.states[state][s] = \
-                    prop_mapping[s](self.stylesheet, s, styles[s])
-            except KeyError:
-                raise ParseError(styles[s][0],
-                        'unknown property "{0}"'.format(s))
-
-    c_state_repr = """\
-\t\t\t[{state}] = (struct rtb_style_property_definition []) {{
-{styles},
-
-\t\t\t\t{{NULL}}
-\t\t\t}}"""
+        for prop in props:
+            self.states[state].add_prop(self.stylesheet, prop, props[prop])
 
     c_style_repr = """\
 \t{{"{type}",
-\t\t{styles},
-
 \t\t.properties = {{
-{states}
+{state_definitions}
 \t\t}}
 \t}}"""
 
-    c_prop_repr = """\
-\t\t\t\t{{"{0}",
-{1}}}"""
-
     def c_repr(self):
-        states = [self.c_state_repr.format(
-            state=state_mapping[state],
-            styles=",\n\n".join(
-                [self.c_prop_repr.format(
-                    prop_name,
-                    self.states[state][prop_name].c_repr())
-                for prop_name in self.states[state]]))
-            for state in self.states]
-
         return self.c_style_repr.format(
             type=self.type,
-            styles=' | '.join([available_states[s] for s in self.states]),
-            states=",\n".join(states))
+            state_definitions=",\n".join(
+                [self.states[state].c_repr(state)
+                    for state in self.states]))
