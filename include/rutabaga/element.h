@@ -53,6 +53,9 @@ typedef enum {
  * element implementation
  */
 
+typedef void (*rtb_elem_cb_t)
+	(struct rtb_element *);
+
 typedef void (*rtb_elem_cb_draw_t)
 	(struct rtb_element *elem, rtb_draw_state_t state);
 
@@ -63,9 +66,6 @@ typedef void (*rtb_elem_cb_state_change_t)
 	(struct rtb_element *,
 	 struct rtb_element *parent, struct rtb_window *window);
 
-typedef void (*rtb_elem_cb_layout_t)
-	(struct rtb_element *);
-
 typedef void (*rtb_elem_cb_size_t)
 	(struct rtb_element *,
 	 const struct rtb_size *avail, struct rtb_size *want);
@@ -74,11 +74,8 @@ typedef int (*rtb_elem_cb_recalc_t)
 	(struct rtb_element *elem,
 	 struct rtb_element *instigator, rtb_ev_direction_t direction);
 
-typedef void (*rtb_elem_cb_child_attached_t)
+typedef void (*rtb_elem_cb_child_state_t)
 	(struct rtb_element *elem, struct rtb_element *child);
-
-typedef void (*rtb_elem_cb_mark_dirty_t)
-	(struct rtb_element *);
 
 struct rtb_element_implementation {
 	/**
@@ -113,7 +110,7 @@ struct rtb_element_implementation {
 	 *
 	 * called when the element should layout its children.
 	 */
-	rtb_elem_cb_layout_t layout_cb;
+	rtb_elem_cb_t layout_cb;
 
 
 	/**
@@ -131,6 +128,34 @@ struct rtb_element_implementation {
 	rtb_elem_cb_state_change_t detached_cb;
 
 	/**
+	 * rtb_element_implementation.child_attached
+	 *
+	 * called when `child` is attached directly under `elem`.
+	 *
+	 * it is not propagated up the tree. for example, let's consider
+	 * two elements, `a` and `b`, and that `b` is a child element of `a`.
+	 * if a third element, `c`, is added under `b`, then only `b`'s
+	 * child_attached callback will be called. (it will not propagate rootward
+	 * to `a`).
+	 */
+	rtb_elem_cb_child_state_t child_attached;
+
+	/**
+	 * rtb_element_implementation.child_detached
+	 *
+	 * inverse of child_attached.
+	 */
+	rtb_elem_cb_child_state_t child_detached;
+
+	/**
+	 * rtb_element_implementation.restyle
+	 *
+	 * called when a parent element's style has changed.
+	 */
+	rtb_elem_cb_t restyle;
+
+
+	/**
 	 * rtb_element_implementation.recalc_cb
 	 *
 	 * called when an element needs to respond to a layout change
@@ -146,20 +171,6 @@ struct rtb_element_implementation {
 	 */
 	rtb_elem_cb_recalc_t recalc_cb;
 
-
-	/**
-	 * rtb_element_implementation.child_attached
-	 *
-	 * called when `child` is attached directly under `elem`.
-	 *
-	 * it is not propagated up the tree. for example, let's consider
-	 * two elements, `a` and `b`, and that `b` is a child element of `a`.
-	 * if a third element, `c`, is added under `b`, then only `b`'s
-	 * child_attached callback will be called. (it will not propagate rootward
-	 * to `a`).
-	 */
-	rtb_elem_cb_child_attached_t child_attached;
-
 	/**
 	 * rtb_element_implementation.mark_dirty
 	 *
@@ -169,7 +180,7 @@ struct rtb_element_implementation {
 	 * the implementation of a surface itself), this behavior can be
 	 * changed.
 	 */
-	rtb_elem_cb_mark_dirty_t mark_dirty;
+	rtb_elem_cb_t mark_dirty;
 };
 
 /**
@@ -222,7 +233,7 @@ void rtb_elem_trigger_recalc(struct rtb_element *,
 		struct rtb_element *instigator, rtb_ev_direction_t direction);
 
 void rtb_elem_set_size_cb(struct rtb_element *, rtb_elem_cb_size_t size_cb);
-void rtb_elem_set_layout(struct rtb_element *, rtb_elem_cb_layout_t layout_cb);
+void rtb_elem_set_layout(struct rtb_element *, rtb_elem_cb_t layout_cb);
 void rtb_elem_set_position_from_point(struct rtb_element *, struct rtb_point *);
 void rtb_elem_set_position(struct rtb_element *, float x, float y);
 void rtb_elem_set_size(struct rtb_element *, struct rtb_size *);

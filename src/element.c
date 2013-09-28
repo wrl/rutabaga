@@ -48,7 +48,7 @@
 #include "wwrl/vector.h"
 
 /**
- * private stuff
+ * recalculation
  */
 
 static int
@@ -95,9 +95,7 @@ static int
 recalculate(struct rtb_element *self,
 		struct rtb_element *instigator, rtb_ev_direction_t direction)
 {
-	/* XXX: invariant: self->window->state != RTB_STATE_UNATTACHED */
-	if (!self->style)
-		self->style = rtb_style_for_element(self, self->window->style_list);
+	self->restyle(self);
 
 	switch (direction) {
 	case RTB_DIRECTION_ROOTWARD:
@@ -121,8 +119,17 @@ recalculate(struct rtb_element *self,
 	return 1;
 }
 
+static void
+restyle(struct rtb_element *self)
+{
+	/* XXX: invariant: self->window->state != RTB_STATE_UNATTACHED */
+
+	if (!self->style)
+		self->style = rtb_style_for_element(self, self->window->style_list);
+}
+
 /**
- * drawing
+ * misc implementation
  */
 
 static void
@@ -178,6 +185,12 @@ child_attached(struct rtb_element *self, struct rtb_element *child)
 {
 	child->surface = self->surface;
 	child->attached_cb(child, self, self->window);
+}
+
+static void
+child_detached(struct rtb_element *self, struct rtb_element *child)
+{
+	child->detached_cb(child, self, self->window);
 }
 
 static void
@@ -281,7 +294,7 @@ rtb_elem_set_size_cb(struct rtb_element *self, rtb_elem_cb_size_t size_cb)
 }
 
 void
-rtb_elem_set_layout(struct rtb_element *self, rtb_elem_cb_layout_t layout_cb)
+rtb_elem_set_layout(struct rtb_element *self, rtb_elem_cb_t layout_cb)
 {
 	self->layout_cb = layout_cb;
 }
@@ -364,7 +377,7 @@ rtb_elem_remove_child(struct rtb_element *self, struct rtb_element *child)
 		self->window->mouse.element_underneath = self;
 	}
 
-	child->detached_cb(child, self, self->window);
+	self->child_detached(self, child);
 
 	child->parent = NULL;
 	child->style  = NULL;
@@ -380,10 +393,14 @@ static struct rtb_element_implementation base_impl = {
 	.attached_cb    = attached,
 	.detached_cb    = detached,
 
+	.child_attached = child_attached,
+	.child_detached = child_detached,
+
+	.recalc_cb      = recalculate,
+	.restyle        = restyle,
+
 	.layout_cb      = rtb_layout_hpack_left,
 	.size_cb        = rtb_size_self,
-	.recalc_cb      = recalculate,
-	.child_attached = child_attached,
 	.mark_dirty     = mark_dirty
 };
 
