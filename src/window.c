@@ -116,6 +116,7 @@ attached(struct rtb_element *elem,
 			"net.illest.rutabaga.window");
 
 	rtb_style_resolve_list(self, self->style_list);
+	self->restyle(RTB_ELEMENT(self));
 }
 
 static void

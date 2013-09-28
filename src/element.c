@@ -95,8 +95,6 @@ static int
 recalculate(struct rtb_element *self,
 		struct rtb_element *instigator, rtb_ev_direction_t direction)
 {
-	self->restyle(self);
-
 	switch (direction) {
 	case RTB_DIRECTION_ROOTWARD:
 		if (!recalc_rootward(self, instigator, RTB_DIRECTION_ROOTWARD))
@@ -122,10 +120,14 @@ recalculate(struct rtb_element *self,
 static void
 restyle(struct rtb_element *self)
 {
-	/* XXX: invariant: self->window->state != RTB_STATE_UNATTACHED */
+	struct rtb_element *iter;
 
+	/* XXX: invariant: self->window->state != RTB_STATE_UNATTACHED */
 	if (!self->style)
 		self->style = rtb_style_for_element(self, self->window->style_list);
+
+	TAILQ_FOREACH(iter, &self->children, child)
+		iter->restyle(iter);
 }
 
 /**
