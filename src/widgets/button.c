@@ -122,7 +122,7 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 		return dispatch_click_event(self, RTB_EVENT_AS(e, rtb_mouse_event));
 
 	default:
-		return super.event_cb(elem, e);
+		return super.on_event(elem, e);
 	}
 
 	return 0;
@@ -134,7 +134,7 @@ recalculate(struct rtb_element *elem, struct rtb_element *instigator,
 {
 	SELF_FROM(elem);
 
-	super.recalc_cb(elem, instigator, direction);
+	super.recalculate(elem, instigator, direction);
 
 	self->outer_pad.x = self->label.outer_pad.x;
 	self->outer_pad.y = self->label.outer_pad.y;
@@ -150,7 +150,7 @@ attached(struct rtb_element *elem,
 {
 	SELF_FROM(elem);
 
-	super.attached_cb(elem, parent, window);
+	super.attached(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.button");
 
@@ -187,12 +187,12 @@ rtb_button_init(struct rtb_button *self,
 	self->min_size.w = 70.f;
 	self->min_size.h = 26.f;
 
-	self->draw_cb     = draw;
-	self->event_cb    = on_event;
-	self->attached_cb = attached;
+	self->draw        = draw;
+	self->on_event    = on_event;
+	self->attached    = attached;
 	self->layout_cb   = rtb_layout_hpack_center;
 	self->size_cb     = rtb_size_hfit_children;
-	self->recalc_cb   = recalculate;
+	self->recalculate = recalculate;
 
 	return 0;
 }

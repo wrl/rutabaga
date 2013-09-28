@@ -128,7 +128,7 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
 	rtb_render_push(elem);
 	rtb_render_clear(elem);
 
-	super.draw_cb(elem, state);
+	super.draw(elem, state);
 
 	rtb_render_reset(elem);
 	rtb_render_set_position(elem, 0, 0);
@@ -281,7 +281,7 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 		break;
 
 	default:
-		return super.event_cb(elem, e);
+		return super.on_event(elem, e);
 	}
 
 	return 0;
@@ -292,7 +292,7 @@ recalculate(struct rtb_element *elem, struct rtb_element *instigator,
 {
 	SELF_FROM(elem);
 
-	super.recalc_cb(elem, instigator, direction);
+	super.recalculate(elem, instigator, direction);
 	self->outer_pad.y = self->label.outer_pad.y;
 
 	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
@@ -307,7 +307,7 @@ attached(struct rtb_element *elem,
 {
 	SELF_FROM(elem);
 
-	super.attached_cb(elem, parent, window);
+	super.attached(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.text-input");
 
@@ -389,12 +389,12 @@ rtb_text_input_init(struct rutabaga *rtb, struct rtb_text_input *self,
 	self->min_size.h = 30.f;
 	self->min_size.w = 150.f;
 
-	self->attached_cb = attached;
-	self->recalc_cb   = recalculate;
-	self->draw_cb     = draw;
+	self->draw        = draw;
+	self->on_event    = on_event;
+	self->attached    = attached;
+	self->recalculate = recalculate;
 	self->size_cb     = rtb_size_self;
 	self->layout_cb   = layout;
-	self->event_cb    = on_event;
 
 	self->cursor_position = 0;
 	rtb_label_set_text(&self->label, "");

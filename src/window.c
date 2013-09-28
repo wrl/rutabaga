@@ -102,7 +102,7 @@ win_event(struct rtb_element *elem, const struct rtb_event *e)
 			return 1;
 	}
 
-	return super.event_cb(elem, e);
+	return super.on_event(elem, e);
 }
 
 static void
@@ -111,7 +111,7 @@ attached(struct rtb_element *elem,
 {
 	SELF_FROM(elem);
 
-	super.attached_cb(elem, parent, window);
+	super.attached(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.window");
 
@@ -158,7 +158,7 @@ rtb_window_draw(struct rtb_window *self)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	rtb_render_push(RTB_ELEMENT(self));
-	self->draw_cb(RTB_ELEMENT(self), RTB_DRAW_NORMAL);
+	self->draw(RTB_ELEMENT(self), RTB_DRAW_NORMAL);
 	rtb_render_pop(RTB_ELEMENT(self));
 
 	window_impl_swap_buffers(self);
@@ -174,7 +174,7 @@ rtb_window_reinit(struct rtb_window *self)
 	glScissor(0, 0, self->w, self->h);
 
 	if (!self->window)
-		self->attached_cb(elem, NULL, self);
+		self->attached(elem, NULL, self);
 
 	rtb_elem_trigger_recalc(elem, elem, RTB_DIRECTION_LEAFWARD);
 }
@@ -207,9 +207,9 @@ rtb_window_open(struct rutabaga *r,
 	mat4_set_identity(&self->identity);
 	rtb_elem_set_layout(RTB_ELEMENT(self), rtb_layout_vpack_top);
 
-	self->event_cb    = win_event;
-	self->mark_dirty  = mark_dirty;
-	self->attached_cb = attached;
+	self->on_event   = win_event;
+	self->mark_dirty = mark_dirty;
+	self->attached   = attached;
 
 	self->surface = RTB_SURFACE(self);
 

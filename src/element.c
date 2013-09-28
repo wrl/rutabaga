@@ -70,10 +70,10 @@ recalc_rootward(struct rtb_element *self,
 		return 0;
 
 	TAILQ_FOREACH(iter, &self->children, child)
-		iter->recalc_cb(iter, self, RTB_DIRECTION_LEAFWARD);
+		iter->recalculate(iter, self, RTB_DIRECTION_LEAFWARD);
 
 	if (self->parent)
-		self->parent->recalc_cb(self->parent, self, direction);
+		self->parent->recalculate(self->parent, self, direction);
 
 	rtb_elem_mark_dirty(self);
 	return 1;
@@ -88,7 +88,7 @@ recalc_leafward(struct rtb_element *self,
 	self->layout_cb(self);
 
 	TAILQ_FOREACH(iter, &self->children, child)
-		iter->recalc_cb(iter, self, direction);
+		iter->recalculate(iter, self, direction);
 }
 
 static int
@@ -184,13 +184,13 @@ static void
 child_attached(struct rtb_element *self, struct rtb_element *child)
 {
 	child->surface = self->surface;
-	child->attached_cb(child, self, self->window);
+	child->attached(child, self, self->window);
 }
 
 static void
 child_detached(struct rtb_element *self, struct rtb_element *child)
 {
-	child->detached_cb(child, self, self->window);
+	child->detached(child, self, self->window);
 }
 
 static void
@@ -234,7 +234,7 @@ rtb_elem_deliver_event(struct rtb_element *self, const struct rtb_event *e)
 		break;
 	}
 
-	ret = self->event_cb(self, e);
+	ret = self->on_event(self, e);
 
 	if (self->flags & RTB_ELEM_FLAG_EVENT_SNOOP)
 		return rtb_handle(self, e) || ret;
@@ -270,7 +270,7 @@ rtb_elem_draw(struct rtb_element *self, rtb_draw_state_t state)
 			state = RTB_DRAW_HOVER;
 	}
 
-	self->draw_cb(self, state);
+	self->draw(self, state);
 	LAYOUT_DEBUG_DRAW_BOX(self);
 }
 
@@ -278,7 +278,7 @@ void
 rtb_elem_trigger_recalc(struct rtb_element *self, struct rtb_element *instigator,
 		rtb_ev_direction_t direction)
 {
-	self->recalc_cb(self, instigator, direction);
+	self->recalculate(self, instigator, direction);
 }
 
 void
@@ -335,13 +335,17 @@ void
 rtb_elem_add_child(struct rtb_element *self, struct rtb_element *child,
 		rtb_child_add_loc_t where)
 {
-	assert(child->draw_cb);
-	assert(child->event_cb);
-	assert(child->attached_cb);
-	assert(child->detached_cb);
+	assert(child->draw);
+	assert(child->on_event);
 	assert(child->layout_cb);
 	assert(child->size_cb);
-	assert(child->recalc_cb);
+	assert(child->attached);
+	assert(child->detached);
+	assert(child->child_attached);
+	assert(child->child_detached);
+	assert(child->recalculate);
+	assert(child->restyle);
+	assert(child->mark_dirty);
 
 	if (where == RTB_ADD_HEAD)
 		TAILQ_INSERT_HEAD(&self->children, child, child);
@@ -350,7 +354,7 @@ rtb_elem_add_child(struct rtb_element *self, struct rtb_element *child,
 
 	if (self->window) {
 		self->child_attached(self, child);
-		self->recalc_cb(self, child, RTB_DIRECTION_ROOTWARD);
+		self->recalculate(self, child, RTB_DIRECTION_ROOTWARD);
 	}
 }
 
@@ -383,24 +387,25 @@ rtb_elem_remove_child(struct rtb_element *self, struct rtb_element *child)
 	child->style  = NULL;
 	child->state  = RTB_STATE_UNATTACHED;
 
-	self->recalc_cb(self, NULL, RTB_DIRECTION_LEAFWARD);
+	self->recalculate(self, NULL, RTB_DIRECTION_LEAFWARD);
 }
 
 static struct rtb_element_implementation base_impl = {
-	.draw_cb        = draw,
-	.event_cb       = on_event,
+	.draw           = draw,
+	.on_event       = on_event,
 
-	.attached_cb    = attached,
-	.detached_cb    = detached,
+	.layout_cb      = rtb_layout_hpack_left,
+	.size_cb        = rtb_size_self,
+
+	.attached       = attached,
+	.detached       = detached,
 
 	.child_attached = child_attached,
 	.child_detached = child_detached,
 
-	.recalc_cb      = recalculate,
+	.recalculate    = recalculate,
 	.restyle        = restyle,
 
-	.layout_cb      = rtb_layout_hpack_left,
-	.size_cb        = rtb_size_self,
 	.mark_dirty     = mark_dirty
 };
 

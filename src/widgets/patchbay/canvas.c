@@ -309,7 +309,7 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
 	draw_bg(self);
 	draw_patches(self);
 
-	super.draw_cb(elem, state);
+	super.draw(elem, state);
 }
 
 /**
@@ -324,7 +324,7 @@ recalculate(struct rtb_element *elem,
 
 	SELF_FROM(elem);
 
-	super.recalc_cb(elem, instigator, direction);
+	super.recalculate(elem, instigator, direction);
 
 	if (self->style) {
 		prop = rtb_style_query_prop(self->style, RTB_DRAW_NORMAL,
@@ -393,7 +393,7 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 			return 1;
 
 	default:
-		return super.event_cb(elem, e);
+		return super.on_event(elem, e);
 	}
 }
 
@@ -403,7 +403,7 @@ attached(struct rtb_element *elem,
 {
 	SELF_FROM(elem);
 
-	super.attached_cb(elem, parent, window);
+	super.attached(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.patchbay");
 
@@ -432,11 +432,11 @@ rtb_patchbay_init(struct rtb_patchbay *self)
 	rtb_surface_init(RTB_SURFACE(self), &super);
 	TAILQ_INIT(&self->patches);
 
-	self->draw_cb     = draw;
-	self->event_cb    = on_event;
-	self->attached_cb = attached;
+	self->draw        = draw;
+	self->on_event    = on_event;
+	self->attached    = attached;
 	self->layout_cb   = layout;
-	self->recalc_cb   = recalculate;
+	self->recalculate = recalculate;
 
 	init_shaders();
 

@@ -74,7 +74,7 @@ recalculate(struct rtb_element *elem, struct rtb_element *instigator,
 	};
 
 	SELF_FROM(elem);
-	super.recalc_cb(elem, instigator, direction);
+	super.recalculate(elem, instigator, direction);
 
 	if (self->w <= 0 || self->h <= 0)
 		return -1;
@@ -112,14 +112,14 @@ child_attached(struct rtb_element *elem, struct rtb_element *child)
 	SELF_FROM(elem);
 
 	child->surface = self;
-	child->attached_cb(child, RTB_ELEMENT(self), self->window);
+	child->attached(child, RTB_ELEMENT(self), self->window);
 }
 
 static void
 attached(struct rtb_element *self,
 		struct rtb_element *parent, struct rtb_window *window)
 {
-	super.attached_cb(self, parent, window);
+	super.attached(self, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.surface");
 }
@@ -241,9 +241,9 @@ rtb_surface_init(struct rtb_surface *self,
 	(*impl) = super;
 
 	do {
-		impl->draw_cb        = draw;
-		impl->recalc_cb      = recalculate;
-		impl->attached_cb    = attached;
+		impl->draw           = draw;
+		impl->recalculate    = recalculate;
+		impl->attached       = attached;
 		impl->child_attached = child_attached;
 	} while (impl != elem_impl && (impl = elem_impl));
 

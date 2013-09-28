@@ -160,7 +160,7 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
 	glDisableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	super.draw_cb(elem, state);
+	super.draw(elem, state);
 }
 
 /**
@@ -264,7 +264,7 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 		return handle_key(self, RTB_EVENT_AS(e, rtb_key_event));
 
 	default:
-		return super.event_cb(elem, e);
+		return super.on_event(elem, e);
 	}
 
 	return 0;
@@ -276,7 +276,7 @@ attached(struct rtb_element *elem,
 {
 	SELF_FROM(elem);
 
-	super.attached_cb(elem, parent, window);
+	super.attached(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.knob");
 
@@ -332,9 +332,9 @@ rtb_knob_new()
 
 	glGenBuffers(2, self->vbo);
 
-	self->draw_cb     = draw;
-	self->event_cb    = on_event;
-	self->attached_cb = attached;
+	self->draw     = draw;
+	self->on_event = on_event;
+	self->attached = attached;
 
 	init_circle_indices();
 	return self;

@@ -73,7 +73,7 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
 	rtb_render_quad(elem, &self->bg_quad);
 	rtb_render_pop(elem);
 
-	super.draw_cb(elem, state);
+	super.draw(elem, state);
 }
 
 /**
@@ -234,7 +234,7 @@ recalculate(struct rtb_element *elem,
 {
 	SELF_FROM(elem);
 
-	super.recalc_cb(elem, instigator, direction);
+	super.recalculate(elem, instigator, direction);
 	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
 
 	return 1;
@@ -246,7 +246,7 @@ attached(struct rtb_element *elem,
 {
 	SELF_FROM(elem);
 
-	super.attached_cb(RTB_ELEMENT(self), parent, window);
+	super.attached(RTB_ELEMENT(self), parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.patchbay.port");
 }
@@ -277,7 +277,7 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 		}
 	}
 
-	return super.event_cb(elem, e);
+	return super.on_event(elem, e);
 }
 
 /**
@@ -393,10 +393,10 @@ rtb_patchbay_port_init(struct rtb_patchbay_port *self,
 	self->port_type  = type;
 	self->node       = node;
 
-	self->draw_cb     = draw;
-	self->attached_cb = attached;
-	self->recalc_cb   = recalculate;
-	self->event_cb    = on_event;
+	self->draw        = draw;
+	self->attached    = attached;
+	self->recalculate = recalculate;
+	self->on_event    = on_event;
 	self->size_cb     = rtb_size_hfill;
 	self->layout_cb   = rtb_layout_vpack_top;
 

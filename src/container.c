@@ -41,7 +41,7 @@ static void
 attached(struct rtb_element *self,
 		struct rtb_element *parent, struct rtb_window *window)
 {
-	super.attached_cb(self, parent, window);
+	super.attached(self, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.container");
 }
@@ -63,7 +63,7 @@ rtb_container_new()
 		return NULL;
 	}
 
-	self->attached_cb = attached;
+	self->attached = attached;
 
 	return self;
 }

@@ -79,13 +79,14 @@ typedef void (*rtb_elem_cb_child_state_t)
 
 struct rtb_element_implementation {
 	/**
-	 * rtb_element_implementation.draw_cb
+	 * rtb_element_implementation.draw
+	 *
 	 * called when the element should redraw itself
 	 */
-	rtb_elem_cb_draw_t draw_cb;
+	rtb_elem_cb_draw_t draw;
 
 	/**
-	 * rtb_element_implementation.event_cb
+	 * rtb_element_implementation.on_event
 	 *
 	 * called when the element should handle an event.
 	 * distinct from rtb_event_cb_t because of the lack of a userdata
@@ -96,7 +97,7 @@ struct rtb_element_implementation {
 	 * until. a return value of 1 indicates that the element has handled
 	 * the event, and no propagation in the tree will take place.
 	 */
-	rtb_elem_cb_internal_event_t event_cb;
+	rtb_elem_cb_internal_event_t on_event;
 
 
 	/**
@@ -105,6 +106,7 @@ struct rtb_element_implementation {
 	 * called when the element should report its desired size.
 	 */
 	rtb_elem_cb_size_t size_cb;
+
 	/**
 	 * rtb_element_implementation.layout_cb
 	 *
@@ -114,18 +116,18 @@ struct rtb_element_implementation {
 
 
 	/**
-	 * rtb_element_implementation.attached_cb
+	 * rtb_element_implementation.attached
 	 *
 	 * called when the element is attached to the tree.
 	 */
-	rtb_elem_cb_state_change_t attached_cb;
+	rtb_elem_cb_state_change_t attached;
 
 	/**
-	 * rtb_element_implementation.detached_cb
+	 * rtb_element_implementation.detached
 	 *
 	 * called when the element is detached from the tree.
 	 */
-	rtb_elem_cb_state_change_t detached_cb;
+	rtb_elem_cb_state_change_t detached;
 
 	/**
 	 * rtb_element_implementation.child_attached
@@ -147,6 +149,7 @@ struct rtb_element_implementation {
 	 */
 	rtb_elem_cb_child_state_t child_detached;
 
+
 	/**
 	 * rtb_element_implementation.restyle
 	 *
@@ -154,9 +157,8 @@ struct rtb_element_implementation {
 	 */
 	rtb_elem_cb_t restyle;
 
-
 	/**
-	 * rtb_element_implementation.recalc_cb
+	 * rtb_element_implementation.recalculate
 	 *
 	 * called when an element needs to respond to a layout change
 	 * caused by an element above it somewhere in the tree, generally
@@ -169,7 +171,8 @@ struct rtb_element_implementation {
 	 * the exceptional condition will not be handled or propagated up
 	 * the tree, but can be useful for debugging.
 	 */
-	rtb_elem_cb_recalc_t recalc_cb;
+	rtb_elem_cb_recalc_t recalculate;
+
 
 	/**
 	 * rtb_element_implementation.mark_dirty

@@ -53,14 +53,14 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
 	rtb_text_object_render(self->tobj, elem,
 			self->x, self->y, &prop->color);
 
-	super.draw_cb(elem, state);
+	super.draw(elem, state);
 }
 
 static int
 recalculate(struct rtb_element *elem, struct rtb_element *instigator,
 		rtb_ev_direction_t direction)
 {
-	super.recalc_cb(elem, instigator, direction);
+	super.recalculate(elem, instigator, direction);
 	return 1;
 }
 
@@ -70,7 +70,7 @@ attached(struct rtb_element *elem,
 {
 	SELF_FROM(elem);
 
-	super.attached_cb(elem, parent, window);
+	super.attached(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.label");
 
@@ -134,21 +134,16 @@ int
 rtb_label_init(struct rtb_label *self,
 		struct rtb_element_implementation *impl)
 {
+	struct rtb_element_implementation *elem_impl = &self->impl;
 	rtb_elem_init(RTB_ELEMENT(self), &super);
 
-	/* XXX: nasty */
-
 	(*impl) = super;
-	impl->draw_cb     = draw;
-	impl->attached_cb = attached;
-	impl->size_cb     = size;
-
-	if (impl != (void *) self) {
-		self->draw_cb     = draw;
-		self->attached_cb = attached;
-		self->size_cb     = size;
-		self->recalc_cb   = recalculate;
-	}
+	do {
+		impl->draw        = draw;
+		impl->attached    = attached;
+		impl->size_cb     = size;
+		impl->recalculate = recalculate;
+	} while (impl != elem_impl && (impl = elem_impl));
 
 	self->text = NULL;
 	self->tobj = NULL;
