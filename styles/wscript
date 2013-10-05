@@ -19,7 +19,7 @@ def do_css2c(task):
     stylesheet = task.inputs[0].rtb_stylesheet
 
     output_file = lambda ext:\
-        next(filter(matches_extension(ext), task.outputs))
+        tuple(filter(matches_extension(ext), task.outputs))[0]
 
     output_file(".h").write(
         copyright + css2c_prelude
@@ -39,15 +39,18 @@ def bin2c(binary, line_wrap=79, line_start=''):
     from math import floor
 
     hexesc = "0x{0:02X}"
-    bytes_per_line = floor(line_wrap / len(hexesc.format(0) + ", "))
+    bytes_per_line = int(floor(line_wrap / len(hexesc.format(0) + ", ")))
 
     # from http://stackoverflow.com/questions/760753#760857
     def batch_gen(data, batch_size):
         for i in range(0, len(data), batch_size):
             yield data[i:i+batch_size]
 
+    # py2/py3 compat
+    chr_val = lambda x: ord(x[0]) if isinstance(x, str) else x
+
     return ",\n".join([
-        line_start + ", ".join([hexesc.format(byte) for byte in line])
+        line_start + ", ".join([hexesc.format(chr_val(byte)) for byte in line])
             for line in batch_gen(binary, bytes_per_line)])
 
 def write_bin2c(header, data_file, data, var):
@@ -71,7 +74,7 @@ def img2c_task(task):
     c_var = task.inputs[0].asset_var
 
     output_file = lambda ext:\
-        next(filter(matches_extension(ext), task.outputs))
+        tuple(filter(matches_extension(ext), task.outputs))[0]
 
     write_bin2c(
         data_file=output_file(".c"),
@@ -107,7 +110,7 @@ def font2c_task(task):
     data = task.inputs[0].read(flags="rb")
 
     output_file = lambda ext:\
-        next(filter(matches_extension(ext), task.outputs))
+        tuple(filter(matches_extension(ext), task.outputs))[0]
 
     write_bin2c(
         data_file=output_file(".c"),
