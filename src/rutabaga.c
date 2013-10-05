@@ -32,6 +32,7 @@
 #include "rutabaga/dict.h"
 
 #include "private/stdlib-allocator.h"
+#include "private/window_impl.h"
 
 struct wwrl_allocator stdlib_allocator = {
 	.malloc  = malloc,

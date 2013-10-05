@@ -42,6 +42,7 @@
 #include "rutabaga/mat4.h"
 
 #include "private/util.h"
+#include "private/window_impl.h"
 
 #include "shaders/default.glsl.h"
 #include "shaders/surface.glsl.h"
@@ -161,8 +162,6 @@ rtb_window_draw(struct rtb_window *self)
 	rtb_render_push(RTB_ELEMENT(self));
 	self->draw(RTB_ELEMENT(self), RTB_DRAW_NORMAL);
 	rtb_render_pop(RTB_ELEMENT(self));
-
-	window_impl_swap_buffers(self);
 }
 
 void

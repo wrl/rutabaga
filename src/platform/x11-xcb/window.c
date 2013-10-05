@@ -44,6 +44,8 @@
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/window.h"
 
+#include "private/window_impl.h"
+
 #include "xrtb.h"
 
 #define MIN_COLOR_CHANNEL_BITS 8
@@ -236,16 +238,6 @@ find_xcb_screen(xcb_connection_t *c, int default_screen)
 #ifndef GLX_BACK_BUFFER_AGE_EXT
 #define GLX_BACK_BUFFER_AGE_EXT 0x20F4
 #endif
-
-void
-window_impl_swap_buffers(struct rtb_window *rwin)
-{
-	struct xcb_window *self = (void *) rwin;
-	struct xcb_rutabaga *xrtb = self->xrtb;
-
-	glXSwapBuffers(xrtb->dpy, self->gl_win);
-	glFinish();
-}
 
 static GLXFBConfig
 find_reasonable_fb_config(Display *dpy, GLXFBConfig *cfgs, int ncfgs)

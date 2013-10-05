@@ -57,7 +57,6 @@
 #define GL_TIMESTAMP 0x8E28
 #endif
 
-#define FPS 60
 #define CAST_EVENT_TO(type) type *ev = (type *) _ev
 #define SET_IF_TRUE(w, m, f) (w = (w & ~m) | (-f & m))
 
@@ -449,7 +448,7 @@ handle_generic_event(struct xcb_window *win, xcb_generic_event_t *ev)
 }
 
 static int
-drain_xcb_event_queue(struct rtb_window *win, xcb_connection_t *conn)
+drain_xcb_event_queue(xcb_connection_t *conn, struct rtb_window *win)
 {
 	xcb_generic_event_t *ev;
 	int ret;
@@ -471,131 +470,87 @@ drain_xcb_event_queue(struct rtb_window *win, xcb_connection_t *conn)
 }
 
 /**
- * timespec utils
- *
- * timespec_copy_inc(), timespec_diff(), and timespec_cmp() are made
- * available under the creative commons CC0 (i.e. public domain)
+ * event loop
  */
 
-static void
-timespec_copy_inc(struct timespec *dst, struct timespec *src, long by_nsec)
-{
-	dst->tv_sec  = src->tv_sec;
-	dst->tv_nsec = src->tv_nsec + by_nsec;
+struct video_sync {
+	PFNGLXGETSYNCVALUESOMLPROC get_values;
+	PFNGLXGETMSCRATEOMLPROC get_msc_rate;
+	PFNGLXWAITFORMSCOMLPROC wait_msc;
+	PFNGLXSWAPBUFFERSMSCOMLPROC swap_buffers_msc;
+	PFNGLXWAITFORSBCOMLPROC wait_sbc;
 
-	if (dst->tv_nsec > 999999999) {
-		dst->tv_sec++;
-		dst->tv_nsec -= 999999999;
-	} else if (dst->tv_nsec < 0) {
-		dst->tv_sec--;
-		dst->tv_nsec += 999999999;
-	}
-}
+	/**
+	 * The Unadjusted System Time (or UST) is a 64-bit monotonically
+	 * increasing counter that is available throughout the system. A UST
+	 * timestamp is obtained each time the graphics MSC is incremented.
+	 */
+	int64_t ust;
 
-static void
-timespec_diff(struct timespec *diff, struct timespec *a, struct timespec *b)
-{
-	diff->tv_sec  = a->tv_sec  - b->tv_sec;
-	diff->tv_nsec = a->tv_nsec - b->tv_nsec;
-}
+	/**
+	 * The graphics Media Stream Counter (or graphics MSC) is a counter
+	 * that is unique to the graphics subsystem and increments for each
+	 * vertical retrace that occurs.
+	 */
+	int64_t msc;
 
-/**
- * granularity specified in fraction of a second. i.e. pass `1`
- * for a granularity of 1 second, `1000` for a millisecond, etc.
- *
- * finest granularity is 1 nanosecond, coarsest is 1 second.
- */
+	/**
+	 * The Swap Buffer Counter (SBC) is an attribute of a GLXDrawable
+	 * and is incremented each time a swap buffer action is performed on
+	 * the associated drawable.
+	 */
+	int64_t sbc;
+};
+
 static int
-timespec_cmp(struct timespec *a, struct timespec *b, long granularity)
+video_sync_init(struct video_sync *p)
 {
-	struct timespec diff;
-	int64_t nsec_diff;
+#define GET_PROC(dst, name) p->dst = (void *) glXGetProcAddress((GLubyte *) name);
+	GET_PROC(get_values, "glXGetSyncValuesOML");
+	GET_PROC(wait_msc, "glXWaitForMscOML");
+	GET_PROC(wait_sbc, "glXWaitForSbcOML");
+#undef GET_PROC
 
-	timespec_diff(&diff, a, b);
-
-	if (granularity < 1 || granularity > 1000000000L)
-		granularity = 1;
-	else
-		granularity = 1000000000L / granularity;
-
-	nsec_diff = (diff.tv_sec * 1000000000L) +
-		((diff.tv_nsec / (granularity)) * granularity);
-
-	if (nsec_diff > 0)
-		return 1;
-	else if (nsec_diff < 0)
+	if (!p->get_values || !p->get_msc_rate || !p->wait_msc || !p->wait_sbc)
 		return -1;
-
 	return 0;
 }
-
-#define FRAME_NSEC (999999999 / FPS)
-#define FRAME_MSEC (999 / FPS)
 
 void
 rtb_event_loop(struct rutabaga *r)
 {
 	struct xcb_rutabaga *xrtb = (void *) r;
 	struct rtb_window *win = r->win;
+	struct xcb_window *xwin = (void *) win;
+	struct video_sync sync;
+	int wait_for_vsync;
 
-	struct timespec next_frame, now, diff;
-	struct pollfd fds[1];
-	int timeout_ms;
+	if (video_sync_init(&sync))
+		wait_for_vsync = 0;
+	else
+		wait_for_vsync = 1;
 
-#ifdef _RTB_DEBUG_FRAME
-	GLuint frame_time_query, elapsed;
-
-	glGenQueries(1, &frame_time_query);
-#endif
-
-	clock_gettime(CLOCK_MONOTONIC, &now);
-	timespec_copy_inc(&next_frame, &now, -1);
+	if (wait_for_vsync)
+		sync.get_values(xrtb->dpy, xwin->gl_draw,
+				&sync.ust, &sync.msc, &sync.sbc);
 
 	r->run_event_loop = 1;
 
-	fds[0].fd = xcb_get_file_descriptor(xrtb->xcb_conn);
-	fds[0].events = POLLIN;
-
 	while (r->run_event_loop) {
-		clock_gettime(CLOCK_MONOTONIC, &now);
-		timespec_diff(&diff, &next_frame, &now);
-		timeout_ms = (diff.tv_sec * 1000) + (diff.tv_nsec / 1000000);
-		if (timeout_ms < 0 || timeout_ms >= FRAME_MSEC)
-			timeout_ms = 0;
-
-		if (win->visibility == RTB_FULLY_OBSCURED)
-			poll(fds, ARRAY_LENGTH(fds), -1);
-		else
-			poll(fds, ARRAY_LENGTH(fds), timeout_ms);
-
 		rtb_window_lock(win);
-
-		if (drain_xcb_event_queue(win, xrtb->xcb_conn) < 0)
+		if (drain_xcb_event_queue(xrtb->xcb_conn, win) < 0)
 			return;
 
-		clock_gettime(CLOCK_MONOTONIC, &now);
-		if ((timespec_cmp(&next_frame, &now, 1000L) < 1) &&
-		    win->visibility != RTB_FULLY_OBSCURED) {
-
-#ifdef _RTB_DEBUG_FRAME
-			glBeginQuery(GL_TIME_ELAPSED, frame_time_query);
-
+		if (win->visibility != RTB_FULLY_OBSCURED)
 			rtb_window_draw(win);
-
-			glEndQuery(GL_TIME_ELAPSED);
-			glGetQueryObjectuiv(frame_time_query, GL_QUERY_RESULT, &elapsed);
-
-			printf(" :: frame time: %dms\n", elapsed / 1000000);
-#else
-			rtb_window_draw(win);
-#endif
-			timespec_copy_inc(&next_frame, &now, FRAME_NSEC);
-		}
-
 		rtb_window_unlock(win);
-	}
 
-#ifdef _RTB_DEBUG_FRAME
-	glDeleteQueries(1, &frame_time_query);
-#endif
+		glFinish();
+
+		if (wait_for_vsync)
+			sync.wait_msc(xrtb->dpy, xwin->gl_draw,
+					sync.msc + 1, 0, 0,
+					&sync.ust, &sync.msc, &sync.sbc);
+
+	}
 }
