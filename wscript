@@ -131,4 +131,5 @@ def configure(conf):
 def build(bld):
     bld.recurse("styles")
     bld.recurse("src")
+    bld.recurse("third-party")
     bld.recurse("examples")
