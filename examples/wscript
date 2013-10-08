@@ -9,6 +9,7 @@ def build(bld):
         lib=['m'],
         use=["public",
              "librutabaga",
+             "LIBUV",
              "X11",
              "X11-XCB",
              "XCB"],

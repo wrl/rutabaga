@@ -42,6 +42,8 @@
 #include <X11/Xlib-xcb.h>
 #include <X11/Xlibint.h>
 
+#include <uv.h>
+
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/window.h"
 #include "rutabaga/event.h"
@@ -477,7 +479,6 @@ struct video_sync {
 	PFNGLXGETSYNCVALUESOMLPROC get_values;
 	PFNGLXGETMSCRATEOMLPROC get_msc_rate;
 	PFNGLXWAITFORMSCOMLPROC wait_msc;
-	PFNGLXSWAPBUFFERSMSCOMLPROC swap_buffers_msc;
 	PFNGLXWAITFORSBCOMLPROC wait_sbc;
 
 	/**
@@ -507,6 +508,7 @@ video_sync_init(struct video_sync *p)
 {
 #define GET_PROC(dst, name) p->dst = (void *) glXGetProcAddress((GLubyte *) name);
 	GET_PROC(get_values, "glXGetSyncValuesOML");
+	GET_PROC(get_msc_rate, "glXGetMscRateOML");
 	GET_PROC(wait_msc, "glXWaitForMscOML");
 	GET_PROC(wait_sbc, "glXWaitForSbcOML");
 #undef GET_PROC
@@ -516,8 +518,8 @@ video_sync_init(struct video_sync *p)
 	return 0;
 }
 
-void
-rtb_event_loop(struct rutabaga *r)
+static void
+event_loop(struct rutabaga *r)
 {
 	struct xcb_rutabaga *xrtb = (void *) r;
 	struct rtb_window *win = r->win;
@@ -553,4 +555,16 @@ rtb_event_loop(struct rutabaga *r)
 					&sync.ust, &sync.msc, &sync.sbc);
 
 	}
+}
+
+void
+rtb_event_loop(struct rutabaga *r)
+{
+	uv_timer_t frame_timer;
+	uv_loop_t *rtb_loop;
+
+	rtb_loop = uv_loop_new();
+	uv_timer_init(rtb_loop, &frame_timer);
+
+	event_loop(r);
 }

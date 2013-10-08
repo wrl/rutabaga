@@ -32,6 +32,16 @@ def find_target(tgts, name):
     else:
         return r
 
+def unpack_defs(into, defs):
+    for d in defs:
+        if d not in into:
+            into[d] = []
+
+        if isinstance(defs[d], list):
+            into[d].extend(defs[d])
+        elif isinstance(defs[d], dict):
+            unpack_defs(into, defs[d])
+
 def eval_condition_list(clist, **kwargs):
     ret = {}
 
@@ -51,11 +61,7 @@ def eval_condition_list(clist, **kwargs):
             except IndexError:
                 continue
 
-        for d in defs:
-            if d not in ret:
-                ret[d] = []
-
-            ret[d].extend(defs[d])
+        unpack_defs(ret, defs)
 
     return ret
 
@@ -78,34 +84,50 @@ def eval_condition_list_recursively(clist, **kwargs):
 
     return ret
 
-def build(bld):
-    n = bld.path.get_src().find_resource('libuv/uv.gyp')
+def gimme_da_gyp_shit(ctx):
+    n = ctx.path.get_src().find_resource('libuv/uv.gyp')
     gyp = parse_gyp_file(n.abspath())
 
     t = find_target(gyp['targets'], 'libuv')
 
-    sources = t['sources']
-    defines = []
+    from_gyp = {
+        'sources':   t['sources'],
+        'defines':   [],
+        'cflags':    [],
+        'ldflags':   [],
+        'libraries': []}
 
-    for clist in (t['conditions'],
+    for clist in (gyp['target_defaults']['conditions'], t['conditions'],
             t['direct_dependent_settings']['conditions']):
         r = eval_condition_list_recursively(clist,
-                OS=bld.env.DEST_OS,
+                OS=ctx.env.DEST_OS,
                 library='static_library')
 
-        sources.extend(r.get('sources', []))
-        defines.extend(r.get('defines', []))
+        [from_gyp[x].extend(r.get(x, [])) for x in from_gyp.keys()]
 
-    sources = ['libuv/' + s for s in sources
+    from_gyp['sources'] = ['libuv/' + s for s in from_gyp['sources']
             if os.path.splitext(s)[1] in ('.c', '.cc', '.cpp')]
 
-    bld(
-        export_includes='libuv/include',
-        name='libuv_includes')
+    # libraries from gyp all start with -l
+    from_gyp['libraries'] = [l[2:] for l in from_gyp['libraries']]
+
+    return from_gyp
+
+def build(bld):
+    from_gyp = gimme_da_gyp_shit(bld)
+
+    # i dont care i dont fucking care anymore
+    bld.env.append_unique('LINKFLAGS_LIBUV', from_gyp['ldflags'])
 
     bld.stlib(
-        source=sources,
+        source=from_gyp['sources'],
         includes=['libuv/include', 'libuv/src'],
+        export_includes='libuv/include',
+        defines=from_gyp['defines'],
+
+        cflags=from_gyp['cflags'],
+        linkflags=from_gyp['ldflags'],
+        lib=from_gyp['libraries'],
+
         target='uv',
-        name='libuv',
-        defines=defines)
+        name='libuv')

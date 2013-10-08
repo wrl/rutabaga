@@ -12,7 +12,8 @@ let g:syntastic_c_include_dirs = [
 			\ "include",
 			\ "third-party",
 			\ "third-party/gl3w",
+			\ "third-party/libuv/include",
 			\ "build/src",
 			\ "build"]
 
-set path+=include,third-party,third-party/gl3w,build/src,src
+set path+=include,third-party,third-party/gl3w,build/src,src,third-party/libuv/include
