@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include <uv.h>
 #include <glloadgen/gl_core.3.0.h>
 
 #include "rutabaga/defaults.h"
@@ -50,6 +51,7 @@ struct rutabaga {
 	} atoms;
 
 	struct wwrl_allocator allocator;
+	uv_loop_t *event_loop;
 };
 
 void rtb_stop_event_loop(struct rutabaga *);

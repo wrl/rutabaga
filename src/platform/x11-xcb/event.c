@@ -456,7 +456,10 @@ drain_xcb_event_queue(xcb_connection_t *conn, struct rtb_window *win)
 	int ret;
 
 	while ((ev = xcb_poll_for_event(conn))) {
+		rtb_window_lock(win);
 		ret = handle_generic_event((struct xcb_window *) win, ev);
+		rtb_window_unlock(win);
+
 		free(ev);
 
 		if (ret)
@@ -464,8 +467,12 @@ drain_xcb_event_queue(xcb_connection_t *conn, struct rtb_window *win)
 	}
 
 	if (win->need_reconfigure) {
+		rtb_window_lock(win);
+
 		rtb_window_reinit(win);
 		win->need_reconfigure = 0;
+
+		rtb_window_unlock(win);
 	}
 
 	return 0;
@@ -518,6 +525,7 @@ video_sync_init(struct video_sync *p)
 	return 0;
 }
 
+__attribute__((unused))
 static void
 event_loop(struct rutabaga *r)
 {
@@ -557,14 +565,72 @@ event_loop(struct rutabaga *r)
 	}
 }
 
+struct xrtb_uv_poll {
+	RTB_INHERIT(uv_poll_s);
+	struct xcb_rutabaga *xrtb;
+};
+
+struct xrtb_frame_timer {
+	RTB_INHERIT(uv_timer_s);
+	struct rtb_window *win;
+};
+
+static void
+xcb_poll_cb(uv_poll_t *_handle, int status, int events)
+{
+	struct xrtb_uv_poll *handle;
+	struct xcb_rutabaga *xrtb;
+	struct rtb_window *win;
+
+	handle = RTB_DOWNCAST(_handle, xrtb_uv_poll, uv_poll_s);
+	xrtb = handle->xrtb;
+	win = ((struct rutabaga *) xrtb)->win;
+
+	drain_xcb_event_queue(xrtb->xcb_conn, win);
+}
+
+static void
+frame_timer_cb(uv_timer_t *_handle, int status)
+{
+	struct xrtb_frame_timer *ftimer;
+	struct rtb_window *win;
+
+	ftimer = RTB_DOWNCAST(_handle, xrtb_frame_timer, uv_timer_s);
+	win = ftimer->win;
+
+	if (win->visibility == RTB_FULLY_OBSCURED)
+		return;
+
+	rtb_window_lock(win);
+	rtb_window_draw(win);
+	rtb_window_unlock(win);
+}
+
 void
 rtb_event_loop(struct rutabaga *r)
 {
-	uv_timer_t frame_timer;
+	struct xcb_rutabaga *xrtb = (void *) r;
+	struct xrtb_uv_poll xcb_poll;
+	struct xrtb_frame_timer frame_timer;
 	uv_loop_t *rtb_loop;
 
 	rtb_loop = uv_loop_new();
-	uv_timer_init(rtb_loop, &frame_timer);
+	r->event_loop = rtb_loop;
 
-	event_loop(r);
+	xcb_poll.xrtb = xrtb;
+	frame_timer.win = r->win;
+
+	uv_timer_init(rtb_loop, RTB_UPCAST(&frame_timer, uv_timer_s));
+	uv_timer_start(RTB_UPCAST(&frame_timer, uv_timer_s),
+			frame_timer_cb, 15, 15);
+
+	uv_poll_init(rtb_loop, RTB_UPCAST(&xcb_poll, uv_poll_s),
+			xcb_get_file_descriptor(xrtb->xcb_conn));
+	uv_poll_start(RTB_UPCAST(&xcb_poll, uv_poll_s), UV_READABLE,
+			xcb_poll_cb);
+
+	uv_run(rtb_loop, UV_RUN_DEFAULT);
+
+	r->event_loop = NULL;
+	uv_loop_delete(rtb_loop);
 }

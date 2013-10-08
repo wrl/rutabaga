@@ -26,6 +26,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <uv.h>
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/window.h"
@@ -44,7 +45,8 @@ struct wwrl_allocator stdlib_allocator = {
 void
 rtb_stop_event_loop(struct rutabaga *self)
 {
-	self->run_event_loop = 0;
+	if (self->event_loop)
+		uv_stop(self->event_loop);
 }
 
 struct rutabaga *
