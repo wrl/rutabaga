@@ -85,7 +85,8 @@ struct jack_client_port {
 TAILQ_HEAD(clients, jack_client) clients;
 
 
-struct jack_client *client_alloc(const char *name, int len, int physical)
+struct jack_client *
+client_alloc(const char *name, int len, int physical)
 {
 	struct jack_client *c;
 
@@ -115,7 +116,8 @@ struct jack_client *client_alloc(const char *name, int len, int physical)
 	return c;
 }
 
-struct jack_client *get_client(const char *name, int physical)
+struct jack_client *
+get_client(const char *name, int physical)
 {
 	struct jack_client *iter;
 
@@ -127,7 +129,8 @@ struct jack_client *get_client(const char *name, int physical)
 	return NULL;
 }
 
-struct jack_client *get_client_or_alloc(const char *name, int len, int physical)
+struct jack_client *
+get_client_or_alloc(const char *name, int len, int physical)
 {
 	struct jack_client *c;
 
@@ -139,8 +142,8 @@ struct jack_client *get_client_or_alloc(const char *name, int len, int physical)
 	return c;
 }
 
-struct jack_client_port *get_client_port(struct jack_client *client,
-		const char *port_name)
+struct jack_client_port *
+get_client_port(struct jack_client *client, const char *port_name)
 {
 	struct jack_client_port *iter;
 
@@ -156,7 +159,8 @@ struct jack_client_port *get_client_port(struct jack_client *client,
  * utility functions
  */
 
-void jackport_to_rtbport(jack_port_t *jack_port, struct jack_client **client,
+void
+jackport_to_rtbport(jack_port_t *jack_port, struct jack_client **client,
 		struct jack_client_port **port, int alloc)
 {
 	const char *port_name = jack_port_name(jack_port);
@@ -185,7 +189,8 @@ void jackport_to_rtbport(jack_port_t *jack_port, struct jack_client **client,
 		*port = get_client_port(*client, port_name);
 }
 
-static void rtbport_to_jackport(char *dst, size_t nbytes,
+static void
+rtbport_to_jackport(char *dst, size_t nbytes,
 		struct jack_client *c, struct jack_client_port *p)
 {
 	if (c == (void *) &state.system_in ||
@@ -199,8 +204,9 @@ static void rtbport_to_jackport(char *dst, size_t nbytes,
  * jack client list shit
  */
 
-void client_add_port(struct jack_client *c, const char *name, int len,
-		int flags, rtb_child_add_loc_t location)
+void
+client_add_port(struct jack_client *c, const char *name, int len, int flags,
+		rtb_child_add_loc_t location)
 {
 	struct jack_client_port *p;
 	rtb_patchbay_port_type_t type;
@@ -228,8 +234,8 @@ void client_add_port(struct jack_client *c, const char *name, int len,
 	TAILQ_INSERT_TAIL(&c->ports, p, port);
 }
 
-struct jack_client_port *client_get_port(struct jack_client *c,
-		const char *name, int len)
+struct jack_client_port *
+client_get_port(struct jack_client *c, const char *name, int len)
 {
 	struct jack_client_port *iter;
 
@@ -241,14 +247,16 @@ struct jack_client_port *client_get_port(struct jack_client *c,
 	return NULL;
 }
 
-void free_port(struct jack_client *client, struct jack_client_port *port)
+void
+free_port(struct jack_client *client, struct jack_client_port *port)
 {
 	TAILQ_REMOVE(&client->ports, port,port);
 	rtb_patchbay_port_fini(RTB_PATCHBAY_PORT(port));
 	free(port);
 }
 
-void free_client(struct jack_client *client)
+void
+free_client(struct jack_client *client)
 {
 	struct jack_client_port *port;
 
@@ -263,7 +271,8 @@ void free_client(struct jack_client *client)
 	free(client);
 }
 
-void free_client_tailq()
+void
+free_client_tailq(void)
 {
 	struct jack_client *node;
 
@@ -275,7 +284,8 @@ void free_client_tailq()
  * jack shit
  */
 
-static void connect(jack_client_t *jc, struct jack_client_port *clp,
+static void
+connect_jack_port(jack_client_t *jc, struct jack_client_port *clp,
 		const char *other_port)
 {
 	struct jack_client_port *other_clp;
@@ -305,7 +315,8 @@ static void connect(jack_client_t *jc, struct jack_client_port *clp,
 			RTB_PATCHBAY_PORT(other_clp));
 }
 
-static void list_ports(jack_client_t *jc)
+static void
+list_ports(jack_client_t *jc)
 {
 	const char **ports, **cxns, *port_name;
 	struct jack_client *client;
@@ -358,7 +369,7 @@ static void list_ports(jack_client_t *jc)
 
 		for (j = 0; cxns[j]; j++)
 			if (*cxns[j])
-				connect(jc, clp, cxns[j]);
+				connect_jack_port(jc, clp, cxns[j]);
 
 		jack_free(cxns);
 	}
@@ -366,7 +377,8 @@ static void list_ports(jack_client_t *jc)
 	jack_free(ports);
 }
 
-static int init_jack()
+static int
+init_jack(void)
 {
 	state.jc = jack_client_open("cabbage-patch", JackNoStartServer, 0);
 	if (!state.jc) {
@@ -378,7 +390,8 @@ static int init_jack()
 	return 0;
 }
 
-static void fini_jack()
+static void
+fini_jack(void)
 {
 	jack_deactivate(state.jc);
 	jack_client_close(state.jc);
@@ -389,8 +402,8 @@ static void fini_jack()
  * jack callbacks
  */
 
-static void client_registration(const char *client_name, int registered,
-		void *ctx)
+static void
+client_registration(const char *client_name, int registered, void *ctx)
 {
 	struct jack_client *client;
 
@@ -405,8 +418,8 @@ static void client_registration(const char *client_name, int registered,
 	}
 }
 
-static void port_registration(jack_port_id_t port_id, int registered,
-		void *ctx)
+static void
+port_registration(jack_port_id_t port_id, int registered, void *ctx)
 {
 	struct jack_client *client;
 	struct jack_client_port *port;
@@ -428,8 +441,8 @@ static void port_registration(jack_port_id_t port_id, int registered,
 	rtb_window_unlock(state.win);
 }
 
-static void port_connection(jack_port_id_t a_id, jack_port_id_t b_id,
-		int cxn, void *ctx)
+static void
+port_connection(jack_port_id_t a_id, jack_port_id_t b_id, int cxn, void *ctx)
 {
 	jack_port_t *a = jack_port_by_id(state.jc, a_id);
 	jack_port_t *b = jack_port_by_id(state.jc, b_id);
@@ -464,8 +477,8 @@ static void port_connection(jack_port_id_t a_id, jack_port_id_t b_id,
  * rutabaga shit
  */
 
-static int connection(struct rtb_element *obj,
-		const struct rtb_event *_ev, void *ctx)
+static int
+connection(struct rtb_element *obj, const struct rtb_event *_ev, void *ctx)
 {
 	const struct rtb_patchbay_event_connect *ev = (void *) _ev;
 	char *from, *to;
@@ -505,8 +518,8 @@ static int connection(struct rtb_element *obj,
 	return 1;
 }
 
-static int disconnection(struct rtb_element *obj,
-		const struct rtb_event *_ev, void *ctx)
+static int
+disconnection(struct rtb_element *obj, const struct rtb_event *_ev, void *ctx)
 {
 	const struct rtb_patchbay_event_disconnect *ev = (void *) _ev;
 	char *from, *to;
@@ -534,7 +547,8 @@ static int disconnection(struct rtb_element *obj,
 	return 1;
 }
 
-static void init_patchbay(struct rtb_element *parent)
+static void
+init_patchbay(struct rtb_element *parent)
 {
 	rtb_patchbay_init(&state.cp);
 	rtb_container_add(parent, RTB_ELEMENT(&state.cp));
@@ -547,11 +561,10 @@ static void init_patchbay(struct rtb_element *parent)
 			RTB_PATCHBAY_DISCONNECT, disconnection, NULL);
 }
 
-/**
- * gucci main
- */
+typedef int gucci;
 
-int main(int argc, char **argv)
+gucci
+main(int argc, char **argv)
 {
 	if (init_jack() < 0)
 		return EXIT_FAILURE;
