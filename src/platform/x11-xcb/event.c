@@ -27,11 +27,9 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <unistd.h>
 #include <stdio.h>
-#include <wctype.h>
 #include <time.h>
-#include <sys/time.h>
-#include <poll.h>
 #include <math.h>
 
 #include <xcb/xcb.h>
@@ -525,55 +523,79 @@ video_sync_init(struct video_sync *p)
 	return 0;
 }
 
-__attribute__((unused))
-static void
-event_loop(struct rutabaga *r)
-{
-	struct xcb_rutabaga *xrtb = (void *) r;
-	struct rtb_window *win = r->win;
-	struct xcb_window *xwin = (void *) win;
-	struct video_sync sync;
-	int wait_for_vsync;
-
-	if (video_sync_init(&sync))
-		wait_for_vsync = 0;
-	else
-		wait_for_vsync = 1;
-
-	if (wait_for_vsync)
-		sync.get_values(xrtb->dpy, xwin->gl_draw,
-				&sync.ust, &sync.msc, &sync.sbc);
-
-	r->run_event_loop = 1;
-
-	while (r->run_event_loop) {
-		rtb_window_lock(win);
-		if (drain_xcb_event_queue(xrtb->xcb_conn, win) < 0)
-			return;
-
-		if (win->visibility != RTB_FULLY_OBSCURED)
-			rtb_window_draw(win);
-		rtb_window_unlock(win);
-
-		glFinish();
-
-		if (wait_for_vsync)
-			sync.wait_msc(xrtb->dpy, xwin->gl_draw,
-					sync.msc + 1, 0, 0,
-					&sync.ust, &sync.msc, &sync.sbc);
-
-	}
-}
-
 struct xrtb_uv_poll {
 	RTB_INHERIT(uv_poll_s);
 	struct xcb_rutabaga *xrtb;
 };
 
-struct xrtb_frame_timer {
-	RTB_INHERIT(uv_timer_s);
+struct xrtb_vsync_notify {
+	RTB_INHERIT(uv_async_s);
+	struct xcb_rutabaga *xrtb;
 	struct rtb_window *win;
 };
+
+static void
+vsync_static_fps(struct xrtb_vsync_notify *notify)
+{
+	for (;;) {
+		usleep(16666);
+		uv_async_send(RTB_UPCAST(notify, uv_async_s));
+	}
+}
+
+static int64_t
+trunc_int(int64_t i, int by)
+{
+	return (i / by) * by;
+}
+
+static int
+vsync_glx_oml(struct xrtb_vsync_notify *notify, struct video_sync *sync)
+{
+	struct xcb_rutabaga *xrtb;
+	struct xcb_window *xwin;
+	struct rtb_window *win;
+	int32_t numerator, denominator;
+	int64_t sleep_for;
+
+	xrtb = notify->xrtb;
+	win = notify->win;
+	xwin = (void *) win;
+
+	sync->get_values(xrtb->dpy, xwin->gl_draw,
+			&sync->ust, &sync->msc, &sync->sbc);
+
+	sync->get_msc_rate(xrtb->dpy, xwin->gl_draw, &numerator, &denominator);
+
+	sleep_for = (1000000 * (int64_t) denominator) / (int64_t) numerator;
+	sleep_for = trunc_int(sleep_for, 1000); /* trunc to nearest millisecond */
+
+	for (;;) {
+		usleep(sleep_for);
+		sync->wait_msc(xrtb->dpy, xwin->gl_draw,
+				sync->msc + 1, 0, 0,
+				&sync->ust, &sync->msc, &sync->sbc);
+
+		uv_async_send(RTB_UPCAST(notify, uv_async_s));
+	}
+
+	return 0;
+}
+
+static void
+vsync_notify_thread(void *ctx)
+{
+	struct xrtb_vsync_notify *notify;
+	struct video_sync sync;
+
+	notify = ctx;
+
+	if (!video_sync_init(&sync))
+		if (!vsync_glx_oml(notify, &sync))
+			return;
+
+	return vsync_static_fps(notify);
+}
 
 static void
 xcb_poll_cb(uv_poll_t *_handle, int status, int events)
@@ -590,13 +612,13 @@ xcb_poll_cb(uv_poll_t *_handle, int status, int events)
 }
 
 static void
-frame_timer_cb(uv_timer_t *_handle, int status)
+frame_cb(uv_async_t *_handle, int status)
 {
-	struct xrtb_frame_timer *ftimer;
+	struct xrtb_vsync_notify *vsync;
 	struct rtb_window *win;
 
-	ftimer = RTB_DOWNCAST(_handle, xrtb_frame_timer, uv_timer_s);
-	win = ftimer->win;
+	vsync = RTB_DOWNCAST(_handle, xrtb_vsync_notify, uv_async_s);
+	win = vsync->win;
 
 	if (win->visibility == RTB_FULLY_OBSCURED)
 		return;
@@ -611,23 +633,24 @@ rtb_event_loop(struct rutabaga *r)
 {
 	struct xcb_rutabaga *xrtb = (void *) r;
 	struct xrtb_uv_poll xcb_poll;
-	struct xrtb_frame_timer frame_timer;
+	struct xrtb_vsync_notify vsync_notify;
+	uv_thread_t frame_thread;
 	uv_loop_t *rtb_loop;
 
 	rtb_loop = uv_loop_new();
 	r->event_loop = rtb_loop;
 
 	xcb_poll.xrtb = xrtb;
-	frame_timer.win = r->win;
-
-	uv_timer_init(rtb_loop, RTB_UPCAST(&frame_timer, uv_timer_s));
-	uv_timer_start(RTB_UPCAST(&frame_timer, uv_timer_s),
-			frame_timer_cb, 15, 15);
+	vsync_notify.xrtb = xrtb;
+	vsync_notify.win = r->win;
 
 	uv_poll_init(rtb_loop, RTB_UPCAST(&xcb_poll, uv_poll_s),
 			xcb_get_file_descriptor(xrtb->xcb_conn));
 	uv_poll_start(RTB_UPCAST(&xcb_poll, uv_poll_s), UV_READABLE,
 			xcb_poll_cb);
+
+	uv_async_init(rtb_loop, RTB_UPCAST(&vsync_notify, uv_async_s), frame_cb);
+	uv_thread_create(&frame_thread, vsync_notify_thread, &vsync_notify);
 
 	uv_run(rtb_loop, UV_RUN_DEFAULT);
 
