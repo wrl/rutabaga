@@ -532,15 +532,16 @@ struct xrtb_vsync_notify {
 	RTB_INHERIT(uv_async_s);
 	struct xcb_rutabaga *xrtb;
 	struct rtb_window *win;
+	int thread_running;
 };
 
 static void
 vsync_static_fps(struct xrtb_vsync_notify *notify)
 {
-	for (;;) {
+	do {
 		usleep(16666);
 		uv_async_send(RTB_UPCAST(notify, uv_async_s));
-	}
+	} while (notify->thread_running);
 }
 
 static int64_t
@@ -568,16 +569,20 @@ vsync_glx_oml(struct xrtb_vsync_notify *notify, struct video_sync *sync)
 	sync->get_msc_rate(xrtb->dpy, xwin->gl_draw, &numerator, &denominator);
 
 	sleep_for = (1000000 * (int64_t) denominator) / (int64_t) numerator;
-	sleep_for = trunc_int(sleep_for, 1000); /* trunc to nearest millisecond */
 
-	for (;;) {
+	/* we want the usleep call to finish just slightly before the MSC
+	 * increments, in the same way that a swiss railway clock's second
+	 * hand finishes its cycle in under 60 seconds. */
+	sleep_for = trunc_int(sleep_for, 1000) - 1000;
+
+	do {
 		usleep(sleep_for);
 		sync->wait_msc(xrtb->dpy, xwin->gl_draw,
 				sync->msc + 1, 0, 0,
 				&sync->ust, &sync->msc, &sync->sbc);
 
 		uv_async_send(RTB_UPCAST(notify, uv_async_s));
-	}
+	} while (notify->thread_running);
 
 	return 0;
 }
@@ -650,9 +655,14 @@ rtb_event_loop(struct rutabaga *r)
 			xcb_poll_cb);
 
 	uv_async_init(rtb_loop, RTB_UPCAST(&vsync_notify, uv_async_s), frame_cb);
+	vsync_notify.thread_running = 1;
+
 	uv_thread_create(&frame_thread, vsync_notify_thread, &vsync_notify);
 
 	uv_run(rtb_loop, UV_RUN_DEFAULT);
+
+	vsync_notify.thread_running = 0;
+	uv_thread_join(&frame_thread);
 
 	r->event_loop = NULL;
 	uv_loop_delete(rtb_loop);
