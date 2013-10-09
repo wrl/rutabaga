@@ -573,7 +573,7 @@ vsync_glx_oml(struct xrtb_vsync_notify *notify, struct video_sync *sync)
 	/* we want the usleep call to finish just slightly before the MSC
 	 * increments, in the same way that a swiss railway clock's second
 	 * hand finishes its cycle in under 60 seconds. */
-	sleep_for = trunc_int(sleep_for, 1000) - 1000;
+	sleep_for = trunc_int(sleep_for, 1000) - 500;
 
 	do {
 		usleep(sleep_for);
