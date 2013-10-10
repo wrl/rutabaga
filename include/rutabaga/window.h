@@ -26,7 +26,7 @@
 
 #pragma once
 
-#include <pthread.h>
+#include <uv.h>
 
 #include "rutabaga/types.h"
 #include "rutabaga/element.h"
@@ -62,7 +62,7 @@ struct rtb_window {
 	struct rutabaga *rtb;
 
 	int need_reconfigure;
-	pthread_mutex_t lock;
+	uv_mutex_t lock;
 
 	struct rtb_mouse mouse;
 	struct rtb_element *focus;

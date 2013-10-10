@@ -29,6 +29,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <uv.h>
+
 #include <X11/Xlib.h>
 #include <X11/Xlib-xcb.h>
 
@@ -339,7 +341,7 @@ rtb_window_lock(struct rtb_window *rwin)
 	struct xcb_window *self = (struct xcb_window *) rwin;
 
 	XLockDisplay(self->xrtb->dpy);
-	pthread_mutex_lock(&self->lock);
+	uv_mutex_lock(&self->lock);
 	glXMakeContextCurrent(
 				self->xrtb->dpy, self->gl_draw, self->gl_draw, self->gl_ctx);
 }
@@ -350,7 +352,7 @@ rtb_window_unlock(struct rtb_window *rwin)
 	struct xcb_window *self = (struct xcb_window *) rwin;
 
 	glXMakeContextCurrent(self->xrtb->dpy, None, None, NULL);
-	pthread_mutex_unlock(&self->lock);
+	uv_mutex_unlock(&self->lock);
 	XUnlockDisplay(self->xrtb->dpy);
 }
 
@@ -496,7 +498,7 @@ rtb_window *window_impl_open(struct rutabaga *rtb,
 
 	free(fb_configs);
 
-	pthread_mutex_init(&self->lock, NULL);
+	uv_mutex_init(&self->lock);
 	return RTB_WINDOW(self);
 
 err_win_map:
