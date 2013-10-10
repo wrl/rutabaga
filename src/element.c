@@ -356,6 +356,10 @@ rtb_elem_add_child(struct rtb_element *self, struct rtb_element *child,
 
 	if (self->window) {
 		self->child_attached(self, child);
+
+		if (self->window->state != RTB_STATE_UNATTACHED)
+			self->restyle(self);
+
 		self->recalculate(self, child, RTB_DIRECTION_ROOTWARD);
 	}
 }
