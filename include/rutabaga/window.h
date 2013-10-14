@@ -62,6 +62,7 @@ struct rtb_window {
 	struct rutabaga *rtb;
 
 	int need_reconfigure;
+	int dirty;
 	uv_mutex_t lock;
 
 	struct rtb_mouse mouse;

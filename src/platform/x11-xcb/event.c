@@ -418,6 +418,7 @@ handle_generic_event(struct xcb_window *win, xcb_generic_event_t *ev)
 		break;
 
 	case XCB_EXPOSE:
+		win->dirty = 1;
 		break;
 
 	case XCB_VISIBILITY_NOTIFY:
@@ -540,7 +541,9 @@ vsync_static_fps(struct xrtb_vsync_notify *notify)
 {
 	do {
 		usleep(16666);
-		uv_async_send(RTB_UPCAST(notify, uv_async_s));
+
+		if (notify->win->dirty)
+			uv_async_send(RTB_UPCAST(notify, uv_async_s));
 	} while (notify->thread_running);
 }
 
@@ -586,7 +589,8 @@ vsync_glx_oml(struct xrtb_vsync_notify *notify, struct video_sync *sync)
 				&sync->ust, &sync->msc, &sync->sbc);
 		rtb_window_unlock(win);
 
-		uv_async_send(RTB_UPCAST(notify, uv_async_s));
+		if (notify->win->dirty)
+			uv_async_send(RTB_UPCAST(notify, uv_async_s));
 	} while (notify->thread_running);
 
 	return 0;

@@ -122,7 +122,8 @@ attached(struct rtb_element *elem,
 static void
 mark_dirty(struct rtb_element *elem)
 {
-	return;
+	SELF_FROM(elem);
+	self->dirty = 1;
 }
 
 /**
@@ -161,6 +162,8 @@ rtb_window_draw(struct rtb_window *self)
 	rtb_render_push(RTB_ELEMENT(self));
 	self->draw(RTB_ELEMENT(self), RTB_DRAW_NORMAL);
 	rtb_render_pop(RTB_ELEMENT(self));
+
+	self->dirty = 0;
 }
 
 void
@@ -194,6 +197,7 @@ rtb_window_open(struct rutabaga *r,
 		goto err_window_impl;
 
 	rtb_surface_init(RTB_SURFACE(self), &super);
+	self->surface = RTB_SURFACE(self);
 
 	self->style_list = rtb_style_get_defaults();
 
@@ -209,8 +213,6 @@ rtb_window_open(struct rutabaga *r,
 	self->on_event   = win_event;
 	self->mark_dirty = mark_dirty;
 	self->attached   = attached;
-
-	self->surface = RTB_SURFACE(self);
 
 	r->win = self;
 	return self;

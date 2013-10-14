@@ -206,6 +206,7 @@ mark_dirty(struct rtb_element *self)
 		return;
 
 	TAILQ_INSERT_TAIL(&render_ctx->queues.next_frame, self, render_entry);
+	rtb_elem_mark_dirty(RTB_ELEMENT(self->surface));
 }
 
 /**

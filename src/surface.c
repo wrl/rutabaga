@@ -124,6 +124,15 @@ attached(struct rtb_element *self,
 			"net.illest.rutabaga.surface");
 }
 
+static void
+mark_dirty(struct rtb_element *elem)
+{
+	super.mark_dirty(elem);
+
+	if (elem->surface)
+		rtb_elem_mark_dirty(RTB_ELEMENT(elem->surface));
+}
+
 /**
  * public API
  */
@@ -244,6 +253,7 @@ rtb_surface_init(struct rtb_surface *self,
 		impl->draw           = draw;
 		impl->recalculate    = recalculate;
 		impl->attached       = attached;
+		impl->mark_dirty     = mark_dirty;
 		impl->child_attached = child_attached;
 	} while (impl != elem_impl && (impl = elem_impl));
 
