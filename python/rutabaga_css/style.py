@@ -33,6 +33,7 @@ from rutabaga_css.parser import ParseError
 
 from rutabaga_css.properties.rgba import *
 from rutabaga_css.properties.texture import *
+from rutabaga_css.properties.font import *
 
 all = ["RutabagaStyle"]
 
@@ -46,23 +47,34 @@ state_mapping = {
 prop_mapping = {
     "color": RutabagaRGBAProperty,
     "background-color": RutabagaRGBAProperty,
-    "background-image": RutabagaTextureProperty
+    "background-image": RutabagaTextureProperty,
 }
 
 class RutabagaStyleState(object):
     def __init__(self, stylesheet):
         self.stylesheet = stylesheet
         self.props = OrderedDict()
-        self.font  = None
 
-    def add_prop(self, prop_name, prop_value):
+        self.font_descriptor = {
+            'family': None,
+            'weight': None,
+            'size':   None}
+
+    def parse_font_tokens(self, prop, tokens):
+        if prop == 'font-family':
+            self.font_descriptor['family'] = tokens[0].value
+
+    def add_prop(self, prop, tokens):
+        if prop in ('font-family', 'font-weight', 'font-size'):
+            self.parse_font_tokens(prop, tokens)
+            return
+
         try:
-            self.props[prop_name] = \
-                    prop_mapping[prop_name](self.stylesheet,
-                            prop_name, prop_value)
+            self.props[prop] = \
+                    prop_mapping[prop](self.stylesheet, prop, tokens)
         except KeyError:
-            raise ParseError(prop_value[0],
-                        'unknown property "{0}"'.format(prop_name))
+            raise ParseError(tokens[0],
+                        'unknown property "{0}"'.format(prop))
 
     c_state_repr = """\
 \t\t\t[{state}] = (struct rtb_style_property_definition []) {{
@@ -75,6 +87,11 @@ class RutabagaStyleState(object):
     c_prop_repr = """\
 \t\t\t\t{{"{0}",
 {1}}}"""
+
+    def done_parsing(self):
+        if self.font_descriptor['family']:
+            self.props['font'] = RutabagaFontProperty(self.stylesheet,
+                    'font', **self.font_descriptor)
 
     def c_repr(self, state_name):
         if not self.props:
@@ -110,6 +127,10 @@ class RutabagaStyle(object):
 
         for prop in props:
             self.states[state].add_prop(prop, props[prop])
+
+    def done_parsing(self):
+        for s in self.states:
+            self.states[s].done_parsing()
 
     c_style_repr = """\
 \t{{"{type}",

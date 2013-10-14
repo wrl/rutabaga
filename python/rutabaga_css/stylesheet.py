@@ -123,6 +123,9 @@ class RutabagaStylesheet(object):
                     else:
                         self.styles[s] = RutabagaStyle(self, s, decls)
 
+        for s in self.styles:
+            self.styles[s].done_parsing()
+
         if css.errors:
             for error in css.errors:
                 print(error, file=sys.stderr)
@@ -198,11 +201,6 @@ class RutabagaStylesheet(object):
                     bail(ptok)
 
     c_include_tpl = '#include "{header}"'
-
-    c_prelude = """\
-{includes}
-
-{fonts}"""
 
     def c_prelude(self):
         return "\n\n".join((

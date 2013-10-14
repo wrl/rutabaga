@@ -37,6 +37,7 @@ class RutabagaEmbeddedFontAsset(RutabagaEmbeddedAsset):
     def __init__(self, path, asset_var, descriptor_var):
         RutabagaEmbeddedAsset.__init__(self, path, asset_var)
         self.descriptor_var = descriptor_var
+        self.refcount = 0
 
 class RutabagaFontFace(object):
     def __init__(self, family):
@@ -52,8 +53,13 @@ class RutabagaFontFace(object):
         self.weights[weight_name] = asset
         stylesheet.embedded_assets.append(asset)
 
+    def use_weight(self, weight_name=None):
+        w = self.weights[weight_name or 'normal']
+        w.refcount += 1
+        return w
+
     c_weight_repr = """\
-static struct rtb_style_font_definition {def_var} __attribute__((unused)) = {{
+static struct rtb_style_font_definition {def_var} = {{
 \t.family = "{family}",
 \t.weight = "{weight}",
 \t.location = RTB_ASSET_EMBEDDED,
@@ -68,4 +74,5 @@ static struct rtb_style_font_definition {def_var} __attribute__((unused)) = {{
             weight=weight,
             def_var=self.weights[weight].descriptor_var,
             asset_var=self.weights[weight].asset_var)
-                for weight in self.weights])
+                for weight in self.weights
+                    if self.weights[weight].refcount > 0])
