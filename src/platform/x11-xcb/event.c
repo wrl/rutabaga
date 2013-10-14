@@ -626,15 +626,18 @@ frame_cb(uv_async_t *_handle, int status)
 {
 	struct xrtb_vsync_notify *vsync;
 	struct rtb_window *win;
+	struct xcb_window *xwin;
 
 	vsync = RTB_DOWNCAST(_handle, xrtb_vsync_notify, uv_async_s);
 	win = vsync->win;
+	xwin = (void *) win;
 
 	if (win->visibility == RTB_FULLY_OBSCURED)
 		return;
 
 	rtb_window_lock(win);
 	rtb_window_draw(win);
+	glXSwapBuffers(vsync->xrtb->dpy, xwin->gl_draw);
 	rtb_window_unlock(win);
 }
 

@@ -282,7 +282,7 @@ find_reasonable_fb_config(Display *dpy, GLXFBConfig *cfgs, int ncfgs)
 			cfg_info.sizes.blue  < MIN_COLOR_CHANNEL_BITS)
 			continue;
 
-		if (cfg_info.double_buffer != False) {
+		if (cfg_info.double_buffer != True) {
 			found_db = 1;
 			continue;
 		}
@@ -301,7 +301,7 @@ find_reasonable_fb_config(Display *dpy, GLXFBConfig *cfgs, int ncfgs)
 	}
 
 	if (found_db)
-		ERR("found good config, but it's double buffered.\n");
+		ERR("found good config, but it's not double buffered.\n");
 
 	if (found_no_win)
 		ERR("found good config, but can't draw to a window.\n");
