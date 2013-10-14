@@ -81,6 +81,34 @@ load_assets(struct rtb_style_property_definition *property)
 	return assets_loaded;
 }
 
+static struct rtb_style *
+style_for_type(struct rtb_type_atom *atom, struct rtb_style *s)
+{
+	for (; s->for_type; s++) {
+		if (s->resolved_type && rtb_is_type(s->resolved_type, atom)) {
+			return s;
+		}
+	}
+
+	return NULL;
+}
+
+static struct rtb_style *
+inherits_from(struct rtb_type_atom_descriptor *type,
+		struct rtb_style *style_list)
+{
+	struct rtb_type_atom_descriptor *super;
+
+	for (; style_list->for_type; style_list++) {
+		for (super = type->super[0]; super; super = super->super[0]) {
+			if (style_list->resolved_type == super)
+				return style_list;
+		}
+	}
+
+	return NULL;
+}
+
 static int
 style_resolve(struct rtb_window *window, struct rtb_style *style)
 {
@@ -89,6 +117,8 @@ style_resolve(struct rtb_window *window, struct rtb_style *style)
 	style->resolved_type = rtb_type_lookup(window, style->for_type);
 	if (!style->resolved_type)
 		return -1;
+
+	style->inherit_from = inherits_from(style->resolved_type, style);
 
 	for (state = 0; state < RTB_DRAW_STATE_COUNT; state++) {
 		if (load_assets(style->properties[state]) < 0)
@@ -102,18 +132,6 @@ style_resolve(struct rtb_window *window, struct rtb_style *style)
 /**
  * queries
  */
-
-static struct rtb_style *
-style_for_type(struct rtb_type_atom *atom, struct rtb_style *style_list)
-{
-	for (; style_list->for_type; style_list++) {
-		if (style_list->resolved_type &&
-				rtb_is_type(style_list->resolved_type, atom))
-			return style_list;
-	}
-
-	return NULL;
-}
 
 const struct rtb_style_property_definition *query(
 		struct rtb_style *style_list, rtb_draw_state_t state,
@@ -189,11 +207,24 @@ rtb_style_elem_has_properties_for_state(struct rtb_element *elem,
 int
 rtb_style_resolve_list(struct rtb_window *win, struct rtb_style *style_list)
 {
-	int unresolved_styles = 0;
+	int i, unresolved_styles;
+	struct rtb_style *s;
 
-	for (; style_list->for_type; style_list++) {
-		if (style_resolve(win, style_list))
+	unresolved_styles = 0;
+
+	for (i = 0; style_list[i].for_type; i++) {
+		s = &style_list[i];
+
+		if (style_resolve(win, s))
 			unresolved_styles++;
+	}
+
+	for (i = 0; style_list[i].for_type; i++) {
+		s = &style_list[i];
+		if (!s->resolved_type)
+			continue;
+
+		s->inherit_from = inherits_from(s->resolved_type, style_list);
 	}
 
 	return unresolved_styles;

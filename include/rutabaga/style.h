@@ -57,7 +57,7 @@ struct rtb_style_texture_definition {
 
 	struct {
 		unsigned int left, right, top, bottom;
-	} padding;
+	} border;
 };
 
 struct rtb_rgb_color {
@@ -88,6 +88,7 @@ struct rtb_style {
 	struct rtb_style_property_definition *properties[RTB_DRAW_STATE_COUNT];
 
 	/* private ********************************/
+	struct rtb_style *inherit_from;
 	struct rtb_type_atom_descriptor *resolved_type;
 };
 

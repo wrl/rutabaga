@@ -113,6 +113,8 @@ class RutabagaStyle(object):
 
     c_style_repr = """\
 \t{{"{type}",
+\t\t.inherit_from = NULL,
+\t\t.resolved_type = NULL,
 \t\t.properties = {{
 {state_definitions}
 \t\t}}
