@@ -56,24 +56,62 @@ static const rtb_utf32_t *cache =
 	L",.!?;"
 	L" [\\]^_@{|}~\"#$%&'()*+-/0123456789:<=>`";
 
+static int
+init_font(struct rtb_font *font)
+{
+	if (0)
+		memcpy(font->txfont->lcd_weights, lcd_weights, sizeof(lcd_weights));
+
+	texture_font_load_glyphs(font->txfont, cache);
+	return 0;
+}
+
+/**
+ * emebedded font
+ */
+
+int
+rtb_font_manager_load_embedded_font(struct rtb_font_manager *fm,
+		struct rtb_font *font, int pt_size, const void *base, size_t size)
+{
+	font->txfont =
+		texture_font_new_from_memory(fm->atlas, pt_size, base, size);
+
+	if (!font->txfont)
+		return -1;
+
+	font->size = pt_size;
+	font->fm   = fm;
+
+	init_font(font);
+	return 0;
+}
+
+void
+rtb_font_manager_free_embedded_font(struct rtb_font *font)
+{
+	texture_font_delete(font->txfont);
+}
+
+/**
+ * external font
+ */
+
 int
 rtb_font_manager_load_external_font(struct rtb_font_manager *fm,
-		struct rtb_external_font *font, const char *path, int size)
+		struct rtb_external_font *font, int pt_size, const char *path)
 {
-	font->txfont = texture_font_new_from_file(fm->atlas, size, path);
+	font->txfont = texture_font_new_from_file(fm->atlas, pt_size, path);
 	if (!font->txfont) {
 		ERR("couldn't load font \"%s\"\n", path);
 		return -1;
 	}
 
 	font->path = strdup(path);
-	font->size = size;
+	font->size = pt_size;
 	font->fm   = fm;
 
-	if (0)
-		memcpy(font->txfont->lcd_weights, lcd_weights, sizeof(lcd_weights));
-
-	texture_font_load_glyphs(font->txfont, cache);
+	init_font(RTB_FONT(font));
 	return 0;
 }
 
@@ -109,10 +147,10 @@ rtb_font_manager_init(struct rtb_font_manager *fm)
 	fm->atlas = texture_atlas_new(512, 512, 1);
 #endif
 
-	if (rtb_font_manager_load_external_font(fm, &fm->fonts.main, FONT, 9) < 0)
+	if (rtb_font_manager_load_external_font(fm, &fm->fonts.main, 9, FONT) < 0)
 		goto err_main_font;
 
-	if (rtb_font_manager_load_external_font(fm, &fm->fonts.big, FONT, 15) < 0)
+	if (rtb_font_manager_load_external_font(fm, &fm->fonts.big, 15, FONT) < 0)
 		goto err_big_font;
 
 	fm->fonts.main.lcd_gamma = 2.2f;

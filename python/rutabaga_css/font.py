@@ -59,7 +59,7 @@ class RutabagaFontFace(object):
         return w
 
     c_weight_repr = """\
-static struct rtb_style_font_definition {def_var} = {{
+static struct rtb_style_font_face {def_var} = {{
 \t.family = "{family}",
 \t.weight = "{weight}",
 \t.location = RTB_ASSET_EMBEDDED,

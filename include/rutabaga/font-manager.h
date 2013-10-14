@@ -64,8 +64,12 @@ struct rtb_font_manager {
 	texture_atlas_t *atlas;
 };
 
+int rtb_font_manager_load_embedded_font(struct rtb_font_manager *fm,
+		struct rtb_font *font, int pt_size, const void *base, size_t size);
+void rtb_font_manager_free_embedded_font(struct rtb_font *font);
+
 int rtb_font_manager_load_external_font(struct rtb_font_manager *fm,
-		struct rtb_external_font *font, const char *path, int size);
+		struct rtb_external_font *font, int pt_size, const char *path);
 void rtb_font_manager_free_external_font(struct rtb_external_font *font);
 
 int rtb_font_manager_init(struct rtb_font_manager *);

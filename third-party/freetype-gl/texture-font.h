@@ -354,6 +354,8 @@ typedef struct
  texture_font_t *texture_font_new_from_file(texture_atlas_t *atlas,
 		 float pt_size, const char *filename);
 
+ texture_font_t * texture_font_new_from_memory(texture_atlas_t *atlas,
+		 float pt_size, const void *memory_base, size_t memory_size);
 
 /**
  * Delete a texture font. Note that this does not delete the glyph from the

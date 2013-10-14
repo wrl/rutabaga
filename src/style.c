@@ -60,7 +60,20 @@ load_texture(struct rtb_style_texture_definition *def)
 }
 
 static int
-load_assets(struct rtb_style_property_definition *property)
+load_font_face(struct rtb_style_font_face *face)
+{
+	struct rtb_asset *asset = RTB_ASSET(face);
+
+	if (!RTB_ASSET_IS_LOADED(asset))
+		if (rtb_asset_load(asset))
+			return -1;
+
+	return 0;
+}
+
+static int
+load_assets(struct rtb_window *window,
+		struct rtb_style_property_definition *property)
 {
 	int assets_loaded = 0;
 
@@ -68,6 +81,19 @@ load_assets(struct rtb_style_property_definition *property)
 		switch (property->type) {
 		case RTB_STYLE_PROP_TEXTURE:
 			if (load_texture(&property->texture))
+				return -1;
+
+			assets_loaded++;
+			break;
+
+		case RTB_STYLE_PROP_FONT:
+			if (load_font_face(property->font.face))
+				return -1;
+
+			if (rtb_font_manager_load_embedded_font(&window->font_manager,
+						&property->font.font_internal, property->font.size,
+						property->font.face->embedded.base,
+						property->font.face->embedded.size))
 				return -1;
 
 			assets_loaded++;
@@ -121,7 +147,7 @@ style_resolve(struct rtb_window *window, struct rtb_style *style)
 	style->inherit_from = inherits_from(style->resolved_type, style);
 
 	for (state = 0; state < RTB_DRAW_STATE_COUNT; state++) {
-		if (load_assets(style->properties[state]) < 0)
+		if (load_assets(window, style->properties[state]) < 0)
 			printf("rutabaga: error loading assets for %s\n",
 					style->for_type);
 	}

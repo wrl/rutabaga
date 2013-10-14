@@ -27,6 +27,7 @@
 #pragma once
 
 #include "rutabaga/types.h"
+#include "rutabaga/font-manager.h"
 #include "rutabaga/geometry.h"
 #include "rutabaga/asset.h"
 #include "rutabaga/atom.h"
@@ -45,10 +46,18 @@ typedef enum {
  * property types
  */
 
-struct rtb_style_font_definition {
+struct rtb_style_font_face {
 	RTB_INHERIT(rtb_asset);
 	const char *family;
 	const char *weight;
+};
+
+struct rtb_style_font_definition {
+	struct rtb_style_font_face *face;
+	int size;
+
+	/* private ********************************/
+	struct rtb_font font_internal;
 };
 
 struct rtb_style_texture_definition {
@@ -78,7 +87,7 @@ struct rtb_style_property_definition {
 		float flt;
 		int i;
 		struct rtb_style_texture_definition texture;
-		struct rtb_style_font_definition *font;
+		struct rtb_style_font_definition font;
 	};
 };
 
