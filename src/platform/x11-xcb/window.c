@@ -159,8 +159,6 @@ window_impl_rtb_alloc()
 	if (!(self = calloc(1, sizeof(*self))))
 		goto err_malloc;
 
-	XInitThreads();
-
 	if (!(self->dpy = dpy = XOpenDisplay(NULL))) {
 		ERR("can't open X display\n");
 		goto err_dpy;

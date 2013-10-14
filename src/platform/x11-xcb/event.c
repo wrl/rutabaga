@@ -563,10 +563,12 @@ vsync_glx_oml(struct xrtb_vsync_notify *notify, struct video_sync *sync)
 	win = notify->win;
 	xwin = (void *) win;
 
+	rtb_window_lock(win);
 	sync->get_values(xrtb->dpy, xwin->gl_draw,
 			&sync->ust, &sync->msc, &sync->sbc);
 
 	sync->get_msc_rate(xrtb->dpy, xwin->gl_draw, &numerator, &denominator);
+	rtb_window_unlock(win);
 
 	sleep_for = (1000000 * (int64_t) denominator) / (int64_t) numerator;
 
@@ -577,9 +579,12 @@ vsync_glx_oml(struct xrtb_vsync_notify *notify, struct video_sync *sync)
 
 	do {
 		usleep(sleep_for);
+
+		rtb_window_lock(win);
 		sync->wait_msc(xrtb->dpy, xwin->gl_draw,
 				sync->msc + 1, 0, 0,
 				&sync->ust, &sync->msc, &sync->sbc);
+		rtb_window_unlock(win);
 
 		uv_async_send(RTB_UPCAST(notify, uv_async_s));
 	} while (notify->thread_running);
