@@ -44,14 +44,14 @@ static struct rtb_element_implementation super;
 static void
 draw(struct rtb_element *elem, rtb_draw_state_t state)
 {
-	const struct rtb_style_property_definition *prop;
+	const struct rtb_style_property_definition *color_prop;
 	SELF_FROM(elem);
 
-	prop = rtb_style_query_prop_in_tree(self->parent, state,
+	color_prop = rtb_style_query_prop_in_tree(self->parent, state,
 			"color", RTB_STYLE_PROP_COLOR);
 
 	rtb_text_object_render(self->tobj, elem,
-			self->x, self->y, &prop->color);
+			self->x, self->y, &color_prop->color);
 
 	super.draw(elem, state);
 }
@@ -74,11 +74,7 @@ attached(struct rtb_element *elem,
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.label");
 
-	self->tobj = rtb_text_object_new(&window->font_manager,
-			self->font, self->text);
-
-	self->outer_pad.x = self->tobj->xpad;
-	self->outer_pad.y = self->tobj->ypad;
+	self->tobj = rtb_text_object_new(&window->font_manager);
 }
 
 static void
@@ -96,6 +92,27 @@ size(struct rtb_element *elem,
 	}
 }
 
+static void
+restyle(struct rtb_element *elem)
+{
+	const struct rtb_style_property_definition *font_prop;
+	SELF_FROM(elem);
+
+	super.restyle(elem);
+
+	font_prop = rtb_style_query_prop_in_tree(self->parent, RTB_DRAW_NORMAL,
+			"font", RTB_STYLE_PROP_FONT);
+
+	if (&font_prop->font.font_internal != self->font) {
+		/* XXX: const issues */
+		self->font = (struct rtb_font *) &font_prop->font.font_internal;
+
+		rtb_text_object_update(self->tobj, self->font, self->text);
+		rtb_elem_trigger_recalc(self->parent, RTB_ELEMENT(self),
+				RTB_DIRECTION_ROOTWARD);
+	}
+}
+
 /**
  * public
  */
@@ -109,7 +126,7 @@ rtb_label_set_font(struct rtb_label *self, struct rtb_font *font)
 		return;
 
 	self->tobj->font = font;
-	rtb_text_object_update(self->tobj, self->text);
+	rtb_text_object_update(self->tobj, font, self->text);
 	rtb_elem_trigger_recalc(self->parent, RTB_ELEMENT(self),
 			RTB_DIRECTION_ROOTWARD);
 }
@@ -125,7 +142,7 @@ rtb_label_set_text(struct rtb_label *self, const rtb_utf8_t *text)
 	if (!self->tobj)
 		return;
 
-	rtb_text_object_update(self->tobj, self->text);
+	rtb_text_object_update(self->tobj, self->font, self->text);
 	rtb_elem_trigger_recalc(self->parent, RTB_ELEMENT(self),
 			RTB_DIRECTION_ROOTWARD);
 }
@@ -143,6 +160,7 @@ rtb_label_init(struct rtb_label *self,
 		impl->attached    = attached;
 		impl->size_cb     = size;
 		impl->recalculate = recalculate;
+		impl->restyle     = restyle;
 	} while (impl != elem_impl && (impl = elem_impl));
 
 	self->text = NULL;

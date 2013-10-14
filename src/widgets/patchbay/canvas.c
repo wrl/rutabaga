@@ -408,8 +408,19 @@ attached(struct rtb_element *elem,
 			"net.illest.rutabaga.widgets.patchbay");
 
 	cache_to_vbo(self);
+}
 
-	rtb_layout_vpack_top(elem);
+static void
+restyle(struct rtb_element *elem)
+{
+	struct rtb_style *old_style;
+	SELF_FROM(elem);
+
+	old_style = self->style;
+	super.restyle(elem);
+
+	if (!old_style)
+		rtb_layout_vpack_top(elem);
 }
 
 /**
@@ -437,6 +448,7 @@ rtb_patchbay_init(struct rtb_patchbay *self)
 	self->attached    = attached;
 	self->layout_cb   = layout;
 	self->recalculate = recalculate;
+	self->restyle     = restyle;
 
 	init_shaders();
 

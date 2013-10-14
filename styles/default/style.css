@@ -19,6 +19,10 @@ patchbay {
 patchbay::node {
 	color: #FFF;
 	background-color: rgba(#18181C, .9);
+
+	/* XXX: should inherit family/face */
+	font-family: "Open Sans";
+	font-size: 15pt;
 }
 
 patchbay::port {

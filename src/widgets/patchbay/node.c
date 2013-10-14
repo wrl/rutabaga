@@ -118,9 +118,6 @@ attached(struct rtb_element *elem,
 
 	self->patchbay = (struct rtb_patchbay *) parent;
 
-	rtb_label_set_font(&self->name_label,
-			RTB_FONT(&window->font_manager.fonts.big));
-
 	super.attached(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.patchbay.node");

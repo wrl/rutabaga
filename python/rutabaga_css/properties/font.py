@@ -52,7 +52,8 @@ class RutabagaFontProperty(RutabagaStyleProperty):
 \t\t\t\t\t.type = RTB_STYLE_PROP_FONT,
 \t\t\t\t\t.font = {{
 \t\t\t\t\t\t.face = &{face_var},
-\t\t\t\t\t\t.size = {size}}}"""
+\t\t\t\t\t\t.size = {size},
+\t\t\t\t\t\t.font_internal.lcd_gamma = 1.6f}}"""
 
     def c_repr(self):
         return self.c_repr_tpl.format(

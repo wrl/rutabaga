@@ -35,24 +35,21 @@
 
 struct rtb_text_object {
 	GLfloat w, h;
-	GLfloat xpad, ypad;
 
 	vertex_buffer_t *vertices;
-
 	struct rtb_font_manager *fm;
-	struct rtb_font *font;
+	const struct rtb_font *font;
 };
 
 int rtb_text_object_get_glyph_rect(struct rtb_text_object *, int idx,
 		struct rtb_rect *rect);
 int rtb_text_object_count_glyphs(struct rtb_text_object *);
 
-void rtb_text_object_update(struct rtb_text_object *,
-		const rtb_utf8_t *text);
+int rtb_text_object_update(struct rtb_text_object *,
+		struct rtb_font *rfont, const rtb_utf8_t *text);
 void rtb_text_object_render(struct rtb_text_object *,
 		struct rtb_element *parent, float x, float y,
 		const struct rtb_rgb_color *color);
 
-struct rtb_text_object *rtb_text_object_new(struct rtb_font_manager *fm,
-		struct rtb_font *font, const rtb_utf8_t *text);
+struct rtb_text_object *rtb_text_object_new(struct rtb_font_manager *fm);
 void rtb_text_object_free(struct rtb_text_object *self);

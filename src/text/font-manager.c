@@ -38,7 +38,6 @@
 #include FT_FREETYPE_H
 
 #define ERR(...) fprintf(stderr, "rutabaga: " __VA_ARGS__)
-#define FONT "./styles/default/fonts/open_sans/OpenSans-Regular.ttf"
 
 static const uint8_t lcd_weights[] = {
 	0x00,
@@ -147,21 +146,8 @@ rtb_font_manager_init(struct rtb_font_manager *fm)
 	fm->atlas = texture_atlas_new(512, 512, 1);
 #endif
 
-	if (rtb_font_manager_load_external_font(fm, &fm->fonts.main, 9, FONT) < 0)
-		goto err_main_font;
-
-	if (rtb_font_manager_load_external_font(fm, &fm->fonts.big, 15, FONT) < 0)
-		goto err_big_font;
-
-	fm->fonts.main.lcd_gamma = 2.2f;
-	fm->fonts.big.lcd_gamma  = 2.2f;
-
 	return 0;
 
-err_big_font:
-	rtb_font_manager_free_external_font(&fm->fonts.main);
-err_main_font:
-	rtb_shader_free(RTB_SHADER(&fm->shader));
 err_shader:
 	return -1;
 }
@@ -169,9 +155,6 @@ err_shader:
 void
 rtb_font_manager_fini(struct rtb_font_manager *fm)
 {
-	rtb_font_manager_free_external_font(&fm->fonts.main);
-	rtb_font_manager_free_external_font(&fm->fonts.big);
 	texture_atlas_delete(fm->atlas);
-
 	rtb_shader_free(RTB_SHADER(&fm->shader));
 }

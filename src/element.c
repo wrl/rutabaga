@@ -122,7 +122,8 @@ restyle(struct rtb_element *self)
 {
 	struct rtb_element *iter;
 
-	/* XXX: invariant: self->window->state != RTB_STATE_UNATTACHED */
+	assert(self->window->state != RTB_STATE_UNATTACHED);
+
 	if (!self->style)
 		self->style = rtb_style_for_element(self, self->window->style_list);
 

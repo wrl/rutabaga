@@ -310,6 +310,13 @@ attached(struct rtb_element *elem,
 	super.attached(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.text-input");
+}
+
+static void
+restyle(struct rtb_element *elem)
+{
+	SELF_FROM(elem);
+	super.restyle(elem);
 
 	self->outer_pad.x = 5.f;
 	self->outer_pad.y = self->label.outer_pad.y;
@@ -393,6 +400,7 @@ rtb_text_input_init(struct rutabaga *rtb, struct rtb_text_input *self,
 	self->on_event    = on_event;
 	self->attached    = attached;
 	self->recalculate = recalculate;
+	self->restyle     = restyle;
 	self->size_cb     = rtb_size_self;
 	self->layout_cb   = layout;
 

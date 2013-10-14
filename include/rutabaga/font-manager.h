@@ -55,12 +55,6 @@ struct rtb_font_manager {
 		GLint gamma;
 	} shader;
 
-	struct {
-		struct rtb_external_font main;
-		struct rtb_external_font big;
-		struct rtb_external_font monospace;
-	} fonts;
-
 	texture_atlas_t *atlas;
 };
 

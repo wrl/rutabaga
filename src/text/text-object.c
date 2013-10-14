@@ -77,19 +77,22 @@ rtb_text_object_count_glyphs(struct rtb_text_object *self)
 	return vector_size(self->vertices->vertices) / 4;
 }
 
-void
+int
 rtb_text_object_update(struct rtb_text_object *self,
-		const rtb_utf8_t *text)
+		struct rtb_font *rfont, const rtb_utf8_t *text)
 {
-	texture_font_t *font = self->font->txfont;
-
+	rtb_utf32_t codepoint, prev_codepoint;
+	uint32_t state, prev_state;
+	texture_font_t *font;
 	float x0, y0, x1, y1;
 	float x, y;
 
-	rtb_utf32_t codepoint, prev_codepoint;
-	uint32_t state, prev_state;
+	if (!rfont || !text)
+		return -1;
 
-	assert(text);
+	font = rfont->txfont;
+	self->font = rfont;
+
 	vertex_buffer_clear(self->vertices);
 
 	x  = 0.f;
@@ -161,8 +164,7 @@ rtb_text_object_update(struct rtb_text_object *self,
 	self->h = font->height;
 	self->w = roundf(x);
 
-	self->xpad = floorf(font->size * 2.f);
-	self->ypad = floorf(font->height / 2.f);
+	return 0;
 }
 
 void
@@ -200,23 +202,12 @@ rtb_text_object_render(struct rtb_text_object *self,
 }
 
 struct rtb_text_object *
-rtb_text_object_new(struct rtb_font_manager *fm, struct rtb_font *font,
-		const rtb_utf8_t *text)
+rtb_text_object_new(struct rtb_font_manager *fm)
 {
 	struct rtb_text_object *self = calloc(1, sizeof(*self));
 
-	if (!font)
-		font = RTB_FONT(&fm->fonts.main);
-
 	self->fm = fm;
 	self->vertices = vertex_buffer_new("vertex:2f,tex_coord:2f,subpixel_shift:1f");
-	self->font = font;
-
-	if (text)
-		rtb_text_object_update(self, text);
-
-	self->xpad = floorf(font->txfont->size * 2.f);
-	self->ypad = 0.f;
 
 	return self;
 }
