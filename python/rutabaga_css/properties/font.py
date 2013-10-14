@@ -35,7 +35,7 @@ all = [
 
 class RutabagaFontProperty(RutabagaStyleProperty):
     def __init__(self, stylesheet, name,
-            family=None, weight=None, size=None):
+            family=None, weight=None, size=None, gamma=2.2):
         self.stylesheet = stylesheet
 
         if not family:
@@ -44,6 +44,7 @@ class RutabagaFontProperty(RutabagaStyleProperty):
         self.family = family
         self.weight = weight
         self.size   = size or 12
+        self.gamma  = gamma
 
         font = self.stylesheet.fonts[self.family]
         self.font_ref = font.use_weight(self.weight)
@@ -53,9 +54,10 @@ class RutabagaFontProperty(RutabagaStyleProperty):
 \t\t\t\t\t.font = {{
 \t\t\t\t\t\t.face = &{face_var},
 \t\t\t\t\t\t.size = {size},
-\t\t\t\t\t\t.font_internal.lcd_gamma = 1.6f}}"""
+\t\t\t\t\t\t.font_internal.lcd_gamma = {gamma}}}"""
 
     def c_repr(self):
         return self.c_repr_tpl.format(
                 face_var=self.font_ref.descriptor_var,
+                gamma=self.gamma,
                 size=self.size)

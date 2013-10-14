@@ -58,7 +58,8 @@ class RutabagaStyleState(object):
         self.font_descriptor = {
             'family': None,
             'weight': None,
-            'size':   None}
+            'size':   None,
+            'gamma':  2.2}
 
     def parse_font_tokens(self, prop, tokens):
         if prop == 'font-family':
@@ -66,9 +67,12 @@ class RutabagaStyleState(object):
         elif prop == 'font-size':
             # XXX: disregarding unit
             self.font_descriptor['size'] = tokens[0].value
+        elif prop == '-rtb-font-lcd-gamma':
+            self.font_descriptor['gamma'] = tokens[0].value
 
     def add_prop(self, prop, tokens):
-        if prop in ('font-family', 'font-weight', 'font-size'):
+        if prop in ('font-family', 'font-weight',
+                'font-size', '-rtb-font-lcd-gamma'):
             self.parse_font_tokens(prop, tokens)
             return
 
