@@ -87,7 +87,7 @@ def options(opt):
     rtb_opts.add_option("--debug-layout", action="store_true", default=False,
             help="when enabled, objects will draw their bounds in red.")
     rtb_opts.add_option("--debug-frame", action="store_true", default=False,
-            help="when enabled, the rendering time for each frame (as"
+            help="when enabled, the rendering time for each frame (as "
                  "reported by openGL) will be printed to stdout")
 
 def configure(conf):
