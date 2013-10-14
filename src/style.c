@@ -139,11 +139,13 @@ const struct rtb_style_property_definition *query(
 {
 	struct rtb_style_property_definition *prop;
 
-	for (prop = style_list->properties[state];
-			!!prop->property_name; prop++)
-		if (!strcmp(prop->property_name, property_name)
-				&& prop->type == type)
-			return prop;
+	for (; style_list; style_list = style_list->inherit_from) {
+		for (prop = style_list->properties[state];
+				!!prop->property_name; prop++)
+			if (!strcmp(prop->property_name, property_name)
+					&& prop->type == type)
+				return prop;
+	}
 
 	return NULL;
 }
