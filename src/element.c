@@ -52,7 +52,7 @@
  */
 
 static int
-recalc_rootward(struct rtb_element *self,
+reflow_rootward(struct rtb_element *self,
 		struct rtb_element *instigator, rtb_ev_direction_t direction)
 {
 	struct rtb_element *iter;
@@ -63,24 +63,24 @@ recalc_rootward(struct rtb_element *self,
 
 	self->layout_cb(self);
 
-	/* don't pass the recalculation any further rootward if the element's
+	/* don't pass the reflow any further rootward if the element's
 	 * size hasn't changed as a result of it. */
 	if ((instigator->w == inst_old_size.w &&
 	     instigator->h == inst_old_size.h))
 		return 0;
 
 	TAILQ_FOREACH(iter, &self->children, child)
-		iter->recalculate(iter, self, RTB_DIRECTION_LEAFWARD);
+		iter->reflow(iter, self, RTB_DIRECTION_LEAFWARD);
 
 	if (self->parent)
-		self->parent->recalculate(self->parent, self, direction);
+		self->parent->reflow(self->parent, self, direction);
 
 	rtb_elem_mark_dirty(self);
 	return 1;
 }
 
 static void
-recalc_leafward(struct rtb_element *self,
+reflow_leafward(struct rtb_element *self,
 		struct rtb_element *instigator, rtb_ev_direction_t direction)
 {
 	struct rtb_element *iter;
@@ -88,21 +88,21 @@ recalc_leafward(struct rtb_element *self,
 	self->layout_cb(self);
 
 	TAILQ_FOREACH(iter, &self->children, child)
-		iter->recalculate(iter, self, direction);
+		iter->reflow(iter, self, direction);
 }
 
 static int
-recalculate(struct rtb_element *self,
+reflow(struct rtb_element *self,
 		struct rtb_element *instigator, rtb_ev_direction_t direction)
 {
 	switch (direction) {
 	case RTB_DIRECTION_ROOTWARD:
-		if (!recalc_rootward(self, instigator, RTB_DIRECTION_ROOTWARD))
+		if (!reflow_rootward(self, instigator, RTB_DIRECTION_ROOTWARD))
 			return 0;
 		break;
 
 	case RTB_DIRECTION_LEAFWARD:
-		recalc_leafward(self, instigator, RTB_DIRECTION_LEAFWARD);
+		reflow_leafward(self, instigator, RTB_DIRECTION_LEAFWARD);
 		break;
 	}
 
@@ -282,7 +282,7 @@ void
 rtb_elem_trigger_recalc(struct rtb_element *self, struct rtb_element *instigator,
 		rtb_ev_direction_t direction)
 {
-	self->recalculate(self, instigator, direction);
+	self->reflow(self, instigator, direction);
 }
 
 void
@@ -347,7 +347,7 @@ rtb_elem_add_child(struct rtb_element *self, struct rtb_element *child,
 	assert(child->detached);
 	assert(child->child_attached);
 	assert(child->child_detached);
-	assert(child->recalculate);
+	assert(child->reflow);
 	assert(child->restyle);
 	assert(child->mark_dirty);
 
@@ -362,7 +362,7 @@ rtb_elem_add_child(struct rtb_element *self, struct rtb_element *child,
 		if (self->window->state != RTB_STATE_UNATTACHED)
 			self->restyle(self);
 
-		self->recalculate(self, child, RTB_DIRECTION_ROOTWARD);
+		self->reflow(self, child, RTB_DIRECTION_ROOTWARD);
 	}
 }
 
@@ -395,7 +395,7 @@ rtb_elem_remove_child(struct rtb_element *self, struct rtb_element *child)
 	child->style  = NULL;
 	child->state  = RTB_STATE_UNATTACHED;
 
-	self->recalculate(self, NULL, RTB_DIRECTION_LEAFWARD);
+	self->reflow(self, NULL, RTB_DIRECTION_LEAFWARD);
 }
 
 static struct rtb_element_implementation base_impl = {
@@ -411,7 +411,7 @@ static struct rtb_element_implementation base_impl = {
 	.child_attached = child_attached,
 	.child_detached = child_detached,
 
-	.recalculate    = recalculate,
+	.reflow         = reflow,
 	.restyle        = restyle,
 
 	.mark_dirty     = mark_dirty

@@ -57,10 +57,10 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
 }
 
 static int
-recalculate(struct rtb_element *elem, struct rtb_element *instigator,
+reflow(struct rtb_element *elem, struct rtb_element *instigator,
 		rtb_ev_direction_t direction)
 {
-	super.recalculate(elem, instigator, direction);
+	super.reflow(elem, instigator, direction);
 	return 1;
 }
 
@@ -156,11 +156,11 @@ rtb_label_init(struct rtb_label *self,
 
 	(*impl) = super;
 	do {
-		impl->draw        = draw;
-		impl->attached    = attached;
-		impl->size_cb     = size;
-		impl->recalculate = recalculate;
-		impl->restyle     = restyle;
+		impl->draw     = draw;
+		impl->attached = attached;
+		impl->size_cb  = size;
+		impl->reflow   = reflow;
+		impl->restyle  = restyle;
 	} while (impl != elem_impl && (impl = elem_impl));
 
 	self->text = NULL;

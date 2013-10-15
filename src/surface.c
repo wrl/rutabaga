@@ -63,7 +63,7 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
 }
 
 static int
-recalculate(struct rtb_element *elem, struct rtb_element *instigator,
+reflow(struct rtb_element *elem, struct rtb_element *instigator,
 		rtb_ev_direction_t direction)
 {
 	struct rtb_rect tex_coords = {
@@ -74,7 +74,7 @@ recalculate(struct rtb_element *elem, struct rtb_element *instigator,
 	};
 
 	SELF_FROM(elem);
-	super.recalculate(elem, instigator, direction);
+	super.reflow(elem, instigator, direction);
 
 	if (self->w <= 0 || self->h <= 0)
 		return -1;
@@ -251,7 +251,7 @@ rtb_surface_init(struct rtb_surface *self,
 
 	do {
 		impl->draw           = draw;
-		impl->recalculate    = recalculate;
+		impl->reflow         = reflow;
 		impl->attached       = attached;
 		impl->mark_dirty     = mark_dirty;
 		impl->child_attached = child_attached;

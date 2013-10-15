@@ -287,12 +287,12 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 	return 0;
 }
 static int
-recalculate(struct rtb_element *elem, struct rtb_element *instigator,
+reflow(struct rtb_element *elem, struct rtb_element *instigator,
 		rtb_ev_direction_t direction)
 {
 	SELF_FROM(elem);
 
-	super.recalculate(elem, instigator, direction);
+	super.reflow(elem, instigator, direction);
 	self->outer_pad.y = self->label.outer_pad.y;
 
 	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
@@ -396,13 +396,13 @@ rtb_text_input_init(struct rutabaga *rtb, struct rtb_text_input *self,
 	self->min_size.h = 30.f;
 	self->min_size.w = 150.f;
 
-	self->draw        = draw;
-	self->on_event    = on_event;
-	self->attached    = attached;
-	self->recalculate = recalculate;
-	self->restyle     = restyle;
-	self->size_cb     = rtb_size_self;
-	self->layout_cb   = layout;
+	self->draw      = draw;
+	self->on_event  = on_event;
+	self->attached  = attached;
+	self->reflow    = reflow;
+	self->restyle   = restyle;
+	self->size_cb   = rtb_size_self;
+	self->layout_cb = layout;
 
 	self->cursor_position = 0;
 	rtb_label_set_text(&self->label, "");

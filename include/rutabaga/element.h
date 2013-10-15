@@ -158,7 +158,7 @@ struct rtb_element_implementation {
 	rtb_elem_cb_t restyle;
 
 	/**
-	 * rtb_element_implementation.recalculate
+	 * rtb_element_implementation.reflow
 	 *
 	 * called when an element needs to respond to a layout change
 	 * caused by an element above it somewhere in the tree, generally
@@ -171,7 +171,7 @@ struct rtb_element_implementation {
 	 * the exceptional condition will not be handled or propagated up
 	 * the tree, but can be useful for debugging.
 	 */
-	rtb_elem_cb_recalc_t recalculate;
+	rtb_elem_cb_recalc_t reflow;
 
 
 	/**

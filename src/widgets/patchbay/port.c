@@ -229,12 +229,12 @@ handle_mouse(struct rtb_patchbay_port *self, struct rtb_mouse_event *e)
  */
 
 static int
-recalculate(struct rtb_element *elem,
+reflow(struct rtb_element *elem,
 		struct rtb_element *instigator, rtb_ev_direction_t direction)
 {
 	SELF_FROM(elem);
 
-	super.recalculate(elem, instigator, direction);
+	super.reflow(elem, instigator, direction);
 	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
 
 	return 1;
@@ -393,12 +393,12 @@ rtb_patchbay_port_init(struct rtb_patchbay_port *self,
 	self->port_type  = type;
 	self->node       = node;
 
-	self->draw        = draw;
-	self->attached    = attached;
-	self->recalculate = recalculate;
-	self->on_event    = on_event;
-	self->size_cb     = rtb_size_hfill;
-	self->layout_cb   = rtb_layout_vpack_top;
+	self->draw      = draw;
+	self->attached  = attached;
+	self->reflow    = reflow;
+	self->on_event  = on_event;
+	self->size_cb   = rtb_size_hfill;
+	self->layout_cb = rtb_layout_vpack_top;
 
 	self->outer_pad.x = 8.f;
 	self->outer_pad.y = 2.f;

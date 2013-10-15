@@ -129,12 +129,12 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 }
 
 static int
-recalculate(struct rtb_element *elem, struct rtb_element *instigator,
+reflow(struct rtb_element *elem, struct rtb_element *instigator,
 		rtb_ev_direction_t direction)
 {
 	SELF_FROM(elem);
 
-	super.recalculate(elem, instigator, direction);
+	super.reflow(elem, instigator, direction);
 
 	self->outer_pad.x = self->label.outer_pad.x;
 	self->outer_pad.y = self->label.outer_pad.y;
@@ -187,12 +187,12 @@ rtb_button_init(struct rtb_button *self,
 	self->min_size.w = 70.f;
 	self->min_size.h = 26.f;
 
-	self->draw        = draw;
-	self->on_event    = on_event;
-	self->attached    = attached;
-	self->layout_cb   = rtb_layout_hpack_center;
-	self->size_cb     = rtb_size_hfit_children;
-	self->recalculate = recalculate;
+	self->draw      = draw;
+	self->on_event  = on_event;
+	self->attached  = attached;
+	self->layout_cb = rtb_layout_hpack_center;
+	self->size_cb   = rtb_size_hfit_children;
+	self->reflow    = reflow;
 
 	return 0;
 }

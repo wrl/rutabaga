@@ -317,14 +317,14 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
  */
 
 static int
-recalculate(struct rtb_element *elem,
+reflow(struct rtb_element *elem,
 		struct rtb_element *instigator, rtb_ev_direction_t direction)
 {
 	const struct rtb_style_property_definition *prop;
 
 	SELF_FROM(elem);
 
-	super.recalculate(elem, instigator, direction);
+	super.reflow(elem, instigator, direction);
 
 	if (self->style) {
 		prop = rtb_style_query_prop(self->style, RTB_DRAW_NORMAL,
@@ -443,12 +443,12 @@ rtb_patchbay_init(struct rtb_patchbay *self)
 	rtb_surface_init(RTB_SURFACE(self), &super);
 	TAILQ_INIT(&self->patches);
 
-	self->draw        = draw;
-	self->on_event    = on_event;
-	self->attached    = attached;
-	self->layout_cb   = layout;
-	self->recalculate = recalculate;
-	self->restyle     = restyle;
+	self->draw      = draw;
+	self->on_event  = on_event;
+	self->attached  = attached;
+	self->layout_cb = layout;
+	self->reflow    = reflow;
+	self->restyle   = restyle;
 
 	init_shaders();
 

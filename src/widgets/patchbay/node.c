@@ -65,12 +65,12 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
  */
 
 static int
-recalculate(struct rtb_element *elem,
+reflow(struct rtb_element *elem,
 		struct rtb_element *instigator, rtb_ev_direction_t direction)
 {
 	SELF_FROM(elem);
 
-	super.recalculate(elem, instigator, direction);
+	super.reflow(elem, instigator, direction);
 	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
 
 	return 1;
@@ -154,12 +154,12 @@ rtb_patchbay_node_init(struct rtb_patchbay_node *self)
 	rtb_elem_init(RTB_ELEMENT(self), &super);
 	rtb_quad_init(&self->bg_quad);
 
-	self->draw        = draw;
-	self->on_event    = on_event;
-	self->attached    = attached;
-	self->size_cb     = size;
-	self->layout_cb   = rtb_layout_vpack_top;
-	self->recalculate = recalculate;
+	self->draw      = draw;
+	self->on_event  = on_event;
+	self->attached  = attached;
+	self->size_cb   = size;
+	self->layout_cb = rtb_layout_vpack_top;
+	self->reflow    = reflow;
 
 	self->min_size.w = 200.f;
 
