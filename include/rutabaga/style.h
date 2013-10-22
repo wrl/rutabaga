@@ -29,6 +29,7 @@
 #include "rutabaga/types.h"
 #include "rutabaga/font-manager.h"
 #include "rutabaga/geometry.h"
+#include "rutabaga/element.h"
 #include "rutabaga/asset.h"
 #include "rutabaga/atom.h"
 
@@ -112,7 +113,7 @@ const struct rtb_style_property_definition *rtb_style_query_prop_in_tree(
 		struct rtb_element *leaf, rtb_draw_state_t state,
 		const char *property_name, rtb_style_prop_type_t type);
 int rtb_style_elem_has_properties_for_state(struct rtb_element *elem,
-		rtb_draw_state_t state);
+		rtb_elem_state_t state);
 
 void rtb_style_apply_to_tree(struct rtb_element *root,
 		struct rtb_style *style_list);

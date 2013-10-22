@@ -280,6 +280,11 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 			return 1;
 		break;
 
+	case RTB_FOCUS:
+	case RTB_UNFOCUS:
+		rtb_elem_mark_dirty(elem);
+		break;
+
 	default:
 		return super.on_event(elem, e);
 	}

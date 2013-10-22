@@ -136,6 +136,9 @@ rtb_window_focus_element(struct rtb_window *self, struct rtb_element *focused)
 	struct rtb_event ev;
 	ev.type = RTB_FOCUS;
 
+	if (self->focus == focused)
+		return;
+
 	rtb_elem_deliver_event(focused, &ev);
 
 	if (self->focus) {
@@ -217,6 +220,8 @@ rtb_window_open(struct rutabaga *r,
 	self->on_event   = win_event;
 	self->mark_dirty = mark_dirty;
 	self->attached   = attached;
+
+	self->flags      = RTB_ELEM_CLICK_FOCUS;
 
 	r->win = self;
 	return self;

@@ -49,12 +49,15 @@ typedef enum {
 } rtb_elem_flags_t;
 
 typedef enum {
-	RTB_STATE_UNATTACHED = 0x0,
+	RTB_STATE_UNATTACHED = 0,
 
-	RTB_STATE_NORMAL     = 0x1,
-	RTB_STATE_HOVER      = 0x2,
-	RTB_STATE_ACTIVE     = 0x3,
-	RTB_STATE_FOCUS      = 0x8
+	RTB_STATE_NORMAL,
+	RTB_STATE_HOVER,
+	RTB_STATE_ACTIVE,
+
+	RTB_STATE_FOCUS,
+	RTB_STATE_FOCUS_HOVER,
+	RTB_STATE_FOCUS_ACTIVE
 } rtb_elem_state_t;
 
 /**
@@ -225,13 +228,13 @@ struct rtb_element {
 	TAILQ_HEAD(children, rtb_element) children;
 
 	/* private ********************************/
-	unsigned int state;
+	rtb_elem_state_t state;
 	struct rtb_rect inner_rect;
 	rtb_visibility_t visibility;
 
 	int mouse_in;
 
-	struct rtb_element  *parent;
+	struct rtb_element *parent;
 	struct rtb_window  *window;
 	struct rtb_surface *surface;
 
@@ -240,7 +243,6 @@ struct rtb_element {
 	TAILQ_ENTRY(rtb_element) render_entry;
 };
 
-int rtb_elem_change_state(struct rtb_element *, rtb_elem_state_t state);
 int rtb_elem_deliver_event(struct rtb_element *, const struct rtb_event *e);
 void rtb_elem_draw_children(struct rtb_element *, rtb_draw_state_t state);
 void rtb_elem_draw(struct rtb_element *, rtb_draw_state_t state);

@@ -51,21 +51,10 @@
  * state machine
  */
 
-static rtb_draw_state_t
-draw_state_for_elem_state(unsigned int state)
-{
-	switch (state) {
-	case RTB_STATE_NORMAL: return RTB_DRAW_NORMAL;
-	case RTB_STATE_HOVER:  return RTB_DRAW_HOVER;
-	case RTB_STATE_ACTIVE: return RTB_DRAW_ACTIVE;
-	case RTB_STATE_FOCUS:  return RTB_DRAW_FOCUS;
-	}
+#define FOCUSED(elem) (elem->window->focus == elem)
 
-	return RTB_DRAW_NORMAL;
-}
-
-int
-rtb_elem_change_state(struct rtb_element *self, unsigned int state)
+static int
+change_state(struct rtb_element *self, rtb_elem_state_t state)
 {
 	switch (self->state) {
 	case RTB_STATE_UNATTACHED:
@@ -73,14 +62,11 @@ rtb_elem_change_state(struct rtb_element *self, unsigned int state)
 		break;
 
 	default:
-		if (rtb_style_elem_has_properties_for_state(self,
-					draw_state_for_elem_state(self->state))
-				&& rtb_style_elem_has_properties_for_state(self,
-					draw_state_for_elem_state(state))) {
-			self->state = state;
+		if (rtb_style_elem_has_properties_for_state(self, self->state)
+				&& rtb_style_elem_has_properties_for_state(self, state))
 			rtb_elem_mark_dirty(self);
-		} else
-			self->state = state;
+
+		self->state = state;
 
 		break;
 	}
@@ -91,25 +77,28 @@ rtb_elem_change_state(struct rtb_element *self, unsigned int state)
 static void
 transition_mouse_enter(struct rtb_element *self)
 {
-	if (self->state & RTB_STATE_FOCUS)
-		rtb_elem_change_state(self, RTB_STATE_HOVER | RTB_STATE_FOCUS);
-	else
-		rtb_elem_change_state(self, RTB_STATE_HOVER);
+	if (FOCUSED(self))
+		change_state(self, RTB_STATE_FOCUS_HOVER);
+	else if (!(self->window->mouse.buttons_down & RTB_MOUSE_BUTTON1_MASK))
+		change_state(self, RTB_STATE_HOVER);
 }
 
 static void
 transition_mouse_leave(struct rtb_element *self)
 {
-	if (self->state & RTB_STATE_FOCUS)
-		rtb_elem_change_state(self, RTB_STATE_FOCUS);
+	if (FOCUSED(self))
+		change_state(self, RTB_STATE_FOCUS);
 	else
-		rtb_elem_change_state(self, RTB_STATE_NORMAL);
+		change_state(self, RTB_STATE_NORMAL);
 }
 
 static void
 transition_mouse_down(struct rtb_element *self)
 {
-	rtb_elem_change_state(self, RTB_STATE_ACTIVE);
+	if (FOCUSED(self))
+		change_state(self, RTB_STATE_FOCUS_ACTIVE);
+	else
+		change_state(self, RTB_STATE_ACTIVE);
 }
 
 static void
@@ -124,13 +113,37 @@ transition_mouse_up(struct rtb_element *self)
 static void
 transition_focus(struct rtb_element *self)
 {
-	rtb_elem_change_state(self, RTB_STATE_FOCUS);
+	switch (self->state) {
+	case RTB_STATE_HOVER:
+		change_state(self, RTB_STATE_FOCUS_HOVER);
+		break;
+
+	case RTB_STATE_ACTIVE:
+		change_state(self, RTB_STATE_FOCUS_ACTIVE);
+		break;
+
+	default:
+		change_state(self, RTB_STATE_FOCUS);
+		break;
+	}
 }
 
 static void
 transition_unfocus(struct rtb_element *self)
 {
-	rtb_elem_change_state(self, RTB_STATE_NORMAL);
+	switch (self->state) {
+	case RTB_STATE_FOCUS_HOVER:
+		change_state(self, RTB_STATE_HOVER);
+		break;
+
+	case RTB_STATE_FOCUS_ACTIVE:
+		change_state(self, RTB_STATE_ACTIVE);
+		break;
+
+	default:
+		change_state(self, RTB_STATE_NORMAL);
+		break;
+	}
 }
 
 /**
@@ -259,7 +272,7 @@ attached(struct rtb_element *self,
 	TAILQ_FOREACH(iter, &self->children, child)
 		self->child_attached(self, iter);
 
-	rtb_elem_change_state(self, RTB_STATE_NORMAL);
+	change_state(self, RTB_STATE_NORMAL);
 }
 
 static void
@@ -358,8 +371,6 @@ rtb_elem_draw_children(struct rtb_element *self, rtb_draw_state_t state)
 void
 rtb_elem_draw(struct rtb_element *self, rtb_draw_state_t state)
 {
-	struct rtb_window *window = self->window;
-
 	if (self->visibility == RTB_FULLY_OBSCURED)
 		return;
 
@@ -369,18 +380,14 @@ rtb_elem_draw(struct rtb_element *self, rtb_draw_state_t state)
 	case RTB_STATE_UNATTACHED:
 		return;
 
-	case RTB_STATE_FOCUS | RTB_STATE_HOVER:
-	case RTB_STATE_HOVER:
-		if (!(window->mouse.buttons_down & RTB_MOUSE_BUTTON1_MASK))
-			state = RTB_DRAW_HOVER;
-		break;
+	case RTB_STATE_NORMAL:       state = RTB_DRAW_NORMAL; break;
+	case RTB_STATE_HOVER:        state = RTB_DRAW_HOVER;  break;
+	case RTB_STATE_ACTIVE:       state = RTB_DRAW_ACTIVE; break;
 
-	case RTB_STATE_FOCUS:
-		state = RTB_DRAW_FOCUS;
-		break;
+	case RTB_STATE_FOCUS:        state = RTB_DRAW_FOCUS;  break;
+	case RTB_STATE_FOCUS_HOVER:  state = RTB_DRAW_HOVER;  break;
+	case RTB_STATE_FOCUS_ACTIVE: state = RTB_DRAW_ACTIVE; break;
 
-	case RTB_STATE_ACTIVE:
-	case RTB_STATE_NORMAL:
 	default:
 		break;
 	}

@@ -43,6 +43,19 @@ const static struct rtb_style_property_definition fallbacks[RTB_STYLE_PROP_TYPE_
 	}
 };
 
+static rtb_draw_state_t
+draw_state_for_elem_state(unsigned int state)
+{
+	switch (state) {
+	case RTB_STATE_NORMAL: return RTB_DRAW_NORMAL;
+	case RTB_STATE_HOVER:  return RTB_DRAW_HOVER;
+	case RTB_STATE_ACTIVE: return RTB_DRAW_ACTIVE;
+	case RTB_STATE_FOCUS:  return RTB_DRAW_FOCUS;
+	}
+
+	return RTB_DRAW_NORMAL;
+}
+
 /**
  * style initialization
  */
@@ -220,9 +233,10 @@ const struct rtb_style_property_definition *rtb_style_query_prop_in_tree(
 
 int
 rtb_style_elem_has_properties_for_state(struct rtb_element *elem,
-		rtb_draw_state_t state)
+		rtb_elem_state_t state)
 {
-	if (elem->style->properties[state]->property_name)
+	rtb_draw_state_t draw_state = draw_state_for_elem_state(state);
+	if (elem->style->properties[draw_state]->property_name)
 		return 1;
 
 	return 0;
