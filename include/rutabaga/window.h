@@ -39,7 +39,7 @@
 #define RTB_WINDOW(x) RTB_UPCAST(x, rtb_window)
 #define RTB_WINDOW_EVENT(x) RTB_UPCAST(x, rtb_event_window)
 
-struct rtb_event_window {
+struct rtb_window_event {
 	RTB_INHERIT(rtb_event);
 	struct rtb_window *window;
 };

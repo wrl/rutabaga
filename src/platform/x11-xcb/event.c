@@ -270,7 +270,7 @@ handle_client_message(struct xcb_window *win, xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_client_message_event_t);
 	struct xcb_window *xwin = (void *) win;
-	struct rtb_event_window rev = {
+	struct rtb_window_event rev = {
 		.type   = RTB_WINDOW_CLOSE,
 		.window = RTB_WINDOW(win)
 	};
