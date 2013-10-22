@@ -115,7 +115,10 @@ transition_mouse_down(struct rtb_element *self)
 static void
 transition_mouse_up(struct rtb_element *self)
 {
-	transition_mouse_enter(self);
+	if (self->mouse_in)
+		transition_mouse_enter(self);
+	else
+		transition_mouse_leave(self);
 }
 
 static void
