@@ -41,12 +41,20 @@ typedef enum {
 	/* all events, regardless of whether they are already handled by
 	 * the element in question, are passed to client code after the
 	 * element's event_cb has been run. */
-	RTB_ELEM_FLAG_EVENT_SNOOP = 0x01,
+	RTB_ELEM_EVENT_SNOOP = 0x01,
+
+	RTB_ELEM_NO_FOCUS    = 0,
+	RTB_ELEM_CLICK_FOCUS = 0x02,
+	RTB_ELEM_TAB_FOCUS   = 0x04
 } rtb_elem_flags_t;
 
 typedef enum {
-	RTB_STATE_UNATTACHED = 0,
-	RTB_STATE_ATTACHED
+	RTB_STATE_UNATTACHED = 0x0,
+
+	RTB_STATE_NORMAL     = 0x1,
+	RTB_STATE_HOVER      = 0x2,
+	RTB_STATE_ACTIVE     = 0x3,
+	RTB_STATE_FOCUS      = 0x8
 } rtb_elem_state_t;
 
 /**
@@ -186,6 +194,11 @@ struct rtb_element_implementation {
 	rtb_elem_cb_t mark_dirty;
 };
 
+struct rtb_element_event {
+	RTB_INHERIT(rtb_event);
+	struct rtb_element *element;
+};
+
 /**
  * and finally rtb_element itself
  */
@@ -212,7 +225,7 @@ struct rtb_element {
 	TAILQ_HEAD(children, rtb_element) children;
 
 	/* private ********************************/
-	rtb_elem_state_t state;
+	unsigned int state;
 	struct rtb_rect inner_rect;
 	rtb_visibility_t visibility;
 
@@ -227,6 +240,7 @@ struct rtb_element {
 	TAILQ_ENTRY(rtb_element) render_entry;
 };
 
+int rtb_elem_change_state(struct rtb_element *, rtb_elem_state_t state);
 int rtb_elem_deliver_event(struct rtb_element *, const struct rtb_event *e);
 void rtb_elem_draw_children(struct rtb_element *, rtb_draw_state_t state);
 void rtb_elem_draw(struct rtb_element *, rtb_draw_state_t state);

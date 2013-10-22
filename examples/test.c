@@ -160,6 +160,8 @@ void setup_ui(rtb_container_t *root)
 
 	for (i = 0; i < sizeof(buttons) / sizeof(*buttons); i++) {
 		buttons[i] = rtb_button_new(NULL);
+
+		buttons[i]->flags |= RTB_ELEM_CLICK_FOCUS;
 		rtb_button_set_label(buttons[i], labels[i]);
 
 		rtb_register_handler(RTB_ELEMENT(buttons[i]),

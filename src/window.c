@@ -133,13 +133,17 @@ mark_dirty(struct rtb_element *elem)
 void
 rtb_window_focus_element(struct rtb_window *self, struct rtb_element *focused)
 {
-	struct rtb_element *unfocused = self->focus;
+	struct rtb_event ev;
+	ev.type = RTB_FOCUS;
+
+	rtb_elem_deliver_event(focused, &ev);
+
+	if (self->focus) {
+		ev.type = RTB_UNFOCUS;
+		rtb_elem_deliver_event(self->focus, &ev);
+	}
 
 	self->focus = focused;
-	rtb_elem_mark_dirty(focused);
-
-	if (unfocused)
-		rtb_elem_mark_dirty(unfocused);
 }
 
 void

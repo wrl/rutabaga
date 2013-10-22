@@ -190,12 +190,17 @@ static void
 mouse_up(struct rtb_window *window, struct rtb_element *target,
 		int button, int x, int y)
 {
+	struct rtb_element *click_target;
 	struct rtb_mouse *mouse = &window->mouse;
 	struct rtb_mouse_button *b = &mouse->button[button];
 
-	if (rtb_elem_is_in_tree(b->target, target))
-		dispatch_click_event(window, target, button, x, y);
-	else if (b->state == DRAG)
+	if (rtb_elem_is_in_tree(b->target, target)) {
+		click_target = dispatch_click_event(window, target, button, x, y);
+
+		if (button == RTB_MOUSE_BUTTON1
+				&& (click_target->flags & RTB_ELEM_CLICK_FOCUS))
+			rtb_window_focus_element(window, click_target);
+	} else if (b->state == DRAG)
 		dispatch_drag_event(window, RTB_DRAG_DROP, target, button, x, y);
 
 	b->state  = UP;
@@ -291,9 +296,6 @@ rtb_platform_mouse_press(struct rtb_window *win,
 
 	target = dispatch_simple_mouse_event(win,
 			target, RTB_MOUSE_DOWN, button, x, y);
-
-	if (button == RTB_MOUSE_BUTTON1)
-		rtb_window_focus_element(win, target);
 }
 
 void

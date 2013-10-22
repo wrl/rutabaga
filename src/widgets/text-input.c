@@ -407,6 +407,8 @@ rtb_text_input_init(struct rutabaga *rtb, struct rtb_text_input *self,
 	self->cursor_position = 0;
 	rtb_label_set_text(&self->label, "");
 
+	self->flags = RTB_ELEM_CLICK_FOCUS | RTB_ELEM_TAB_FOCUS;
+
 	return 0;
 }
 

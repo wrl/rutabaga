@@ -48,7 +48,90 @@
 #include "wwrl/vector.h"
 
 /**
- * recalculation
+ * state machine
+ */
+
+static rtb_draw_state_t
+draw_state_for_elem_state(unsigned int state)
+{
+	switch (state) {
+	case RTB_STATE_NORMAL: return RTB_DRAW_NORMAL;
+	case RTB_STATE_HOVER:  return RTB_DRAW_HOVER;
+	case RTB_STATE_ACTIVE: return RTB_DRAW_ACTIVE;
+	case RTB_STATE_FOCUS:  return RTB_DRAW_FOCUS;
+	}
+
+	return RTB_DRAW_NORMAL;
+}
+
+int
+rtb_elem_change_state(struct rtb_element *self, unsigned int state)
+{
+	switch (self->state) {
+	case RTB_STATE_UNATTACHED:
+		self->state = state;
+		break;
+
+	default:
+		if (rtb_style_elem_has_properties_for_state(self,
+					draw_state_for_elem_state(self->state))
+				&& rtb_style_elem_has_properties_for_state(self,
+					draw_state_for_elem_state(state))) {
+			self->state = state;
+			rtb_elem_mark_dirty(self);
+		} else
+			self->state = state;
+
+		break;
+	}
+
+	return 0;
+}
+
+static void
+transition_mouse_enter(struct rtb_element *self)
+{
+	if (self->state & RTB_STATE_FOCUS)
+		rtb_elem_change_state(self, RTB_STATE_HOVER | RTB_STATE_FOCUS);
+	else
+		rtb_elem_change_state(self, RTB_STATE_HOVER);
+}
+
+static void
+transition_mouse_leave(struct rtb_element *self)
+{
+	if (self->state & RTB_STATE_FOCUS)
+		rtb_elem_change_state(self, RTB_STATE_FOCUS);
+	else
+		rtb_elem_change_state(self, RTB_STATE_NORMAL);
+}
+
+static void
+transition_mouse_down(struct rtb_element *self)
+{
+	rtb_elem_change_state(self, RTB_STATE_ACTIVE);
+}
+
+static void
+transition_mouse_up(struct rtb_element *self)
+{
+	transition_mouse_enter(self);
+}
+
+static void
+transition_focus(struct rtb_element *self)
+{
+	rtb_elem_change_state(self, RTB_STATE_FOCUS);
+}
+
+static void
+transition_unfocus(struct rtb_element *self)
+{
+	rtb_elem_change_state(self, RTB_STATE_NORMAL);
+}
+
+/**
+ * reflow
  */
 
 static int
@@ -173,7 +256,7 @@ attached(struct rtb_element *self,
 	TAILQ_FOREACH(iter, &self->children, child)
 		self->child_attached(self, iter);
 
-	self->state = RTB_STATE_ATTACHED;
+	rtb_elem_change_state(self, RTB_STATE_NORMAL);
 }
 
 static void
@@ -223,27 +306,41 @@ rtb_elem_deliver_event(struct rtb_element *self, const struct rtb_event *e)
 	if (self->state == RTB_STATE_UNATTACHED)
 		return 0;
 
+	ret = self->on_event(self, e);
+
+	if (self->flags & RTB_ELEM_EVENT_SNOOP)
+		ret = rtb_handle(self, e) || ret;
+	else
+		ret = ret || rtb_handle(self, e);
+
 	switch (e->type) {
 	case RTB_MOUSE_ENTER:
+		transition_mouse_enter(self);
+		break;
+
 	case RTB_MOUSE_LEAVE:
-		if (rtb_style_elem_has_properties_for_state(self, RTB_DRAW_HOVER))
-			rtb_elem_mark_dirty(self);
+		transition_mouse_leave(self);
+		break;
+
+	case RTB_FOCUS:
+		transition_focus(self);
+		break;
+
+	case RTB_UNFOCUS:
+		transition_unfocus(self);
 		break;
 
 	case RTB_MOUSE_DOWN:
+		transition_mouse_down(self);
+		break;
+
 	case RTB_MOUSE_UP:
 	case RTB_DRAG_DROP:
-		if (rtb_style_elem_has_properties_for_state(self, RTB_DRAW_ACTIVE))
-			rtb_elem_mark_dirty(self);
+		transition_mouse_up(self);
 		break;
 	}
 
-	ret = self->on_event(self, e);
-
-	if (self->flags & RTB_ELEM_FLAG_EVENT_SNOOP)
-		return rtb_handle(self, e) || ret;
-	else
-		return ret || rtb_handle(self, e);
+	return ret;
 }
 
 void
@@ -265,13 +362,24 @@ rtb_elem_draw(struct rtb_element *self, rtb_draw_state_t state)
 
 	/* we do this so that child widgets are drawn with their parent's state
 	 * if their parent has a draw state. */
-	if (state == RTB_DRAW_NORMAL) {
-		if (window->focus == self)
-			state = RTB_DRAW_FOCUS;
+	switch (self->state) {
+	case RTB_STATE_UNATTACHED:
+		return;
 
-		if (self->mouse_in &&
-				!(window->mouse.buttons_down & RTB_MOUSE_BUTTON1_MASK))
+	case RTB_STATE_FOCUS | RTB_STATE_HOVER:
+	case RTB_STATE_HOVER:
+		if (!(window->mouse.buttons_down & RTB_MOUSE_BUTTON1_MASK))
 			state = RTB_DRAW_HOVER;
+		break;
+
+	case RTB_STATE_FOCUS:
+		state = RTB_DRAW_FOCUS;
+		break;
+
+	case RTB_STATE_ACTIVE:
+	case RTB_STATE_NORMAL:
+	default:
+		break;
 	}
 
 	self->draw(self, state);

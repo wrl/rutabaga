@@ -46,22 +46,25 @@ typedef unsigned int rtb_ev_type_t;
 enum {
 	RTB_WINDOW_CLOSE   = SYS(0),
 
-	RTB_KEY_PRESS      = SYS(1),
-	RTB_KEY_RELEASE    = SYS(2),
+	RTB_FOCUS          = SYS(1),
+	RTB_UNFOCUS        = SYS(2),
 
-	RTB_MOUSE_DOWN     = SYS(3),
-	RTB_MOUSE_UP       = SYS(4),
-	RTB_MOUSE_ENTER    = SYS(5),
-	RTB_MOUSE_LEAVE    = SYS(6),
+	RTB_KEY_PRESS      = SYS(3),
+	RTB_KEY_RELEASE    = SYS(4),
 
-	RTB_MOUSE_CLICK    = SYS(7),
-	RTB_MOUSE_DBLCLICK = SYS(8),
+	RTB_MOUSE_DOWN     = SYS(5),
+	RTB_MOUSE_UP       = SYS(6),
+	RTB_MOUSE_ENTER    = SYS(7),
+	RTB_MOUSE_LEAVE    = SYS(8),
 
-	RTB_DRAG_START     = SYS(9),
-	RTB_DRAGGING       = SYS(10),
-	RTB_DRAG_ENTER     = SYS(11),
-	RTB_DRAG_LEAVE     = SYS(12),
-	RTB_DRAG_DROP      = SYS(13)
+	RTB_MOUSE_CLICK    = SYS(9),
+	RTB_MOUSE_DBLCLICK = SYS(10),
+
+	RTB_DRAG_START     = SYS(11),
+	RTB_DRAGGING       = SYS(12),
+	RTB_DRAG_ENTER     = SYS(13),
+	RTB_DRAG_LEAVE     = SYS(14),
+	RTB_DRAG_DROP      = SYS(15)
 };
 #undef SYS
 
