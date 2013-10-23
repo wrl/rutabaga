@@ -24,37 +24,25 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
-
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/element.h"
-#include "rutabaga/event.h"
+#include "rutabaga/quad.h"
 #include "rutabaga/stylequad.h"
 
-#include "rutabaga/widgets/label.h"
+void
+rtb_stylequad_update(struct rtb_stylequad *self,
+		struct rtb_element *elem)
+{
+	rtb_quad_set_vertices(RTB_QUAD(self), &elem->rect);
+}
 
-#define RTB_BUTTON(x) RTB_UPCAST(x, rtb_button)
+void
+rtb_stylequad_init(struct rtb_stylequad *self)
+{
+	rtb_quad_init(RTB_QUAD(self));
+}
 
-typedef enum {
-	RTB_BUTTON_CLICK = 1
-} rtb_button_event_type_t;
-
-struct rtb_button_event {
-	RTB_INHERIT(rtb_mouse_event);
-};
-
-struct rtb_button {
-	RTB_INHERIT(rtb_element);
-
-	/* private ********************************/
-	struct rtb_label label;
-	struct rtb_stylequad stylequad;
-};
-
-void rtb_button_set_label(struct rtb_button *self, const rtb_utf8_t *text);
-
-int rtb_button_init(struct rtb_button *,
-		struct rtb_element_implementation *impl);
-void rtb_button_fini(struct rtb_button *);
-struct rtb_button *rtb_button_new(const rtb_utf8_t *label);
-void rtb_button_free(struct rtb_button *);
+void rtb_stylequad_fini(struct rtb_stylequad *self)
+{
+	rtb_quad_fini(RTB_QUAD(self));
+}

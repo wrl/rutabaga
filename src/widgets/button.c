@@ -37,7 +37,7 @@
 #include "rutabaga/render.h"
 #include "rutabaga/layout.h"
 #include "rutabaga/keyboard.h"
-#include "rutabaga/quad.h"
+#include "rutabaga/stylequad.h"
 
 #include "private/util.h"
 #include "rutabaga/widgets/button.h"
@@ -61,7 +61,7 @@ draw(struct rtb_element *elem)
 	rtb_render_set_position(elem, 0, 0);
 	rtb_render_use_style_bg(elem);
 
-	rtb_render_quad(elem, &self->bg_quad);
+	rtb_render_quad(elem, RTB_QUAD(&self->stylequad));
 
 	rtb_elem_draw_children(elem);
 	rtb_render_pop(elem);
@@ -139,7 +139,7 @@ reflow(struct rtb_element *elem, struct rtb_element *instigator,
 	self->outer_pad.x = self->label.outer_pad.x;
 	self->outer_pad.y = self->label.outer_pad.y;
 
-	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
+	rtb_stylequad_update(&self->stylequad, elem);
 
 	return 1;
 }
@@ -178,7 +178,7 @@ rtb_button_init(struct rtb_button *self,
 	rtb_elem_add_child(RTB_ELEMENT(self), RTB_ELEMENT(&self->label),
 			RTB_ADD_HEAD);
 
-	rtb_quad_init(&self->bg_quad);
+	rtb_stylequad_init(&self->stylequad);
 
 	self->label.align = RTB_ALIGN_MIDDLE;
 	self->outer_pad.x =
@@ -200,7 +200,7 @@ rtb_button_init(struct rtb_button *self,
 void
 rtb_button_fini(struct rtb_button *self)
 {
-	rtb_quad_fini(&self->bg_quad);
+	rtb_stylequad_fini(&self->stylequad);
 	rtb_label_fini(&self->label);
 	rtb_elem_fini(RTB_ELEMENT(self));
 }
