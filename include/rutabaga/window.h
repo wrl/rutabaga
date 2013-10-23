@@ -37,7 +37,9 @@
 #include "rutabaga/font-manager.h"
 
 #define RTB_WINDOW(x) RTB_UPCAST(x, rtb_window)
-#define RTB_WINDOW_EVENT(x) RTB_UPCAST(x, rtb_event_window)
+#define RTB_WINDOW_AS(x, type) RTB_DOWNCAST(x, type, rtb_window)
+
+#define RTB_WINDOW_EVENT(x) RTB_UPCAST(x, rtb_window_event)
 
 struct rtb_window_event {
 	RTB_INHERIT(rtb_event);

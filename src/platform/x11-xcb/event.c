@@ -113,11 +113,10 @@ dont_handle:
 }
 
 static void
-handle_mouse_button_release(struct xrtb_window *win,
+handle_mouse_button_release(struct xrtb_window *xwin,
 		const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_button_release_event_t);
-	struct xrtb_window *xwin = (void *) win;
 	xcb_void_cookie_t cookie;
 	xcb_generic_error_t *err;
 	int button;
@@ -139,7 +138,7 @@ handle_mouse_button_release(struct xrtb_window *win,
 		return;
 	}
 
-	rtb_platform_mouse_release(RTB_WINDOW(win),
+	rtb_platform_mouse_release(RTB_WINDOW(xwin),
 			button, ev->event_x, ev->event_y);
 }
 
@@ -220,10 +219,8 @@ handle_key_release(struct xrtb_window *win, const xcb_generic_event_t *_ev)
 }
 
 static void
-handle_mapping_notify(struct xrtb_window *win, xcb_generic_event_t *_ev)
+handle_mapping_notify(struct xrtb_window *xwin, xcb_generic_event_t *_ev)
 {
-	struct xrtb_window *xwin = (void *) win;
-
 	xrtb_keyboard_reload(xwin->xrtb);
 }
 
@@ -266,17 +263,16 @@ handle_configure_notify(struct xrtb_window *win, xcb_generic_event_t *_ev)
 }
 
 static void
-handle_client_message(struct xrtb_window *win, xcb_generic_event_t *_ev)
+handle_client_message(struct xrtb_window *xwin, xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_client_message_event_t);
-	struct xrtb_window *xwin = (void *) win;
 	struct rtb_window_event rev = {
 		.type   = RTB_WINDOW_CLOSE,
-		.window = RTB_WINDOW(win)
+		.window = RTB_WINDOW(xwin)
 	};
 
 	if (ev->data.data32[0] == xwin->xrtb->atoms.wm_delete_window)
-		rtb_dispatch_raw(RTB_ELEMENT(win), RTB_EVENT(&rev));
+		rtb_dispatch_raw(RTB_ELEMENT(xwin), RTB_EVENT(&rev));
 }
 
 /**
@@ -457,7 +453,7 @@ drain_xcb_event_queue(xcb_connection_t *conn, struct rtb_window *win)
 
 	while ((ev = xcb_poll_for_event(conn))) {
 		rtb_window_lock(win);
-		ret = handle_generic_event((struct xrtb_window *) win, ev);
+		ret = handle_generic_event(RTB_WINDOW_AS(win, xrtb_window), ev);
 		rtb_window_unlock(win);
 
 		free(ev);
