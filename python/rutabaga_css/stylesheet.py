@@ -116,6 +116,9 @@ class RutabagaStylesheet(object):
                     if s.find(":") > 0:
                         s, state = s.split(":", 1)
 
+                        if s not in self.styles:
+                            self.styles[s] = RutabagaStyle(self, s, [])
+
                         try:
                             self.styles[s].add_state(state, decls)
                         except AttributeError as e:
