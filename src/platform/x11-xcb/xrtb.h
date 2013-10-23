@@ -28,6 +28,8 @@
 #include "rutabaga/window.h"
 #include "rutabaga/keyboard.h"
 
+#include <uv.h>
+
 #include <xcb/xcb.h>
 #include <xcb/xcb_keysyms.h>
 
@@ -36,6 +38,13 @@
 #include <xkbcommon/xkbcommon.h>
 
 #define ERR(...) fprintf(stderr, "rutabaga XCB: " __VA_ARGS__)
+
+struct xrtb_redraw_notify {
+	RTB_INHERIT(uv_async_s);
+	struct xcb_rutabaga *xrtb;
+	struct rtb_window *win;
+	int thread_running;
+};
 
 struct xcb_rutabaga {
 	struct rutabaga rtb;
@@ -68,6 +77,7 @@ struct xcb_window {
 	RTB_INHERIT(rtb_window);
 
 	struct xcb_rutabaga *xrtb;
+	struct xrtb_redraw_notify *notify;
 
 	xcb_screen_t *screen;
 	xcb_window_t xcb_win;
