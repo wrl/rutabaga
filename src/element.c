@@ -51,14 +51,15 @@
  * state machine
  */
 
-#define FOCUSED(elem) (elem->window->focus == elem)
+#define FOCUSED_P(elem) (elem->window->focus == elem)
 
 static int
 change_state(struct rtb_element *self, rtb_elem_state_t state)
 {
 	switch (self->state) {
 	default:
-		if (rtb_style_elem_has_properties_for_state(self, self->state)
+		if (self->state != state
+				&& rtb_style_elem_has_properties_for_state(self, self->state)
 				&& rtb_style_elem_has_properties_for_state(self, state))
 			rtb_elem_mark_dirty(self);
 
@@ -73,42 +74,55 @@ change_state(struct rtb_element *self, rtb_elem_state_t state)
 }
 
 static void
-transition_mouse_enter(struct rtb_element *self)
+transition_mouse_enter(struct rtb_element *self,
+		const struct rtb_mouse_event *ev)
 {
-	if (FOCUSED(self))
+	struct rtb_mouse *m = &self->window->mouse;
+
+	if (m->buttons_down & RTB_MOUSE_BUTTON1_MASK) {
+		if (m->button[RTB_MOUSE_BUTTON1].target == self) {
+			if (FOCUSED_P(self))
+				change_state(self, RTB_STATE_FOCUS_ACTIVE);
+			else
+				change_state(self, RTB_STATE_ACTIVE);
+		}
+	} else if (FOCUSED_P(self))
 		change_state(self, RTB_STATE_FOCUS_HOVER);
-	else if (!(self->window->mouse.buttons_down & RTB_MOUSE_BUTTON1_MASK))
+	else
 		change_state(self, RTB_STATE_HOVER);
 }
 
 static void
-transition_mouse_leave(struct rtb_element *self)
+transition_mouse_leave(struct rtb_element *self,
+		const struct rtb_mouse_event *ev)
 {
-	if (FOCUSED(self))
+	if (FOCUSED_P(self))
 		change_state(self, RTB_STATE_FOCUS);
 	else
 		change_state(self, RTB_STATE_NORMAL);
 }
 
 static void
-transition_mouse_down(struct rtb_element *self, int mouse_button)
+transition_mouse_down(struct rtb_element *self,
+		const struct rtb_mouse_event *ev)
 {
-	if (mouse_button != RTB_MOUSE_BUTTON1)
+	if (ev->button != RTB_MOUSE_BUTTON1)
 		return;
 
-	if (FOCUSED(self))
+	if (FOCUSED_P(self))
 		change_state(self, RTB_STATE_FOCUS_ACTIVE);
 	else
 		change_state(self, RTB_STATE_ACTIVE);
 }
 
 static void
-transition_mouse_up(struct rtb_element *self, int mouse_button)
+transition_mouse_up(struct rtb_element *self,
+		const struct rtb_mouse_event *ev)
 {
 	if (self->mouse_in)
-		transition_mouse_enter(self);
+		transition_mouse_enter(self, ev);
 	else
-		transition_mouse_leave(self);
+		transition_mouse_leave(self, ev);
 }
 
 static void
@@ -332,11 +346,11 @@ rtb_elem_deliver_event(struct rtb_element *self, const struct rtb_event *e)
 
 	switch (e->type) {
 	case RTB_MOUSE_ENTER:
-		transition_mouse_enter(self);
+		transition_mouse_enter(self, RTB_EVENT_AS(e, rtb_mouse_event));
 		break;
 
 	case RTB_MOUSE_LEAVE:
-		transition_mouse_leave(self);
+		transition_mouse_leave(self, RTB_EVENT_AS(e, rtb_mouse_event));
 		break;
 
 	case RTB_FOCUS:
@@ -348,12 +362,12 @@ rtb_elem_deliver_event(struct rtb_element *self, const struct rtb_event *e)
 		break;
 
 	case RTB_MOUSE_DOWN:
-		transition_mouse_down(self, ((struct rtb_mouse_event *) e)->button);
+		transition_mouse_down(self, RTB_EVENT_AS(e, rtb_mouse_event));
 		break;
 
 	case RTB_MOUSE_UP:
 	case RTB_DRAG_DROP:
-		transition_mouse_up(self, ((struct rtb_mouse_event *) e)->button);
+		transition_mouse_up(self, RTB_EVENT_AS(e, rtb_mouse_event));
 		break;
 	}
 
