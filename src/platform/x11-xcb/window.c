@@ -336,7 +336,7 @@ set_xprop(xcb_connection_t *c, xcb_window_t win,
 void
 rtb_window_lock(struct rtb_window *rwin)
 {
-	struct xcb_window *self = (struct xcb_window *) rwin;
+	struct xrtb_window *self = (struct xrtb_window *) rwin;
 
 	XLockDisplay(self->xrtb->dpy);
 	uv_mutex_lock(&self->lock);
@@ -347,7 +347,7 @@ rtb_window_lock(struct rtb_window *rwin)
 void
 rtb_window_unlock(struct rtb_window *rwin)
 {
-	struct xcb_window *self = (struct xcb_window *) rwin;
+	struct xrtb_window *self = (struct xrtb_window *) rwin;
 
 	glXMakeContextCurrent(self->xrtb->dpy, None, None, NULL);
 	uv_mutex_unlock(&self->lock);
@@ -359,7 +359,7 @@ rtb_window *window_impl_open(struct rutabaga *rtb,
 		int w, int h, const char *title)
 {
 	struct xcb_rutabaga *xrtb = (void *) rtb;
-	struct xcb_window *self;
+	struct xrtb_window *self;
 
 	Display *dpy;
 	xcb_connection_t *xcb_conn;
@@ -520,7 +520,7 @@ err_malloc:
 void
 window_impl_close(struct rtb_window *rwin)
 {
-	struct xcb_window *self = (void *) rwin;
+	struct xrtb_window *self = (void *) rwin;
 
 	glXMakeContextCurrent(self->xrtb->dpy, None, None, NULL);
 	glXDestroyWindow(self->xrtb->dpy, self->gl_win);

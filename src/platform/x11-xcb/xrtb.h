@@ -71,7 +71,7 @@ struct xcb_rutabaga {
 	int xkb_event;
 };
 
-struct xcb_window {
+struct xrtb_window {
 	RTB_INHERIT(rtb_window);
 
 	struct xcb_rutabaga *xrtb;

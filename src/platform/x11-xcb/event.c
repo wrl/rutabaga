@@ -65,21 +65,21 @@
  */
 
 static void
-handle_mouse_enter(struct xcb_window *win, const xcb_generic_event_t *_ev)
+handle_mouse_enter(struct xrtb_window *win, const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_enter_notify_event_t);
 	rtb_platform_mouse_enter_window(RTB_WINDOW(win), ev->event_x, ev->event_y);
 }
 
 static void
-handle_mouse_leave(struct xcb_window *win, const xcb_generic_event_t *_ev)
+handle_mouse_leave(struct xrtb_window *win, const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_leave_notify_event_t);
 	rtb_platform_mouse_leave_window(RTB_WINDOW(win), ev->event_x, ev->event_y);
 }
 
 static void
-handle_mouse_button_press(struct xcb_window *win,
+handle_mouse_button_press(struct xrtb_window *win,
 		const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_button_press_event_t);
@@ -113,11 +113,11 @@ dont_handle:
 }
 
 static void
-handle_mouse_button_release(struct xcb_window *win,
+handle_mouse_button_release(struct xrtb_window *win,
 		const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_button_release_event_t);
-	struct xcb_window *xwin = (void *) win;
+	struct xrtb_window *xwin = (void *) win;
 	xcb_void_cookie_t cookie;
 	xcb_generic_error_t *err;
 	int button;
@@ -144,7 +144,7 @@ handle_mouse_button_release(struct xcb_window *win,
 }
 
 static void
-handle_mouse_motion(struct xcb_window *win, const xcb_generic_event_t *_ev)
+handle_mouse_motion(struct xrtb_window *win, const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_motion_notify_event_t);
 
@@ -173,7 +173,7 @@ modifier_state(struct xcb_rutabaga *xrtb)
 }
 
 static void
-dispatch_key_event(struct xcb_window *win,
+dispatch_key_event(struct xrtb_window *win,
 		const xcb_key_press_event_t *ev, rtb_ev_type_t type)
 {
 	struct rtb_key_event rtb_ev = {.type = type};
@@ -200,7 +200,7 @@ dispatch_key_event(struct xcb_window *win,
 }
 
 static int
-handle_key_press(struct xcb_window *win, const xcb_generic_event_t *_ev)
+handle_key_press(struct xrtb_window *win, const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_key_press_event_t);
 
@@ -210,7 +210,7 @@ handle_key_press(struct xcb_window *win, const xcb_generic_event_t *_ev)
 }
 
 static int
-handle_key_release(struct xcb_window *win, const xcb_generic_event_t *_ev)
+handle_key_release(struct xrtb_window *win, const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_key_release_event_t);
 
@@ -220,9 +220,9 @@ handle_key_release(struct xcb_window *win, const xcb_generic_event_t *_ev)
 }
 
 static void
-handle_mapping_notify(struct xcb_window *win, xcb_generic_event_t *_ev)
+handle_mapping_notify(struct xrtb_window *win, xcb_generic_event_t *_ev)
 {
-	struct xcb_window *xwin = (void *) win;
+	struct xrtb_window *xwin = (void *) win;
 
 	xrtb_keyboard_reload(xwin->xrtb);
 }
@@ -232,7 +232,7 @@ handle_mapping_notify(struct xcb_window *win, xcb_generic_event_t *_ev)
  */
 
 static void
-handle_visibility_notify(struct xcb_window *win, xcb_generic_event_t *_ev)
+handle_visibility_notify(struct xrtb_window *win, xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_visibility_notify_event_t);
 
@@ -252,7 +252,7 @@ handle_visibility_notify(struct xcb_window *win, xcb_generic_event_t *_ev)
 }
 
 static void
-handle_configure_notify(struct xcb_window *win, xcb_generic_event_t *_ev)
+handle_configure_notify(struct xrtb_window *win, xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_configure_notify_event_t);
 
@@ -266,10 +266,10 @@ handle_configure_notify(struct xcb_window *win, xcb_generic_event_t *_ev)
 }
 
 static void
-handle_client_message(struct xcb_window *win, xcb_generic_event_t *_ev)
+handle_client_message(struct xrtb_window *win, xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_client_message_event_t);
-	struct xcb_window *xwin = (void *) win;
+	struct xrtb_window *xwin = (void *) win;
 	struct rtb_window_event rev = {
 		.type   = RTB_WINDOW_CLOSE,
 		.window = RTB_WINDOW(win)
@@ -284,7 +284,7 @@ handle_client_message(struct xcb_window *win, xcb_generic_event_t *_ev)
  */
 
 static int
-handle_xkb_new_keyboard(struct xcb_window *win, xcb_generic_event_t *_ev)
+handle_xkb_new_keyboard(struct xrtb_window *win, xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_xkb_new_keyboard_notify_event_t);
 
@@ -295,7 +295,7 @@ handle_xkb_new_keyboard(struct xcb_window *win, xcb_generic_event_t *_ev)
 }
 
 static int
-handle_xkb_state_notify(struct xcb_window *win, xcb_generic_event_t *_ev)
+handle_xkb_state_notify(struct xrtb_window *win, xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_xkb_state_notify_event_t);
 
@@ -311,7 +311,7 @@ handle_xkb_state_notify(struct xcb_window *win, xcb_generic_event_t *_ev)
 }
 
 static int
-handle_xkb_event(struct xcb_window *win, xcb_generic_event_t *_ev)
+handle_xkb_event(struct xrtb_window *win, xcb_generic_event_t *_ev)
 {
 	int type = ((xcb_xkb_new_keyboard_notify_event_t *) _ev)->xkbType;
 
@@ -361,7 +361,7 @@ handle_secret_xlib_event(Display *dpy, xcb_generic_event_t *ev)
  */
 
 int
-handle_generic_event(struct xcb_window *win, xcb_generic_event_t *ev)
+handle_generic_event(struct xrtb_window *win, xcb_generic_event_t *ev)
 {
 	int type = ev->response_type & ~0x80;
 
@@ -457,7 +457,7 @@ drain_xcb_event_queue(xcb_connection_t *conn, struct rtb_window *win)
 
 	while ((ev = xcb_poll_for_event(conn))) {
 		rtb_window_lock(win);
-		ret = handle_generic_event((struct xcb_window *) win, ev);
+		ret = handle_generic_event((struct xrtb_window *) win, ev);
 		rtb_window_unlock(win);
 
 		free(ev);
@@ -531,7 +531,7 @@ struct xrtb_uv_poll {
 };
 
 static void
-vsync_static_fps(struct xcb_window *xwin)
+vsync_static_fps(struct xrtb_window *xwin)
 {
 	uv_async_t *notify;
 	notify = RTB_UPCAST(&xwin->notify, uv_async_s);
@@ -551,7 +551,7 @@ trunc_int(int64_t i, int by)
 }
 
 static int
-vsync_glx_oml(struct xcb_window *xwin, struct video_sync *sync)
+vsync_glx_oml(struct xrtb_window *xwin, struct video_sync *sync)
 {
 	struct xcb_rutabaga *xrtb;
 	struct rtb_window *win;
@@ -596,7 +596,7 @@ vsync_glx_oml(struct xcb_window *xwin, struct video_sync *sync)
 static void
 vsync_thread(void *ctx)
 {
-	struct xcb_window *xwin;
+	struct xrtb_window *xwin;
 	struct video_sync sync;
 
 	xwin = ctx;
@@ -626,11 +626,11 @@ static void
 frame_cb(uv_async_t *_handle, int status)
 {
 	struct xrtb_redraw_notify *notify;
-	struct xcb_window *xwin;
+	struct xrtb_window *xwin;
 	struct rtb_window *win;
 
 	notify = RTB_DOWNCAST(_handle, xrtb_redraw_notify, uv_async_s);
-	xwin = RTB_CONTAINER_OF(notify, struct xcb_window, notify);
+	xwin = RTB_CONTAINER_OF(notify, struct xrtb_window, notify);
 	win = RTB_WINDOW(xwin);
 
 	if (win->visibility == RTB_FULLY_OBSCURED)
@@ -646,7 +646,7 @@ void
 rtb_event_loop(struct rutabaga *r)
 {
 	struct xcb_rutabaga *xrtb = (void *) r;
-	struct xcb_window *xwin = (void *) r->win;
+	struct xrtb_window *xwin = (void *) r->win;
 	struct xrtb_uv_poll xcb_poll;
 	uv_thread_t frame_thread;
 	uv_loop_t *rtb_loop;
