@@ -107,10 +107,10 @@ struct rtb_style {
  */
 
 const struct rtb_style_property_definition *rtb_style_query_prop(
-		struct rtb_style *style_list, rtb_draw_state_t state,
+		struct rtb_style *style_list, rtb_elem_state_t state,
 		const char *property_name, rtb_style_prop_type_t type);
 const struct rtb_style_property_definition *rtb_style_query_prop_in_tree(
-		struct rtb_element *leaf, rtb_draw_state_t state,
+		struct rtb_element *leaf, rtb_elem_state_t state,
 		const char *property_name, rtb_style_prop_type_t type);
 int rtb_style_elem_has_properties_for_state(struct rtb_element *elem,
 		rtb_elem_state_t state);

@@ -59,7 +59,7 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
 	rtb_render_push(elem);
 	rtb_render_clear(elem);
 	rtb_render_set_position(elem, 0, 0);
-	rtb_render_use_style_bg(elem, state);
+	rtb_render_use_style_bg(elem);
 
 	rtb_render_quad(elem, &self->bg_quad);
 

@@ -47,7 +47,7 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
 	const struct rtb_style_property_definition *color_prop;
 	SELF_FROM(elem);
 
-	color_prop = rtb_style_query_prop_in_tree(self->parent, state,
+	color_prop = rtb_style_query_prop_in_tree(self->parent, self->state,
 			"color", RTB_STYLE_PROP_COLOR);
 
 	rtb_text_object_render(self->tobj, elem,
@@ -100,8 +100,10 @@ restyle(struct rtb_element *elem)
 
 	super.restyle(elem);
 
-	font_prop = rtb_style_query_prop_in_tree(self->parent, RTB_DRAW_NORMAL,
+	font_prop = rtb_style_query_prop_in_tree(self->parent, RTB_STATE_NORMAL,
 			"font", RTB_STYLE_PROP_FONT);
+
+	assert(font_prop->font.face);
 
 	if (&font_prop->font.font_internal != self->font) {
 		/* XXX: const issues */

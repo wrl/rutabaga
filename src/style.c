@@ -40,6 +40,13 @@ const static struct rtb_style_property_definition fallbacks[RTB_STYLE_PROP_TYPE_
 		.property_name = "<fallback>",
 		.type = RTB_STYLE_PROP_COLOR,
 		.color = {RGB(0xFF0000), 1.f}
+	},
+
+	/* XXX: have a basic fallback font? */
+	[RTB_STYLE_PROP_FONT] = {
+		.property_name = "<fallback>",
+		.type = RTB_STYLE_PROP_FONT,
+		.font.face = NULL
 	}
 };
 
@@ -47,10 +54,13 @@ static rtb_draw_state_t
 draw_state_for_elem_state(unsigned int state)
 {
 	switch (state) {
-	case RTB_STATE_NORMAL: return RTB_DRAW_NORMAL;
-	case RTB_STATE_HOVER:  return RTB_DRAW_HOVER;
-	case RTB_STATE_ACTIVE: return RTB_DRAW_ACTIVE;
-	case RTB_STATE_FOCUS:  return RTB_DRAW_FOCUS;
+	case RTB_STATE_NORMAL:       return RTB_DRAW_NORMAL;
+	case RTB_STATE_HOVER:        return RTB_DRAW_HOVER;
+	case RTB_STATE_ACTIVE:       return RTB_DRAW_ACTIVE;
+
+	case RTB_STATE_FOCUS:        return RTB_DRAW_FOCUS;
+	case RTB_STATE_FOCUS_HOVER:  return RTB_DRAW_HOVER;
+	case RTB_STATE_FOCUS_ACTIVE: return RTB_DRAW_ACTIVE;
 	}
 
 	return RTB_DRAW_NORMAL;
@@ -172,15 +182,19 @@ style_resolve(struct rtb_window *window, struct rtb_style *style)
  * queries
  */
 
-const struct rtb_style_property_definition *query(
-		struct rtb_style *style_list, rtb_draw_state_t state,
+const struct rtb_style_property_definition *query_no_fallback(
+		struct rtb_style *style_list, rtb_elem_state_t elem_state,
 		const char *property_name, rtb_style_prop_type_t type)
 {
 	struct rtb_style_property_definition *prop;
+	rtb_draw_state_t draw_state;
+
+	draw_state = draw_state_for_elem_state(elem_state);
 
 	for (; style_list; style_list = style_list->inherit_from) {
-		for (prop = style_list->properties[state];
-				!!prop->property_name; prop++)
+		prop = style_list->properties[draw_state];
+
+		for (; !!prop->property_name; prop++)
 			if (!strcmp(prop->property_name, property_name)
 					&& prop->type == type)
 				return prop;
@@ -189,44 +203,57 @@ const struct rtb_style_property_definition *query(
 	return NULL;
 }
 
-const struct rtb_style_property_definition *rtb_style_query_prop(
-		struct rtb_style *style_list, rtb_draw_state_t state,
+const struct rtb_style_property_definition *query(
+		struct rtb_style *style_list, rtb_elem_state_t elem_state,
 		const char *property_name, rtb_style_prop_type_t type)
 {
 	const struct rtb_style_property_definition *prop;
 
-	if (!style_list)
-		return &fallbacks[state];
+	if ((prop = query_no_fallback(style_list,
+					elem_state, property_name, type)))
+		return prop;
 
-	if (!(prop = query(style_list, state, property_name, type))
-			&& !(prop = query(style_list, RTB_DRAW_NORMAL,
-					property_name, type)))
-		return &fallbacks[type];
+	switch (elem_state) {
+	case RTB_STATE_FOCUS_HOVER:
+	case RTB_STATE_FOCUS_ACTIVE:
+		if ((prop = query_no_fallback(style_list,
+						RTB_STATE_FOCUS, property_name, type)))
+			return prop;
 
-	return prop;
+		/* fall-through */
+
+	case RTB_STATE_FOCUS:
+	case RTB_STATE_HOVER:
+	case RTB_STATE_ACTIVE:
+		if ((prop = query_no_fallback(style_list,
+						RTB_STATE_NORMAL, property_name, type)))
+			return prop;
+
+	default:
+		break;
+	}
+
+	return &fallbacks[type];
+}
+
+const struct rtb_style_property_definition *rtb_style_query_prop(
+		struct rtb_style *style_list, rtb_elem_state_t state,
+		const char *property_name, rtb_style_prop_type_t type)
+{
+	return query(style_list, state, property_name, type);
 }
 
 const struct rtb_style_property_definition *rtb_style_query_prop_in_tree(
-		struct rtb_element *leaf, rtb_draw_state_t state,
+		struct rtb_element *leaf, rtb_elem_state_t state,
 		const char *property_name, rtb_style_prop_type_t type)
 {
 	const struct rtb_style_property_definition *prop;
-	rtb_draw_state_t local_state;
-	struct rtb_style *style_list;
 	struct rtb_element *root;
 
-	for (prop = NULL, root = RTB_ELEMENT(leaf->window);
-			!prop && leaf != root; leaf = leaf->parent) {
-		style_list = leaf->style;
-		local_state = state;
+	root = RTB_ELEMENT(leaf->window);
 
-		if (!(prop = query(style_list, local_state, property_name, type))
-				&& (local_state != RTB_DRAW_NORMAL))
-			prop = query(style_list, RTB_DRAW_NORMAL, property_name, type);
-	}
-
-	if (!prop)
-		return &fallbacks[type];
+	for (prop = NULL; !prop && leaf != root; leaf = leaf->parent)
+		prop = query(leaf->style, state, property_name, type);
 
 	return prop;
 }

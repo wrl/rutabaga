@@ -57,17 +57,15 @@ static int
 change_state(struct rtb_element *self, rtb_elem_state_t state)
 {
 	switch (self->state) {
-	case RTB_STATE_UNATTACHED:
-		self->state = state;
-		break;
-
 	default:
 		if (rtb_style_elem_has_properties_for_state(self, self->state)
 				&& rtb_style_elem_has_properties_for_state(self, state))
 			rtb_elem_mark_dirty(self);
 
-		self->state = state;
+		/* fall-through */
 
+	case RTB_STATE_UNATTACHED:
+		self->state = state;
 		break;
 	}
 
@@ -93,8 +91,11 @@ transition_mouse_leave(struct rtb_element *self)
 }
 
 static void
-transition_mouse_down(struct rtb_element *self)
+transition_mouse_down(struct rtb_element *self, int mouse_button)
 {
+	if (mouse_button != RTB_MOUSE_BUTTON1)
+		return;
+
 	if (FOCUSED(self))
 		change_state(self, RTB_STATE_FOCUS_ACTIVE);
 	else
@@ -102,7 +103,7 @@ transition_mouse_down(struct rtb_element *self)
 }
 
 static void
-transition_mouse_up(struct rtb_element *self)
+transition_mouse_up(struct rtb_element *self, int mouse_button)
 {
 	if (self->mouse_in)
 		transition_mouse_enter(self);
@@ -347,12 +348,12 @@ rtb_elem_deliver_event(struct rtb_element *self, const struct rtb_event *e)
 		break;
 
 	case RTB_MOUSE_DOWN:
-		transition_mouse_down(self);
+		transition_mouse_down(self, ((struct rtb_mouse_event *) e)->button);
 		break;
 
 	case RTB_MOUSE_UP:
 	case RTB_DRAG_DROP:
-		transition_mouse_up(self);
+		transition_mouse_up(self, ((struct rtb_mouse_event *) e)->button);
 		break;
 	}
 

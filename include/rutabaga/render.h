@@ -41,8 +41,8 @@ struct rtb_render_context {
 	} queues;
 };
 
-void rtb_render_use_style_bg(struct rtb_element *, rtb_draw_state_t state);
-void rtb_render_use_style_fg(struct rtb_element *, rtb_draw_state_t state);
+void rtb_render_use_style_bg(struct rtb_element *);
+void rtb_render_use_style_fg(struct rtb_element *);
 
 void rtb_render_set_color(struct rtb_element *,
 		GLfloat r, GLfloat g, GLfloat b, GLfloat a);

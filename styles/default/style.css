@@ -64,6 +64,18 @@ knob {
 }
 
 /**
+ * text input
+ */
+
+text-input {
+	background-color: #404F3C;
+}
+
+text-input:focus {
+	background-color: #55754D;
+}
+
+/**
  * base widgets
  */
 

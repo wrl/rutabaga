@@ -49,10 +49,10 @@ static const GLubyte quad_outline_indices[] = {
  */
 
 void
-rtb_render_use_style_bg(struct rtb_element *elem, rtb_draw_state_t state)
+rtb_render_use_style_bg(struct rtb_element *elem)
 {
 	const struct rtb_style_property_definition *prop;
-	prop = rtb_style_query_prop(elem->style, state,
+	prop = rtb_style_query_prop(elem->style, elem->state,
 			"background-color", RTB_STYLE_PROP_COLOR);
 
 	rtb_render_set_color(elem,
@@ -63,10 +63,10 @@ rtb_render_use_style_bg(struct rtb_element *elem, rtb_draw_state_t state)
 }
 
 void
-rtb_render_use_style_fg(struct rtb_element *elem, rtb_draw_state_t state)
+rtb_render_use_style_fg(struct rtb_element *elem)
 {
 	const struct rtb_style_property_definition *prop;
-	prop = rtb_style_query_prop(elem->style, state,
+	prop = rtb_style_query_prop(elem->style, elem->state,
 			"color", RTB_STYLE_PROP_COLOR);
 
 	rtb_render_set_color(elem,

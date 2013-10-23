@@ -168,7 +168,7 @@ draw_bg(struct rtb_patchbay *self)
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-	prop = rtb_style_query_prop(self->style, RTB_DRAW_NORMAL,
+	prop = rtb_style_query_prop(self->style, RTB_STATE_NORMAL,
 			"background-image", RTB_STYLE_PROP_TEXTURE);
 
 	glEnable(GL_TEXTURE_2D);
@@ -179,7 +179,7 @@ draw_bg(struct rtb_patchbay *self)
 			roundf(self->texture_offset.x),
 			roundf(self->texture_offset.y));
 
-	prop = rtb_style_query_prop(self->style, RTB_DRAW_NORMAL,
+	prop = rtb_style_query_prop(self->style, RTB_STATE_NORMAL,
 			"color", RTB_STYLE_PROP_COLOR);
 
 	glUniform4f(shader.uniform.front_color,
@@ -188,7 +188,7 @@ draw_bg(struct rtb_patchbay *self)
 			prop->color.b,
 			prop->color.a);
 
-	prop = rtb_style_query_prop(self->style, RTB_DRAW_NORMAL,
+	prop = rtb_style_query_prop(self->style, RTB_STATE_NORMAL,
 			"background-color", RTB_STYLE_PROP_COLOR);
 
 	glUniform4f(shader.uniform.back_color,
@@ -327,7 +327,7 @@ reflow(struct rtb_element *elem,
 	super.reflow(elem, instigator, direction);
 
 	if (self->style) {
-		prop = rtb_style_query_prop(self->style, RTB_DRAW_NORMAL,
+		prop = rtb_style_query_prop(self->style, RTB_STATE_NORMAL,
 				"background-image", RTB_STYLE_PROP_TEXTURE);
 
 		/* XXX: casting away const-ness */

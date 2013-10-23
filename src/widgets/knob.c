@@ -136,14 +136,14 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
 	/* background */
-	rtb_render_use_style_bg(elem, state);
+	rtb_render_use_style_bg(elem);
 
 	glDrawElements(
 			GL_TRIANGLE_FAN, ARRAY_LENGTH(circle_indices),
 			GL_UNSIGNED_SHORT, circle_indices);
 
 	/* indicator */
-	rtb_render_use_style_fg(elem, state);
+	rtb_render_use_style_fg(elem);
 
 	glLineWidth(2.5f);
 

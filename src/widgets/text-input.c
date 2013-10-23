@@ -145,7 +145,7 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
 		glDrawArrays(GL_LINES, 0, 2);
 	}
 
-	rtb_render_use_style_bg(elem, state);
+	rtb_render_use_style_bg(elem);
 	glLineWidth(2.f);
 
 	rtb_render_quad_outline(elem, &self->bg_quad);
