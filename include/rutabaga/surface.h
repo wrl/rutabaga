@@ -57,7 +57,7 @@ struct rtb_surface {
 int rtb_surface_is_dirty(struct rtb_surface *);
 
 void rtb_surface_blit(struct rtb_surface *);
-void rtb_surface_draw_children(struct rtb_surface *, rtb_draw_state_t state);
+void rtb_surface_draw_children(struct rtb_surface *);
 void rtb_surface_invalidate(struct rtb_surface *);
 
 int rtb_surface_init(struct rtb_surface *,

@@ -302,14 +302,14 @@ draw_patches(struct rtb_patchbay *self)
 }
 
 static void
-draw(struct rtb_element *elem, rtb_draw_state_t state)
+draw(struct rtb_element *elem)
 {
 	SELF_FROM(elem);
 
 	draw_bg(self);
 	draw_patches(self);
 
-	super.draw(elem, state);
+	super.draw(elem);
 }
 
 /**

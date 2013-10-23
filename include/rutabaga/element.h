@@ -67,9 +67,6 @@ typedef enum {
 typedef void (*rtb_elem_cb_t)
 	(struct rtb_element *);
 
-typedef void (*rtb_elem_cb_draw_t)
-	(struct rtb_element *elem, rtb_draw_state_t state);
-
 typedef int (*rtb_elem_cb_internal_event_t)
 	(struct rtb_element *, const struct rtb_event *event);
 
@@ -94,7 +91,7 @@ struct rtb_element_implementation {
 	 *
 	 * called when the element should redraw itself
 	 */
-	rtb_elem_cb_draw_t draw;
+	rtb_elem_cb_t draw;
 
 	/**
 	 * rtb_element_implementation.on_event
@@ -244,8 +241,8 @@ struct rtb_element {
 };
 
 int rtb_elem_deliver_event(struct rtb_element *, const struct rtb_event *e);
-void rtb_elem_draw_children(struct rtb_element *, rtb_draw_state_t state);
-void rtb_elem_draw(struct rtb_element *, rtb_draw_state_t state);
+void rtb_elem_draw_children(struct rtb_element *);
+void rtb_elem_draw(struct rtb_element *);
 
 void rtb_elem_mark_dirty(struct rtb_element *);
 void rtb_elem_trigger_recalc(struct rtb_element *,

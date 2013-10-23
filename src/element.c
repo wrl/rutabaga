@@ -250,9 +250,9 @@ restyle(struct rtb_element *self)
  */
 
 static void
-draw(struct rtb_element *self, rtb_draw_state_t state)
+draw(struct rtb_element *self)
 {
-	rtb_elem_draw_children(self, RTB_DRAW_NORMAL);
+	rtb_elem_draw_children(self);
 }
 
 static int
@@ -375,39 +375,21 @@ rtb_elem_deliver_event(struct rtb_element *self, const struct rtb_event *e)
 }
 
 void
-rtb_elem_draw_children(struct rtb_element *self, rtb_draw_state_t state)
+rtb_elem_draw_children(struct rtb_element *self)
 {
 	struct rtb_element *iter;
 
 	TAILQ_FOREACH(iter, &self->children, child)
-		rtb_elem_draw(iter, state);
+		rtb_elem_draw(iter);
 }
 
 void
-rtb_elem_draw(struct rtb_element *self, rtb_draw_state_t state)
+rtb_elem_draw(struct rtb_element *self)
 {
 	if (self->visibility == RTB_FULLY_OBSCURED)
 		return;
 
-	/* we do this so that child widgets are drawn with their parent's state
-	 * if their parent has a draw state. */
-	switch (self->state) {
-	case RTB_STATE_UNATTACHED:
-		return;
-
-	case RTB_STATE_NORMAL:       state = RTB_DRAW_NORMAL; break;
-	case RTB_STATE_HOVER:        state = RTB_DRAW_HOVER;  break;
-	case RTB_STATE_ACTIVE:       state = RTB_DRAW_ACTIVE; break;
-
-	case RTB_STATE_FOCUS:        state = RTB_DRAW_FOCUS;  break;
-	case RTB_STATE_FOCUS_HOVER:  state = RTB_DRAW_HOVER;  break;
-	case RTB_STATE_FOCUS_ACTIVE: state = RTB_DRAW_ACTIVE; break;
-
-	default:
-		break;
-	}
-
-	self->draw(self, state);
+	self->draw(self);
 	LAYOUT_DEBUG_DRAW_BOX(self);
 }
 

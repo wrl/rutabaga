@@ -52,7 +52,7 @@ static struct rtb_element_implementation super;
  */
 
 static void
-draw(struct rtb_element *elem, rtb_draw_state_t state)
+draw(struct rtb_element *elem)
 {
 	SELF_FROM(elem);
 
@@ -63,7 +63,7 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
 
 	rtb_render_quad(elem, &self->bg_quad);
 
-	rtb_elem_draw_children(elem, state);
+	rtb_elem_draw_children(elem);
 	rtb_render_pop(elem);
 }
 

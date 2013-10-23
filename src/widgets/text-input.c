@@ -121,14 +121,14 @@ update_cursor(struct rtb_text_input *self)
  */
 
 static void
-draw(struct rtb_element *elem, rtb_draw_state_t state)
+draw(struct rtb_element *elem)
 {
 	SELF_FROM(elem);
 
 	rtb_render_push(elem);
 	rtb_render_clear(elem);
 
-	super.draw(elem, state);
+	super.draw(elem);
 
 	rtb_render_reset(elem);
 	rtb_render_set_position(elem, 0, 0);

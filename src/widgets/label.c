@@ -42,7 +42,7 @@
 static struct rtb_element_implementation super;
 
 static void
-draw(struct rtb_element *elem, rtb_draw_state_t state)
+draw(struct rtb_element *elem)
 {
 	const struct rtb_style_property_definition *color_prop;
 	SELF_FROM(elem);
@@ -53,7 +53,7 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
 	rtb_text_object_render(self->tobj, elem,
 			self->x, self->y, &color_prop->color);
 
-	super.draw(elem, state);
+	super.draw(elem);
 }
 
 static int

@@ -61,7 +61,7 @@ get_patch(struct rtb_patchbay_port *from, struct rtb_patchbay_port *to)
  */
 
 static void
-draw(struct rtb_element *elem, rtb_draw_state_t state)
+draw(struct rtb_element *elem)
 {
 	SELF_FROM(elem);
 
@@ -73,7 +73,7 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
 	rtb_render_quad(elem, &self->bg_quad);
 	rtb_render_pop(elem);
 
-	super.draw(elem, state);
+	super.draw(elem);
 }
 
 /**

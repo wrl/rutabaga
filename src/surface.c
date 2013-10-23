@@ -52,12 +52,12 @@ static struct rtb_element_implementation super;
  */
 
 static void
-draw(struct rtb_element *elem, rtb_draw_state_t state)
+draw(struct rtb_element *elem)
 {
 	SELF_FROM(elem);
 
 	rtb_render_push(elem);
-	rtb_surface_draw_children(self, state);
+	rtb_surface_draw_children(self);
 	rtb_surface_blit(self);
 	rtb_render_pop(elem);
 }
@@ -179,7 +179,7 @@ rtb_surface_blit(struct rtb_surface *self)
 }
 
 void
-rtb_surface_draw_children(struct rtb_surface *self, rtb_draw_state_t state)
+rtb_surface_draw_children(struct rtb_surface *self)
 {
 	struct rtb_render_context *ctx = &self->render_ctx;
 	struct rtb_element *iter;
@@ -209,7 +209,7 @@ rtb_surface_draw_children(struct rtb_surface *self, rtb_draw_state_t state)
 		}
 
 		TAILQ_FOREACH(iter, &self->children, child)
-			rtb_elem_draw(iter, RTB_DRAW_NORMAL);
+			rtb_elem_draw(iter);
 
 		self->surface_state = RTB_SURFACE_VALID;
 		break;
@@ -221,11 +221,11 @@ rtb_surface_draw_children(struct rtb_surface *self, rtb_draw_state_t state)
 			iter->render_entry.tqe_next = NULL;
 			iter->render_entry.tqe_prev = NULL;
 
-			rtb_elem_draw(iter, RTB_DRAW_NORMAL);
+			rtb_elem_draw(iter);
 		}
 
 		TAILQ_FOREACH(iter, &ctx->queues.every_frame, render_entry)
-			rtb_elem_draw(iter, RTB_DRAW_NORMAL);
+			rtb_elem_draw(iter);
 
 		break;
 	}

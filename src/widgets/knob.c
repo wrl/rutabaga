@@ -121,7 +121,7 @@ cache_to_vbo(struct rtb_knob *self)
 }
 
 static void
-draw(struct rtb_element *elem, rtb_draw_state_t state)
+draw(struct rtb_element *elem)
 {
 	SELF_FROM(elem);
 
@@ -160,7 +160,7 @@ draw(struct rtb_element *elem, rtb_draw_state_t state)
 	glDisableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	super.draw(elem, state);
+	super.draw(elem);
 }
 
 /**

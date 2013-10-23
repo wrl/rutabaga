@@ -167,7 +167,7 @@ rtb_window_draw(struct rtb_window *self)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	rtb_render_push(RTB_ELEMENT(self));
-	self->draw(RTB_ELEMENT(self), RTB_DRAW_NORMAL);
+	self->draw(RTB_ELEMENT(self));
 	rtb_render_pop(RTB_ELEMENT(self));
 
 	self->dirty = 0;
