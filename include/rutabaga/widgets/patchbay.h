@@ -57,7 +57,6 @@ struct rtb_patchbay_node {
 	struct rtb_element input_ports;
 	struct rtb_element output_ports;
 
-	struct rtb_quad bg_quad;
 	struct rtb_label name_label;
 	struct rtb_patchbay *patchbay;
 };
@@ -66,7 +65,6 @@ struct rtb_patchbay_port {
 	RTB_INHERIT(rtb_element);
 
 	/* private ********************************/
-	struct rtb_quad bg_quad;
 	struct rtb_label label;
 	rtb_patchbay_port_type_t port_type;
 

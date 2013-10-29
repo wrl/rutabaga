@@ -47,6 +47,7 @@ def build(bld):
 
     obj('asset.c')
     obj('style.c')
+    obj('stylequad.c')
 
     obj('element.c')
     obj('surface.c')

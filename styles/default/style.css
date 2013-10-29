@@ -47,10 +47,10 @@ button:hover {
 button:active {
 	color: rgba(#FFF, .7);
 	background-color: #21291F;
+	border-color: #404F3C;
 }
 
 button:focus {
-	color: rgba(#FFF, .7);
 	background-color: #3C404F;
 }
 
@@ -67,8 +67,12 @@ knob {
  * text input
  */
 
+text-input {
+	border-color: rgba(#404F3C, .5);
+}
+
 text-input:focus {
-	background-color: #55754D;
+	border-color: #404F3C;
 }
 
 /**
@@ -82,7 +86,6 @@ rtb|window {
 
 rtb|element {
 	color: #FFF;
-	background-color: #404F3C;
 
 	font-family: "Open Sans";
 	font-size: 9pt;

@@ -48,6 +48,7 @@ prop_mapping = {
     "color": RutabagaRGBAProperty,
     "background-color": RutabagaRGBAProperty,
     "background-image": RutabagaTextureProperty,
+    "border-color": RutabagaRGBAProperty
 }
 
 class RutabagaStyleState(object):

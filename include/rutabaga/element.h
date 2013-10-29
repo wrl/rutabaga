@@ -30,6 +30,7 @@
 #include "rutabaga/atom.h"
 #include "rutabaga/event.h"
 #include "rutabaga/geometry.h"
+#include "rutabaga/stylequad.h"
 
 #include "bsd/queue.h"
 #include "wwrl/vector.h"
@@ -228,6 +229,7 @@ struct rtb_element {
 	rtb_elem_state_t state;
 	struct rtb_rect inner_rect;
 	rtb_visibility_t visibility;
+	struct rtb_stylequad stylequad;
 
 	int mouse_in;
 

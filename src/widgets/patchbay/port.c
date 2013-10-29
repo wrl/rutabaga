@@ -57,26 +57,6 @@ get_patch(struct rtb_patchbay_port *from, struct rtb_patchbay_port *to)
 }
 
 /**
- * drawing
- */
-
-static void
-draw(struct rtb_element *elem)
-{
-	SELF_FROM(elem);
-
-	rtb_render_push(elem);
-	rtb_render_clear(elem);
-	rtb_render_set_position(elem, 0.f, 0.f);
-	rtb_render_use_style_bg(elem);
-
-	rtb_render_quad(elem, &self->bg_quad);
-	rtb_render_pop(elem);
-
-	super.draw(elem);
-}
-
-/**
  * event dispatching
  */
 
@@ -228,18 +208,6 @@ handle_mouse(struct rtb_patchbay_port *self, struct rtb_mouse_event *e)
  * element implementation
  */
 
-static int
-reflow(struct rtb_element *elem,
-		struct rtb_element *instigator, rtb_ev_direction_t direction)
-{
-	SELF_FROM(elem);
-
-	super.reflow(elem, instigator, direction);
-	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
-
-	return 1;
-}
-
 static void
 attached(struct rtb_element *elem,
 		struct rtb_element *parent, struct rtb_window *window)
@@ -382,7 +350,6 @@ rtb_patchbay_port_init(struct rtb_patchbay_port *self,
 		rtb_patchbay_port_type_t type, rtb_child_add_loc_t location)
 {
 	rtb_elem_init(RTB_ELEMENT(self), &super);
-	rtb_quad_init(&self->bg_quad);
 	TAILQ_INIT(&self->patches);
 
 	rtb_label_init(&self->label, &self->label.impl);
@@ -393,9 +360,7 @@ rtb_patchbay_port_init(struct rtb_patchbay_port *self,
 	self->port_type  = type;
 	self->node       = node;
 
-	self->draw      = draw;
 	self->attached  = attached;
-	self->reflow    = reflow;
 	self->on_event  = on_event;
 	self->size_cb   = rtb_size_hfill;
 	self->layout_cb = rtb_layout_vpack_top;
@@ -427,7 +392,6 @@ rtb_patchbay_port_fini(struct rtb_patchbay_port *self)
 	while ((patch = TAILQ_FIRST(&self->patches)))
 		rtb_patchbay_free_patch(self->node->patchbay, patch);
 
-	rtb_quad_fini(&self->bg_quad);
 	rtb_label_fini(&self->label);
 	rtb_elem_fini(RTB_ELEMENT(self));
 }

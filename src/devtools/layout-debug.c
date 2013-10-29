@@ -64,7 +64,7 @@ cache_to_vbo(struct rtb_element *self)
 void
 rtb_debug_draw_bounding_box(struct rtb_element *self)
 {
-	rtb_render_push(self);
+	rtb_render_reset(self);
 	rtb_render_set_position(self, 0.f, 0.f);
 
 	/* draw the outline */
@@ -82,8 +82,6 @@ rtb_debug_draw_bounding_box(struct rtb_element *self)
 
 	glDisableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	rtb_render_pop(self);
 }
 
 void

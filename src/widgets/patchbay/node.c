@@ -42,39 +42,8 @@
 static struct rtb_element_implementation super;
 
 /**
- * drawing
- */
-
-static void
-draw(struct rtb_element *elem)
-{
-	SELF_FROM(elem);
-
-	rtb_render_push(elem);
-	rtb_render_set_position(elem, 0.f, 0.f);
-	rtb_render_use_style_bg(elem);
-
-	rtb_render_quad(elem, &self->bg_quad);
-	super.draw(elem);
-
-	rtb_render_pop(elem);
-}
-
-/**
  * element implementation
  */
-
-static int
-reflow(struct rtb_element *elem,
-		struct rtb_element *instigator, rtb_ev_direction_t direction)
-{
-	SELF_FROM(elem);
-
-	super.reflow(elem, instigator, direction);
-	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
-
-	return 1;
-}
 
 static int
 handle_drag(struct rtb_patchbay_node *self, const struct rtb_drag_event *e)
@@ -152,14 +121,11 @@ void
 rtb_patchbay_node_init(struct rtb_patchbay_node *self)
 {
 	rtb_elem_init(RTB_ELEMENT(self), &super);
-	rtb_quad_init(&self->bg_quad);
 
-	self->draw      = draw;
 	self->on_event  = on_event;
 	self->attached  = attached;
 	self->size_cb   = size;
 	self->layout_cb = rtb_layout_vpack_top;
-	self->reflow    = reflow;
 
 	self->min_size.w = 200.f;
 
@@ -217,10 +183,7 @@ rtb_patchbay_node_init(struct rtb_patchbay_node *self)
 void
 rtb_patchbay_node_fini(struct rtb_patchbay_node *self)
 {
-	rtb_quad_fini(&self->bg_quad);
-
 	rtb_elem_remove_child(RTB_ELEMENT(self->patchbay), RTB_ELEMENT(self));
-
 	rtb_label_fini(&self->name_label);
 
 	rtb_elem_fini(&self->input_ports);

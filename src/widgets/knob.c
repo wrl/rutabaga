@@ -125,7 +125,6 @@ draw(struct rtb_element *elem)
 {
 	SELF_FROM(elem);
 
-	rtb_render_push(elem);
 	rtb_render_clear(elem);
 	rtb_render_set_position(elem,
 			self->x + ((self->w) / 2),
@@ -159,8 +158,6 @@ draw(struct rtb_element *elem)
 
 	glDisableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	super.draw(elem);
 }
 
 /**

@@ -157,7 +157,7 @@ rtb_window_draw(struct rtb_window *self)
 	glViewport(0, 0, self->w, self->h);
 
 	prop = rtb_style_query_prop(self->style, RTB_STATE_NORMAL,
-			"background-color", RTB_STYLE_PROP_COLOR);
+			"background-color", RTB_STYLE_PROP_COLOR, 1);
 
 	glClearColor(
 			prop->color.r,

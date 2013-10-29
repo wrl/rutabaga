@@ -56,10 +56,8 @@ draw(struct rtb_element *elem)
 {
 	SELF_FROM(elem);
 
-	rtb_render_push(elem);
 	rtb_surface_draw_children(self);
 	rtb_surface_blit(self);
-	rtb_render_pop(elem);
 }
 
 static int

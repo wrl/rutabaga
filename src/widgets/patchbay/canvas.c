@@ -159,7 +159,6 @@ draw_bg(struct rtb_patchbay *self)
 	const struct rtb_style_property_definition *prop;
 	struct rtb_element *elem = RTB_ELEMENT(self);
 
-	rtb_render_push(elem);
 	rtb_render_use_shader(elem, RTB_SHADER(&shader));
 	rtb_render_set_position(elem, 0, 0);
 
@@ -169,7 +168,7 @@ draw_bg(struct rtb_patchbay *self)
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
 	prop = rtb_style_query_prop(self->style, RTB_STATE_NORMAL,
-			"background-image", RTB_STYLE_PROP_TEXTURE);
+			"background-image", RTB_STYLE_PROP_TEXTURE, 1);
 
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, self->bg_texture);
@@ -180,7 +179,7 @@ draw_bg(struct rtb_patchbay *self)
 			roundf(self->texture_offset.y));
 
 	prop = rtb_style_query_prop(self->style, RTB_STATE_NORMAL,
-			"color", RTB_STYLE_PROP_COLOR);
+			"color", RTB_STYLE_PROP_COLOR, 1);
 
 	glUniform4f(shader.uniform.front_color,
 			prop->color.r,
@@ -189,7 +188,7 @@ draw_bg(struct rtb_patchbay *self)
 			prop->color.a);
 
 	prop = rtb_style_query_prop(self->style, RTB_STATE_NORMAL,
-			"background-color", RTB_STYLE_PROP_COLOR);
+			"background-color", RTB_STYLE_PROP_COLOR, 1);
 
 	glUniform4f(shader.uniform.back_color,
 			prop->color.r,
@@ -204,8 +203,6 @@ draw_bg(struct rtb_patchbay *self)
 	glDisableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
-
-	rtb_render_pop(elem);
 }
 
 static void
@@ -229,7 +226,7 @@ draw_patches(struct rtb_patchbay *self)
 	struct rtb_patchbay_port *from, *to;
 	struct rtb_element *elem = RTB_ELEMENT(self);
 
-	rtb_render_push(elem);
+	rtb_render_reset(elem);
 	rtb_render_set_position(elem, 0, 0);
 
 	glEnable(GL_LINE_SMOOTH);
@@ -297,8 +294,6 @@ draw_patches(struct rtb_patchbay *self)
 
 	glDisableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	rtb_render_pop(elem);
 }
 
 static void
@@ -328,7 +323,7 @@ reflow(struct rtb_element *elem,
 
 	if (self->style) {
 		prop = rtb_style_query_prop(self->style, RTB_STATE_NORMAL,
-				"background-image", RTB_STYLE_PROP_TEXTURE);
+				"background-image", RTB_STYLE_PROP_TEXTURE, 1);
 
 		/* XXX: casting away const-ness */
 		load_tile((struct rtb_style_texture_definition *) &prop->texture,

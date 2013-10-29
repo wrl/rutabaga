@@ -26,28 +26,23 @@
 
 #pragma once
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/element.h"
-#include "rutabaga/text-object.h"
+#include "rutabaga/quad.h"
 
-#define RTB_LABEL(x) RTB_UPCAST(x, rtb_label)
+struct rtb_stylequad {
+	RTB_INHERIT(rtb_quad);
+	struct rtb_element *owner;
 
-struct rtb_label {
-	RTB_INHERIT(rtb_element);
-
-	/* private ********************************/
-	rtb_utf8_t *text;
-	struct rtb_font *font;
-	struct rtb_text_object *tobj;
-	const struct rtb_rgb_color *color;
+	struct {
+		const struct rtb_rgb_color *bg_color;
+		const struct rtb_rgb_color *fg_color;
+		const struct rtb_rgb_color *border_color;
+	} cached_style;
 };
 
-void rtb_label_set_font(struct rtb_label *, struct rtb_font *font);
-void rtb_label_set_text(struct rtb_label *, const rtb_utf8_t *text);
+void rtb_stylequad_update_style(struct rtb_stylequad *);
+void rtb_stylequad_update_geometry(struct rtb_stylequad *);
 
-int rtb_label_init(struct rtb_label *,
-		struct rtb_element_implementation *impl);
-void rtb_label_fini(struct rtb_label *);
+void rtb_stylequad_draw(struct rtb_stylequad *);
 
-struct rtb_label *rtb_label_new(const rtb_utf8_t *text);
-void rtb_label_free(struct rtb_label *);
+void rtb_stylequad_init(struct rtb_stylequad *, struct rtb_element *owner);
+void rtb_stylequad_fini(struct rtb_stylequad *);

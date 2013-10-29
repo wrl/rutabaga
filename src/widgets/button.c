@@ -29,15 +29,12 @@
 #include <assert.h>
 #include <string.h>
 
-#include <math.h>
-
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/element.h"
 #include "rutabaga/window.h"
 #include "rutabaga/render.h"
 #include "rutabaga/layout.h"
 #include "rutabaga/keyboard.h"
-#include "rutabaga/quad.h"
 
 #include "private/util.h"
 #include "rutabaga/widgets/button.h"
@@ -46,26 +43,6 @@
 	struct rtb_button *self = RTB_ELEMENT_AS(elem, rtb_button)
 
 static struct rtb_element_implementation super;
-
-/**
- * drawing-related things
- */
-
-static void
-draw(struct rtb_element *elem)
-{
-	SELF_FROM(elem);
-
-	rtb_render_push(elem);
-	rtb_render_clear(elem);
-	rtb_render_set_position(elem, 0, 0);
-	rtb_render_use_style_bg(elem);
-
-	rtb_render_quad(elem, &self->bg_quad);
-
-	rtb_elem_draw_children(elem);
-	rtb_render_pop(elem);
-}
 
 /**
  * event handlers
@@ -139,8 +116,6 @@ reflow(struct rtb_element *elem, struct rtb_element *instigator,
 	self->outer_pad.x = self->label.outer_pad.x;
 	self->outer_pad.y = self->label.outer_pad.y;
 
-	rtb_quad_set_vertices(&self->bg_quad, &self->rect);
-
 	return 1;
 }
 
@@ -178,8 +153,6 @@ rtb_button_init(struct rtb_button *self,
 	rtb_elem_add_child(RTB_ELEMENT(self), RTB_ELEMENT(&self->label),
 			RTB_ADD_HEAD);
 
-	rtb_quad_init(&self->bg_quad);
-
 	self->label.align = RTB_ALIGN_MIDDLE;
 	self->outer_pad.x =
 		self->outer_pad.y = 0.f;
@@ -187,7 +160,6 @@ rtb_button_init(struct rtb_button *self,
 	self->min_size.w = 70.f;
 	self->min_size.h = 26.f;
 
-	self->draw      = draw;
 	self->on_event  = on_event;
 	self->attached  = attached;
 	self->layout_cb = rtb_layout_hpack_center;
@@ -200,7 +172,6 @@ rtb_button_init(struct rtb_button *self,
 void
 rtb_button_fini(struct rtb_button *self)
 {
-	rtb_quad_fini(&self->bg_quad);
 	rtb_label_fini(&self->label);
 	rtb_elem_fini(RTB_ELEMENT(self));
 }
