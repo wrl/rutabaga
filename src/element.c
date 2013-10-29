@@ -62,10 +62,14 @@ change_state(struct rtb_element *self, rtb_elem_state_t state)
 	default:
 		if (self->state != state
 				&& rtb_style_elem_has_properties_for_state(self, self->state)
-				&& rtb_style_elem_has_properties_for_state(self, state))
+				&& rtb_style_elem_has_properties_for_state(self, state)) {
+			self->state = state;
+			self->restyle(self);
 			rtb_elem_mark_dirty(self);
+		} else
+			self->state = state;
 
-		/* fall-through */
+		break;
 
 	case RTB_STATE_UNATTACHED:
 		self->state = state;
@@ -258,6 +262,9 @@ restyle(struct rtb_element *self)
 static void
 draw(struct rtb_element *self)
 {
+	rtb_render_set_position(self, 0, 0);
+	rtb_stylequad_draw(&self->stylequad);
+
 	rtb_elem_draw_children(self);
 }
 

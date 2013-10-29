@@ -31,6 +31,11 @@
 struct rtb_stylequad {
 	RTB_INHERIT(rtb_quad);
 	struct rtb_element *owner;
+
+	struct {
+		const struct rtb_rgb_color *bg_color;
+		const struct rtb_rgb_color *fg_color;
+	} cached_style;
 };
 
 void rtb_stylequad_update_style(struct rtb_stylequad *);

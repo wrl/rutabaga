@@ -29,8 +29,6 @@
 #include <assert.h>
 #include <string.h>
 
-#include <math.h>
-
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/element.h"
 #include "rutabaga/window.h"
@@ -57,9 +55,8 @@ draw(struct rtb_element *elem)
 
 	rtb_render_clear(elem);
 	rtb_render_set_position(elem, 0, 0);
-	rtb_render_use_style_bg(elem);
 
-	rtb_render_quad(elem, RTB_QUAD(&self->stylequad));
+	rtb_stylequad_draw(&self->stylequad);
 
 	rtb_elem_draw_children(elem);
 }

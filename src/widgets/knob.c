@@ -158,8 +158,6 @@ draw(struct rtb_element *elem)
 
 	glDisableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	super.draw(elem);
 }
 
 /**

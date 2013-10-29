@@ -26,13 +26,56 @@
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/element.h"
+#include "rutabaga/render.h"
+#include "rutabaga/style.h"
 #include "rutabaga/quad.h"
 #include "rutabaga/stylequad.h"
 
 void
+rtb_stylequad_draw(struct rtb_stylequad *self)
+{
+	if (!self->cached_style.bg_color)
+		return;
+
+	rtb_render_clear(self->owner);
+
+	rtb_render_set_color(self->owner,
+			self->cached_style.bg_color->r,
+			self->cached_style.bg_color->g,
+			self->cached_style.bg_color->b,
+			self->cached_style.bg_color->a);
+
+	rtb_render_quad(self->owner, RTB_QUAD(self));
+}
+
+void
 rtb_stylequad_update_style(struct rtb_stylequad *self)
 {
-	return;
+	const struct rtb_style_property_definition *prop;
+	struct rtb_element *elem = self->owner;
+
+#define CACHE_COLOR(dest, name) do {                       \
+	prop = rtb_style_query_prop(elem->style,               \
+			elem->state, name, RTB_STYLE_PROP_COLOR, 0);   \
+	if (prop)                                              \
+		self->cached_style.dest = &prop->color;            \
+	else                                                   \
+		self->cached_style.dest = NULL;                    \
+} while (0)
+#define CACHE_TEXTURE(dest, name) do {                     \
+	prop = rtb_style_query_prop(elem->style,               \
+			elem->state, name, RTB_STYLE_PROP_TEXTURE, 0); \
+	if (prop)                                              \
+		self->cached_style.dest = &prop->texture;          \
+	else                                                   \
+		self->cached_style.dest = NULL;                    \
+} while (0)
+
+	CACHE_COLOR(bg_color, "background-color");
+	CACHE_COLOR(fg_color, "color");
+
+#undef CACHE_TEXTURE
+#undef CACHE_COLOR
 }
 
 void

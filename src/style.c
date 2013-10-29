@@ -205,7 +205,8 @@ const struct rtb_style_property_definition *query_no_fallback(
 
 const struct rtb_style_property_definition *query(
 		struct rtb_style *style_list, rtb_elem_state_t elem_state,
-		const char *property_name, rtb_style_prop_type_t type)
+		const char *property_name, rtb_style_prop_type_t type,
+		int return_fallback)
 {
 	const struct rtb_style_property_definition *prop;
 
@@ -233,19 +234,23 @@ const struct rtb_style_property_definition *query(
 		break;
 	}
 
-	return &fallbacks[type];
+	if (return_fallback)
+		return &fallbacks[type];
+	return NULL;
 }
 
 const struct rtb_style_property_definition *rtb_style_query_prop(
 		struct rtb_style *style_list, rtb_elem_state_t state,
-		const char *property_name, rtb_style_prop_type_t type)
+		const char *property_name, rtb_style_prop_type_t type,
+		int return_fallback)
 {
-	return query(style_list, state, property_name, type);
+	return query(style_list, state, property_name, type, return_fallback);
 }
 
 const struct rtb_style_property_definition *rtb_style_query_prop_in_tree(
 		struct rtb_element *leaf, rtb_elem_state_t state,
-		const char *property_name, rtb_style_prop_type_t type)
+		const char *property_name, rtb_style_prop_type_t type,
+		int return_fallback)
 {
 	const struct rtb_style_property_definition *prop;
 	struct rtb_element *root;
@@ -253,7 +258,7 @@ const struct rtb_style_property_definition *rtb_style_query_prop_in_tree(
 	root = RTB_ELEMENT(leaf->window);
 
 	for (prop = NULL; !prop && leaf != root; leaf = leaf->parent)
-		prop = query(leaf->style, state, property_name, type);
+		prop = query(leaf->style, state, property_name, type, return_fallback);
 
 	return prop;
 }
