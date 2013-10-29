@@ -45,17 +45,7 @@ static void
 draw(struct rtb_element *elem)
 {
 	SELF_FROM(elem);
-
-	rtb_text_object_render(self->tobj, elem,
-			self->x, self->y, self->color);
-}
-
-static int
-reflow(struct rtb_element *elem, struct rtb_element *instigator,
-		rtb_ev_direction_t direction)
-{
-	super.reflow(elem, instigator, direction);
-	return 1;
+	rtb_text_object_render(self->tobj, elem, self->x, self->y, self->color);
 }
 
 static void
@@ -161,7 +151,6 @@ rtb_label_init(struct rtb_label *self,
 		impl->draw     = draw;
 		impl->attached = attached;
 		impl->size_cb  = size;
-		impl->reflow   = reflow;
 		impl->restyle  = restyle;
 	} while (impl != elem_impl && (impl = elem_impl));
 

@@ -45,23 +45,6 @@
 static struct rtb_element_implementation super;
 
 /**
- * drawing-related things
- */
-
-static void
-draw(struct rtb_element *elem)
-{
-	SELF_FROM(elem);
-
-	rtb_render_clear(elem);
-	rtb_render_set_position(elem, 0, 0);
-
-	rtb_stylequad_draw(&self->stylequad);
-
-	rtb_elem_draw_children(elem);
-}
-
-/**
  * event handlers
  */
 
@@ -177,7 +160,6 @@ rtb_button_init(struct rtb_button *self,
 	self->min_size.w = 70.f;
 	self->min_size.h = 26.f;
 
-	self->draw      = draw;
 	self->on_event  = on_event;
 	self->attached  = attached;
 	self->layout_cb = rtb_layout_hpack_center;

@@ -125,14 +125,12 @@ draw(struct rtb_element *elem)
 {
 	SELF_FROM(elem);
 
-	rtb_render_clear(elem);
-
 	super.draw(elem);
 
-	rtb_render_reset(elem);
-	rtb_render_set_position(elem, 0, 0);
-
 	if (self->window->focus == RTB_ELEMENT(self)) {
+		rtb_render_reset(elem);
+		rtb_render_set_position(elem, 0, 0);
+
 		glBindBuffer(GL_ARRAY_BUFFER, self->cursor_vbo);
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
