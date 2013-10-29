@@ -44,14 +44,10 @@ static struct rtb_element_implementation super;
 static void
 draw(struct rtb_element *elem)
 {
-	const struct rtb_style_property_definition *color_prop;
 	SELF_FROM(elem);
 
-	color_prop = rtb_style_query_prop_in_tree(self->parent, self->state,
-			"color", RTB_STYLE_PROP_COLOR, 1);
-
 	rtb_text_object_render(self->tobj, elem,
-			self->x, self->y, &color_prop->color);
+			self->x, self->y, self->color);
 }
 
 static int
@@ -93,24 +89,30 @@ size(struct rtb_element *elem,
 static void
 restyle(struct rtb_element *elem)
 {
-	const struct rtb_style_property_definition *font_prop;
+	const struct rtb_style_property_definition *prop;
 	SELF_FROM(elem);
 
 	super.restyle(elem);
 
-	font_prop = rtb_style_query_prop_in_tree(self->parent, RTB_STATE_NORMAL,
+	prop = rtb_style_query_prop_in_tree(
+			self->parent, self->parent->state,
 			"font", RTB_STYLE_PROP_FONT, 0);
 
-	assert(font_prop);
+	assert(prop);
 
-	if (&font_prop->font.font_internal != self->font) {
+	if (&prop->font.font_internal != self->font) {
 		/* XXX: const issues */
-		self->font = (struct rtb_font *) &font_prop->font.font_internal;
+		self->font = (struct rtb_font *) &prop->font.font_internal;
 
 		rtb_text_object_update(self->tobj, self->font, self->text);
 		rtb_elem_trigger_recalc(self->parent, RTB_ELEMENT(self),
 				RTB_DIRECTION_ROOTWARD);
 	}
+
+	prop = rtb_style_query_prop_in_tree(
+			self->parent, self->parent->state,
+			"color", RTB_STYLE_PROP_COLOR, 1);
+	self->color = &prop->color;
 }
 
 /**

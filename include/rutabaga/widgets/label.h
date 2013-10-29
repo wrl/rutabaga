@@ -39,6 +39,7 @@ struct rtb_label {
 	rtb_utf8_t *text;
 	struct rtb_font *font;
 	struct rtb_text_object *tobj;
+	const struct rtb_rgb_color *color;
 };
 
 void rtb_label_set_font(struct rtb_label *, struct rtb_font *font);

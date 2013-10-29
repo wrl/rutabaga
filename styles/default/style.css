@@ -51,7 +51,6 @@ button:active {
 }
 
 button:focus {
-	color: rgba(#FFF, .7);
 	background-color: #3C404F;
 }
 
