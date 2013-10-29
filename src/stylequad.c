@@ -34,18 +34,38 @@
 void
 rtb_stylequad_draw(struct rtb_stylequad *self)
 {
-	if (!self->cached_style.bg_color)
-		return;
+	int cleared = 0;
+#define CLEAR() do {               \
+	if (cleared)                   \
+	break;                         \
+	rtb_render_clear(self->owner); \
+	cleared = 1;                   \
+} while (0)
 
-	rtb_render_clear(self->owner);
+	if (self->cached_style.bg_color) {
+		CLEAR();
 
-	rtb_render_set_color(self->owner,
-			self->cached_style.bg_color->r,
-			self->cached_style.bg_color->g,
-			self->cached_style.bg_color->b,
-			self->cached_style.bg_color->a);
+		rtb_render_set_color(self->owner,
+				self->cached_style.bg_color->r,
+				self->cached_style.bg_color->g,
+				self->cached_style.bg_color->b,
+				self->cached_style.bg_color->a);
 
-	rtb_render_quad(self->owner, RTB_QUAD(self));
+		rtb_render_quad(self->owner, RTB_QUAD(self));
+	}
+
+	if (self->cached_style.border_color) {
+		CLEAR();
+
+		rtb_render_set_color(self->owner,
+				self->cached_style.border_color->r,
+				self->cached_style.border_color->g,
+				self->cached_style.border_color->b,
+				self->cached_style.border_color->a);
+
+		glLineWidth(2.f);
+		rtb_render_quad_outline(self->owner, RTB_QUAD(self));
+	}
 }
 
 void
@@ -73,6 +93,7 @@ rtb_stylequad_update_style(struct rtb_stylequad *self)
 
 	CACHE_COLOR(bg_color, "background-color");
 	CACHE_COLOR(fg_color, "color");
+	CACHE_COLOR(border_color, "border-color");
 
 #undef CACHE_TEXTURE
 #undef CACHE_COLOR

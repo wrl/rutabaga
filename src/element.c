@@ -66,8 +66,9 @@ change_state(struct rtb_element *self, rtb_elem_state_t state)
 			self->state = state;
 			self->restyle(self);
 			rtb_elem_mark_dirty(self);
-		} else
+		} else {
 			self->state = state;
+		}
 
 		break;
 

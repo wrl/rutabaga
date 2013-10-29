@@ -143,11 +143,6 @@ draw(struct rtb_element *elem)
 
 		glDrawArrays(GL_LINES, 0, 2);
 	}
-
-	rtb_render_use_style_bg(elem);
-	glLineWidth(2.f);
-
-	rtb_render_quad_outline(elem, &self->bg_quad);
 }
 
 /**

@@ -35,6 +35,7 @@ struct rtb_stylequad {
 	struct {
 		const struct rtb_rgb_color *bg_color;
 		const struct rtb_rgb_color *fg_color;
+		const struct rtb_rgb_color *border_color;
 	} cached_style;
 };
 
