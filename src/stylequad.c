@@ -30,15 +30,21 @@
 #include "rutabaga/stylequad.h"
 
 void
-rtb_stylequad_update(struct rtb_stylequad *self,
-		struct rtb_element *elem)
+rtb_stylequad_update_style(struct rtb_stylequad *self)
 {
-	rtb_quad_set_vertices(RTB_QUAD(self), &elem->rect);
+	return;
 }
 
 void
-rtb_stylequad_init(struct rtb_stylequad *self)
+rtb_stylequad_update_geometry(struct rtb_stylequad *self)
 {
+	rtb_quad_set_vertices(RTB_QUAD(self), &self->owner->rect);
+}
+
+void
+rtb_stylequad_init(struct rtb_stylequad *self, struct rtb_element *owner)
+{
+	self->owner = owner;
 	rtb_quad_init(RTB_QUAD(self));
 }
 

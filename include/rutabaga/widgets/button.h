@@ -48,7 +48,6 @@ struct rtb_button {
 
 	/* private ********************************/
 	struct rtb_label label;
-	struct rtb_stylequad stylequad;
 };
 
 void rtb_button_set_label(struct rtb_button *self, const rtb_utf8_t *text);

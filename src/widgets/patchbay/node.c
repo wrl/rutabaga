@@ -50,14 +50,11 @@ draw(struct rtb_element *elem)
 {
 	SELF_FROM(elem);
 
-	rtb_render_push(elem);
 	rtb_render_set_position(elem, 0.f, 0.f);
 	rtb_render_use_style_bg(elem);
 
 	rtb_render_quad(elem, &self->bg_quad);
 	super.draw(elem);
-
-	rtb_render_pop(elem);
 }
 
 /**

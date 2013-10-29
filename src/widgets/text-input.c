@@ -125,7 +125,6 @@ draw(struct rtb_element *elem)
 {
 	SELF_FROM(elem);
 
-	rtb_render_push(elem);
 	rtb_render_clear(elem);
 
 	super.draw(elem);
@@ -149,8 +148,6 @@ draw(struct rtb_element *elem)
 	glLineWidth(2.f);
 
 	rtb_render_quad_outline(elem, &self->bg_quad);
-
-	rtb_render_pop(elem);
 }
 
 /**

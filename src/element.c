@@ -35,6 +35,8 @@
 #include "rutabaga/element.h"
 #include "rutabaga/layout.h"
 #include "rutabaga/window.h"
+#include "rutabaga/stylequad.h"
+#include "rutabaga/render.h"
 
 #include "rutabaga/style.h"
 #include "rutabaga/atom.h"
@@ -228,6 +230,8 @@ reflow(struct rtb_element *self,
 	self->inner_rect.x2 = self->x2 - self->outer_pad.x;
 	self->inner_rect.y2 = self->y2 - self->outer_pad.y;
 
+	rtb_stylequad_update_geometry(&self->stylequad);
+
 	return 1;
 }
 
@@ -240,6 +244,8 @@ restyle(struct rtb_element *self)
 
 	if (!self->style)
 		self->style = rtb_style_for_element(self, self->window->style_list);
+
+	rtb_stylequad_update_style(&self->stylequad);
 
 	TAILQ_FOREACH(iter, &self->children, child)
 		iter->restyle(iter);
@@ -389,8 +395,12 @@ rtb_elem_draw(struct rtb_element *self)
 	if (self->visibility == RTB_FULLY_OBSCURED)
 		return;
 
+	rtb_render_push(self);
+
 	self->draw(self);
 	LAYOUT_DEBUG_DRAW_BOX(self);
+
+	rtb_render_pop(self);
 }
 
 void
@@ -486,6 +496,8 @@ rtb_elem_remove_child(struct rtb_element *self, struct rtb_element *child)
 {
 	TAILQ_REMOVE(&self->children, child, child);
 
+	/* XXX: remove from renderqueue if we're marked for redraw */
+
 	if (!self->window)
 		return;
 
@@ -561,6 +573,8 @@ rtb_elem_init(struct rtb_element *self,
 
 	VECTOR_INIT(&self->handlers, &stdlib_allocator, 1);
 
+	rtb_stylequad_init(&self->stylequad, self);
+
 	LAYOUT_DEBUG_INIT();
 
 	return 0;
@@ -569,6 +583,7 @@ rtb_elem_init(struct rtb_element *self,
 void
 rtb_elem_fini(struct rtb_element *self)
 {
+	rtb_stylequad_fini(&self->stylequad);
 	VECTOR_FREE(&self->handlers);
 	rtb_type_unref(self->type);
 }

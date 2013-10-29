@@ -30,8 +30,13 @@
 
 struct rtb_stylequad {
 	RTB_INHERIT(rtb_quad);
+	struct rtb_element *owner;
 };
 
-void rtb_stylequad_update(struct rtb_stylequad *, struct rtb_element *);
-void rtb_stylequad_init(struct rtb_stylequad *);
+void rtb_stylequad_update_style(struct rtb_stylequad *);
+void rtb_stylequad_update_geometry(struct rtb_stylequad *);
+
+void rtb_stylequad_draw(struct rtb_stylequad *);
+
+void rtb_stylequad_init(struct rtb_stylequad *, struct rtb_element *owner);
 void rtb_stylequad_fini(struct rtb_stylequad *);

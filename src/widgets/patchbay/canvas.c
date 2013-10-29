@@ -159,7 +159,6 @@ draw_bg(struct rtb_patchbay *self)
 	const struct rtb_style_property_definition *prop;
 	struct rtb_element *elem = RTB_ELEMENT(self);
 
-	rtb_render_push(elem);
 	rtb_render_use_shader(elem, RTB_SHADER(&shader));
 	rtb_render_set_position(elem, 0, 0);
 
@@ -204,8 +203,6 @@ draw_bg(struct rtb_patchbay *self)
 	glDisableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
-
-	rtb_render_pop(elem);
 }
 
 static void
@@ -229,7 +226,7 @@ draw_patches(struct rtb_patchbay *self)
 	struct rtb_patchbay_port *from, *to;
 	struct rtb_element *elem = RTB_ELEMENT(self);
 
-	rtb_render_push(elem);
+	rtb_render_reset(elem);
 	rtb_render_set_position(elem, 0, 0);
 
 	glEnable(GL_LINE_SMOOTH);
@@ -297,8 +294,6 @@ draw_patches(struct rtb_patchbay *self)
 
 	glDisableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	rtb_render_pop(elem);
 }
 
 static void
