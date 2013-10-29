@@ -74,19 +74,25 @@ rtb_stylequad_update_style(struct rtb_stylequad *self)
 	const struct rtb_style_property_definition *prop;
 	struct rtb_element *elem = self->owner;
 
+#define ASSIGN_AND_MAYBE_MARK_DIRTY(dest, val) do {        \
+	if (dest != val) rtb_elem_mark_dirty(elem);            \
+	dest = val;                                            \
+} while (0)
 #define CACHE_COLOR(dest, name) do {                       \
 	prop = rtb_style_query_prop(elem->style,               \
 			elem->state, name, RTB_STYLE_PROP_COLOR, 0);   \
-	if (prop)                                              \
-		self->cached_style.dest = &prop->color;            \
-	else                                                   \
+	if (prop) {                                            \
+		ASSIGN_AND_MAYBE_MARK_DIRTY(                       \
+				self->cached_style.dest, &prop->color);    \
+	} else                                                 \
 		self->cached_style.dest = NULL;                    \
 } while (0)
 #define CACHE_TEXTURE(dest, name) do {                     \
 	prop = rtb_style_query_prop(elem->style,               \
 			elem->state, name, RTB_STYLE_PROP_TEXTURE, 0); \
 	if (prop)                                              \
-		self->cached_style.dest = &prop->texture;          \
+		ASSIGN_AND_MAYBE_MARK_DIRTY(                       \
+				self->cached_style.dest, &prop->texture);  \
 	else                                                   \
 		self->cached_style.dest = NULL;                    \
 } while (0)
@@ -97,6 +103,7 @@ rtb_stylequad_update_style(struct rtb_stylequad *self)
 
 #undef CACHE_TEXTURE
 #undef CACHE_COLOR
+#undef ASSIGN_AND_MAYBE_MARK_DIRTY
 }
 
 void

@@ -60,15 +60,11 @@ change_state(struct rtb_element *self, rtb_elem_state_t state)
 {
 	switch (self->state) {
 	default:
-		if (self->state != state
-				&& rtb_style_elem_has_properties_for_state(self, self->state)
-				&& rtb_style_elem_has_properties_for_state(self, state)) {
-			self->state = state;
-			self->restyle(self);
-			rtb_elem_mark_dirty(self);
-		} else {
-			self->state = state;
-		}
+		if (self->state == state)
+			return 0;
+
+		self->state = state;
+		self->restyle(self);
 
 		break;
 

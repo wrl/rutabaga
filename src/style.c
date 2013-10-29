@@ -270,20 +270,8 @@ rtb_style_elem_has_properties_for_state(struct rtb_element *elem,
 #define HAS_PROPS_FOR(elem_state) \
 	(elem->style->properties[draw_state_for_elem_state(elem_state)]->property_name)
 
-	/* exact match */
 	if (HAS_PROPS_FOR(state))
 		return 1;
-
-	/* some fallbacks */
-	switch (state) {
-	case RTB_STATE_FOCUS_ACTIVE:
-		if (HAS_PROPS_FOR(RTB_STATE_FOCUS))
-			return 1;
-
-	default:
-		break;
-	}
-
 	return 0;
 }
 
