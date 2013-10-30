@@ -105,12 +105,26 @@ reflow(struct rtb_element *elem, struct rtb_element *instigator,
 }
 
 static void
+add_to_every_frame_queue(struct rtb_surface *self,
+		struct rtb_element *elem)
+{
+	struct rtb_render_context *render_ctx = &self->surface->render_ctx;
+	struct rtb_render_tailq *queue;
+
+	queue = &render_ctx->queues.every_frame;
+	TAILQ_INSERT_TAIL(queue, elem, render_entry);
+}
+
+static void
 child_attached(struct rtb_element *elem, struct rtb_element *child)
 {
 	SELF_FROM(elem);
 
 	child->surface = self;
 	child->attached(child, RTB_ELEMENT(self), self->window);
+
+	if (child->flags & RTB_ELEM_RENDER_EVERY_FRAME)
+		add_to_every_frame_queue(self, child);
 }
 
 static void

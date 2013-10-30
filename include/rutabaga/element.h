@@ -42,11 +42,13 @@ typedef enum {
 	/* all events, regardless of whether they are already handled by
 	 * the element in question, are passed to client code after the
 	 * element's event_cb has been run. */
-	RTB_ELEM_EVENT_SNOOP = 0x01,
+	RTB_ELEM_EVENT_SNOOP        = 0x01,
 
-	RTB_ELEM_NO_FOCUS    = 0,
-	RTB_ELEM_CLICK_FOCUS = 0x02,
-	RTB_ELEM_TAB_FOCUS   = 0x04
+	RTB_ELEM_NO_FOCUS           = 0,
+	RTB_ELEM_CLICK_FOCUS        = 0x02,
+	RTB_ELEM_TAB_FOCUS          = 0x04,
+
+	RTB_ELEM_RENDER_EVERY_FRAME = 0x08
 } rtb_elem_flags_t;
 
 typedef enum {
@@ -246,6 +248,7 @@ int rtb_elem_deliver_event(struct rtb_element *, const struct rtb_event *e);
 void rtb_elem_draw_children(struct rtb_element *);
 void rtb_elem_draw(struct rtb_element *);
 
+void rtb_elem_render_every_frame(struct rtb_element *);
 void rtb_elem_mark_dirty(struct rtb_element *);
 void rtb_elem_trigger_recalc(struct rtb_element *,
 		struct rtb_element *instigator, rtb_ev_direction_t direction);

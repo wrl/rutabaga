@@ -60,6 +60,12 @@
 #define CAST_EVENT_TO(type) type *ev = (type *) _ev
 #define SET_IF_TRUE(w, m, f) (w = (w & ~m) | (-f & m))
 
+static void
+request_redraw(struct xrtb_window *xwin)
+{
+	uv_async_send(RTB_UPCAST(&xwin->notify, uv_async_s));
+}
+
 /**
  * mouse events
  */
@@ -414,8 +420,7 @@ handle_generic_event(struct xrtb_window *win, xcb_generic_event_t *ev)
 		break;
 
 	case XCB_EXPOSE:
-		win->dirty = 1;
-		uv_async_send(RTB_UPCAST(&win->notify, uv_async_s));
+		request_redraw(win);
 		break;
 
 	case XCB_VISIBILITY_NOTIFY:
