@@ -253,11 +253,8 @@ const struct rtb_style_property_definition *rtb_style_query_prop_in_tree(
 		int return_fallback)
 {
 	const struct rtb_style_property_definition *prop;
-	struct rtb_element *root;
 
-	root = RTB_ELEMENT(leaf->window);
-
-	for (prop = NULL; !prop && leaf != root; leaf = leaf->parent)
+	for (prop = NULL; !prop && leaf->parent != leaf; leaf = leaf->parent)
 		prop = query(leaf->style, state, property_name, type, return_fallback);
 
 	return prop;
