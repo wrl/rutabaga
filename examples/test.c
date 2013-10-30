@@ -69,8 +69,10 @@ rtb_utf8_t *rlabels[] = {
 struct rtb_knob *knob;
 struct rtb_button *last_button = NULL;
 struct rtb_text_input *input;
+struct rtb_label time_label;
 
-int print_streeng(struct rtb_element *victim,
+static int
+print_streeng(struct rtb_element *victim,
 		const struct rtb_event *e, void *ctx)
 {
 	const struct rtb_mouse_event *mv = (void *) e;
@@ -87,7 +89,8 @@ int print_streeng(struct rtb_element *victim,
 	return 0;
 }
 
-int knob_value(struct rtb_element *victim,
+static int
+knob_value(struct rtb_element *victim,
 		const struct rtb_event *e, void *unused)
 {
 	return 0;
@@ -101,14 +104,8 @@ int knob_value(struct rtb_element *victim,
 	return 0;
 }
 
-int report(struct rtb_element *victim,
-		const struct rtb_event *e, void *user_data)
-{
-	puts("calc");
-	return 0;
-}
-
-void distribute_demo(rtb_container_t *root)
+static void
+distribute_demo(rtb_container_t *root)
 {
 	int i, j;
 	rtb_container_t *containers[10];
@@ -138,7 +135,8 @@ void distribute_demo(rtb_container_t *root)
 	}
 }
 
-void setup_ui(rtb_container_t *root)
+static void
+setup_ui(rtb_container_t *root)
 {
 	rtb_container_t *upper, *lower;
 	struct rtb_button *buttons[6];
@@ -180,7 +178,8 @@ void setup_ui(rtb_container_t *root)
 	rtb_container_add(root, lower);
 }
 
-static int handle_input_key(struct rtb_element *obj,
+static int
+handle_input_key(struct rtb_element *obj,
 		const struct rtb_event *_ev, void *ctx)
 {
 	struct rtb_text_input *input = RTB_ELEMENT_AS(obj, rtb_text_input);
@@ -201,7 +200,8 @@ static int handle_input_key(struct rtb_element *obj,
 	return 1;
 }
 
-void add_input(struct rutabaga *rtb, rtb_container_t *root)
+void
+add_input(struct rutabaga *rtb, rtb_container_t *root)
 {
 	input = rtb_text_input_new(rtb);
 
@@ -214,7 +214,8 @@ void add_input(struct rutabaga *rtb, rtb_container_t *root)
 	rtb_elem_add_child(root, RTB_ELEMENT(input), RTB_ADD_TAIL);
 }
 
-static void print_modkeys(const struct rtb_key_event *ev)
+static void
+print_modkeys(const struct rtb_key_event *ev)
 {
 	if (!ev->modkeys)
 		return;
@@ -235,7 +236,8 @@ static void print_modkeys(const struct rtb_key_event *ev)
 	printf("\n");
 }
 
-static int handle_key_press(struct rtb_element *victim,
+static int
+handle_key_press(struct rtb_element *victim,
 		const struct rtb_event *e, void *ctx)
 {
 	const struct rtb_key_event *ev = RTB_EVENT_AS(e, rtb_key_event);
@@ -267,6 +269,29 @@ static int handle_key_press(struct rtb_element *victim,
 	return 1;
 }
 
+struct rtb_element_implementation label_super;
+
+static void
+our_draw(struct rtb_element *elem)
+{
+	rtb_render_clear(elem);
+	label_super.draw(elem);
+}
+
+static int
+frame_start(struct rtb_element *elem, const struct rtb_event *e, void *ctx)
+{
+	struct timespec ts;
+	char buf[32];
+
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	snprintf(buf, sizeof(buf),
+			"%.5f", ts.tv_sec + (ts.tv_nsec / 1e+09));
+
+	rtb_label_set_text(&time_label, buf);
+	return 1;
+}
+
 int main(int argc, char **argv)
 {
 	struct rutabaga *delicious;
@@ -286,12 +311,23 @@ int main(int argc, char **argv)
 	rtb_register_handler(RTB_ELEMENT(win),
 			RTB_KEY_PRESS, handle_key_press, delicious);
 
+	rtb_label_init(&time_label, &label_super);
+	time_label.draw = our_draw;
+
+	rtb_elem_add_child(RTB_ELEMENT(win), RTB_ELEMENT(&time_label),
+			RTB_ADD_HEAD);
+
+	rtb_elem_render_every_frame(RTB_ELEMENT(&time_label));
+	rtb_register_handler(RTB_ELEMENT(win),
+			RTB_FRAME_START, frame_start, NULL);
+
 	distribute_demo(RTB_ELEMENT(delicious->win));
 	setup_ui(RTB_ELEMENT(delicious->win));
 	add_input(delicious, RTB_ELEMENT(delicious->win));
 
 	rtb_event_loop(delicious);
 
+	rtb_label_fini(&time_label);
 	rtb_window_close(delicious->win);
 	rtb_free(delicious);
 }
