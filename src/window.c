@@ -153,11 +153,17 @@ void
 rtb_window_draw(struct rtb_window *self)
 {
 	const struct rtb_style_property_definition *prop;
+	struct rtb_window_event ev;
 
 	if (self->state == RTB_STATE_UNATTACHED)
 		return;
 
 	glViewport(0, 0, self->w, self->h);
+
+	ev.type = RTB_FRAME_START;
+	ev.source = RTB_EVENT_GENUINE;
+	ev.window = self;
+	rtb_dispatch_raw(RTB_ELEMENT(self), RTB_EVENT(&ev));
 
 	prop = rtb_style_query_prop(self->style, RTB_STATE_NORMAL,
 			"background-color", RTB_STYLE_PROP_COLOR, 1);
@@ -175,6 +181,9 @@ rtb_window_draw(struct rtb_window *self)
 
 	if (!TAILQ_FIRST(&self->render_ctx.queues.every_frame))
 		self->dirty = 0;
+
+	ev.type = RTB_FRAME_END;
+	rtb_dispatch_raw(RTB_ELEMENT(self), RTB_EVENT(&ev));
 }
 
 void
@@ -225,7 +234,7 @@ rtb_window_open(struct rutabaga *r,
 	self->mark_dirty = mark_dirty;
 	self->attached   = attached;
 
-	self->flags      = RTB_ELEM_CLICK_FOCUS;
+	self->flags = RTB_ELEM_CLICK_FOCUS;
 
 	r->win = self;
 	return self;

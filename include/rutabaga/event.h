@@ -44,27 +44,42 @@ typedef unsigned int rtb_ev_type_t;
 
 #define SYS(x) ((x) | RTB_EVENT_SYS_MASK)
 enum {
+	/**
+	 * dispatched when the window should close.
+	 * if the handler returns `1`, the window stays open.
+	 */
 	RTB_WINDOW_CLOSE   = SYS(0),
 
-	RTB_FOCUS          = SYS(1),
-	RTB_UNFOCUS        = SYS(2),
+	/**
+	 * dispatched before any drawing happens in a frame.
+	 */
+	RTB_FRAME_START    = SYS(1),
 
-	RTB_KEY_PRESS      = SYS(3),
-	RTB_KEY_RELEASE    = SYS(4),
+	/**
+	 * dispatched after all drawing in a frame has occurred,
+	 * before the GL buffer swap.
+	 */
+	RTB_FRAME_END      = SYS(2),
 
-	RTB_MOUSE_DOWN     = SYS(5),
-	RTB_MOUSE_UP       = SYS(6),
-	RTB_MOUSE_ENTER    = SYS(7),
-	RTB_MOUSE_LEAVE    = SYS(8),
+	RTB_FOCUS          = SYS(3),
+	RTB_UNFOCUS        = SYS(4),
 
-	RTB_MOUSE_CLICK    = SYS(9),
-	RTB_MOUSE_DBLCLICK = SYS(10),
+	RTB_KEY_PRESS      = SYS(5),
+	RTB_KEY_RELEASE    = SYS(6),
 
-	RTB_DRAG_START     = SYS(11),
-	RTB_DRAGGING       = SYS(12),
-	RTB_DRAG_ENTER     = SYS(13),
-	RTB_DRAG_LEAVE     = SYS(14),
-	RTB_DRAG_DROP      = SYS(15)
+	RTB_MOUSE_DOWN     = SYS(7),
+	RTB_MOUSE_UP       = SYS(8),
+	RTB_MOUSE_ENTER    = SYS(9),
+	RTB_MOUSE_LEAVE    = SYS(10),
+
+	RTB_MOUSE_CLICK    = SYS(11),
+	RTB_MOUSE_DBLCLICK = SYS(12),
+
+	RTB_DRAG_START     = SYS(13),
+	RTB_DRAGGING       = SYS(14),
+	RTB_DRAG_ENTER     = SYS(15),
+	RTB_DRAG_LEAVE     = SYS(16),
+	RTB_DRAG_DROP      = SYS(17)
 };
 #undef SYS
 
