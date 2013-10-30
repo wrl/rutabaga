@@ -154,6 +154,9 @@ rtb_window_draw(struct rtb_window *self)
 {
 	const struct rtb_style_property_definition *prop;
 
+	if (self->state == RTB_STATE_UNATTACHED)
+		return;
+
 	glViewport(0, 0, self->w, self->h);
 
 	prop = rtb_style_query_prop(self->style, RTB_STATE_NORMAL,

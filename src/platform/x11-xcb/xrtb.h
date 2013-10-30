@@ -39,11 +39,6 @@
 
 #define ERR(...) fprintf(stderr, "rutabaga XCB: " __VA_ARGS__)
 
-struct xrtb_redraw_notify {
-	RTB_INHERIT(uv_async_s);
-	int thread_running;
-};
-
 struct xcb_rutabaga {
 	struct rutabaga rtb;
 
@@ -75,7 +70,6 @@ struct xrtb_window {
 	RTB_INHERIT(rtb_window);
 
 	struct xcb_rutabaga *xrtb;
-	struct xrtb_redraw_notify notify;
 
 	xcb_screen_t *screen;
 	xcb_window_t xcb_win;

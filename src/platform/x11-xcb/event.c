@@ -60,12 +60,6 @@
 #define CAST_EVENT_TO(type) type *ev = (type *) _ev
 #define SET_IF_TRUE(w, m, f) (w = (w & ~m) | (-f & m))
 
-static void
-request_redraw(struct xrtb_window *xwin)
-{
-	uv_async_send(RTB_UPCAST(&xwin->notify, uv_async_s));
-}
-
 /**
  * mouse events
  */
@@ -420,7 +414,7 @@ handle_generic_event(struct xrtb_window *win, xcb_generic_event_t *ev)
 		break;
 
 	case XCB_EXPOSE:
-		request_redraw(win);
+		win->dirty = 1;
 		break;
 
 	case XCB_VISIBILITY_NOTIFY:
@@ -484,10 +478,11 @@ drain_xcb_event_queue(xcb_connection_t *conn, struct rtb_window *win)
  */
 
 struct video_sync {
+	int functions_valid;
+
+	PFNGLXSWAPBUFFERSMSCOMLPROC swap_buffers_msc;
 	PFNGLXGETSYNCVALUESOMLPROC get_values;
 	PFNGLXGETMSCRATEOMLPROC get_msc_rate;
-	PFNGLXWAITFORMSCOMLPROC wait_msc;
-	PFNGLXWAITFORSBCOMLPROC wait_sbc;
 
 	/**
 	 * The Unadjusted System Time (or UST) is a 64-bit monotonically
@@ -514,15 +509,18 @@ struct video_sync {
 static int
 video_sync_init(struct video_sync *p)
 {
+	p->functions_valid = 0;
+
 #define GET_PROC(dst, name) p->dst = (void *) glXGetProcAddress((GLubyte *) name);
+	GET_PROC(swap_buffers_msc, "glXSwapBuffersMscOML");
 	GET_PROC(get_values, "glXGetSyncValuesOML");
 	GET_PROC(get_msc_rate, "glXGetMscRateOML");
-	GET_PROC(wait_msc, "glXWaitForMscOML");
-	GET_PROC(wait_sbc, "glXWaitForSbcOML");
 #undef GET_PROC
 
-	if (!p->get_values || !p->get_msc_rate || !p->wait_msc || !p->wait_sbc)
+	if (!p->swap_buffers_msc || !p->get_values || !p->get_msc_rate)
 		return -1;
+
+	p->functions_valid = 1;
 	return 0;
 }
 
@@ -530,84 +528,6 @@ struct xrtb_uv_poll {
 	RTB_INHERIT(uv_poll_s);
 	struct xcb_rutabaga *xrtb;
 };
-
-static void
-vsync_static_fps(struct xrtb_window *xwin)
-{
-	uv_async_t *notify;
-	notify = RTB_UPCAST(&xwin->notify, uv_async_s);
-
-	do {
-		usleep(16666);
-
-		if (xwin->dirty)
-			uv_async_send(notify);
-	} while (xwin->notify.thread_running);
-}
-
-static int64_t
-trunc_int(int64_t i, int by)
-{
-	return (i / by) * by;
-}
-
-static int
-vsync_glx_oml(struct xrtb_window *xwin, struct video_sync *sync)
-{
-	struct xcb_rutabaga *xrtb;
-	struct rtb_window *win;
-	int32_t numerator, denominator;
-	int64_t sleep_for;
-	uv_async_t *notify;
-
-	xrtb = xwin->xrtb;
-	win = RTB_WINDOW(xwin);
-	notify = RTB_UPCAST(&xwin->notify, uv_async_s);
-
-	rtb_window_lock(win);
-	sync->get_values(xrtb->dpy, xwin->gl_draw,
-			&sync->ust, &sync->msc, &sync->sbc);
-
-	sync->get_msc_rate(xrtb->dpy, xwin->gl_draw, &numerator, &denominator);
-	rtb_window_unlock(win);
-
-	sleep_for = (1000000 * (int64_t) denominator) / (int64_t) numerator;
-
-	/* we want the usleep call to finish just slightly before the MSC
-	 * increments, in the same way that a swiss railway clock's second
-	 * hand finishes its cycle in under 60 seconds. */
-	sleep_for = trunc_int(sleep_for, 1000) - 500;
-
-	do {
-		usleep(sleep_for);
-
-		rtb_window_lock(win);
-		sync->wait_msc(xrtb->dpy, xwin->gl_draw,
-				sync->msc + 1, 0, 0,
-				&sync->ust, &sync->msc, &sync->sbc);
-		rtb_window_unlock(win);
-
-		if (win->dirty)
-			uv_async_send(notify);
-	} while (xwin->notify.thread_running);
-
-	return 0;
-}
-
-static void
-vsync_thread(void *ctx)
-{
-	struct xrtb_window *xwin;
-	struct video_sync sync;
-
-	xwin = ctx;
-
-	if (!video_sync_init(&sync))
-		if (!vsync_glx_oml(xwin, &sync))
-			return;
-
-	return vsync_static_fps(xwin);
-}
 
 static void
 xcb_poll_cb(uv_poll_t *_handle, int status, int events)
@@ -623,24 +543,75 @@ xcb_poll_cb(uv_poll_t *_handle, int status, int events)
 	drain_xcb_event_queue(xrtb->xcb_conn, win);
 }
 
+struct xrtb_frame_timer {
+	RTB_INHERIT(uv_timer_s);
+	struct xrtb_window *xwin;
+	unsigned int wait_msec;
+
+	struct video_sync sync;
+};
+
 static void
-frame_cb(uv_async_t *_handle, int status)
+frame_cb(uv_timer_t *_handle, int status)
 {
-	struct xrtb_redraw_notify *notify;
+	struct xrtb_frame_timer *timer;
 	struct xrtb_window *xwin;
 	struct rtb_window *win;
+	struct video_sync *sync;
 
-	notify = RTB_DOWNCAST(_handle, xrtb_redraw_notify, uv_async_s);
-	xwin = RTB_CONTAINER_OF(notify, struct xrtb_window, notify);
+	timer = RTB_DOWNCAST(_handle, xrtb_frame_timer, uv_timer_s);
+	xwin = timer->xwin;
 	win = RTB_WINDOW(xwin);
+	sync = &timer->sync;
 
-	if (win->visibility == RTB_FULLY_OBSCURED)
+	drain_xcb_event_queue(xwin->xrtb->xcb_conn, win);
+
+	if (win->visibility == RTB_FULLY_OBSCURED || !win->dirty)
 		return;
 
 	rtb_window_lock(win);
 	rtb_window_draw(win);
-	glXSwapBuffers(xwin->xrtb->dpy, xwin->gl_draw);
+
+	if (sync->functions_valid) {
+		sync->msc++;
+		sync->swap_buffers_msc(xwin->xrtb->dpy, xwin->gl_draw,
+				sync->msc, 0, 0);
+		sync->get_values(xwin->xrtb->dpy, xwin->gl_draw,
+				&sync->ust, &sync->msc, &sync->sbc);
+	} else
+		glXSwapBuffers(xwin->xrtb->dpy, xwin->gl_draw);
 	rtb_window_unlock(win);
+}
+
+static int
+frame_timer_init(struct xrtb_frame_timer *timer)
+{
+	int32_t fps_num, fps_denom;
+	struct xcb_rutabaga *xrtb;
+	struct xrtb_window *xwin;
+	struct video_sync *sync;
+
+	xwin = timer->xwin;
+	xrtb = xwin->xrtb;
+	sync = &timer->sync;
+
+	if (video_sync_init(&timer->sync)) {
+		/* oh well. */
+		timer->wait_msec = 16;
+		return -1;
+	}
+
+	rtb_window_lock(RTB_WINDOW(xwin));
+	sync->get_values(xrtb->dpy, xwin->gl_draw,
+			&sync->ust, &sync->msc, &sync->sbc);
+
+	sync->get_msc_rate(xrtb->dpy, xwin->gl_draw, &fps_num, &fps_denom);
+	rtb_window_unlock(RTB_WINDOW(xwin));
+
+	timer->wait_msec =
+		((1000 * (int64_t) fps_denom) / (int64_t) fps_num) - 1;
+
+	return 0;
 }
 
 void
@@ -649,7 +620,7 @@ rtb_event_loop(struct rutabaga *r)
 	struct xcb_rutabaga *xrtb = (void *) r;
 	struct xrtb_window *xwin = (void *) r->win;
 	struct xrtb_uv_poll xcb_poll;
-	uv_thread_t frame_thread;
+	struct xrtb_frame_timer timer;
 	uv_loop_t *rtb_loop;
 
 	rtb_loop = uv_loop_new();
@@ -662,16 +633,14 @@ rtb_event_loop(struct rutabaga *r)
 	uv_poll_start(RTB_UPCAST(&xcb_poll, uv_poll_s), UV_READABLE,
 			xcb_poll_cb);
 
-	uv_async_init(rtb_loop,
-			RTB_UPCAST(&xwin->notify, uv_async_s), frame_cb);
-	xwin->notify.thread_running = 1;
+	timer.xwin = xwin;
+	frame_timer_init(&timer);
 
-	uv_thread_create(&frame_thread, vsync_thread, xwin);
+	uv_timer_init(rtb_loop, RTB_UPCAST(&timer, uv_timer_s));
+	uv_timer_start(RTB_UPCAST(&timer, uv_timer_s),
+			frame_cb, 0, timer.wait_msec);
 
 	uv_run(rtb_loop, UV_RUN_DEFAULT);
-
-	xwin->notify.thread_running = 0;
-	uv_thread_join(&frame_thread);
 
 	r->event_loop = NULL;
 	uv_loop_delete(rtb_loop);
