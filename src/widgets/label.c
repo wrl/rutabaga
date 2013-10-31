@@ -112,6 +112,8 @@ restyle(struct rtb_element *elem)
 void
 rtb_label_set_text(struct rtb_label *self, const rtb_utf8_t *text)
 {
+	struct rtb_size old_size;
+
 	if (self->text)
 		free(self->text);
 
@@ -120,9 +122,14 @@ rtb_label_set_text(struct rtb_label *self, const rtb_utf8_t *text)
 	if (!self->tobj)
 		return;
 
+	old_size.w = self->tobj->w;
+	old_size.h = self->tobj->h;
+
 	rtb_text_object_update(self->tobj, self->font, self->text);
-	rtb_elem_trigger_recalc(self->parent, RTB_ELEMENT(self),
-			RTB_DIRECTION_ROOTWARD);
+
+	if (self->tobj->w != old_size.w || self->tobj->h != old_size.h)
+		rtb_elem_trigger_recalc(self->parent, RTB_ELEMENT(self),
+				RTB_DIRECTION_ROOTWARD);
 }
 
 int
