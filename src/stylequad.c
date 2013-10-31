@@ -34,17 +34,7 @@
 void
 rtb_stylequad_draw(struct rtb_stylequad *self)
 {
-	int cleared = 0;
-#define CLEAR() do {               \
-	if (cleared)                   \
-	break;                         \
-	rtb_render_clear(self->owner); \
-	cleared = 1;                   \
-} while (0)
-
 	if (self->cached_style.bg_color) {
-		CLEAR();
-
 		rtb_render_set_color(self->owner,
 				self->cached_style.bg_color->r,
 				self->cached_style.bg_color->g,
@@ -55,8 +45,6 @@ rtb_stylequad_draw(struct rtb_stylequad *self)
 	}
 
 	if (self->cached_style.border_color) {
-		CLEAR();
-
 		rtb_render_set_color(self->owner,
 				self->cached_style.border_color->r,
 				self->cached_style.border_color->g,

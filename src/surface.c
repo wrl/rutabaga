@@ -111,6 +111,8 @@ add_to_every_frame_queue(struct rtb_surface *self,
 	struct rtb_render_context *render_ctx = &self->surface->render_ctx;
 	struct rtb_render_tailq *queue;
 
+	elem = rtb_elem_nearest_clearable(elem);
+
 	queue = &render_ctx->queues.every_frame;
 	TAILQ_INSERT_TAIL(queue, elem, render_entry);
 }
@@ -208,11 +210,18 @@ rtb_surface_draw_children(struct rtb_surface *self)
 	glBindFramebuffer(GL_FRAMEBUFFER, self->fbo);
 	glViewport(0, 0, self->w, self->h);
 
+	/* we have slightly different ways of handling this redraw depending
+	 * on what the state of the surface is. */
 	switch (self->surface_state) {
 	case RTB_SURFACE_INVALID:
+		/* if we're marked as invalid, we clear the entire surface and
+		 * redraw it from scratch. */
+
 		glDisable(GL_SCISSOR_TEST);
 		rtb_render_clear(RTB_ELEMENT(self));
 
+		/* first, we clean out the renderqueue for dirty elements (since
+		 * we're going to be redrawing everything anyway.) */
 		while ((iter = TAILQ_FIRST(&ctx->queues.next_frame))) {
 			TAILQ_REMOVE(&ctx->queues.next_frame, iter, render_entry);
 
@@ -220,24 +229,28 @@ rtb_surface_draw_children(struct rtb_surface *self)
 			iter->render_entry.tqe_prev = NULL;
 		}
 
+		/* then we draw all the children. */
 		TAILQ_FOREACH(iter, &self->children, child)
-			rtb_elem_draw(iter);
+			rtb_elem_draw(iter, 0);
 
 		self->surface_state = RTB_SURFACE_VALID;
 		break;
 
 	case RTB_SURFACE_VALID:
+		/* if we're marked valid, we'll just do an incremental redraw.
+		 * first from the elements marked dirty: */
 		while ((iter = TAILQ_FIRST(&ctx->queues.next_frame))) {
 			TAILQ_REMOVE(&ctx->queues.next_frame, iter, render_entry);
 
 			iter->render_entry.tqe_next = NULL;
 			iter->render_entry.tqe_prev = NULL;
 
-			rtb_elem_draw(iter);
+			rtb_elem_draw(iter, 1);
 		}
 
+		/* and next from the elements which need to be redrawn every frame. */
 		TAILQ_FOREACH(iter, &ctx->queues.every_frame, render_entry)
-			rtb_elem_draw(iter);
+			rtb_elem_draw(iter, 1);
 
 		break;
 	}

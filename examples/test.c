@@ -269,15 +269,6 @@ handle_key_press(struct rtb_element *victim,
 	return 1;
 }
 
-struct rtb_element_implementation label_super;
-
-static void
-our_draw(struct rtb_element *elem)
-{
-	rtb_render_clear(elem);
-	label_super.draw(elem);
-}
-
 static int
 frame_start(struct rtb_element *elem, const struct rtb_event *e, void *ctx)
 {
@@ -311,8 +302,7 @@ int main(int argc, char **argv)
 	rtb_register_handler(RTB_ELEMENT(win),
 			RTB_KEY_PRESS, handle_key_press, delicious);
 
-	rtb_label_init_subclass(&time_label, &label_super);
-	time_label.draw = our_draw;
+	rtb_label_init(&time_label);
 
 	rtb_elem_add_child(RTB_ELEMENT(win), RTB_ELEMENT(&time_label),
 			RTB_ADD_HEAD);

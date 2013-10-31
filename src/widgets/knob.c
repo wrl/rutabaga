@@ -125,7 +125,6 @@ draw(struct rtb_element *elem)
 {
 	SELF_FROM(elem);
 
-	rtb_render_clear(elem);
 	rtb_render_set_position(elem,
 			self->x + ((self->w) / 2),
 			self->y + ((self->h) / 2));

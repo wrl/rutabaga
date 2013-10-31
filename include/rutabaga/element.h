@@ -246,7 +246,22 @@ struct rtb_element {
 
 int rtb_elem_deliver_event(struct rtb_element *, const struct rtb_event *e);
 void rtb_elem_draw_children(struct rtb_element *);
-void rtb_elem_draw(struct rtb_element *);
+void rtb_elem_draw(struct rtb_element *, int clear_first);
+
+/**
+ * returns 0 if this element could do an rtb_render_clear() and not
+ * damage any elements behind it.
+ *
+ * essentially, checks to see if any elements behind it (down to the
+ * surface) have background properties set.
+ */
+int rtb_elem_is_clearable(struct rtb_element *);
+
+/**
+ * walks rootward in the tree and returns the first element for which
+ * rtb_elem_is_clearable() returns 1;
+ */
+struct rtb_element *rtb_elem_nearest_clearable(struct rtb_element *);
 
 void rtb_elem_render_every_frame(struct rtb_element *);
 void rtb_elem_mark_dirty(struct rtb_element *);

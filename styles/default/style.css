@@ -79,6 +79,10 @@ text-input:focus {
  * base widgets
  */
 
+rtb|container {
+	background-color: rgba(#2E2E36, .4);
+}
+
 rtb|window {
 	color: #FFF;
 	background-color: #18181C;

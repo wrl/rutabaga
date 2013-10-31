@@ -326,6 +326,8 @@ mark_dirty(struct rtb_element *self)
 	struct rtb_render_context *render_ctx = &self->surface->render_ctx;
 	struct rtb_render_tailq *queue;
 
+	self = rtb_elem_nearest_clearable(self);
+
 	if (!self->surface || self->surface->surface_state == RTB_SURFACE_INVALID
 			|| self->render_entry.tqe_next || self->render_entry.tqe_prev)
 		return;
@@ -396,21 +398,48 @@ rtb_elem_draw_children(struct rtb_element *self)
 	struct rtb_element *iter;
 
 	TAILQ_FOREACH(iter, &self->children, child)
-		rtb_elem_draw(iter);
+		rtb_elem_draw(iter, 0);
 }
 
 void
-rtb_elem_draw(struct rtb_element *self)
+rtb_elem_draw(struct rtb_element *self, int clear_first)
 {
 	if (self->visibility == RTB_FULLY_OBSCURED)
 		return;
 
 	rtb_render_push(self);
+	if (clear_first)
+		rtb_render_clear(self);
 
 	self->draw(self);
 	LAYOUT_DEBUG_DRAW_BOX(self);
 
 	rtb_render_pop(self);
+}
+
+int
+rtb_elem_is_clearable(struct rtb_element *self)
+{
+	struct rtb_surface *surface = self->surface;
+
+	for (self = self->parent;
+			self != RTB_ELEMENT(surface); self = self->parent)
+		if (self->stylequad.cached_style.bg_color)
+			return 0;
+
+	return 1;
+}
+
+struct rtb_element *
+rtb_elem_nearest_clearable(struct rtb_element *self)
+{
+	struct rtb_surface *surface = self->surface;
+
+	for (; self != RTB_ELEMENT(surface); self = self->parent)
+		if (rtb_elem_is_clearable(self))
+			return self;
+
+	return RTB_ELEMENT(surface);
 }
 
 void
