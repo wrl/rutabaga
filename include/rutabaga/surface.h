@@ -60,6 +60,7 @@ void rtb_surface_blit(struct rtb_surface *);
 void rtb_surface_draw_children(struct rtb_surface *);
 void rtb_surface_invalidate(struct rtb_surface *);
 
-int rtb_surface_init(struct rtb_surface *,
-		struct rtb_element_implementation *impl);
+int rtb_surface_init_subclass(struct rtb_surface *,
+		struct rtb_element_implementation *parent_impl);
+int rtb_surface_init(struct rtb_surface *);
 void rtb_surface_fini(struct rtb_surface *);

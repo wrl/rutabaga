@@ -216,9 +216,10 @@ rtb_window_open(struct rutabaga *r,
 	if (!self)
 		goto err_window_impl;
 
-	rtb_surface_init(RTB_SURFACE(self), &super);
-	self->surface = RTB_SURFACE(self);
+	if (rtb_surface_init_subclass(RTB_SURFACE(self), &super))
+		goto err_surface_init;
 
+	self->surface = RTB_SURFACE(self);
 	self->style_list = rtb_style_get_defaults();
 
 	if (initialize_shaders(self))
@@ -243,6 +244,7 @@ err_font:
 	rtb_shader_free(&self->shaders.surface);
 	rtb_shader_free(&self->shaders.dfault);
 err_shaders:
+err_surface_init:
 	rtb_window_close(self);
 err_window_impl:
 	return NULL;

@@ -264,5 +264,7 @@ void rtb_elem_add_child(struct rtb_element *parent, struct rtb_element *child,
 		rtb_child_add_loc_t where);
 void rtb_elem_remove_child(struct rtb_element *, struct rtb_element *child);
 
-int rtb_elem_init(struct rtb_element *, struct rtb_element_implementation *impl);
+int rtb_elem_init_subclass(struct rtb_element *,
+		struct rtb_element_implementation *super_impl);
+int rtb_elem_init(struct rtb_element *);
 void rtb_elem_fini(struct rtb_element *);

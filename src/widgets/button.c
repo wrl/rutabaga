@@ -144,12 +144,23 @@ rtb_button_set_label(struct rtb_button *self, const rtb_utf8_t *text)
 }
 
 int
-rtb_button_init(struct rtb_button *self,
+rtb_button_init_subclass(struct rtb_button *self,
 		struct rtb_element_implementation *impl)
 {
-	rtb_elem_init(RTB_ELEMENT(self), &super);
+	if (rtb_button_init(self))
+		return -1;
 
-	rtb_label_init(&self->label, &self->label.impl);
+	*impl = self->impl;
+	return 0;
+}
+
+int
+rtb_button_init(struct rtb_button *self)
+{
+	if (rtb_elem_init_subclass(RTB_ELEMENT(self), &super))
+		return -1;
+
+	rtb_label_init(&self->label);
 	rtb_elem_add_child(RTB_ELEMENT(self), RTB_ELEMENT(&self->label),
 			RTB_ADD_HEAD);
 
@@ -180,7 +191,7 @@ struct rtb_button *
 rtb_button_new(const rtb_utf8_t *label)
 {
 	struct rtb_button *self = calloc(1, sizeof(*self));
-	rtb_button_init(self, &self->impl);
+	rtb_button_init(self);
 
 	if (label)
 		rtb_button_set_label(self, label);

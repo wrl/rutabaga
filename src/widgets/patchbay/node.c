@@ -120,7 +120,7 @@ rtb_patchbay_node_set_name(struct rtb_patchbay_node *self,
 void
 rtb_patchbay_node_init(struct rtb_patchbay_node *self)
 {
-	rtb_elem_init(RTB_ELEMENT(self), &super);
+	rtb_elem_init_subclass(RTB_ELEMENT(self), &super);
 
 	self->on_event  = on_event;
 	self->attached  = attached;
@@ -132,14 +132,14 @@ rtb_patchbay_node_init(struct rtb_patchbay_node *self)
 	self->outer_pad.x = 0.f;
 	self->inner_pad.y = 5.f;
 
-	rtb_label_init(&self->name_label, &self->name_label.impl);
+	rtb_label_init(&self->name_label);
 	self->name_label.align = RTB_ALIGN_CENTER;
 
 	/**
 	 * content area
 	 */
 
-	rtb_elem_init(&self->container, &self->container.impl);
+	rtb_elem_init(&self->container);
 	self->container.size_cb = rtb_size_hfill;
 	self->container.layout_cb = rtb_layout_hdistribute;
 	self->container.outer_pad.x =
@@ -148,10 +148,10 @@ rtb_patchbay_node_init(struct rtb_patchbay_node *self)
 
 	self->container.inner_pad.x = 10.f;
 
-	rtb_elem_init(&self->node_ui, &self->node_ui.impl);
+	rtb_elem_init(&self->node_ui);
 
-	rtb_elem_init(&self->input_ports, &self->input_ports.impl);
-	rtb_elem_init(&self->output_ports, &self->output_ports.impl);
+	rtb_elem_init(&self->input_ports);
+	rtb_elem_init(&self->output_ports);
 
 	self->input_ports.outer_pad.x =
 		self->input_ports.outer_pad.y =

@@ -368,13 +368,26 @@ rtb_text_input_get_text(struct rtb_text_input *self)
 }
 
 int
-rtb_text_input_init(struct rutabaga *rtb, struct rtb_text_input *self,
-		struct rtb_element_implementation *impl)
+rtb_text_input_init_subclass(struct rutabaga *rtb, struct rtb_text_input *self,
+		struct rtb_element_implementation *text_input_impl)
 {
-	rtb_elem_init(RTB_ELEMENT(self), &super);
+	if (rtb_text_input_init(rtb, self))
+		return -1;
+
+	*text_input_impl = self->impl;
+	return 0;
+}
+
+
+int
+rtb_text_input_init(struct rutabaga *rtb, struct rtb_text_input *self)
+{
+	if (rtb_elem_init_subclass(RTB_ELEMENT(self), &super))
+		return -1;
+
 	rtb_quad_init(&self->bg_quad);
 
-	rtb_label_init(&self->label, &self->label.impl);
+	rtb_label_init(&self->label);
 	rtb_elem_add_child(RTB_ELEMENT(self), RTB_ELEMENT(&self->label),
 			RTB_ADD_HEAD);
 
@@ -423,7 +436,7 @@ struct rtb_text_input *
 rtb_text_input_new(struct rutabaga *rtb)
 {
 	struct rtb_text_input *self = calloc(1, sizeof(*self));
-	rtb_text_input_init(rtb, self, &self->impl);
+	rtb_text_input_init(rtb, self);
 
 	return self;
 }

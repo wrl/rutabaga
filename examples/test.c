@@ -311,7 +311,7 @@ int main(int argc, char **argv)
 	rtb_register_handler(RTB_ELEMENT(win),
 			RTB_KEY_PRESS, handle_key_press, delicious);
 
-	rtb_label_init(&time_label, &label_super);
+	rtb_label_init_subclass(&time_label, &label_super);
 	time_label.draw = our_draw;
 
 	rtb_elem_add_child(RTB_ELEMENT(win), RTB_ELEMENT(&time_label),

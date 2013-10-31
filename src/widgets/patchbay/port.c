@@ -349,10 +349,10 @@ rtb_patchbay_port_init(struct rtb_patchbay_port *self,
 		struct rtb_patchbay_node *node, const rtb_utf8_t *name,
 		rtb_patchbay_port_type_t type, rtb_child_add_loc_t location)
 {
-	rtb_elem_init(RTB_ELEMENT(self), &super);
+	rtb_elem_init_subclass(RTB_ELEMENT(self), &super);
 	TAILQ_INIT(&self->patches);
 
-	rtb_label_init(&self->label, &self->label.impl);
+	rtb_label_init(&self->label);
 	rtb_label_set_text(&self->label, name);
 	rtb_elem_add_child(RTB_ELEMENT(self), RTB_ELEMENT(&self->label),
 			RTB_ADD_HEAD);

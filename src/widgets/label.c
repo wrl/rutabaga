@@ -140,19 +140,27 @@ rtb_label_set_text(struct rtb_label *self, const rtb_utf8_t *text)
 }
 
 int
-rtb_label_init(struct rtb_label *self,
-		struct rtb_element_implementation *impl)
+rtb_label_init_subclass(struct rtb_label *self,
+		struct rtb_element_implementation *label_impl)
 {
-	struct rtb_element_implementation *elem_impl = &self->impl;
-	rtb_elem_init(RTB_ELEMENT(self), &super);
+	if (rtb_label_init(self))
+		return -1;
 
-	(*impl) = super;
-	do {
-		impl->draw     = draw;
-		impl->attached = attached;
-		impl->size_cb  = size;
-		impl->restyle  = restyle;
-	} while (impl != elem_impl && (impl = elem_impl));
+	*label_impl = self->impl;
+	return 0;
+}
+
+int
+rtb_label_init(struct rtb_label *self)
+{
+	if (rtb_elem_init_subclass(RTB_ELEMENT(self), &super))
+		return -1;
+
+	self->impl = super;
+	self->impl.draw     = draw;
+	self->impl.attached = attached;
+	self->impl.size_cb  = size;
+	self->impl.restyle  = restyle;
 
 	self->text = NULL;
 	self->tobj = NULL;
@@ -177,7 +185,7 @@ struct rtb_label *
 rtb_label_new(const rtb_utf8_t *text)
 {
 	struct rtb_label *self = calloc(1, sizeof(*self));
-	rtb_label_init(self, &self->impl);
+	rtb_label_init(self);
 
 	if (text)
 		self->text = strdup(text);

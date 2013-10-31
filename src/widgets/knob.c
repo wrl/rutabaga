@@ -318,7 +318,7 @@ struct rtb_knob *
 rtb_knob_new()
 {
 	struct rtb_knob *self = calloc(1, sizeof(struct rtb_knob));
-	rtb_elem_init(RTB_ELEMENT(self), &super);
+	rtb_elem_init_subclass(RTB_ELEMENT(self), &super);
 
 	self->origin = 0.f;
 	self->min = 0.f;

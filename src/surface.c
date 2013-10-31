@@ -254,20 +254,28 @@ rtb_surface_invalidate(struct rtb_surface *self)
 }
 
 int
-rtb_surface_init(struct rtb_surface *self,
+rtb_surface_init_subclass(struct rtb_surface *self,
 		struct rtb_element_implementation *impl)
 {
-	struct rtb_element_implementation *elem_impl = &self->impl;
-	rtb_elem_init(RTB_ELEMENT(self), &super);
-	(*impl) = super;
+	if (rtb_surface_init(self))
+		return -1;
 
-	do {
-		impl->draw           = draw;
-		impl->reflow         = reflow;
-		impl->attached       = attached;
-		impl->mark_dirty     = mark_dirty;
-		impl->child_attached = child_attached;
-	} while (impl != elem_impl && (impl = elem_impl));
+	*impl = self->impl;
+	return 0;
+}
+
+int
+rtb_surface_init(struct rtb_surface *self)
+{
+	if (rtb_elem_init_subclass(RTB_ELEMENT(self), &super))
+		return -1;
+
+	self->impl = super;
+	self->impl.draw           = draw;
+	self->impl.reflow         = reflow;
+	self->impl.attached       = attached;
+	self->impl.mark_dirty     = mark_dirty;
+	self->impl.child_attached = child_attached;
 
 	TAILQ_INIT(&self->render_ctx.queues.every_frame);
 	TAILQ_INIT(&self->render_ctx.queues.next_frame);

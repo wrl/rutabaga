@@ -562,18 +562,23 @@ static struct rtb_element_implementation base_impl = {
 };
 
 int
-rtb_elem_init(struct rtb_element *self,
+rtb_elem_init_subclass(struct rtb_element *self,
 		struct rtb_element_implementation *impl)
 {
-	struct rtb_element_implementation *elem_impl = &self->impl;
+	if (rtb_elem_init(self))
+		return -1;
 
+	*impl = self->impl;
+	return 0;
+}
+
+int
+rtb_elem_init(struct rtb_element *self)
+{
 	memset(self, 0, sizeof(*self));
 	TAILQ_INIT(&self->children);
 
-	if (impl != elem_impl)
-		(*elem_impl) = base_impl;
-
-	(*impl) = base_impl;
+	self->impl = base_impl;
 
 	self->metatype    = RTB_TYPE_ATOM;
 	self->style       = NULL;
