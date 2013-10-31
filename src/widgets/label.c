@@ -110,20 +110,6 @@ restyle(struct rtb_element *elem)
  */
 
 void
-rtb_label_set_font(struct rtb_label *self, struct rtb_font *font)
-{
-	self->font = font;
-
-	if (!self->tobj)
-		return;
-
-	self->tobj->font = font;
-	rtb_text_object_update(self->tobj, font, self->text);
-	rtb_elem_trigger_recalc(self->parent, RTB_ELEMENT(self),
-			RTB_DIRECTION_ROOTWARD);
-}
-
-void
 rtb_label_set_text(struct rtb_label *self, const rtb_utf8_t *text)
 {
 	if (self->text)

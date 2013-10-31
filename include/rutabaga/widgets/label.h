@@ -42,7 +42,6 @@ struct rtb_label {
 	const struct rtb_rgb_color *color;
 };
 
-void rtb_label_set_font(struct rtb_label *, struct rtb_font *font);
 void rtb_label_set_text(struct rtb_label *, const rtb_utf8_t *text);
 
 int rtb_label_init_subclass(struct rtb_label *,
