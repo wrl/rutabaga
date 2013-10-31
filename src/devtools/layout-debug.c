@@ -26,67 +26,35 @@
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/render.h"
+#include "rutabaga/quad.h"
 
 #include "private/layout-debug.h"
 #include "private/util.h"
 
-static GLuint vbo = 0;
-
-static const GLubyte box_indices[] = {
-	0, 1, 2, 3, 0
-};
-
-static void
-cache_to_vbo(struct rtb_element *self)
-{
-	GLfloat x, y, w, h, box[4][2];
-
-	x = self->x;
-	y = self->y;
-	w = self->w - 1;
-	h = self->h - 1;
-
-	box[0][0] = x;
-	box[0][1] = y;
-
-	box[1][0] = x + w;
-	box[1][1] = y;
-
-	box[2][0] = x + w;
-	box[2][1] = y + h;
-
-	box[3][0] = x;
-	box[3][1] = y + h;
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(box), box, GL_STREAM_DRAW);
-}
+static struct rtb_quad quad;
 
 void
 rtb_debug_draw_bounding_box(struct rtb_element *self)
 {
+	struct rtb_rect rect = {
+		.x  = self->rect.x,
+		.y  = self->rect.y,
+		.x2 = self->rect.x2 - 1,
+		.y2 = self->rect.y2 - 1
+	};
+
+	rtb_quad_set_vertices(&quad, &rect);
+
 	rtb_render_reset(self);
 	rtb_render_set_position(self, 0.f, 0.f);
 
-	/* draw the outline */
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-	glLineWidth(1.f);
 	rtb_render_set_color(self, 1.f, 0.f, 0.f, .4f);
-
-	cache_to_vbo(self);
-	glDrawElements(
-			GL_LINE_STRIP, ARRAY_LENGTH(box_indices),
-			GL_UNSIGNED_BYTE, box_indices);
-
-	glDisableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glLineWidth(1.f);
+	rtb_render_quad_outline(self, &quad);
 }
 
 void
 rtb_debug_init(void)
 {
-	if (!vbo)
-		glGenBuffers(1, &vbo);
+	rtb_quad_init(&quad);
 }
