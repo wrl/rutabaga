@@ -395,7 +395,9 @@ texture_font_delete(texture_font_t *self)
     free(self);
 }
 
-static size_t i32len(const int32_t *s)
+// ----------------------------------------------- texture_font_load_glyphs ---
+static size_t
+i32len(const int32_t *s)
 {
 	size_t len;
 	for (len = 0; *s; s++, len++);
@@ -403,7 +405,6 @@ static size_t i32len(const int32_t *s)
 	return len;
 }
 
-// ----------------------------------------------- texture_font_load_glyphs ---
 size_t
 texture_font_load_glyphs( texture_font_t * self,
                           const int32_t * charcodes )

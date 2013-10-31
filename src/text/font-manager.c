@@ -47,13 +47,17 @@ static const uint8_t lcd_weights[] = {
 	0x00
 };
 
-/* characters we cache by default in the texture */
-/* XXX: this is going to break so hard when we do the windows port */
-static const rtb_utf32_t *cache =
-	L" abcdefghijklmnopqrstuvwxyz"
-	L"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	L",.!?;"
-	L" [\\]^_@{|}~\"#$%&'()*+-/0123456789:<=>`";
+/* characters we cache by default in the texture.
+ *
+ * since nobody can agree on what a wchar_t is (and, by extension, wchar
+ * string literals), we have to do this disgusting-ass list. thanks,
+ * microsoft. whoever decided to use utf-16 in windows can get fucked. */
+static const rtb_utf32_t cache[] = {
+	' ', ',', '.', '!', '?', ';', '[', '\\', ']', '^', '_', '@', '{', '|', '}', '~', '\"', '#', '$', '%', '&', '\'', '(', ')',
+	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '+', '-', '/', ':', '<', '=', '>', '`'
+};
 
 static int
 init_font(struct rtb_font *font)
