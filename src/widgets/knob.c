@@ -94,21 +94,20 @@ circle_vertex_array(GLfloat dest[][2], float r, int segments)
 static void
 cache_to_vbo(struct rtb_knob *self)
 {
-	GLfloat w, h, indicator[2][2], circle[CIRCLE_SEGMENTS + 1][2];
+	GLfloat r, indicator[2][2], circle[CIRCLE_SEGMENTS + 1][2];
 
-	w = self->w;
-	h = self->h;
+	r = (fmin(self->w, self->h) / 2.f) - 1.f;
 
 	indicator[0][0] = 0;
-	indicator[0][1] = (h / 7.f);
+	indicator[0][1] = r / 4.f;
 
 	indicator[1][0] = 0;
-	indicator[1][1] = (h / 2.f);
+	indicator[1][1] = r;
 
 	circle[0][0] = 0.f;
 	circle[1][0] = 0.f;
 
-	circle_vertex_array(&circle[1], (w / 2.f) - 1.f, ARRAY_LENGTH(circle) - 1);
+	circle_vertex_array(&circle[1], r, ARRAY_LENGTH(circle) - 1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, self->vbo[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(circle), circle, GL_STATIC_DRAW);
@@ -168,10 +167,26 @@ dispatch_value_change_event(struct rtb_knob *self)
 {
 	struct rtb_knob_event event = {
 		.type = KNOB_VALUE_CHANGE,
-		.value = self->value * (self->max - self->min),
+		.value =
+			(self->value * (self->max - self->min)) + self->min,
 	};
 
 	return rtb_handle(RTB_ELEMENT(self), RTB_EVENT(&event));
+}
+
+static void
+set_value_internal(struct rtb_knob *self, float new_value)
+{
+	self->value = fmin(fmax(new_value, 0.f), 1.f);
+
+	mat4_set_rotation(&self->modelview,
+			MIN_DEGREES + (self->value * DEGREE_RANGE),
+			0.f, 0.f, 1.f);
+
+	rtb_elem_mark_dirty(RTB_ELEMENT(self));
+
+	if (self->state != RTB_STATE_UNATTACHED)
+		dispatch_value_change_event(self);
 }
 
 /**
@@ -194,7 +209,7 @@ handle_drag(struct rtb_knob *self, const struct rtb_drag_event *e)
 	default: return 1;
 	}
 
-	rtb_knob_set_value(self, new_value);
+	set_value_internal(self, new_value);
 	return 1;
 }
 
@@ -301,16 +316,8 @@ init_circle_indices()
 void
 rtb_knob_set_value(struct rtb_knob *self, float new_value)
 {
-	self->value = fmin(fmax(new_value, 0.f), 1.f);
-
-	mat4_set_rotation(&self->modelview,
-			MIN_DEGREES + (self->value * DEGREE_RANGE),
-			0.f, 0.f, 1.f);
-
-	rtb_elem_mark_dirty(RTB_ELEMENT(self));
-
-	if (self->state != RTB_STATE_UNATTACHED)
-		dispatch_value_change_event(self);
+	float range = self->max - self->min;
+	set_value_internal(self, (new_value - self->min) / range);
 }
 
 struct rtb_knob *

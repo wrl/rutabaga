@@ -43,7 +43,7 @@
 
 #define ARRAY_LENGTH(a) (sizeof(a) / sizeof(*a))
 
-rtb_utf8_t *labels[] = {
+static rtb_utf8_t *labels[] = {
 	"hello",
 	"we are",
 	"buttons",
@@ -52,7 +52,7 @@ rtb_utf8_t *labels[] = {
 	"opengl"
 };
 
-rtb_utf8_t *rlabels[] = {
+static rtb_utf8_t *rlabels[] = {
 	"i'm",
 	"gonna",
 	"pop",
@@ -66,10 +66,10 @@ rtb_utf8_t *rlabels[] = {
 	"this is fucking awesome"
 };
 
-struct rtb_knob *knob;
-struct rtb_button *last_button = NULL;
-struct rtb_text_input *input;
-struct rtb_label time_label;
+static struct rtb_button *last_button = NULL;
+static struct rtb_text_input *input;
+static struct rtb_label time_label;
+static float speed = 1.f;
 
 static int
 print_streeng(struct rtb_element *victim,
@@ -91,24 +91,21 @@ print_streeng(struct rtb_element *victim,
 
 static int
 knob_value(struct rtb_element *victim,
-		const struct rtb_event *e, void *unused)
+		const struct rtb_event *_e, void *unused)
 {
-	return 0;
+	const struct rtb_knob_event *e = RTB_EVENT_AS(_e, rtb_knob_event);
 
-	if (victim != RTB_ELEMENT(knob)) {
-		knob = (void *) knob;
-		printf("\n");
-	}
-
-	printf(" :: value: %f\n", ((struct rtb_knob_event *) e)->value);
+	speed = e->value;
+	printf(" :: speed: %f\n", e->value);
 	return 0;
 }
 
 static void
 distribute_demo(rtb_container_t *root)
 {
-	int i, j;
 	rtb_container_t *containers[10];
+	struct rtb_knob *knob;
+	int i, j;
 
 	for (i = 0; i < ARRAY_LENGTH(containers); i++) {
 		containers[i] = rtb_container_new();
@@ -120,12 +117,21 @@ distribute_demo(rtb_container_t *root)
 		for (j = 0; j < i + 1; j++) {
 			knob = rtb_knob_new();
 
-			knob->origin = .7f;
-			knob->min = -1.f;
-			knob->max = 1.f;
+			if (!i) {
+				knob->w = knob->h = 75;
 
-			rtb_register_handler(RTB_ELEMENT(knob),
-					KNOB_VALUE_CHANGE, knob_value, NULL);
+				knob->origin = 1.f;
+				knob->min = 0.f;
+				knob->max = 2.f;
+
+				rtb_register_handler(RTB_ELEMENT(knob),
+						KNOB_VALUE_CHANGE, knob_value, NULL);
+			} else {
+				knob->origin = 0.5f;
+				knob->min = -1.f;
+				knob->max = 1.f;
+			}
+
 			rtb_container_add(containers[i], RTB_ELEMENT(knob));
 		}
 
@@ -269,18 +275,34 @@ handle_key_press(struct rtb_element *victim,
 	return 1;
 }
 
+static float timer, last;
+
 static int
 frame_start(struct rtb_element *elem, const struct rtb_event *e, void *ctx)
 {
 	struct timespec ts;
+	float now;
 	char buf[32];
 
 	clock_gettime(CLOCK_MONOTONIC, &ts);
-	snprintf(buf, sizeof(buf),
-			"%.5f", ts.tv_sec + (ts.tv_nsec / 1e+09));
+
+	now = (ts.tv_sec + (ts.tv_nsec / 1e+09));
+	timer += (now - last) * speed;
+
+	snprintf(buf, sizeof(buf), "%.5f", timer);
+	last = now;
 
 	rtb_label_set_text(&time_label, buf);
 	return 1;
+}
+
+static void
+init_timer(void)
+{
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	last = ts.tv_sec + (ts.tv_nsec / 1e+09);
+	timer = 0.0;
 }
 
 int main(int argc, char **argv)
@@ -315,6 +337,7 @@ int main(int argc, char **argv)
 	setup_ui(RTB_ELEMENT(delicious->win));
 	add_input(delicious, RTB_ELEMENT(delicious->win));
 
+	init_timer();
 	rtb_event_loop(delicious);
 
 	rtb_label_fini(&time_label);
