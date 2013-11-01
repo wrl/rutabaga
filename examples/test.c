@@ -289,10 +289,17 @@ frame_start(struct rtb_element *elem, const struct rtb_event *e, void *ctx)
 	now = (ts.tv_sec + (ts.tv_nsec / 1e+09));
 	timer += (now - last) * speed;
 
-	snprintf(buf, sizeof(buf), "%.5f", timer);
+	snprintf(buf, sizeof(buf), "%.2f", timer);
 	last = now;
 
 	rtb_label_set_text(&time_label, buf);
+	return 1;
+}
+
+static int
+frame_end(struct rtb_element *elem, const struct rtb_event *e, void *ctx)
+{
+	rtb_elem_mark_dirty(RTB_ELEMENT(&time_label));
 	return 1;
 }
 
@@ -325,13 +332,13 @@ int main(int argc, char **argv)
 			RTB_KEY_PRESS, handle_key_press, delicious);
 
 	rtb_label_init(&time_label);
-
 	rtb_elem_add_child(RTB_ELEMENT(win), RTB_ELEMENT(&time_label),
 			RTB_ADD_HEAD);
 
-	rtb_elem_render_every_frame(RTB_ELEMENT(&time_label));
 	rtb_register_handler(RTB_ELEMENT(win),
 			RTB_FRAME_START, frame_start, NULL);
+	rtb_register_handler(RTB_ELEMENT(win),
+			RTB_FRAME_END, frame_end, NULL);
 
 	distribute_demo(RTB_ELEMENT(delicious->win));
 	setup_ui(RTB_ELEMENT(delicious->win));
