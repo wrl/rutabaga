@@ -179,8 +179,7 @@ rtb_window_draw(struct rtb_window *self)
 	self->draw(RTB_ELEMENT(self));
 	rtb_render_pop(RTB_ELEMENT(self));
 
-	if (!TAILQ_FIRST(&self->render_ctx.queues.every_frame))
-		self->dirty = 0;
+	self->dirty = 0;
 
 	ev.type = RTB_FRAME_END;
 	rtb_dispatch_raw(RTB_ELEMENT(self), RTB_EVENT(&ev));

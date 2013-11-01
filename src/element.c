@@ -324,7 +324,6 @@ static void
 mark_dirty(struct rtb_element *self)
 {
 	struct rtb_render_context *render_ctx = &self->surface->render_ctx;
-	struct rtb_render_tailq *queue;
 
 	self = rtb_elem_nearest_clearable(self);
 
@@ -332,12 +331,7 @@ mark_dirty(struct rtb_element *self)
 			|| self->render_entry.tqe_next || self->render_entry.tqe_prev)
 		return;
 
-	if (self->flags & RTB_ELEM_RENDER_EVERY_FRAME)
-		queue = &render_ctx->queues.every_frame;
-	else
-		queue = &render_ctx->queues.next_frame;
-
-	TAILQ_INSERT_TAIL(queue, self, render_entry);
+	TAILQ_INSERT_TAIL(&render_ctx->queues.next_frame, self, render_entry);
 	rtb_elem_mark_dirty(RTB_ELEMENT(self->surface));
 }
 
@@ -453,13 +447,6 @@ void
 rtb_elem_mark_dirty(struct rtb_element *self)
 {
 	self->mark_dirty(self);
-}
-
-void
-rtb_elem_render_every_frame(struct rtb_element *self)
-{
-	self->flags |= RTB_ELEM_RENDER_EVERY_FRAME;
-	rtb_elem_mark_dirty(self);
 }
 
 void

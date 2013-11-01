@@ -106,28 +106,12 @@ reflow(struct rtb_element *elem, struct rtb_element *instigator,
 }
 
 static void
-add_to_every_frame_queue(struct rtb_surface *self,
-		struct rtb_element *elem)
-{
-	struct rtb_render_context *render_ctx = &self->surface->render_ctx;
-	struct rtb_render_tailq *queue;
-
-	elem = rtb_elem_nearest_clearable(elem);
-
-	queue = &render_ctx->queues.every_frame;
-	TAILQ_INSERT_TAIL(queue, elem, render_entry);
-}
-
-static void
 child_attached(struct rtb_element *elem, struct rtb_element *child)
 {
 	SELF_FROM(elem);
 
 	child->surface = self;
 	child->attached(child, RTB_ELEMENT(self), self->window);
-
-	if (child->flags & RTB_ELEM_RENDER_EVERY_FRAME)
-		add_to_every_frame_queue(self, child);
 }
 
 static void
@@ -158,8 +142,7 @@ rtb_surface_is_dirty(struct rtb_surface *self)
 	struct rtb_render_context *ctx = &self->render_ctx;
 
 	if (self->surface_state == RTB_SURFACE_VALID &&
-			(!TAILQ_FIRST(&ctx->queues.next_frame) &&
-			 !TAILQ_FIRST(&ctx->queues.every_frame))) {
+			!TAILQ_FIRST(&ctx->queues.next_frame)) {
 		/* nothing to do. */
 		return 0;
 	}
@@ -238,8 +221,8 @@ rtb_surface_draw_children(struct rtb_surface *self)
 		break;
 
 	case RTB_SURFACE_VALID:
-		/* if we're marked valid, we'll just do an incremental redraw.
-		 * first from the elements marked dirty: */
+		/* if we're marked valid, we'll just do an incremental redraw
+		 * just of the elements which have requested it. */
 		while ((iter = TAILQ_FIRST(&ctx->queues.next_frame))) {
 			TAILQ_REMOVE(&ctx->queues.next_frame, iter, render_entry);
 
@@ -248,10 +231,6 @@ rtb_surface_draw_children(struct rtb_surface *self)
 
 			rtb_elem_draw(iter, 1);
 		}
-
-		/* and next from the elements which need to be redrawn every frame. */
-		TAILQ_FOREACH(iter, &ctx->queues.every_frame, render_entry)
-			rtb_elem_draw(iter, 1);
 
 		break;
 	}
@@ -291,7 +270,6 @@ rtb_surface_init(struct rtb_surface *self)
 	self->impl.mark_dirty     = mark_dirty;
 	self->impl.child_attached = child_attached;
 
-	TAILQ_INIT(&self->render_ctx.queues.every_frame);
 	TAILQ_INIT(&self->render_ctx.queues.next_frame);
 
 	glGenTextures(1, &self->texture);

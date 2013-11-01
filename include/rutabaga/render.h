@@ -32,11 +32,12 @@
 
 #include "bsd/queue.h"
 
+TAILQ_HEAD(rtb_render_tailq, rtb_element);
+
 struct rtb_render_context {
 	struct rtb_shader *shader;
 
 	struct {
-		TAILQ_HEAD(rtb_render_tailq, rtb_element) every_frame;
 		struct rtb_render_tailq next_frame;
 	} queues;
 };
