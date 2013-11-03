@@ -220,6 +220,8 @@ reflow(struct rtb_element *self,
 	self->inner_rect.y2 = self->y2 - self->outer_pad.y;
 	rtb_rect_update_size_from_points(&self->inner_rect);
 
+	rtb_stylequad_update_geometry(&self->stylequad);
+
 	switch (direction) {
 	case RTB_DIRECTION_ROOTWARD:
 		if (!reflow_rootward(self, instigator, RTB_DIRECTION_ROOTWARD))
@@ -231,7 +233,6 @@ reflow(struct rtb_element *self,
 		break;
 	}
 
-	rtb_stylequad_update_geometry(&self->stylequad);
 	return 1;
 }
 
