@@ -212,6 +212,14 @@ static int
 reflow(struct rtb_element *self,
 		struct rtb_element *instigator, rtb_ev_direction_t direction)
 {
+	rtb_rect_update_points_from_size(&self->rect);
+
+	self->inner_rect.x  = self->x  + self->outer_pad.x;
+	self->inner_rect.y  = self->y  + self->outer_pad.y;
+	self->inner_rect.x2 = self->x2 - self->outer_pad.x;
+	self->inner_rect.y2 = self->y2 - self->outer_pad.y;
+	rtb_rect_update_size_from_points(&self->inner_rect);
+
 	switch (direction) {
 	case RTB_DIRECTION_ROOTWARD:
 		if (!reflow_rootward(self, instigator, RTB_DIRECTION_ROOTWARD))
@@ -223,16 +231,7 @@ reflow(struct rtb_element *self,
 		break;
 	}
 
-	self->x2 = self->x + self->w;
-	self->y2 = self->y + self->h;
-
-	self->inner_rect.x  = self->x  + self->outer_pad.x;
-	self->inner_rect.y  = self->y  + self->outer_pad.y;
-	self->inner_rect.x2 = self->x2 - self->outer_pad.x;
-	self->inner_rect.y2 = self->y2 - self->outer_pad.y;
-
 	rtb_stylequad_update_geometry(&self->stylequad);
-
 	return 1;
 }
 

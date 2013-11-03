@@ -77,3 +77,17 @@ struct rtb_rect {
 
 	RTB_INHERIT_AS(rtb_size, size);
 };
+
+static inline void
+rtb_rect_update_size_from_points(struct rtb_rect *rect)
+{
+	rect->w = rect->x2 - rect->x;
+	rect->h = rect->y2 - rect->y;
+}
+
+static inline void
+rtb_rect_update_points_from_size(struct rtb_rect *rect)
+{
+	rect->x2 = rect->x + rect->w;
+	rect->y2 = rect->y + rect->h;
+}

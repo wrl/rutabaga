@@ -122,8 +122,7 @@ rtb_layout_unmanaged(struct rtb_element *elem)
 	struct rtb_size avail, child;
 	struct rtb_element *iter;
 
-	avail.w = elem->w - (elem->outer_pad.x * 2);
-	avail.h = elem->h - (elem->outer_pad.y * 2);
+	avail = elem->inner_rect.size;
 
 	TAILQ_FOREACH(iter, &elem->children, child) {
 		iter->size_cb(iter, &avail, &child);
@@ -143,11 +142,9 @@ rtb_layout_vpack_top(struct rtb_element *elem)
 	struct rtb_element *iter;
 	float xstart;
 
-	avail.w = elem->w - (elem->outer_pad.x * 2);
-	avail.h = elem->h - (elem->outer_pad.y * 2);
-
-	xstart = elem->x + elem->outer_pad.x;
-	position.y = elem->y + elem->outer_pad.y;
+	avail = elem->inner_rect.size;
+	xstart = elem->inner_rect.x;
+	position.y = elem->inner_rect.y;
 
 	TAILQ_FOREACH(iter, &elem->children, child) {
 		iter->size_cb(iter, &avail, &child);
@@ -171,11 +168,9 @@ rtb_layout_vpack_middle(struct rtb_element *elem)
 	struct rtb_point position;
 	struct rtb_element *iter;
 
-	avail.w = elem->w - (elem->outer_pad.x * 2);
-	avail.h = elem->h - (elem->outer_pad.y * 2);
-
-	xstart = elem->x + elem->outer_pad.x;
-	position.y = elem->y + elem->outer_pad.y;
+	avail = elem->inner_rect.size;
+	xstart = elem->inner_rect.x;
+	position.y = elem->inner_rect.y;
 
 	children_height = -elem->inner_pad.y;
 	TAILQ_FOREACH(iter, &elem->children, child) {
@@ -208,18 +203,17 @@ rtb_layout_vpack_bottom(struct rtb_element *elem)
 	struct rtb_element *iter;
 	float xstart;
 
-	avail.w = elem->w - (elem->outer_pad.x * 2);
-	avail.h = elem->h - (elem->outer_pad.y * 2);
+	avail = elem->inner_rect.size;
 
-	xstart = elem->x + elem->outer_pad.x;
-	position.y = elem->y + elem->outer_pad.y + elem->inner_pad.y + avail.h;
+	xstart = elem->inner_rect.x;
+	position.y = elem->inner_rect.y2 + elem->inner_pad.y;
 
 	TAILQ_FOREACH_REVERSE(iter, &elem->children, children, child) {
 		iter->size_cb(iter, &avail, &child);
 		position.x = xstart + halign(avail.w, child.w, iter->align);
 		position.y -= child.h + elem->inner_pad.y;
 
-		if (position.y < (elem->y + elem->outer_pad.y))
+		if (position.y < (elem->inner_rect.y))
 			return rtb_layout_vpack_top(elem);
 
 		rtb_elem_set_position_from_point(iter, &position);
@@ -241,11 +235,9 @@ rtb_layout_hpack_left(struct rtb_element *elem)
 	struct rtb_element *iter;
 	float ystart;
 
-	avail.w = elem->w - (elem->outer_pad.x * 2);
-	avail.h = elem->h - (elem->outer_pad.y * 2);
-
-	position.x = elem->x + elem->outer_pad.x;
-	ystart = elem->y + elem->outer_pad.y;
+	avail = elem->inner_rect.size;
+	position.x = elem->inner_rect.x;
+	ystart = elem->inner_rect.y;
 
 	TAILQ_FOREACH(iter, &elem->children, child) {
 		iter->size_cb(iter, &avail, &child);
@@ -267,11 +259,9 @@ rtb_layout_hpack_center(struct rtb_element *elem)
 	struct rtb_point position;
 	struct rtb_element *iter;
 
-	avail.w = elem->w - (elem->outer_pad.x * 2);
-	avail.h = elem->h - (elem->outer_pad.y * 2);
-
-	position.x = elem->x + elem->outer_pad.x;
-	ystart = elem->y + elem->outer_pad.y;
+	avail = elem->inner_rect.size;
+	position.x = elem->inner_rect.x;
+	ystart = elem->inner_rect.y;
 
 	children_width = -elem->inner_pad.x;
 	TAILQ_FOREACH(iter, &elem->children, child) {
@@ -304,18 +294,16 @@ rtb_layout_hpack_right(struct rtb_element *elem)
 	struct rtb_point position;
 	struct rtb_element *iter;
 
-	avail.w = elem->w - (elem->outer_pad.x * 2);
-	avail.h = elem->h - (elem->outer_pad.y * 2);
-
-	position.x = elem->x + elem->outer_pad.x + avail.w + elem->inner_pad.x;
-	ystart = elem->y + elem->outer_pad.y;
+	avail = elem->inner_rect.size;
+	position.x = elem->inner_rect.x2 + elem->inner_pad.x;
+	ystart = elem->inner_rect.y;
 
 	TAILQ_FOREACH_REVERSE(iter, &elem->children, children, child) {
 		iter->size_cb(iter, &avail, &child);
 		position.x -= child.w + elem->inner_pad.x;
 		position.y = ystart + valign(avail.h, child.h, iter->align);
 
-		if (position.x < (elem->x + elem->outer_pad.x))
+		if (position.x < (elem->inner_rect.x))
 			return rtb_layout_hpack_left(elem);
 
 		rtb_elem_set_position_from_point(iter, &position);
@@ -337,9 +325,9 @@ void hdistribute_one(struct rtb_element *elem, int child_width)
 
 	w = elem->w;
 	position.x = elem->x + (w / 2.f) - (child_width / 2.f);
-	position.y = elem->y + elem->outer_pad.y;
+	position.y = elem->inner_rect.y;
 
-	if (position.x < (elem->x + elem->outer_pad.x))
+	if (position.x < (elem->inner_rect.x))
 		return rtb_layout_hpack_left(elem);
 
 	only_child = TAILQ_FIRST(&elem->children);
@@ -355,16 +343,15 @@ hdistribute_many(struct rtb_element *elem,
 	struct rtb_point position;
 	struct rtb_element *iter;
 
-	avail.w = elem->w - (elem->outer_pad.x * 2);
-	avail.h = elem->h - (elem->outer_pad.y * 2);
+	avail = elem->inner_rect.size;
 
 	w = children_width + ((children - 1) * elem->inner_pad.x);
 
 	if (avail.w < w)
 		return rtb_layout_hpack_left(elem);
 
-	xoff = elem->x + elem->outer_pad.x;
-	yoff = elem->y + elem->outer_pad.y;
+	xoff = elem->inner_rect.x;
+	yoff = elem->inner_rect.y;
 
 	pad = (avail.w - children_width) / (float) (children - 1);
 
@@ -378,7 +365,7 @@ hdistribute_many(struct rtb_element *elem,
 	}
 
 	iter = TAILQ_LAST(&elem->children, children);
-	iter->x = elem->x + avail.w + elem->outer_pad.x - iter->w;
+	iter->x = elem->inner_rect.x2 - iter->w;
 }
 
 void
@@ -390,8 +377,7 @@ rtb_layout_hdistribute(struct rtb_element *elem)
 
 	children = children_width = child0_width = 0;
 
-	avail.w = elem->w - (elem->outer_pad.x * 2);
-	avail.h = elem->h - (elem->outer_pad.y * 2);
+	avail = elem->inner_rect.size;
 
 	TAILQ_FOREACH(iter, &elem->children, child) {
 		iter->size_cb(iter, &avail, &child);
