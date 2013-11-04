@@ -32,9 +32,48 @@
 #include "rutabaga/stylequad.h"
 #include "rutabaga/window.h"
 
+#include "private/util.h"
+
+static const GLubyte filled_indices[] = {
+	0, 1, 3, 2
+};
+
+static const GLubyte outline_indices[] = {
+	0, 1, 2, 3
+};
+
 /**
  * drawing
  */
+
+static void
+draw_solid(struct rtb_stylequad *self, struct rtb_shader *shader,
+		GLenum mode, const GLubyte *indices, GLsizei count)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, self->vertices);
+	glEnableVertexAttribArray(shader->vertex);
+	glVertexAttribPointer(shader->vertex, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glDrawElements(mode, count, GL_UNSIGNED_BYTE, indices);
+
+	glDisableVertexAttribArray(shader->vertex);
+}
+
+static void
+draw_textured(struct rtb_stylequad *self, struct rtb_shader *shader,
+		GLenum mode, const GLubyte *indices, GLsizei count)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, self->tex_coords);
+	glEnableVertexAttribArray(shader->tex_coord);
+	glVertexAttribPointer(shader->tex_coord,
+			2, GL_FLOAT, GL_FALSE, 0, 0);
+
+	draw_solid(self, shader, mode, indices, count);
+
+	glDisableVertexAttribArray(shader->tex_coord);
+}
 
 void
 rtb_stylequad_draw(struct rtb_stylequad *self)
@@ -56,7 +95,8 @@ rtb_stylequad_draw(struct rtb_stylequad *self)
 		glUniform2f(shader->texture_size,
 				texture->w, texture->h);
 
-		rtb_render_quad(self->owner, RTB_QUAD(self));
+		draw_textured(self, shader, GL_TRIANGLE_STRIP,
+				filled_indices, ARRAY_LENGTH(filled_indices));
 
 		glBindTexture(GL_TEXTURE_2D, 0);
 	} else if (self->cached_style.bg_color) {
@@ -66,7 +106,8 @@ rtb_stylequad_draw(struct rtb_stylequad *self)
 				self->cached_style.bg_color->b,
 				self->cached_style.bg_color->a);
 
-		rtb_render_quad(self->owner, RTB_QUAD(self));
+		draw_solid(self, shader, GL_TRIANGLE_STRIP,
+				filled_indices, ARRAY_LENGTH(filled_indices));
 	}
 
 	if (self->cached_style.border_color) {
@@ -77,7 +118,9 @@ rtb_stylequad_draw(struct rtb_stylequad *self)
 				self->cached_style.border_color->a);
 
 		glLineWidth(2.f);
-		rtb_render_quad_outline(self->owner, RTB_QUAD(self));
+
+		draw_solid(self, shader, GL_LINE_LOOP,
+				outline_indices, ARRAY_LENGTH(outline_indices));
 	}
 }
 
@@ -104,22 +147,30 @@ load_one_texture(GLuint dst_handle,
 }
 
 static void
-load_textures(struct rtb_stylequad *self)
+set_tex_coords(struct rtb_stylequad *self)
 {
-	struct rtb_rect tex_coords = {
-		.as_float = {
-			0.f, 1.f,
-			1.f, 0.f
-		}
+	GLfloat v[4][2] = {
+		{0.f, 1.f},
+		{1.f, 1.f},
+		{1.f, 0.f},
+		{0.f, 0.f}
 	};
 
+	glBindBuffer(GL_ARRAY_BUFFER, self->tex_coords);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+static void
+load_textures(struct rtb_stylequad *self)
+{
 	if (self->cached_style.background_image == self->texture.currently_loaded)
 		return;
 
 	if (self->cached_style.background_image) {
 		load_one_texture(self->texture.gl_handle,
 				self->cached_style.background_image);
-		rtb_quad_set_tex_coords(RTB_QUAD(self), &tex_coords);
+		set_tex_coords(self);
 	}
 
 	self->texture.currently_loaded = self->cached_style.background_image;
@@ -168,7 +219,17 @@ rtb_stylequad_update_style(struct rtb_stylequad *self)
 void
 rtb_stylequad_update_geometry(struct rtb_stylequad *self)
 {
-	rtb_quad_set_vertices(RTB_QUAD(self), &self->owner->rect);
+	struct rtb_element *owner = self->owner;
+	GLfloat v[4][2] = {
+		{owner->x,  owner->y},
+		{owner->x2, owner->y},
+		{owner->x2, owner->y2},
+		{owner->x,  owner->y2}
+	};
+
+	glBindBuffer(GL_ARRAY_BUFFER, self->vertices);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 /**
@@ -179,13 +240,15 @@ void
 rtb_stylequad_init(struct rtb_stylequad *self, struct rtb_element *owner)
 {
 	self->owner = owner;
-	rtb_quad_init(RTB_QUAD(self));
 
+	glGenBuffers(1, &self->vertices);
+	glGenBuffers(1, &self->tex_coords);
 	glGenTextures(1, &self->texture.gl_handle);
 }
 
 void rtb_stylequad_fini(struct rtb_stylequad *self)
 {
 	glDeleteTextures(1, &self->texture.gl_handle);
-	rtb_quad_fini(RTB_QUAD(self));
+	glDeleteBuffers(1, &self->tex_coords);
+	glDeleteBuffers(1, &self->vertices);
 }

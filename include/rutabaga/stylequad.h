@@ -29,8 +29,10 @@
 #include "rutabaga/quad.h"
 
 struct rtb_stylequad {
-	RTB_INHERIT(rtb_quad);
 	struct rtb_element *owner;
+
+	GLuint tex_coords;
+	GLuint vertices;
 
 	struct {
 		const struct rtb_rgb_color *bg_color;
