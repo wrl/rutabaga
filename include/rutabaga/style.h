@@ -43,6 +43,13 @@ typedef enum {
 	RTB_STYLE_PROP_TYPE_COUNT
 } rtb_style_prop_type_t;
 
+typedef enum {
+	RTB_TEXTURE_VERTICAL_STRETCH   = 0x0,
+	RTB_TEXTURE_HORIZONTAL_STRETCH = 0x0,
+	RTB_TEXTURE_VERTICAL_TILE      = 0x1,
+	RTB_TEXTURE_HORIZONTAL_TILE    = 0x2
+} rtb_style_texture_flags_t;
+
 /**
  * property types
  */
@@ -64,6 +71,8 @@ struct rtb_style_font_definition {
 struct rtb_style_texture_definition {
 	RTB_INHERIT(rtb_asset);
 	RTB_INHERIT_AS(rtb_size, size);
+
+	rtb_style_texture_flags_t flags;
 
 	struct {
 		unsigned int left, right, top, bottom;
