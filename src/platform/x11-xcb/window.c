@@ -338,8 +338,8 @@ rtb_window_lock(struct rtb_window *rwin)
 {
 	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
 
-	XLockDisplay(self->xrtb->dpy);
 	uv_mutex_lock(&self->lock);
+	XLockDisplay(self->xrtb->dpy);
 	glXMakeContextCurrent(
 				self->xrtb->dpy, self->gl_draw, self->gl_draw, self->gl_ctx);
 }
@@ -350,8 +350,8 @@ rtb_window_unlock(struct rtb_window *rwin)
 	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
 
 	glXMakeContextCurrent(self->xrtb->dpy, None, None, NULL);
-	uv_mutex_unlock(&self->lock);
 	XUnlockDisplay(self->xrtb->dpy);
+	uv_mutex_unlock(&self->lock);
 }
 
 struct
