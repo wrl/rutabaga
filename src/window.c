@@ -45,6 +45,7 @@
 
 #include "shaders/default.glsl.h"
 #include "shaders/surface.glsl.h"
+#include "shaders/stylequad.glsl.h"
 
 #define ERR(...) fprintf(stderr, "rutabaga: " __VA_ARGS__)
 #define SELF_FROM(elem) \
@@ -55,8 +56,6 @@ static struct rtb_element_implementation super;
 static int
 initialize_shaders(struct rtb_window *self)
 {
-	struct rtb_shader *s;
-
 	if (!rtb_shader_create(&self->shaders.dfault,
 				DEFAULT_VERT_SHADER, DEFAULT_FRAG_SHADER))
 		goto err_dfault;
@@ -65,9 +64,9 @@ initialize_shaders(struct rtb_window *self)
 				SURFACE_VERT_SHADER, SURFACE_FRAG_SHADER))
 		goto err_surface;
 
-	s = &self->shaders.surface;
-	s->tex_coord = glGetAttribLocation(s->program, "tex_coord");
-	s->texture   = glGetUniformLocation(s->program, "texture");
+	if (!rtb_shader_create(&self->shaders.stylequad,
+				STYLEQUAD_VERT_SHADER, STYLEQUAD_FRAG_SHADER))
+		goto err_surface;
 
 	return 0;
 
@@ -240,6 +239,7 @@ rtb_window_open(struct rutabaga *r,
 	return self;
 
 err_font:
+	rtb_shader_free(&self->shaders.stylequad);
 	rtb_shader_free(&self->shaders.surface);
 	rtb_shader_free(&self->shaders.dfault);
 err_shaders:
@@ -254,6 +254,7 @@ rtb_window_close(struct rtb_window *self)
 {
 	assert(self);
 
+	rtb_shader_free(&self->shaders.stylequad);
 	rtb_shader_free(&self->shaders.surface);
 	rtb_shader_free(&self->shaders.dfault);
 

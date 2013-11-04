@@ -24,63 +24,24 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#extension GL_ARB_fragment_coord_conventions : enable
+layout(origin_upper_left, pixel_center_integer) in vec4 gl_FragCoord;
 
-#include <uv.h>
+uniform vec2 offset;
+uniform vec2 tx_offset;
+uniform vec2 texture_size;
+uniform sampler2D texture;
 
-#include "rutabaga/types.h"
-#include "rutabaga/element.h"
-#include "rutabaga/shader.h"
-#include "rutabaga/surface.h"
-#include "rutabaga/mouse.h"
-#include "rutabaga/event.h"
-#include "rutabaga/font-manager.h"
+uniform vec4 color;
 
-#define RTB_WINDOW(x) RTB_UPCAST(x, rtb_window)
-#define RTB_WINDOW_AS(x, type) RTB_DOWNCAST(x, type, rtb_window)
+void main()
+{
+	vec2 tex_coord = gl_TexCoord[0].xy + vec2(
+		0.5 / texture_size.x,
+		0.5 / texture_size.y);
 
-#define RTB_WINDOW_EVENT(x) RTB_UPCAST(x, rtb_window_event)
-
-struct rtb_window_event {
-	RTB_INHERIT(rtb_event);
-	struct rtb_window *window;
-};
-
-struct rtb_window {
-	RTB_INHERIT(rtb_surface);
-	struct rtb_font_manager font_manager;
-
-	/* public *********************************/
-	struct {
-		struct rtb_shader dfault;
-		struct rtb_shader surface;
-		struct rtb_shader stylequad;
-	} shaders;
-
-	struct rtb_style *style_list;
-
-	mat4 identity;
-
-	/* private ********************************/
-	struct rutabaga *rtb;
-
-	int need_reconfigure;
-	int dirty;
-	uv_mutex_t lock;
-
-	struct rtb_mouse mouse;
-	struct rtb_element *focus;
-};
-
-void rtb_window_lock(struct rtb_window *);
-void rtb_window_unlock(struct rtb_window *);
-
-void rtb_window_draw(struct rtb_window *);
-void rtb_window_reinit(struct rtb_window *);
-
-void rtb_window_focus_element(struct rtb_window *,
-		struct rtb_element *focused);
-
-struct rtb_window *rtb_window_open(struct rutabaga *r,
-		int width, int height, const char *title);
-void rtb_window_close(struct rtb_window *);
+	if (texture_size.x > 0.0 && texture_size.y > 0.0)
+		gl_FragColor = texture2D(texture, tex_coord);
+	else
+		gl_FragColor = color;
+}

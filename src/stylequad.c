@@ -30,11 +30,36 @@
 #include "rutabaga/style.h"
 #include "rutabaga/quad.h"
 #include "rutabaga/stylequad.h"
+#include "rutabaga/window.h"
+
+/**
+ * drawing
+ */
 
 void
 rtb_stylequad_draw(struct rtb_stylequad *self)
 {
-	if (self->cached_style.bg_color) {
+	struct rtb_shader *shader = &self->owner->window->shaders.stylequad;
+	const struct rtb_style_texture_definition *texture;
+
+	rtb_render_reset(self->owner);
+	rtb_render_use_shader(self->owner, shader);
+
+	glUniform2f(shader->texture_size, 0.f, 0.f);
+
+	if (self->texture.currently_loaded) {
+		texture = self->texture.currently_loaded;
+
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, self->texture.gl_handle);
+		glUniform1i(shader->texture, 0);
+		glUniform2f(shader->texture_size,
+				texture->w, texture->h);
+
+		rtb_render_quad(self->owner, RTB_QUAD(self));
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+	} else if (self->cached_style.bg_color) {
 		rtb_render_set_color(self->owner,
 				self->cached_style.bg_color->r,
 				self->cached_style.bg_color->g,
@@ -54,6 +79,50 @@ rtb_stylequad_draw(struct rtb_stylequad *self)
 		glLineWidth(2.f);
 		rtb_render_quad_outline(self->owner, RTB_QUAD(self));
 	}
+}
+
+/**
+ * updating
+ */
+
+static int
+load_one_texture(GLuint dst_handle,
+		const struct rtb_style_texture_definition *src)
+{
+	glBindTexture(GL_TEXTURE_2D, dst_handle);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
+			src->w, src->h,
+			0, GL_BGRA, GL_UNSIGNED_BYTE,
+			RTB_ASSET_DATA(RTB_ASSET(src)));
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+	return 0;
+}
+
+static void
+load_textures(struct rtb_stylequad *self)
+{
+	struct rtb_rect tex_coords = {
+		.as_float = {
+			0.f, 1.f,
+			1.f, 0.f
+		}
+	};
+
+	if (self->cached_style.background_image == self->texture.currently_loaded)
+		return;
+
+	if (self->cached_style.background_image) {
+		load_one_texture(self->texture.gl_handle,
+				self->cached_style.background_image);
+		rtb_quad_set_tex_coords(RTB_QUAD(self), &tex_coords);
+	}
+
+	self->texture.currently_loaded = self->cached_style.background_image;
 }
 
 void
@@ -87,6 +156,9 @@ rtb_stylequad_update_style(struct rtb_stylequad *self)
 	CACHE_COLOR(fg_color, "color");
 	CACHE_COLOR(border_color, "border-color");
 
+	CACHE_TEXTURE(background_image, "background-image");
+	load_textures(self);
+
 #undef CACHE_TEXTURE
 #undef CACHE_COLOR
 #undef CACHE_PROP
@@ -99,14 +171,21 @@ rtb_stylequad_update_geometry(struct rtb_stylequad *self)
 	rtb_quad_set_vertices(RTB_QUAD(self), &self->owner->rect);
 }
 
+/**
+ * lifecycle
+ */
+
 void
 rtb_stylequad_init(struct rtb_stylequad *self, struct rtb_element *owner)
 {
 	self->owner = owner;
 	rtb_quad_init(RTB_QUAD(self));
+
+	glGenTextures(1, &self->texture.gl_handle);
 }
 
 void rtb_stylequad_fini(struct rtb_stylequad *self)
 {
+	glDeleteTextures(1, &self->texture.gl_handle);
 	rtb_quad_fini(RTB_QUAD(self));
 }

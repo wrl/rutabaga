@@ -36,7 +36,14 @@ struct rtb_stylequad {
 		const struct rtb_rgb_color *bg_color;
 		const struct rtb_rgb_color *fg_color;
 		const struct rtb_rgb_color *border_color;
+
+		const struct rtb_style_texture_definition *background_image;
 	} cached_style;
+
+	struct {
+		const struct rtb_style_texture_definition *currently_loaded;
+		GLuint gl_handle;
+	} texture;
 };
 
 void rtb_stylequad_update_style(struct rtb_stylequad *);

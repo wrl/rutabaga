@@ -148,8 +148,11 @@ rtb_shader_create(struct rtb_shader *shader,
 
 	CACHE_SIMPLE_UNIFORM(offset);
 	CACHE_SIMPLE_UNIFORM(color);
+	CACHE_SIMPLE_UNIFORM(texture);
+	CACHE_SIMPLE_UNIFORM(texture_size);
 
 	CACHE_ATTRIBUTE(vertex);
+	CACHE_ATTRIBUTE(tex_coord);
 
 	return status;
 }

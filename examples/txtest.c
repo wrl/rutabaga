@@ -51,7 +51,6 @@ int main(int argc, char **argv)
 	win->outer_pad.x = 5.f;
 	win->outer_pad.y = 5.f;
 
-	rtb_elem_set_size_cb(RTB_ELEMENT(win), rtb_size_hfit_children);
 	rtb_elem_set_layout(RTB_ELEMENT(win), rtb_layout_vpack_middle);
 
 	rtb_button_init(&butt);
@@ -60,7 +59,8 @@ int main(int argc, char **argv)
 	butt.min_size.w = 250;
 	butt.min_size.h = 100;
 
-	rtb_button_set_label(&butt, "button test");
+	rtb_button_set_label(&butt, "my texture game krispy");
+	rtb_elem_set_size_cb(RTB_ELEMENT(&butt), rtb_size_fill);
 	rtb_elem_add_child(RTB_ELEMENT(win), RTB_ELEMENT(&butt),
 			RTB_ADD_HEAD);
 

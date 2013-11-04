@@ -47,6 +47,7 @@ struct rtb_shader {
 	GLint offset;
 	GLint color;
 	GLint texture;
+	GLint texture_size;
 
 	/* attributes */
 	GLint vertex;
