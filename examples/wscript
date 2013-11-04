@@ -16,6 +16,19 @@ def build(bld):
 
         target="test")
 
+    bld.program(
+        source="txtest.c",
+
+        lib=['m'],
+        use=["public",
+             "librutabaga",
+             "LIBUV",
+             "X11",
+             "X11-XCB",
+             "XCB"],
+
+        target="txtest")
+
     if bld.env.LIB_JACK:
         bld.program(
             source="cabbage_patch.c",
