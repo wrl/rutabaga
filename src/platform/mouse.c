@@ -30,6 +30,7 @@
 #include "rutabaga/window.h"
 #include "rutabaga/event.h"
 #include "rutabaga/mouse.h"
+#include "rutabaga/platform.h"
 
 /**
  * event dispatching
@@ -327,6 +328,9 @@ rtb_platform_mouse_motion(struct rtb_window *win, int x, int y)
 void
 rtb_platform_mouse_enter_window(struct rtb_window *win, int x, int y)
 {
+	if (win->mouse_in)
+		rtb_platform_mouse_leave_window(win, x, y);
+
 	win->mouse_in = 1;
 	win->mouse.element_underneath = RTB_ELEMENT(win);
 
@@ -352,4 +356,5 @@ rtb_platform_mouse_leave_window(struct rtb_window *win, int x, int y)
 	}
 
 	win->mouse.element_underneath = NULL;
+	win->mouse_in = 0;
 }
