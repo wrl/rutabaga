@@ -53,8 +53,7 @@ button:active {
 }
 
 button:focus {
-	background-image: url('assets/button_focus.tga');
-	background-color: #3C404F;
+	border-color: #85a37c;
 }
 
 /**
@@ -71,11 +70,11 @@ knob {
  */
 
 text-input {
-	border-color: rgba(#404F3C, .5);
+	background-image: url('assets/text_input_normal.tga');
 }
 
 text-input:focus {
-	border-color: #404F3C;
+	background-image: url('assets/text_input_focus.tga');
 }
 
 /**
