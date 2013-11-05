@@ -36,21 +36,24 @@ patchbay::port {
 
 button {
 	color: #FFF;
+	background-image: url('assets/button_normal.tga');
 	background-color: #404F3C;
 }
 
 button:hover {
 	color: #FFF;
+	background-image: url('assets/button_hover.tga');
 	background-color: #5C704C;
 }
 
 button:active {
 	color: rgba(#FFF, .7);
+	background-image: url('assets/button_active.tga');
 	background-color: #21291F;
-	border-color: #404F3C;
 }
 
 button:focus {
+	background-image: url('assets/button_focus.tga');
 	background-color: #3C404F;
 }
 

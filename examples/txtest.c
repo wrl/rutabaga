@@ -48,8 +48,8 @@ int main(int argc, char **argv)
 	assert(delicious = rtb_new());
 	assert((win = rtb_window_open(delicious, 450, 600, "texture text")));
 
-	win->outer_pad.x = 5.f;
-	win->outer_pad.y = 5.f;
+	win->outer_pad.x = 0.f;
+	win->outer_pad.y = 0.f;
 
 	rtb_elem_set_layout(RTB_ELEMENT(win), rtb_layout_vpack_middle);
 

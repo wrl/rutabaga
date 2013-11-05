@@ -34,12 +34,29 @@
 
 #include "private/util.h"
 
-static const GLubyte filled_indices[] = {
-	0, 1, 3, 2
+static const GLubyte texture_indices[] = {
+	/* top (l, c, r) */
+	 0,  2,  1,  3,  2,  0,
+	 1,  7,  4,  2,  7,  1,
+	 4,  6,  5,  7,  6,  4,
+
+	/* middle (l, c, r) */
+	 3,  9,  2,  8,  9,  3,
+	 2, 12,  7,  9, 12,  2,
+	 7, 13,  6, 12, 13,  7,
+
+	/* bottom (l, c, r) */
+	 8, 10,  9, 11, 10,  8,
+	 9, 15, 12, 10, 15,  9,
+	12, 14, 13, 15, 14, 12
+};
+
+static const GLubyte solid_indices[] = {
+	0, 5, 11, 14
 };
 
 static const GLubyte outline_indices[] = {
-	0, 1, 2, 3
+	0, 5, 14, 11
 };
 
 /**
@@ -86,8 +103,8 @@ rtb_stylequad_draw(struct rtb_stylequad *self)
 
 	glUniform2f(shader->texture_size, 0.f, 0.f);
 
-	if (self->texture.currently_loaded) {
-		texture = self->texture.currently_loaded;
+	if (self->texture.definition) {
+		texture = self->texture.definition;
 
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, self->texture.gl_handle);
@@ -95,8 +112,8 @@ rtb_stylequad_draw(struct rtb_stylequad *self)
 		glUniform2f(shader->texture_size,
 				texture->w, texture->h);
 
-		draw_textured(self, shader, GL_TRIANGLE_STRIP,
-				filled_indices, ARRAY_LENGTH(filled_indices));
+		draw_textured(self, shader, GL_TRIANGLES,
+				texture_indices, ARRAY_LENGTH(texture_indices));
 
 		glBindTexture(GL_TEXTURE_2D, 0);
 	} else if (self->cached_style.bg_color) {
@@ -107,7 +124,7 @@ rtb_stylequad_draw(struct rtb_stylequad *self)
 				self->cached_style.bg_color->a);
 
 		draw_solid(self, shader, GL_TRIANGLE_STRIP,
-				filled_indices, ARRAY_LENGTH(filled_indices));
+				solid_indices, ARRAY_LENGTH(solid_indices));
 	}
 
 	if (self->cached_style.border_color) {
@@ -147,13 +164,37 @@ load_one_texture(GLuint dst_handle,
 }
 
 static void
-set_tex_coords(struct rtb_stylequad *self)
+set_tex_coords(struct rtb_stylequad *self,
+		const struct rtb_style_texture_definition *tx)
 {
-	GLfloat v[4][2] = {
-		{0.f, 1.f},
-		{1.f, 1.f},
-		{1.f, 0.f},
-		{0.f, 0.f}
+	GLfloat
+		hpxl    = 1.f / tx->w,
+		vpxl    = 1.f / tx->h,
+		bdr_top = (tx->border.top    * vpxl),
+		bdr_rgt = (tx->border.right  * hpxl),
+		bdr_btm = (tx->border.bottom * vpxl),
+		bdr_lft = (tx->border.left   * hpxl);
+
+	GLfloat v[16][2] = {
+		{0.f,           1.f},
+		{0.f + bdr_lft, 1.f},
+		{0.f + bdr_lft, 1.f - bdr_top},
+		{0.f,           1.f - bdr_top},
+
+		{1.f - bdr_rgt, 1.f},
+		{1.f,           1.f},
+		{1.f,           1.f - bdr_top},
+		{1.f - bdr_rgt, 1.f - bdr_top},
+
+		{0.f,           bdr_btm},
+		{0.f + bdr_lft, bdr_btm},
+		{0.f + bdr_lft, 0.f},
+		{0.f,           0.f},
+
+		{1.f - bdr_rgt, bdr_btm},
+		{1.f,           bdr_btm},
+		{1.f,           0.f},
+		{1.f - bdr_rgt, 0.f},
 	};
 
 	glBindBuffer(GL_ARRAY_BUFFER, self->tex_coords);
@@ -164,16 +205,16 @@ set_tex_coords(struct rtb_stylequad *self)
 static void
 load_textures(struct rtb_stylequad *self)
 {
-	if (self->cached_style.background_image == self->texture.currently_loaded)
+	if (self->cached_style.background_image == self->texture.definition)
 		return;
 
 	if (self->cached_style.background_image) {
 		load_one_texture(self->texture.gl_handle,
 				self->cached_style.background_image);
-		set_tex_coords(self);
+		set_tex_coords(self, self->cached_style.background_image);
 	}
 
-	self->texture.currently_loaded = self->cached_style.background_image;
+	self->texture.definition = self->cached_style.background_image;
 }
 
 void
@@ -220,15 +261,54 @@ void
 rtb_stylequad_update_geometry(struct rtb_stylequad *self)
 {
 	struct rtb_element *owner = self->owner;
-	GLfloat v[4][2] = {
-		{owner->x,  owner->y},
-		{owner->x2, owner->y},
-		{owner->x2, owner->y2},
-		{owner->x,  owner->y2}
-	};
 
 	glBindBuffer(GL_ARRAY_BUFFER, self->vertices);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
+
+	if (self->texture.definition) {
+		const struct rtb_style_texture_definition *tx =
+			self->texture.definition;
+		struct rtb_rect r = owner->rect;
+
+		unsigned int
+			bdr_top = tx->border.top,
+			bdr_rgt = tx->border.right,
+			bdr_btm = tx->border.bottom,
+			bdr_lft = tx->border.left;
+
+		GLfloat v[16][2] = {
+			{r.x,            r.y},
+			{r.x  + bdr_lft, r.y},
+			{r.x  + bdr_lft, r.y + bdr_top},
+			{r.x,            r.y + bdr_top},
+
+			{r.x2 - bdr_rgt, r.y},
+			{r.x2,           r.y},
+			{r.x2,           r.y + bdr_top},
+			{r.x2 - bdr_rgt, r.y + bdr_top},
+
+			{r.x,            r.y2 - bdr_btm},
+			{r.x  + bdr_lft, r.y2 - bdr_btm},
+			{r.x  + bdr_lft, r.y2},
+			{r.x,            r.y2},
+
+			{r.x2 - bdr_rgt, r.y2 - bdr_btm},
+			{r.x2,           r.y2 - bdr_btm},
+			{r.x2,           r.y2},
+			{r.x2 - bdr_rgt, r.y2}
+		};
+
+		glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
+	} else {
+		GLfloat v[16][2] = {
+			[0]  = {owner->x,  owner->y},
+			[5]  = {owner->x2, owner->y},
+			[14] = {owner->x2, owner->y2},
+			[11] = {owner->x,  owner->y2}
+		};
+
+		glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
+	}
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 

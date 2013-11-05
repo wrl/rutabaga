@@ -36,9 +36,7 @@ uniform vec4 color;
 
 void main()
 {
-	vec2 tex_coord = gl_TexCoord[0].xy + vec2(
-		0.5 / texture_size.x,
-		0.5 / texture_size.y);
+	vec2 tex_coord = gl_TexCoord[0].xy;
 
 	if (texture_size.x > 0.0 && texture_size.y > 0.0)
 		gl_FragColor = texture2D(texture, tex_coord);

@@ -43,7 +43,7 @@ struct rtb_stylequad {
 	} cached_style;
 
 	struct {
-		const struct rtb_style_texture_definition *currently_loaded;
+		const struct rtb_style_texture_definition *definition;
 		GLuint gl_handle;
 	} texture;
 };

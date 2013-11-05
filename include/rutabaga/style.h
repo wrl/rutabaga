@@ -75,7 +75,7 @@ struct rtb_style_texture_definition {
 	rtb_style_texture_flags_t flags;
 
 	struct {
-		unsigned int left, right, top, bottom;
+		unsigned int top, right, bottom, left;
 	} border;
 };
 

@@ -35,13 +35,12 @@ attribute vec2 tex_coord;
 
 void main()
 {
-	vec4 pixelization_vector = vec4(0.375, 0.375, 0.0, 0.0);
 	vec4 offset_vector = vec4(offset.x, offset.y, 0.0, 0.0);
 
 	gl_TexCoord[0].xy = tex_coord.xy;
 	gl_FrontColor = color;
 
 	gl_Position = projection *
-		(offset_vector + pixelization_vector +
+		(offset_vector +
 		 (modelview * vec4(vertex.xy, 0.0, 1.0)));
 }
