@@ -209,9 +209,6 @@ struct rtb_element {
 
 	/* public *********************************/
 	RTB_INHERIT_AS(rtb_rect, rect);
-	struct rtb_size min_size;
-	struct rtb_size max_size;
-
 	rtb_elem_flags_t flags;
 
 	RTB_INHERIT_AS(rtb_element_implementation, impl);
@@ -230,6 +227,10 @@ struct rtb_element {
 	struct rtb_rect inner_rect;
 	rtb_visibility_t visibility;
 	struct rtb_stylequad stylequad;
+
+	/* assign these via the stylesheet */
+	struct rtb_size min_size;
+	struct rtb_size max_size;
 
 	int mouse_in;
 

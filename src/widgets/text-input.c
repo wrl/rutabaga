@@ -401,9 +401,6 @@ rtb_text_input_init(struct rutabaga *rtb, struct rtb_text_input *self)
 	self->outer_pad.x =
 		self->outer_pad.y = 0.f;
 
-	self->min_size.h = 30.f;
-	self->min_size.w = 150.f;
-
 	self->draw      = draw;
 	self->on_event  = on_event;
 	self->attached  = attached;

@@ -127,8 +127,6 @@ rtb_patchbay_node_init(struct rtb_patchbay_node *self)
 	self->size_cb   = size;
 	self->layout_cb = rtb_layout_vpack_top;
 
-	self->min_size.w = 200.f;
-
 	self->outer_pad.x = 0.f;
 	self->inner_pad.y = 5.f;
 

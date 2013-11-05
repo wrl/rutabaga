@@ -168,9 +168,6 @@ rtb_button_init(struct rtb_button *self)
 	self->outer_pad.x =
 		self->outer_pad.y = 0.f;
 
-	self->min_size.w = 70.f;
-	self->min_size.h = 26.f;
-
 	self->on_event  = on_event;
 	self->attached  = attached;
 	self->layout_cb = rtb_layout_hpack_center;

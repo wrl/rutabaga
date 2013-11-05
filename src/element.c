@@ -236,6 +236,28 @@ reflow(struct rtb_element *self,
 	return 1;
 }
 
+/**
+ * styling
+ */
+
+static void
+apply_layout_style_props(struct rtb_element *self)
+{
+	const struct rtb_style_property_definition *prop;
+
+#define ASSIGN_FLOAT_IF_DECLARED(pname, dest) do {        \
+	prop = rtb_style_query_prop(self->style, self->state, \
+			pname, RTB_STYLE_PROP_FLOAT, 0);              \
+	if (prop)                                             \
+		self->dest = prop->flt;                           \
+} while (0)
+
+	ASSIGN_FLOAT_IF_DECLARED("min-width", min_size.w);
+	ASSIGN_FLOAT_IF_DECLARED("min-height", min_size.h);
+
+#undef ASSIGN_FLOAT_IF_DECLARED
+}
+
 static void
 restyle(struct rtb_element *self)
 {
@@ -246,6 +268,7 @@ restyle(struct rtb_element *self)
 	if (!self->style)
 		self->style = rtb_style_for_element(self, self->window->style_list);
 
+	apply_layout_style_props(self);
 	rtb_stylequad_update_style(&self->stylequad);
 
 	TAILQ_FOREACH(iter, &self->children, child)

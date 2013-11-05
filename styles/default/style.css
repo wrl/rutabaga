@@ -17,6 +17,8 @@ patchbay {
 }
 
 patchbay::node {
+	min-width: 200px;
+
 	color: #FFF;
 	background-color: rgba(#18181C, .9);
 
@@ -35,6 +37,9 @@ patchbay::port {
  */
 
 button {
+	min-width:  80px;
+	min-height: 26px;
+
 	color: #FFF;
 	background-image: url('assets/button_normal.tga');
 	background-color: #404F3C;
@@ -70,6 +75,9 @@ knob {
  */
 
 text-input {
+	min-width:  150px;
+	min-height: 30px;
+
 	background-image: url('assets/text_input_normal.tga');
 }
 
