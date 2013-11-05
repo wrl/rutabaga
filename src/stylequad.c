@@ -52,11 +52,11 @@ static const GLubyte texture_indices[] = {
 };
 
 static const GLubyte solid_indices[] = {
-	0, 5, 11, 14
+	2, 7, 9, 12
 };
 
 static const GLubyte outline_indices[] = {
-	0, 5, 14, 11
+	2, 7, 12, 9
 };
 
 /**
@@ -116,6 +116,8 @@ rtb_stylequad_draw(struct rtb_stylequad *self)
 				texture_indices, ARRAY_LENGTH(texture_indices));
 
 		glBindTexture(GL_TEXTURE_2D, 0);
+
+		glUniform2f(shader->texture_size, 0.f, 0.f);
 	} else if (self->cached_style.bg_color) {
 		rtb_render_set_color(self->owner,
 				self->cached_style.bg_color->r,
@@ -134,7 +136,7 @@ rtb_stylequad_draw(struct rtb_stylequad *self)
 				self->cached_style.border_color->b,
 				self->cached_style.border_color->a);
 
-		glLineWidth(2.f);
+		glLineWidth(1.f);
 
 		draw_solid(self, shader, GL_LINE_LOOP,
 				outline_indices, ARRAY_LENGTH(outline_indices));
@@ -300,10 +302,10 @@ rtb_stylequad_update_geometry(struct rtb_stylequad *self)
 		glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
 	} else {
 		GLfloat v[16][2] = {
-			[0]  = {owner->x,  owner->y},
-			[5]  = {owner->x2, owner->y},
-			[14] = {owner->x2, owner->y2},
-			[11] = {owner->x,  owner->y2}
+			[2]  = {owner->x,  owner->y},
+			[7]  = {owner->x2, owner->y},
+			[12] = {owner->x2, owner->y2},
+			[9]  = {owner->x,  owner->y2}
 		};
 
 		glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
