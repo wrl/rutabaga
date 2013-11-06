@@ -27,6 +27,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
+from rutabaga_css.parser import ParseError
 from rutabaga_css.asset import *
 from rutabaga_css.prop import RutabagaStyleProperty
 
@@ -35,7 +36,8 @@ all = [
     "RutabagaExternalTexture",
     "RutabagaEmbeddedTexture",
     
-    "RutabagaTextureProperty"]
+    "RutabagaTextureProperty",
+    "RutabagaBorderTextureProperty"]
 
 class RutabagaTexture(object):
     def __init__(self, stylesheet, path):
@@ -54,10 +56,11 @@ class RutabagaExternalTexture(RutabagaTexture):
 \t\t\t\t\t.texture = {{
 \t\t\t\t\t\t.location = RTB_ASSET_EXTERNAL,
 \t\t\t\t\t\t.compression = RTB_ASSET_UNCOMPRESSED,
-\t\t\t\t\t\t.external.path = "{0}"}}"""
+\t\t\t\t\t\t.external.path = "{0}",
+{extra}}}"""
 
-    def c_repr(self):
-        return self.c_repr_tpl.format(self.asset.path)
+    def c_repr(self, extra=''):
+        return self.c_repr_tpl.format(self.asset.path, extra=extra)
 
 class RutabagaEmbeddedTexture(RutabagaTexture):
     def __init__(self, stylesheet, path):
@@ -79,18 +82,22 @@ class RutabagaEmbeddedTexture(RutabagaTexture):
 \t\t\t\t\t\t.embedded.size = sizeof({var}),
 \t\t\t\t\t\t.w = {width},
 \t\t\t\t\t\t.h = {height},
-\t\t\t\t\t\t.border = {{
-\t\t\t\t\t\t\t.top    = 4,
-\t\t\t\t\t\t\t.right  = 4,
-\t\t\t\t\t\t\t.bottom = 4,
-\t\t\t\t\t\t\t.left   = 4
-\t\t\t\t\t\t}}}}"""
+{extra}}}"""
 
-    def c_repr(self):
+    def c_repr(self, extra=''):
         return self.c_repr_tpl.format(
             var=self.texture_var,
             width=self.width,
-            height=self.height)
+            height=self.height,
+            extra=extra)
+
+c_repr_border = """\
+\t\t\t\t\t\t.border = {{
+\t\t\t\t\t\t\t.top    = {0},
+\t\t\t\t\t\t\t.right  = {1},
+\t\t\t\t\t\t\t.bottom = {2},
+\t\t\t\t\t\t\t.left   = {3}
+\t\t\t\t\t\t}}"""
 
 class RutabagaTextureProperty(RutabagaStyleProperty):
     default_method = RutabagaEmbeddedTexture
@@ -98,9 +105,13 @@ class RutabagaTextureProperty(RutabagaStyleProperty):
         "embed": RutabagaEmbeddedTexture,
         "extern": RutabagaExternalTexture}
 
+    def parse_extra_tokens(self, tokens):
+        pass
+
     def __init__(self, stylesheet, name, tokens):
         self.path = None
         self.method = RutabagaTextureProperty.default_method
+        self.borders = [0,0,0,0]
 
         tok = tokens[0]
 
@@ -120,6 +131,29 @@ class RutabagaTextureProperty(RutabagaStyleProperty):
                             ["{0}()".format(f) for f in method_map])))
 
         self.texture = self.method(stylesheet, self.path)
+        self.parse_extra_tokens(tokens[1:])
 
     def c_repr(self):
-        return self.texture.c_repr()
+        borders = c_repr_border.format(*self.borders)
+        return self.texture.c_repr(borders)
+
+class RutabagaBorderTextureProperty(RutabagaTextureProperty):
+    def parse_extra_tokens(self, tokens):
+        from itertools import takewhile, dropwhile, repeat
+        slices = list(filter(
+            lambda x: x.type != 'S', takewhile(
+            lambda x: x.type in ['DIMENSION', 'S'], tokens)))
+
+        non_px = list(filter(lambda x: x.unit != 'px', slices))
+        if non_px:
+            raise ParseError(non_px[0], 'slices can only be specified in pixels, sorry')
+
+        b = lambda *x: [slices[i].value for i in x]
+        if len(slices) == 1:
+            self.borders = b(0, 0, 0, 0)
+        elif len(slices) == 2:
+            self.borders = b(1, 0, 1, 0)
+        elif len(slices) == 3:
+            self.borders = b(0, 1, 2, 1)
+        elif len(slices) == 4:
+            self.borders = b(0, 1, 2, 3)

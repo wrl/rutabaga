@@ -207,16 +207,16 @@ set_tex_coords(struct rtb_stylequad *self,
 static void
 load_textures(struct rtb_stylequad *self)
 {
-	if (self->cached_style.background_image == self->texture.definition)
+	if (self->cached_style.border_image == self->texture.definition)
 		return;
 
-	if (self->cached_style.background_image) {
+	if (self->cached_style.border_image) {
 		load_one_texture(self->texture.gl_handle,
-				self->cached_style.background_image);
-		set_tex_coords(self, self->cached_style.background_image);
+				self->cached_style.border_image);
+		set_tex_coords(self, self->cached_style.border_image);
 	}
 
-	self->texture.definition = self->cached_style.background_image;
+	self->texture.definition = self->cached_style.border_image;
 }
 
 void
@@ -250,7 +250,7 @@ rtb_stylequad_update_style(struct rtb_stylequad *self)
 	CACHE_COLOR(fg_color, "color");
 	CACHE_COLOR(border_color, "border-color");
 
-	CACHE_TEXTURE(background_image, "background-image");
+	CACHE_TEXTURE(border_image, "border-image");
 	load_textures(self);
 
 #undef CACHE_TEXTURE

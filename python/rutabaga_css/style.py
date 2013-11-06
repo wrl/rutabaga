@@ -49,6 +49,7 @@ prop_mapping = {
     'color': RutabagaRGBAProperty,
     'background-color': RutabagaRGBAProperty,
     'background-image': RutabagaTextureProperty,
+    'border-image': RutabagaBorderTextureProperty,
     'border-color': RutabagaRGBAProperty,
 
     'min-width':  RutabagaFloatProperty,

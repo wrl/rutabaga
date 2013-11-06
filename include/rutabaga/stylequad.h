@@ -39,7 +39,7 @@ struct rtb_stylequad {
 		const struct rtb_rgb_color *fg_color;
 		const struct rtb_rgb_color *border_color;
 
-		const struct rtb_style_texture_definition *background_image;
+		const struct rtb_style_texture_definition *border_image;
 	} cached_style;
 
 	struct {

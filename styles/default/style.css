@@ -41,24 +41,24 @@ button {
 	min-height: 26px;
 
 	color: #FFF;
-	background-image: url('assets/button_normal.tga');
+	border-image: url('assets/button_normal.tga') 4px;
 	background-color: #404F3C;
 }
 
 button:hover {
 	color: #FFF;
-	background-image: url('assets/button_hover.tga');
+	border-image: url('assets/button_hover.tga') 4px;
 	background-color: #5C704C;
 }
 
 button:active {
 	color: rgba(#FFF, .7);
-	background-image: url('assets/button_active.tga');
+	border-image: url('assets/button_active.tga') 4px;
 	background-color: #21291F;
 }
 
 button:focus {
-	background-image: url('assets/button_focus.tga');
+	border-image: url('assets/button_focus.tga') 4px;
 }
 
 /**
@@ -78,11 +78,11 @@ text-input {
 	min-width:  150px;
 	min-height: 30px;
 
-	background-image: url('assets/text_input_normal.tga');
+	border-image: url('assets/text_input_normal.tga') 4px;
 }
 
 text-input:focus {
-	background-image: url('assets/text_input_focus.tga');
+	border-image: url('assets/text_input_focus.tga') 4px;
 }
 
 /**
