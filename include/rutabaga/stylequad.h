@@ -26,10 +26,13 @@
 
 #pragma once
 
+#include "rutabaga/geometry.h"
 #include "rutabaga/quad.h"
+#include "rutabaga/mat4.h"
 
 struct rtb_stylequad {
 	struct rtb_element *owner;
+	struct rtb_point offset;
 
 	GLuint tex_coords;
 	GLuint vertices;
@@ -52,6 +55,8 @@ void rtb_stylequad_update_style(struct rtb_stylequad *);
 void rtb_stylequad_update_geometry(struct rtb_stylequad *);
 
 void rtb_stylequad_draw(struct rtb_stylequad *);
+void rtb_stylequad_draw_with_modelview(struct rtb_stylequad *,
+		mat4 *modelview);
 
 void rtb_stylequad_init(struct rtb_stylequad *, struct rtb_element *owner);
 void rtb_stylequad_fini(struct rtb_stylequad *);

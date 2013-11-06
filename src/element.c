@@ -282,9 +282,7 @@ restyle(struct rtb_element *self)
 static void
 draw(struct rtb_element *self)
 {
-	rtb_render_set_position(self, 0, 0);
 	rtb_stylequad_draw(&self->stylequad);
-
 	rtb_elem_draw_children(self);
 }
 

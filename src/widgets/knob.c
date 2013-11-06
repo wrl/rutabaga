@@ -47,115 +47,23 @@
 #define MAX_DEGREES (360.f - MIN_DEGREES)
 #define DEGREE_RANGE (MAX_DEGREES - MIN_DEGREES)
 
-#define CIRCLE_SEGMENTS 32
-
 /* would be cool to have this be like a smoothed equation or smth */
 #define DELTA_VALUE_STEP_BUTTON1 .005f
 #define DELTA_VALUE_STEP_BUTTON3 .0005f
 
 struct rtb_element_implementation super;
 
-static const GLubyte indicator_indices[] = {
-	0, 1
-};
-
-static GLushort circle_indices[CIRCLE_SEGMENTS + 2] = {[1] = 0};
-
 /**
  * drawing
  */
-
-static void
-circle_vertex_array(GLfloat dest[][2], float r, int segments)
-{
-	/* borrowed from http://slabode.exofire.net/circle_draw.shtml, thanks! */
-
-	float theta = 2 * 3.1415926f / (float) segments;
-	float c = cosf(theta); /* precalculate the sine and cosine */
-	float s = sinf(theta);
-	float t;
-
-	float x = r; /* we start at angle = 0 */
-	float y = 0;
-
-	int i;
-
-	for (i = 0; i < segments; i++) {
-		dest[i][0] = x;
-		dest[i][1] = y;
-
-		/* apply the rotation matrix */
-		t = x;
-		x = c * x - s * y;
-		y = s * t + c * y;
-	}
-}
-
-static void
-cache_to_vbo(struct rtb_knob *self)
-{
-	GLfloat r, indicator[2][2], circle[CIRCLE_SEGMENTS + 1][2];
-
-	r = (fmin(self->w, self->h) / 2.f) - 1.f;
-
-	indicator[0][0] = 0;
-	indicator[0][1] = r / 4.f;
-
-	indicator[1][0] = 0;
-	indicator[1][1] = r;
-
-	circle[0][0] = 0.f;
-	circle[1][0] = 0.f;
-
-	circle_vertex_array(&circle[1], r, ARRAY_LENGTH(circle) - 1);
-
-	glBindBuffer(GL_ARRAY_BUFFER, self->vbo[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(circle), circle, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ARRAY_BUFFER, self->vbo[1]);
-	glBufferData(GL_ARRAY_BUFFER,
-			sizeof(indicator), indicator, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
 
 static void
 draw(struct rtb_element *elem)
 {
 	SELF_FROM(elem);
 
-	rtb_render_set_position(elem,
-			self->x + ((self->w) / 2),
-			self->y + ((self->h) / 2));
-
-	glBindBuffer(GL_ARRAY_BUFFER, self->vbo[0]);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-	/* background */
-	rtb_render_use_style_bg(elem);
-
-	glDrawElements(
-			GL_TRIANGLE_FAN, ARRAY_LENGTH(circle_indices),
-			GL_UNSIGNED_SHORT, circle_indices);
-
-	/* indicator */
-	rtb_render_use_style_fg(elem);
-
-	glLineWidth(2.5f);
-
-	glBindBuffer(GL_ARRAY_BUFFER, self->vbo[1]);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-	rtb_render_set_modelview(elem, self->modelview.data);
-
-	glDrawElements(
-			GL_LINES, ARRAY_LENGTH(indicator_indices),
-			GL_UNSIGNED_BYTE, indicator_indices);
-
-	glDisableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	rtb_stylequad_draw_with_modelview(&self->stylequad, &self->modelview);
+	rtb_elem_draw_children(RTB_ELEMENT(self));
 }
 
 /**
@@ -292,21 +200,6 @@ attached(struct rtb_element *elem,
 			"net.illest.rutabaga.widgets.knob");
 
 	rtb_knob_set_value(self, self->origin);
-	cache_to_vbo(self);
-}
-
-static void
-init_circle_indices()
-{
-	int i;
-
-	if (circle_indices[1] != 0)
-		return;
-
-	for (i = 0; i < ARRAY_LENGTH(circle_indices); i++)
-		circle_indices[i] = i;
-
-	circle_indices[i - 1] = 1;
 }
 
 /**
@@ -333,20 +226,16 @@ rtb_knob_new()
 	self->w = 30;
 	self->h = 30;
 
-	glGenBuffers(2, self->vbo);
-
 	self->draw     = draw;
 	self->on_event = on_event;
 	self->attached = attached;
 
-	init_circle_indices();
 	return self;
 }
 
 void
 rtb_knob_free(struct rtb_knob *self)
 {
-	glDeleteBuffers(2, self->vbo);
 	rtb_elem_fini(RTB_ELEMENT(self));
 	free(self);
 }

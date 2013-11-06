@@ -66,6 +66,7 @@ button:focus {
  */
 
 knob {
+	border-image: url('assets/knob.tga');
 	color: #18181C;
 	background-color: #404F3C;
 }

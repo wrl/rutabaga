@@ -52,7 +52,6 @@ struct rtb_knob {
 	/* private ********************************/
 	mat4 modelview;
 	float value;
-	GLuint vbo[2];
 };
 
 void rtb_knob_set_value(struct rtb_knob *, float new_value);
