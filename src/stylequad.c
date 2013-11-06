@@ -30,18 +30,103 @@
 #include "rutabaga/style.h"
 #include "rutabaga/quad.h"
 #include "rutabaga/stylequad.h"
+#include "rutabaga/window.h"
+
+#include "private/util.h"
+
+static const GLubyte texture_indices[] = {
+	/* top (l, c, r) */
+	 0,  2,  1,  3,  2,  0,
+	 1,  7,  4,  2,  7,  1,
+	 4,  6,  5,  7,  6,  4,
+
+	/* middle (l, c, r) */
+	 3,  9,  2,  8,  9,  3,
+	 2, 12,  7,  9, 12,  2,
+	 7, 13,  6, 12, 13,  7,
+
+	/* bottom (l, c, r) */
+	 8, 10,  9, 11, 10,  8,
+	 9, 15, 12, 10, 15,  9,
+	12, 14, 13, 15, 14, 12
+};
+
+static const GLubyte solid_indices[] = {
+	2, 7, 9, 12
+};
+
+static const GLubyte outline_indices[] = {
+	2, 7, 12, 9
+};
+
+/**
+ * drawing
+ */
+
+static void
+draw_solid(struct rtb_stylequad *self, struct rtb_shader *shader,
+		GLenum mode, const GLubyte *indices, GLsizei count)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, self->vertices);
+	glEnableVertexAttribArray(shader->vertex);
+	glVertexAttribPointer(shader->vertex, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glDrawElements(mode, count, GL_UNSIGNED_BYTE, indices);
+
+	glDisableVertexAttribArray(shader->vertex);
+}
+
+static void
+draw_textured(struct rtb_stylequad *self, struct rtb_shader *shader,
+		GLenum mode, const GLubyte *indices, GLsizei count)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, self->tex_coords);
+	glEnableVertexAttribArray(shader->tex_coord);
+	glVertexAttribPointer(shader->tex_coord,
+			2, GL_FLOAT, GL_FALSE, 0, 0);
+
+	draw_solid(self, shader, mode, indices, count);
+
+	glDisableVertexAttribArray(shader->tex_coord);
+}
 
 void
 rtb_stylequad_draw(struct rtb_stylequad *self)
 {
-	if (self->cached_style.bg_color) {
+	struct rtb_shader *shader = &self->owner->window->shaders.stylequad;
+	const struct rtb_style_texture_definition *texture;
+
+	rtb_render_reset(self->owner);
+	rtb_render_use_shader(self->owner, shader);
+
+	glUniform2f(shader->texture_size, 0.f, 0.f);
+
+	if (self->texture.definition) {
+		texture = self->texture.definition;
+
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, self->texture.gl_handle);
+		glUniform1i(shader->texture, 0);
+		glUniform2f(shader->texture_size,
+				texture->w, texture->h);
+
+		draw_textured(self, shader, GL_TRIANGLES,
+				texture_indices, ARRAY_LENGTH(texture_indices));
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		glUniform2f(shader->texture_size, 0.f, 0.f);
+	} else if (self->cached_style.bg_color) {
 		rtb_render_set_color(self->owner,
 				self->cached_style.bg_color->r,
 				self->cached_style.bg_color->g,
 				self->cached_style.bg_color->b,
 				self->cached_style.bg_color->a);
 
-		rtb_render_quad(self->owner, RTB_QUAD(self));
+		draw_solid(self, shader, GL_TRIANGLE_STRIP,
+				solid_indices, ARRAY_LENGTH(solid_indices));
 	}
 
 	if (self->cached_style.border_color) {
@@ -51,9 +136,87 @@ rtb_stylequad_draw(struct rtb_stylequad *self)
 				self->cached_style.border_color->b,
 				self->cached_style.border_color->a);
 
-		glLineWidth(2.f);
-		rtb_render_quad_outline(self->owner, RTB_QUAD(self));
+		glLineWidth(1.f);
+
+		draw_solid(self, shader, GL_LINE_LOOP,
+				outline_indices, ARRAY_LENGTH(outline_indices));
 	}
+}
+
+/**
+ * updating
+ */
+
+static int
+load_one_texture(GLuint dst_handle,
+		const struct rtb_style_texture_definition *src)
+{
+	glBindTexture(GL_TEXTURE_2D, dst_handle);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
+			src->w, src->h,
+			0, GL_BGRA, GL_UNSIGNED_BYTE,
+			RTB_ASSET_DATA(RTB_ASSET(src)));
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+	return 0;
+}
+
+static void
+set_tex_coords(struct rtb_stylequad *self,
+		const struct rtb_style_texture_definition *tx)
+{
+	GLfloat
+		hpxl    = 1.f / tx->w,
+		vpxl    = 1.f / tx->h,
+		bdr_top = (tx->border.top    * vpxl),
+		bdr_rgt = (tx->border.right  * hpxl),
+		bdr_btm = (tx->border.bottom * vpxl),
+		bdr_lft = (tx->border.left   * hpxl);
+
+	GLfloat v[16][2] = {
+		{0.f,           1.f},
+		{0.f + bdr_lft, 1.f},
+		{0.f + bdr_lft, 1.f - bdr_top},
+		{0.f,           1.f - bdr_top},
+
+		{1.f - bdr_rgt, 1.f},
+		{1.f,           1.f},
+		{1.f,           1.f - bdr_top},
+		{1.f - bdr_rgt, 1.f - bdr_top},
+
+		{0.f,           bdr_btm},
+		{0.f + bdr_lft, bdr_btm},
+		{0.f + bdr_lft, 0.f},
+		{0.f,           0.f},
+
+		{1.f - bdr_rgt, bdr_btm},
+		{1.f,           bdr_btm},
+		{1.f,           0.f},
+		{1.f - bdr_rgt, 0.f},
+	};
+
+	glBindBuffer(GL_ARRAY_BUFFER, self->tex_coords);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+static void
+load_textures(struct rtb_stylequad *self)
+{
+	if (self->cached_style.background_image == self->texture.definition)
+		return;
+
+	if (self->cached_style.background_image) {
+		load_one_texture(self->texture.gl_handle,
+				self->cached_style.background_image);
+		set_tex_coords(self, self->cached_style.background_image);
+	}
+
+	self->texture.definition = self->cached_style.background_image;
 }
 
 void
@@ -87,6 +250,9 @@ rtb_stylequad_update_style(struct rtb_stylequad *self)
 	CACHE_COLOR(fg_color, "color");
 	CACHE_COLOR(border_color, "border-color");
 
+	CACHE_TEXTURE(background_image, "background-image");
+	load_textures(self);
+
 #undef CACHE_TEXTURE
 #undef CACHE_COLOR
 #undef CACHE_PROP
@@ -96,17 +262,75 @@ rtb_stylequad_update_style(struct rtb_stylequad *self)
 void
 rtb_stylequad_update_geometry(struct rtb_stylequad *self)
 {
-	rtb_quad_set_vertices(RTB_QUAD(self), &self->owner->rect);
+	struct rtb_element *owner = self->owner;
+
+	glBindBuffer(GL_ARRAY_BUFFER, self->vertices);
+
+	if (self->texture.definition) {
+		const struct rtb_style_texture_definition *tx =
+			self->texture.definition;
+		struct rtb_rect r = owner->rect;
+
+		unsigned int
+			bdr_top = tx->border.top,
+			bdr_rgt = tx->border.right,
+			bdr_btm = tx->border.bottom,
+			bdr_lft = tx->border.left;
+
+		GLfloat v[16][2] = {
+			{r.x,            r.y},
+			{r.x  + bdr_lft, r.y},
+			{r.x  + bdr_lft, r.y + bdr_top},
+			{r.x,            r.y + bdr_top},
+
+			{r.x2 - bdr_rgt, r.y},
+			{r.x2,           r.y},
+			{r.x2,           r.y + bdr_top},
+			{r.x2 - bdr_rgt, r.y + bdr_top},
+
+			{r.x,            r.y2 - bdr_btm},
+			{r.x  + bdr_lft, r.y2 - bdr_btm},
+			{r.x  + bdr_lft, r.y2},
+			{r.x,            r.y2},
+
+			{r.x2 - bdr_rgt, r.y2 - bdr_btm},
+			{r.x2,           r.y2 - bdr_btm},
+			{r.x2,           r.y2},
+			{r.x2 - bdr_rgt, r.y2}
+		};
+
+		glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
+	} else {
+		GLfloat v[16][2] = {
+			[2]  = {owner->x,  owner->y},
+			[7]  = {owner->x2, owner->y},
+			[12] = {owner->x2, owner->y2},
+			[9]  = {owner->x,  owner->y2}
+		};
+
+		glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
+
+/**
+ * lifecycle
+ */
 
 void
 rtb_stylequad_init(struct rtb_stylequad *self, struct rtb_element *owner)
 {
 	self->owner = owner;
-	rtb_quad_init(RTB_QUAD(self));
+
+	glGenBuffers(1, &self->vertices);
+	glGenBuffers(1, &self->tex_coords);
+	glGenTextures(1, &self->texture.gl_handle);
 }
 
 void rtb_stylequad_fini(struct rtb_stylequad *self)
 {
-	rtb_quad_fini(RTB_QUAD(self));
+	glDeleteTextures(1, &self->texture.gl_handle);
+	glDeleteBuffers(1, &self->tex_coords);
+	glDeleteBuffers(1, &self->vertices);
 }

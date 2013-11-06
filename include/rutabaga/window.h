@@ -54,6 +54,7 @@ struct rtb_window {
 	struct {
 		struct rtb_shader dfault;
 		struct rtb_shader surface;
+		struct rtb_shader stylequad;
 	} shaders;
 
 	struct rtb_style *style_list;

@@ -78,7 +78,13 @@ class RutabagaEmbeddedTexture(RutabagaTexture):
 \t\t\t\t\t\t.embedded.base = {var},
 \t\t\t\t\t\t.embedded.size = sizeof({var}),
 \t\t\t\t\t\t.w = {width},
-\t\t\t\t\t\t.h = {height}}}"""
+\t\t\t\t\t\t.h = {height},
+\t\t\t\t\t\t.border = {{
+\t\t\t\t\t\t\t.top    = 4,
+\t\t\t\t\t\t\t.right  = 4,
+\t\t\t\t\t\t\t.bottom = 4,
+\t\t\t\t\t\t\t.left   = 4
+\t\t\t\t\t\t}}}}"""
 
     def c_repr(self):
         return self.c_repr_tpl.format(

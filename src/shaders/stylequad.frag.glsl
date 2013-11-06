@@ -29,19 +29,17 @@ layout(origin_upper_left, pixel_center_integer) in vec4 gl_FragCoord;
 
 uniform vec2 offset;
 uniform vec2 tx_offset;
-uniform vec2 tx_size;
+uniform vec2 texture_size;
 uniform sampler2D texture;
 
-uniform vec4 front_color;
-uniform vec4 back_color;
+uniform vec4 color;
 
 void main()
 {
-	vec2 offset_coord = gl_FragCoord.xy + tx_offset;
-	vec2 tex_coord = vec2(
-		(offset_coord.x / tx_size.x),
-		(offset_coord.y / tx_size.y));
+	vec2 tex_coord = gl_TexCoord[0].xy;
 
-	float a = texture2D(texture, tex_coord).a;
-	gl_FragColor = mix(front_color, back_color, a);
+	if (texture_size.x > 0.0 && texture_size.y > 0.0)
+		gl_FragColor = texture2D(texture, tex_coord);
+	else
+		gl_FragColor = color;
 }

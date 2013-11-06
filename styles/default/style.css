@@ -17,6 +17,8 @@ patchbay {
 }
 
 patchbay::node {
+	min-width: 200px;
+
 	color: #FFF;
 	background-color: rgba(#18181C, .9);
 
@@ -35,23 +37,28 @@ patchbay::port {
  */
 
 button {
+	min-width:  80px;
+	min-height: 26px;
+
 	color: #FFF;
+	background-image: url('assets/button_normal.tga');
 	background-color: #404F3C;
 }
 
 button:hover {
 	color: #FFF;
+	background-image: url('assets/button_hover.tga');
 	background-color: #5C704C;
 }
 
 button:active {
 	color: rgba(#FFF, .7);
+	background-image: url('assets/button_active.tga');
 	background-color: #21291F;
-	border-color: #404F3C;
 }
 
 button:focus {
-	background-color: #3C404F;
+	background-image: url('assets/button_focus.tga');
 }
 
 /**
@@ -68,11 +75,14 @@ knob {
  */
 
 text-input {
-	border-color: rgba(#404F3C, .5);
+	min-width:  150px;
+	min-height: 30px;
+
+	background-image: url('assets/text_input_normal.tga');
 }
 
 text-input:focus {
-	border-color: #404F3C;
+	background-image: url('assets/text_input_focus.tga');
 }
 
 /**

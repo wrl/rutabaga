@@ -17,7 +17,7 @@
 # relinquishment in perpetuity of all present and future rights to this
 # software under copyright law.
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
 # EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 # MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 # IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
@@ -34,21 +34,25 @@ from rutabaga_css.parser import ParseError
 from rutabaga_css.properties.rgba import *
 from rutabaga_css.properties.texture import *
 from rutabaga_css.properties.font import *
+from rutabaga_css.properties.float import *
 
-all = ["RutabagaStyle"]
+all = ['RutabagaStyle']
 
 state_mapping = {
-    "normal": "RTB_DRAW_NORMAL",
-    "focus":  "RTB_DRAW_FOCUS",
-    "hover":  "RTB_DRAW_HOVER",
-    "active": "RTB_DRAW_ACTIVE"
+    'normal': 'RTB_DRAW_NORMAL',
+    'focus':  'RTB_DRAW_FOCUS',
+    'hover':  'RTB_DRAW_HOVER',
+    'active': 'RTB_DRAW_ACTIVE'
 }
 
 prop_mapping = {
-    "color": RutabagaRGBAProperty,
-    "background-color": RutabagaRGBAProperty,
-    "background-image": RutabagaTextureProperty,
-    "border-color": RutabagaRGBAProperty
+    'color': RutabagaRGBAProperty,
+    'background-color': RutabagaRGBAProperty,
+    'background-image': RutabagaTextureProperty,
+    'border-color': RutabagaRGBAProperty,
+
+    'min-width':  RutabagaFloatProperty,
+    'min-height': RutabagaFloatProperty
 }
 
 class RutabagaStyleState(object):
@@ -82,19 +86,19 @@ class RutabagaStyleState(object):
                     prop_mapping[prop](self.stylesheet, prop, tokens)
         except KeyError:
             raise ParseError(tokens[0],
-                        'unknown property "{0}"'.format(prop))
+                        'unknown property \'{0}\''.format(prop))
 
-    c_state_repr = """\
+    c_state_repr = '''\
 \t\t\t[{state}] = (struct rtb_style_property_definition []) {{
 {properties}
-\t\t\t}}"""
+\t\t\t}}'''
 
-    c_empty_state_repr = """\
-\t\t\t[{state}] = (struct rtb_style_property_definition []) {{{{NULL}}}}"""
+    c_empty_state_repr = '''\
+\t\t\t[{state}] = (struct rtb_style_property_definition []) {{{{NULL}}}}'''
 
-    c_prop_repr = """\
+    c_prop_repr = '''\
 \t\t\t\t{{"{0}",
-{1}}}"""
+{1}}}'''
 
     def done_parsing(self):
         if self.font_descriptor['family']:
@@ -108,11 +112,11 @@ class RutabagaStyleState(object):
 
         return self.c_state_repr.format(
             state=state_mapping[state_name],
-            properties=",\n\n".join(
+            properties=',\n\n'.join(
                 [self.c_prop_repr.format(
                     prop_name, self.props[prop_name].c_repr())
                     for prop_name in self.props]
-                + ["\t\t\t\t{NULL}"]))
+                + ['\t\t\t\t{NULL}']))
 
 class RutabagaStyle(object):
     def __init__(self, stylesheet, type, normal_props):
@@ -121,17 +125,17 @@ class RutabagaStyle(object):
         self.type = type
         self.states = OrderedDict()
 
-        for s in ("normal", "focus", "hover", "active"):
+        for s in ('normal', 'focus', 'hover', 'active'):
             self.states[s] = RutabagaStyleState(stylesheet)
 
-        self.add_state("normal", normal_props)
+        self.add_state('normal', normal_props)
 
     def __repr__(self):
         return ('<{0.__class__.__name__} for {0.type}>'.format(self))
 
     def add_state(self, state, props):
         if state not in state_mapping.keys():
-            raise AttributeError('"{0}" is not a valid state'.format(state))
+            raise AttributeError('\'{0}\' is not a valid state'.format(state))
 
         for prop in props:
             self.states[state].add_prop(prop, props[prop])
@@ -152,6 +156,6 @@ class RutabagaStyle(object):
     def c_repr(self):
         return self.c_style_repr.format(
             type=self.type,
-            state_definitions=",\n".join(
+            state_definitions=',\n'.join(
                 [self.states[state].c_repr(state)
                     for state in self.states]))

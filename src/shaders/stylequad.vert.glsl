@@ -24,24 +24,19 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#extension GL_ARB_fragment_coord_conventions : enable
-layout(origin_upper_left, pixel_center_integer) in vec4 gl_FragCoord;
+uniform mat4 projection;
+uniform mat4 modelview;
 
 uniform vec2 offset;
-uniform vec2 tx_offset;
-uniform vec2 tx_size;
-uniform sampler2D texture;
 
-uniform vec4 front_color;
-uniform vec4 back_color;
+attribute vec2 vertex;
+attribute vec2 tex_coord;
 
 void main()
 {
-	vec2 offset_coord = gl_FragCoord.xy + tx_offset;
-	vec2 tex_coord = vec2(
-		(offset_coord.x / tx_size.x),
-		(offset_coord.y / tx_size.y));
+	vec4 offset_vector = vec4(offset.x, offset.y, 0.0, 0.0);
 
-	float a = texture2D(texture, tex_coord).a;
-	gl_FragColor = mix(front_color, back_color, a);
+	gl_TexCoord[0].xy = tex_coord.xy;
+	gl_Position = projection *
+		(offset_vector + (modelview * vec4(vertex.xy, 0.0, 1.0)));
 }

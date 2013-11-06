@@ -97,7 +97,7 @@ init_shaders()
 }
 
 static void
-load_tile(struct rtb_style_texture_definition *definition,
+load_tile(const struct rtb_style_texture_definition *definition,
 		GLuint into_texture)
 {
 	if (!RTB_ASSET_IS_LOADED(RTB_ASSET(definition))) {
@@ -325,9 +325,7 @@ reflow(struct rtb_element *elem,
 		prop = rtb_style_query_prop(self->style, RTB_STATE_NORMAL,
 				"background-image", RTB_STYLE_PROP_TEXTURE, 1);
 
-		/* XXX: casting away const-ness */
-		load_tile((struct rtb_style_texture_definition *) &prop->texture,
-				self->bg_texture);
+		load_tile(&prop->texture, self->bg_texture);
 	}
 
 	rtb_surface_invalidate(RTB_SURFACE(self));

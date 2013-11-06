@@ -24,24 +24,48 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#extension GL_ARB_fragment_coord_conventions : enable
-layout(origin_upper_left, pixel_center_integer) in vec4 gl_FragCoord;
+#include <assert.h>
 
-uniform vec2 offset;
-uniform vec2 tx_offset;
-uniform vec2 tx_size;
-uniform sampler2D texture;
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
-uniform vec4 front_color;
-uniform vec4 back_color;
+#include "rutabaga/rutabaga.h"
+#include "rutabaga/window.h"
+#include "rutabaga/layout.h"
 
-void main()
+#include "rutabaga/widgets/button.h"
+
+#define ARRAY_LENGTH(a) (sizeof(a) / sizeof(*a))
+
+int main(int argc, char **argv)
 {
-	vec2 offset_coord = gl_FragCoord.xy + tx_offset;
-	vec2 tex_coord = vec2(
-		(offset_coord.x / tx_size.x),
-		(offset_coord.y / tx_size.y));
+	struct rutabaga *delicious;
+	struct rtb_window *win;
+	struct rtb_button butt;
 
-	float a = texture2D(texture, tex_coord).a;
-	gl_FragColor = mix(front_color, back_color, a);
+	assert(delicious = rtb_new());
+	assert((win = rtb_window_open(delicious, 450, 600, "texture text")));
+
+	win->outer_pad.x = 0.f;
+	win->outer_pad.y = 0.f;
+
+	rtb_elem_set_layout(RTB_ELEMENT(win), rtb_layout_vpack_middle);
+
+	rtb_button_init(&butt);
+
+	butt.align = RTB_ALIGN_CENTER;
+	butt.min_size.w = 250;
+	butt.min_size.h = 100;
+
+	rtb_button_set_label(&butt, "my texture game krispy");
+	rtb_elem_set_size_cb(RTB_ELEMENT(&butt), rtb_size_fill);
+	rtb_elem_add_child(RTB_ELEMENT(win), RTB_ELEMENT(&butt),
+			RTB_ADD_HEAD);
+
+	rtb_event_loop(delicious);
+
+	rtb_window_close(delicious->win);
+	rtb_free(delicious);
 }
