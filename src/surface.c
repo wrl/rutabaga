@@ -247,20 +247,9 @@ rtb_surface_invalidate(struct rtb_surface *self)
 }
 
 int
-rtb_surface_init_subclass(struct rtb_surface *self,
-		struct rtb_element_implementation *impl)
-{
-	if (rtb_surface_init(self))
-		return -1;
-
-	*impl = self->impl;
-	return 0;
-}
-
-int
 rtb_surface_init(struct rtb_surface *self)
 {
-	if (rtb_elem_init_subclass(RTB_ELEMENT(self), &super))
+	if (RTB_SUBCLASS(RTB_ELEMENT(self), rtb_elem_init, &super))
 		return -1;
 
 	self->impl = super;

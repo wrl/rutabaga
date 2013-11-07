@@ -144,20 +144,9 @@ rtb_button_set_label(struct rtb_button *self, const rtb_utf8_t *text)
 }
 
 int
-rtb_button_init_subclass(struct rtb_button *self,
-		struct rtb_element_implementation *impl)
-{
-	if (rtb_button_init(self))
-		return -1;
-
-	*impl = self->impl;
-	return 0;
-}
-
-int
 rtb_button_init(struct rtb_button *self)
 {
-	if (rtb_elem_init_subclass(RTB_ELEMENT(self), &super))
+	if (RTB_SUBCLASS(RTB_ELEMENT(self), rtb_elem_init, &super))
 		return -1;
 
 	rtb_label_init(&self->label);

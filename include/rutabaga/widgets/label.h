@@ -44,8 +44,6 @@ struct rtb_label {
 
 void rtb_label_set_text(struct rtb_label *, const rtb_utf8_t *text);
 
-int rtb_label_init_subclass(struct rtb_label *,
-		struct rtb_element_implementation *label_impl);
 int rtb_label_init(struct rtb_label *);
 void rtb_label_fini(struct rtb_label *);
 

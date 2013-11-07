@@ -142,7 +142,7 @@ void rtb_patchbay_port_fini(struct rtb_patchbay_port *self);
 
 void rtb_patchbay_node_set_name(struct rtb_patchbay_node *,
 		const rtb_utf8_t *name);
-void rtb_patchbay_node_init(struct rtb_patchbay_node *);
+int rtb_patchbay_node_init(struct rtb_patchbay_node *);
 void rtb_patchbay_node_fini(struct rtb_patchbay_node *);
 struct rtb_patchbay_node *rtb_patchbay_node_new(struct rtb_patchbay *parent,
 		const rtb_utf8_t *name);

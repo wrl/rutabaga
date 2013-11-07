@@ -56,8 +56,6 @@ int rtb_text_input_set_text(struct rtb_text_input *,
 		rtb_utf8_t *text, ssize_t nbytes);
 const rtb_utf8_t *rtb_text_input_get_text(struct rtb_text_input *);
 
-int rtb_text_input_init_subclass(struct rutabaga *, struct rtb_text_input *,
-		struct rtb_element_implementation *text_input_impl);
 int rtb_text_input_init(struct rutabaga *, struct rtb_text_input *);
 void rtb_text_input_fini(struct rtb_text_input *);
 

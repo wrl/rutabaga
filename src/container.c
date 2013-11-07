@@ -58,7 +58,7 @@ rtb_container_new()
 	if (!self)
 		return NULL;
 
-	if (rtb_elem_init_subclass(self, &super)) {
+	if (RTB_SUBCLASS(self, rtb_elem_init, &super)) {
 		free(self);
 		return NULL;
 	}

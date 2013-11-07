@@ -349,7 +349,9 @@ rtb_patchbay_port_init(struct rtb_patchbay_port *self,
 		struct rtb_patchbay_node *node, const rtb_utf8_t *name,
 		rtb_patchbay_port_type_t type, rtb_child_add_loc_t location)
 {
-	rtb_elem_init_subclass(RTB_ELEMENT(self), &super);
+	if (RTB_SUBCLASS(RTB_ELEMENT(self), rtb_elem_init, &super))
+		return -1;
+
 	TAILQ_INIT(&self->patches);
 
 	rtb_label_init(&self->label);

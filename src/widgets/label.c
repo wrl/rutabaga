@@ -133,20 +133,9 @@ rtb_label_set_text(struct rtb_label *self, const rtb_utf8_t *text)
 }
 
 int
-rtb_label_init_subclass(struct rtb_label *self,
-		struct rtb_element_implementation *label_impl)
-{
-	if (rtb_label_init(self))
-		return -1;
-
-	*label_impl = self->impl;
-	return 0;
-}
-
-int
 rtb_label_init(struct rtb_label *self)
 {
-	if (rtb_elem_init_subclass(RTB_ELEMENT(self), &super))
+	if (RTB_SUBCLASS(RTB_ELEMENT(self), rtb_elem_init, &super))
 		return -1;
 
 	self->impl = super;

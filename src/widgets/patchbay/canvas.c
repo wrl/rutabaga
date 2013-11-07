@@ -433,7 +433,9 @@ layout(struct rtb_element *elem)
 int
 rtb_patchbay_init(struct rtb_patchbay *self)
 {
-	rtb_surface_init_subclass(RTB_SURFACE(self), &super);
+	if (RTB_SUBCLASS(RTB_SURFACE(self), rtb_surface_init, &super))
+		return -1;
+
 	TAILQ_INIT(&self->patches);
 
 	self->draw      = draw;

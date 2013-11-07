@@ -117,10 +117,11 @@ rtb_patchbay_node_set_name(struct rtb_patchbay_node *self,
 	rtb_label_set_text(&self->name_label, name);
 }
 
-void
+int
 rtb_patchbay_node_init(struct rtb_patchbay_node *self)
 {
-	rtb_elem_init_subclass(RTB_ELEMENT(self), &super);
+	if (RTB_SUBCLASS(RTB_ELEMENT(self), rtb_elem_init, &super))
+		return -1;
 
 	self->on_event  = on_event;
 	self->attached  = attached;
@@ -176,6 +177,8 @@ rtb_patchbay_node_init(struct rtb_patchbay_node *self)
 	rtb_elem_add_child(RTB_ELEMENT(self), RTB_ELEMENT(&self->name_label),
 			RTB_ADD_HEAD);
 	rtb_elem_add_child(RTB_ELEMENT(self), &self->container, RTB_ADD_TAIL);
+
+	return 0;
 }
 
 void

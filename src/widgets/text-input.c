@@ -368,21 +368,9 @@ rtb_text_input_get_text(struct rtb_text_input *self)
 }
 
 int
-rtb_text_input_init_subclass(struct rutabaga *rtb, struct rtb_text_input *self,
-		struct rtb_element_implementation *text_input_impl)
-{
-	if (rtb_text_input_init(rtb, self))
-		return -1;
-
-	*text_input_impl = self->impl;
-	return 0;
-}
-
-
-int
 rtb_text_input_init(struct rutabaga *rtb, struct rtb_text_input *self)
 {
-	if (rtb_elem_init_subclass(RTB_ELEMENT(self), &super))
+	if (RTB_SUBCLASS(RTB_ELEMENT(self), rtb_elem_init, &super))
 		return -1;
 
 	rtb_quad_init(&self->bg_quad);

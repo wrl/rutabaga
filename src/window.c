@@ -214,7 +214,7 @@ rtb_window_open(struct rutabaga *r,
 	if (!self)
 		goto err_window_impl;
 
-	if (rtb_surface_init_subclass(RTB_SURFACE(self), &super))
+	if (RTB_SUBCLASS(RTB_SURFACE(self), rtb_surface_init, &super))
 		goto err_surface_init;
 
 	self->surface = RTB_SURFACE(self);

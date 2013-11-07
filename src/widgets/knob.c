@@ -216,7 +216,8 @@ rtb_knob_set_value(struct rtb_knob *self, float new_value)
 int
 rtb_knob_init(struct rtb_knob *self)
 {
-	rtb_elem_init_subclass(RTB_ELEMENT(self), &super);
+	if (RTB_SUBCLASS(RTB_ELEMENT(self), rtb_elem_init, &super))
+		return -1;
 
 	self->origin = 0.f;
 	self->min = 0.f;

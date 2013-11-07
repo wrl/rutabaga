@@ -52,8 +52,6 @@ struct rtb_button {
 
 void rtb_button_set_label(struct rtb_button *self, const rtb_utf8_t *text);
 
-int rtb_button_init_subclass(struct rtb_button *,
-		struct rtb_element_implementation *super);
 int rtb_button_init(struct rtb_button *);
 void rtb_button_fini(struct rtb_button *);
 

@@ -38,6 +38,12 @@
 #define RTB_ELEMENT(x) RTB_UPCAST(x, rtb_element)
 #define RTB_ELEMENT_AS(x, type) RTB_DOWNCAST(x, type, rtb_element)
 
+#define RTB_SUBCLASS(self, init_func, copy_impl_to) ({ \
+	int ret;                                           \
+	if (!(ret = init_func(self)))                      \
+		*copy_impl_to = self->impl;                    \
+	ret;})
+
 typedef enum {
 	/* all events, regardless of whether they are already handled by
 	 * the element in question, are passed to client code after the
@@ -277,7 +283,5 @@ void rtb_elem_add_child(struct rtb_element *parent, struct rtb_element *child,
 		rtb_child_add_loc_t where);
 void rtb_elem_remove_child(struct rtb_element *, struct rtb_element *child);
 
-int rtb_elem_init_subclass(struct rtb_element *,
-		struct rtb_element_implementation *super_impl);
 int rtb_elem_init(struct rtb_element *);
 void rtb_elem_fini(struct rtb_element *);
