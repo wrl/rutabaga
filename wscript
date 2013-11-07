@@ -76,6 +76,12 @@ def check_x11(conf):
 def check_jack(conf):
     pkg_check(conf, "jack")
 
+def check_submodules(conf):
+    if not conf.path.find_resource('third-party/libuv/uv.gyp'):
+        raise conf.errors.ConfigurationError(
+                "Submodules aren't initialized!\n"
+                "Make sure you've done `git submodule init && git submodule update`.")
+
 #
 # waf stuff
 #
@@ -92,6 +98,8 @@ def options(opt):
 
 def configure(conf):
     separator()
+    check_submodules(conf)
+
     conf.load("compiler_c")
     conf.load("gnu_dirs")
 
