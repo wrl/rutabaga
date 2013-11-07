@@ -27,6 +27,7 @@
 #pragma once
 
 #include "rutabaga/rutabaga.h"
+#include "rutabaga/element.h"
 #include "rutabaga/event.h"
 #include "rutabaga/mat4.h"
 
@@ -56,5 +57,7 @@ struct rtb_knob {
 
 void rtb_knob_set_value(struct rtb_knob *, float new_value);
 
+int rtb_knob_init(struct rtb_knob *);
+void rtb_knob_fini(struct rtb_knob *);
 struct rtb_knob *rtb_knob_new(void);
 void rtb_knob_free(struct rtb_knob *);

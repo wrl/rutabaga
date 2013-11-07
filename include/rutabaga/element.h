@@ -224,8 +224,8 @@ struct rtb_element {
 
 	/* private ********************************/
 	rtb_elem_state_t state;
-	struct rtb_rect inner_rect;
 	rtb_visibility_t visibility;
+	struct rtb_rect inner_rect;
 	struct rtb_stylequad stylequad;
 
 	/* assign these via the stylesheet */

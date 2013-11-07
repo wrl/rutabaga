@@ -213,10 +213,9 @@ rtb_knob_set_value(struct rtb_knob *self, float new_value)
 	set_value_internal(self, (new_value - self->min) / range);
 }
 
-struct rtb_knob *
-rtb_knob_new()
+int
+rtb_knob_init(struct rtb_knob *self)
 {
-	struct rtb_knob *self = calloc(1, sizeof(struct rtb_knob));
 	rtb_elem_init_subclass(RTB_ELEMENT(self), &super);
 
 	self->origin = 0.f;
@@ -230,12 +229,26 @@ rtb_knob_new()
 	self->on_event = on_event;
 	self->attached = attached;
 
+	return 0;
+}
+
+void
+rtb_knob_fini(struct rtb_knob *self)
+{
+	rtb_elem_fini(RTB_ELEMENT(self));
+}
+
+struct rtb_knob *
+rtb_knob_new()
+{
+	struct rtb_knob *self = calloc(1, sizeof(struct rtb_knob));
+	rtb_knob_init(self);
 	return self;
 }
 
 void
 rtb_knob_free(struct rtb_knob *self)
 {
-	rtb_elem_fini(RTB_ELEMENT(self));
+	rtb_knob_fini(self);
 	free(self);
 }
