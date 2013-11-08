@@ -224,7 +224,7 @@ load_texture(struct rtb_stylequad_texture *dst,
 		const struct rtb_style_texture_definition *src)
 {
 	if (dst->definition == src)
-		return 0;
+		return -1;
 
 	glBindTexture(GL_TEXTURE_2D, dst->gl_handle);
 
@@ -266,20 +266,19 @@ rtb_stylequad_update_style(struct rtb_stylequad *self)
 	const struct rtb_style_property_definition *prop;
 	struct rtb_element *elem = self->owner;
 
-#define ASSIGN_AND_MAYBE_MARK_DIRTY(dest, val) do {        \
-	if (dest != val) rtb_elem_mark_dirty(elem);            \
-	dest = val;                                            \
+#define ASSIGN_AND_MAYBE_MARK_DIRTY(dest, val) do {    \
+	if (dest != val) rtb_elem_mark_dirty(elem);        \
+	dest = val;                                        \
 } while (0)
 
-#define CACHE_PROP(dest, name, type, member) do {          \
-	prop = rtb_style_query_prop(elem->style,               \
-			elem->state, name, type, 0);                   \
-	if (prop)                                              \
-		ASSIGN_AND_MAYBE_MARK_DIRTY(                       \
-				self->properties.dest, &prop->member);   \
-	else                                                   \
-		ASSIGN_AND_MAYBE_MARK_DIRTY(                       \
-				self->properties.dest, NULL);            \
+#define CACHE_PROP(dest, name, type, member) do {      \
+	prop = rtb_style_query_prop(elem, name, type, 0);  \
+	if (prop)                                          \
+		ASSIGN_AND_MAYBE_MARK_DIRTY(                   \
+				self->properties.dest, &prop->member); \
+	else                                               \
+		ASSIGN_AND_MAYBE_MARK_DIRTY(                   \
+				self->properties.dest, NULL);          \
 } while (0)
 
 #define CACHE_COLOR(dest, name) \

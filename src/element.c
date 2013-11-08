@@ -65,7 +65,6 @@ change_state(struct rtb_element *self, rtb_elem_state_t state)
 
 		self->state = state;
 		self->restyle(self);
-
 		break;
 
 	case RTB_STATE_UNATTACHED:
@@ -246,7 +245,7 @@ apply_layout_style_props(struct rtb_element *self)
 	const struct rtb_style_property_definition *prop;
 
 #define ASSIGN_LAYOUT_FLOAT(pname, dest) do {                 \
-	prop = rtb_style_query_prop(self->style, self->state,     \
+	prop = rtb_style_query_prop(self,                         \
 			pname, RTB_STYLE_PROP_FLOAT, 0);                  \
 	if (!prop)                                                \
 		break;                                                \

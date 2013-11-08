@@ -52,7 +52,7 @@ void
 rtb_render_use_style_bg(struct rtb_element *elem)
 {
 	const struct rtb_style_property_definition *prop;
-	prop = rtb_style_query_prop(elem->style, elem->state,
+	prop = rtb_style_query_prop(elem,
 			"background-color", RTB_STYLE_PROP_COLOR, 1);
 
 	rtb_render_set_color(elem,
@@ -66,7 +66,7 @@ void
 rtb_render_use_style_fg(struct rtb_element *elem)
 {
 	const struct rtb_style_property_definition *prop;
-	prop = rtb_style_query_prop(elem->style, elem->state,
+	prop = rtb_style_query_prop(elem,
 			"color", RTB_STYLE_PROP_COLOR, 1);
 
 	rtb_render_set_color(elem,

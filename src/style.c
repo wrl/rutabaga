@@ -240,22 +240,22 @@ const struct rtb_style_property_definition *query(
 }
 
 const struct rtb_style_property_definition *rtb_style_query_prop(
-		struct rtb_style *style_list, rtb_elem_state_t state,
-		const char *property_name, rtb_style_prop_type_t type,
-		int return_fallback)
+		struct rtb_element *elem, const char *property_name,
+		rtb_style_prop_type_t type, int should_return_fallback)
 {
-	return query(style_list, state, property_name, type, return_fallback);
+	return query(elem->style, elem->state,
+			property_name, type, should_return_fallback);
 }
 
 const struct rtb_style_property_definition *rtb_style_query_prop_in_tree(
-		struct rtb_element *leaf, rtb_elem_state_t state,
-		const char *property_name, rtb_style_prop_type_t type,
-		int return_fallback)
+		struct rtb_element *leaf, const char *property_name,
+		rtb_style_prop_type_t type, int should_return_fallback)
 {
 	const struct rtb_style_property_definition *prop;
 
 	for (prop = NULL; !prop && leaf->parent != leaf; leaf = leaf->parent)
-		prop = query(leaf->style, state, property_name, type, return_fallback);
+		prop = query(leaf->style, leaf->state,
+				property_name, type, should_return_fallback);
 
 	return prop;
 }

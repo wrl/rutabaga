@@ -164,7 +164,7 @@ rtb_window_draw(struct rtb_window *self)
 	ev.window = self;
 	rtb_dispatch_raw(RTB_ELEMENT(self), RTB_EVENT(&ev));
 
-	prop = rtb_style_query_prop(self->style, RTB_STATE_NORMAL,
+	prop = rtb_style_query_prop(RTB_ELEMENT(self),
 			"background-color", RTB_STYLE_PROP_COLOR, 1);
 
 	glClearColor(

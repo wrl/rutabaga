@@ -84,8 +84,7 @@ restyle(struct rtb_element *elem)
 
 	super.restyle(elem);
 
-	prop = rtb_style_query_prop_in_tree(
-			self->parent, self->parent->state,
+	prop = rtb_style_query_prop_in_tree(self->parent,
 			"font", RTB_STYLE_PROP_FONT, 0);
 
 	assert(prop);
@@ -99,8 +98,7 @@ restyle(struct rtb_element *elem)
 				RTB_DIRECTION_ROOTWARD);
 	}
 
-	prop = rtb_style_query_prop_in_tree(
-			self->parent, self->parent->state,
+	prop = rtb_style_query_prop_in_tree(self->parent,
 			"color", RTB_STYLE_PROP_COLOR, 1);
 	self->color = &prop->color;
 }
