@@ -47,7 +47,11 @@ typedef enum {
 	RTB_TEXTURE_VERTICAL_STRETCH   = 0x0,
 	RTB_TEXTURE_HORIZONTAL_STRETCH = 0x0,
 	RTB_TEXTURE_VERTICAL_TILE      = 0x1,
-	RTB_TEXTURE_HORIZONTAL_TILE    = 0x2
+	RTB_TEXTURE_HORIZONTAL_TILE    = 0x2,
+
+	/* set if a border image should also draw its middle portion.
+	 * ignored for background images. */
+	RTB_TEXTURE_FILL               = 0x4
 } rtb_style_texture_flags_t;
 
 /**

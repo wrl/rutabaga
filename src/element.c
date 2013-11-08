@@ -437,9 +437,11 @@ rtb_elem_is_clearable(struct rtb_element *self)
 {
 	struct rtb_surface *surface = self->surface;
 
+	/* XXX: shouldn't depend on stylequad like this */
+
 	for (self = self->parent;
 			self != RTB_ELEMENT(surface); self = self->parent)
-		if (self->stylequad.cached_style.bg_color)
+		if (self->stylequad.properties.bg_color)
 			return 0;
 
 	return 1;

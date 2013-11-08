@@ -34,7 +34,6 @@ struct rtb_stylequad {
 	struct rtb_element *owner;
 	struct rtb_point offset;
 
-	GLuint tex_coords;
 	GLuint vertices;
 
 	struct {
@@ -43,12 +42,13 @@ struct rtb_stylequad {
 		const struct rtb_rgb_color *border_color;
 
 		const struct rtb_style_texture_definition *border_image;
-	} cached_style;
+	} properties;
 
-	struct {
+	struct rtb_stylequad_texture {
 		const struct rtb_style_texture_definition *definition;
 		GLuint gl_handle;
-	} texture;
+		GLuint coords;
+	} border_image, background_image;
 };
 
 void rtb_stylequad_update_style(struct rtb_stylequad *);

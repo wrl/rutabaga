@@ -41,24 +41,24 @@ button {
 	min-height: 26px;
 
 	color: #FFF;
-	border-image: url('assets/button_normal.tga') 4px;
+	border-image: url('assets/button_normal.tga') 4px fill;
 	background-color: #404F3C;
 }
 
 button:hover {
 	color: #FFF;
-	border-image: url('assets/button_hover.tga') 4px;
+	border-image: url('assets/button_hover.tga') 4px fill;
 	background-color: #5C704C;
 }
 
 button:active {
 	color: rgba(#FFF, .7);
-	border-image: url('assets/button_active.tga') 4px;
+	border-image: url('assets/button_active.tga') 4px fill;
 	background-color: #21291F;
 }
 
 button:focus {
-	border-image: url('assets/button_focus.tga') 4px;
+	border-image: url('assets/button_focus.tga') 4px fill;
 }
 
 /**
@@ -66,9 +66,7 @@ button:focus {
  */
 
 knob {
-	border-image: url('assets/knob.tga');
-	color: #18181C;
-	background-color: #404F3C;
+	border-image: url('assets/knob.tga') fill;
 }
 
 /**

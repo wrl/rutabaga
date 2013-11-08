@@ -34,21 +34,31 @@
 
 #include "private/util.h"
 
-static const GLubyte texture_indices[] = {
-	/* top (l, c, r) */
-	 0,  2,  1,  3,  2,  0,
-	 1,  7,  4,  2,  7,  1,
-	 4,  6,  5,  7,  6,  4,
+static const GLubyte border_indices[] = {
+	/**
+	 * +---+---+---+
+	 * | 1 | 2 | 3 |
+	 * +---+---+---+
+	 * | 4 | 5 | 6 |
+	 * +---+---+---+
+	 * | 7 | 8 | 9 |
+	 * +---+---+---+
+	 *
+	 * the middle section is not drawn because it's conditionally drawn
+	 * based on whether the texture has defined RTB_TEXTURE_FILL.
+	 * if it is, we'll just draw with solid_indices.
+	 */
 
-	/* middle (l, c, r) */
-	 3,  9,  2,  8,  9,  3,
-	 2, 12,  7,  9, 12,  2,
-	 7, 13,  6, 12, 13,  7,
+	/* 1 */  0,  2,  1,  3,  2,  0,
+	/* 2 */  1,  7,  4,  2,  7,  1,
+	/* 3 */  4,  6,  5,  7,  6,  4,
 
-	/* bottom (l, c, r) */
-	 8, 10,  9, 11, 10,  8,
-	 9, 15, 12, 10, 15,  9,
-	12, 14, 13, 15, 14, 12
+	/* 4 */  3,  9,  2,  8,  9,  3,
+	/* 6 */  7, 13,  6, 12, 13,  7,
+
+	/* 7 */  8, 10,  9, 11, 10,  8,
+	/* 8 */  9, 15, 12, 10, 15,  9,
+	/* 9 */ 12, 14, 13, 15, 14, 12
 };
 
 static const GLubyte solid_indices[] = {
@@ -80,59 +90,59 @@ draw_solid(struct rtb_stylequad *self, const struct rtb_shader *shader,
 
 static void
 draw_textured(struct rtb_stylequad *self, const struct rtb_shader *shader,
-		GLenum mode, const GLubyte *indices, GLsizei count)
+		const struct rtb_stylequad_texture *tx)
 {
-	glBindBuffer(GL_ARRAY_BUFFER, self->tex_coords);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, tx->gl_handle);
+	glUniform1i(shader->texture, 0);
+	glUniform2f(shader->texture_size,
+			tx->definition->w, tx->definition->h);
+
+	glBindBuffer(GL_ARRAY_BUFFER, tx->coords);
 	glEnableVertexAttribArray(shader->tex_coord);
 	glVertexAttribPointer(shader->tex_coord,
 			2, GL_FLOAT, GL_FALSE, 0, 0);
 
-	draw_solid(self, shader, mode, indices, count);
+	draw_solid(self, shader, GL_TRIANGLES,
+			border_indices, ARRAY_LENGTH(border_indices));
+
+	if (tx->definition->flags & RTB_TEXTURE_FILL)
+		draw_solid(self, shader, GL_TRIANGLE_STRIP,
+				solid_indices, ARRAY_LENGTH(solid_indices));
 
 	glDisableVertexAttribArray(shader->tex_coord);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glUniform2f(shader->texture_size, 0.f, 0.f);
 }
 
 static void
 draw(struct rtb_stylequad *self, struct rtb_shader *shader)
 {
 	struct rtb_element *owner = self->owner;
-	const struct rtb_style_texture_definition *texture;
 
 	rtb_render_set_position(owner, self->offset.x, self->offset.y);
 	glUniform2f(shader->texture_size, 0.f, 0.f);
 
-	if (self->texture.definition) {
-		texture = self->texture.definition;
-
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, self->texture.gl_handle);
-		glUniform1i(shader->texture, 0);
-		glUniform2f(shader->texture_size,
-				texture->w, texture->h);
-
-		draw_textured(self, shader, GL_TRIANGLES,
-				texture_indices, ARRAY_LENGTH(texture_indices));
-
-		glBindTexture(GL_TEXTURE_2D, 0);
-
-		glUniform2f(shader->texture_size, 0.f, 0.f);
-	} else if (self->cached_style.bg_color) {
+	if (self->properties.bg_color) {
 		rtb_render_set_color(owner,
-				self->cached_style.bg_color->r,
-				self->cached_style.bg_color->g,
-				self->cached_style.bg_color->b,
-				self->cached_style.bg_color->a);
+				self->properties.bg_color->r,
+				self->properties.bg_color->g,
+				self->properties.bg_color->b,
+				self->properties.bg_color->a);
 
 		draw_solid(self, shader, GL_TRIANGLE_STRIP,
 				solid_indices, ARRAY_LENGTH(solid_indices));
 	}
 
-	if (self->cached_style.border_color) {
+	if (self->border_image.definition)
+		draw_textured(self, shader, &self->border_image);
+
+	if (self->properties.border_color) {
 		rtb_render_set_color(owner,
-				self->cached_style.border_color->r,
-				self->cached_style.border_color->g,
-				self->cached_style.border_color->b,
-				self->cached_style.border_color->a);
+				self->properties.border_color->r,
+				self->properties.border_color->g,
+				self->properties.border_color->b,
+				self->properties.border_color->a);
 
 		glLineWidth(1.f);
 
@@ -168,35 +178,18 @@ rtb_stylequad_draw_with_modelview(struct rtb_stylequad *self, mat4 *modelview)
  * updating
  */
 
-static int
-load_one_texture(GLuint dst_handle,
-		const struct rtb_style_texture_definition *src)
-{
-	glBindTexture(GL_TEXTURE_2D, dst_handle);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
-			src->w, src->h,
-			0, GL_BGRA, GL_UNSIGNED_BYTE,
-			RTB_ASSET_DATA(RTB_ASSET(src)));
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
-	return 0;
-}
-
 static void
-set_tex_coords(struct rtb_stylequad *self,
-		const struct rtb_style_texture_definition *tx)
+set_tex_coords(struct rtb_stylequad_texture *tx)
 {
+	const struct rtb_style_texture_definition *d = tx->definition;
+
 	GLfloat
-		hpxl    = 1.f / tx->w,
-		vpxl    = 1.f / tx->h,
-		bdr_top = (tx->border.top    * vpxl),
-		bdr_rgt = (tx->border.right  * hpxl),
-		bdr_btm = (tx->border.bottom * vpxl),
-		bdr_lft = (tx->border.left   * hpxl);
+		hpxl    = 1.f / d->w,
+		vpxl    = 1.f / d->h,
+		bdr_top = (d->border.top    * vpxl),
+		bdr_rgt = (d->border.right  * hpxl),
+		bdr_btm = (d->border.bottom * vpxl),
+		bdr_lft = (d->border.left   * hpxl);
 
 	GLfloat v[16][2] = {
 		{0.f,           1.f},
@@ -220,24 +213,42 @@ set_tex_coords(struct rtb_stylequad *self,
 		{1.f - bdr_rgt, 0.f},
 	};
 
-	glBindBuffer(GL_ARRAY_BUFFER, self->tex_coords);
+	glBindBuffer(GL_ARRAY_BUFFER, tx->coords);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-static void
-load_textures(struct rtb_stylequad *self)
+static int
+load_texture(struct rtb_stylequad_texture *dst,
+		const struct rtb_style_texture_definition *src)
 {
-	if (self->cached_style.border_image == self->texture.definition)
-		return;
+	if (dst->definition == src)
+		return 0;
 
-	if (self->cached_style.border_image) {
-		load_one_texture(self->texture.gl_handle,
-				self->cached_style.border_image);
-		set_tex_coords(self, self->cached_style.border_image);
-	}
+	if (!src)
+		return -1;
 
-	self->texture.definition = self->cached_style.border_image;
+	glBindTexture(GL_TEXTURE_2D, dst->gl_handle);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
+			src->w, src->h,
+			0, GL_BGRA, GL_UNSIGNED_BYTE,
+			RTB_ASSET_DATA(RTB_ASSET(src)));
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	dst->definition = src;
+	set_tex_coords(dst);
+	return 0;
+}
+
+static void
+load_available_textures(struct rtb_stylequad *self)
+{
+	load_texture(&self->border_image, self->properties.border_image);
 }
 
 void
@@ -256,10 +267,10 @@ rtb_stylequad_update_style(struct rtb_stylequad *self)
 			elem->state, name, type, 0);                   \
 	if (prop)                                              \
 		ASSIGN_AND_MAYBE_MARK_DIRTY(                       \
-				self->cached_style.dest, &prop->member);   \
+				self->properties.dest, &prop->member);   \
 	else                                                   \
 		ASSIGN_AND_MAYBE_MARK_DIRTY(                       \
-				self->cached_style.dest, NULL);            \
+				self->properties.dest, NULL);            \
 } while (0)
 
 #define CACHE_COLOR(dest, name) \
@@ -272,12 +283,13 @@ rtb_stylequad_update_style(struct rtb_stylequad *self)
 	CACHE_COLOR(border_color, "border-color");
 
 	CACHE_TEXTURE(border_image, "border-image");
-	load_textures(self);
 
 #undef CACHE_TEXTURE
 #undef CACHE_COLOR
 #undef CACHE_PROP
 #undef ASSIGN_AND_MAYBE_MARK_DIRTY
+
+	load_available_textures(self);
 }
 
 void
@@ -296,9 +308,9 @@ rtb_stylequad_update_geometry(struct rtb_stylequad *self)
 
 	glBindBuffer(GL_ARRAY_BUFFER, self->vertices);
 
-	if (self->texture.definition) {
+	if (self->border_image.definition) {
 		const struct rtb_style_texture_definition *tx =
-			self->texture.definition;
+			self->border_image.definition;
 		unsigned int
 			bdr_top = tx->border.top,
 			bdr_rgt = tx->border.right,
@@ -346,19 +358,32 @@ rtb_stylequad_update_geometry(struct rtb_stylequad *self)
  * lifecycle
  */
 
+#define INIT_STYLEQUAD_TEXTURE(tx) do {    \
+	(tx)->definition = NULL;               \
+	glGenBuffers(1, &(tx)->coords);        \
+	glGenTextures(1, &(tx)->gl_handle);    \
+} while (0)
+
+#define FINI_STYLEQUAD_TEXTURE(tx) do {    \
+	glDeleteBuffers(1, &(tx)->coords);     \
+	glDeleteTextures(1, &(tx)->gl_handle); \
+} while (0)
+
 void
 rtb_stylequad_init(struct rtb_stylequad *self, struct rtb_element *owner)
 {
 	self->owner = owner;
 
 	glGenBuffers(1, &self->vertices);
-	glGenBuffers(1, &self->tex_coords);
-	glGenTextures(1, &self->texture.gl_handle);
+
+	INIT_STYLEQUAD_TEXTURE(&self->border_image);
+	INIT_STYLEQUAD_TEXTURE(&self->background_image);
 }
 
 void rtb_stylequad_fini(struct rtb_stylequad *self)
 {
-	glDeleteTextures(1, &self->texture.gl_handle);
-	glDeleteBuffers(1, &self->tex_coords);
+	FINI_STYLEQUAD_TEXTURE(&self->border_image);
+	FINI_STYLEQUAD_TEXTURE(&self->background_image);
+
 	glDeleteBuffers(1, &self->vertices);
 }

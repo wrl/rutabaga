@@ -91,12 +91,13 @@ class RutabagaEmbeddedTexture(RutabagaTexture):
             height=self.height,
             extra=extra)
 
-c_repr_border = """\
+c_repr_extra = """\
+\t\t\t\t\t\t.flags  = {flags},
 \t\t\t\t\t\t.border = {{
-\t\t\t\t\t\t\t.top    = {0},
-\t\t\t\t\t\t\t.right  = {1},
-\t\t\t\t\t\t\t.bottom = {2},
-\t\t\t\t\t\t\t.left   = {3}
+\t\t\t\t\t\t\t.top    = {borders[0]},
+\t\t\t\t\t\t\t.right  = {borders[1]},
+\t\t\t\t\t\t\t.bottom = {borders[2]},
+\t\t\t\t\t\t\t.left   = {borders[3]}
 \t\t\t\t\t\t}}"""
 
 class RutabagaTextureProperty(RutabagaStyleProperty):
@@ -108,10 +109,17 @@ class RutabagaTextureProperty(RutabagaStyleProperty):
     def parse_extra_tokens(self, tokens):
         pass
 
+    def add_flag(self, flag):
+        if not self.flags:
+            self.flags = flag
+        else:
+            self.flags += ' | ' + flags
+
     def __init__(self, stylesheet, name, tokens):
         self.path = None
         self.method = RutabagaTextureProperty.default_method
         self.borders = [0,0,0,0]
+        self.flags   = None
 
         tok = tokens[0]
 
@@ -134,19 +142,43 @@ class RutabagaTextureProperty(RutabagaStyleProperty):
         self.parse_extra_tokens(tokens[1:])
 
     def c_repr(self):
-        borders = c_repr_border.format(*self.borders)
-        return self.texture.c_repr(borders)
+        extra = c_repr_extra.format(
+                borders=self.borders,
+                flags=self.flags or '0')
+        return self.texture.c_repr(extra)
+
+def chained_takewhile(iterable, *preds):
+    ret = [[] for _ in range(len(preds))]
+
+    iterable = iter(iterable)
+
+    try:
+        item = next(iterable)
+
+        for (pred, ary) in zip(preds, ret):
+            while True:
+                if not pred(item):
+                    break
+
+                ary.append(item)
+                item = next(iterable)
+    except StopIteration:
+        pass
+
+    return ret
 
 class RutabagaBorderTextureProperty(RutabagaTextureProperty):
     def parse_extra_tokens(self, tokens):
-        from itertools import takewhile, dropwhile, repeat
-        slices = list(filter(
-            lambda x: x.type != 'S', takewhile(
-            lambda x: x.type in ['DIMENSION', 'S'], tokens)))
+        borders, fill, repeat = chained_takewhile(tokens,
+                lambda x: x.type in ['DIMENSION', 'S'],
+                lambda x: x.type == 'IDENT' and x.value == 'fill',
+                lambda x: x.type == 'IDENT' and x.value[:6] == 'repeat')
 
+        slices = list(filter(lambda x: x.type == 'DIMENSION', borders))
         non_px = list(filter(lambda x: x.unit != 'px', slices))
         if non_px:
-            raise ParseError(non_px[0], 'slices can only be specified in pixels, sorry')
+            raise ParseError(non_px[0],
+                    'slices can only be specified in pixels, sorry')
 
         b = lambda *x: [slices[i].value for i in x]
         if len(slices) == 1:
@@ -157,3 +189,6 @@ class RutabagaBorderTextureProperty(RutabagaTextureProperty):
             self.borders = b(0, 1, 2, 1)
         elif len(slices) == 4:
             self.borders = b(0, 1, 2, 3)
+
+        if fill:
+            self.add_flag('RTB_TEXTURE_FILL')
