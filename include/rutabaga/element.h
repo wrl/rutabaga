@@ -271,6 +271,8 @@ struct rtb_element *rtb_elem_nearest_clearable(struct rtb_element *);
 void rtb_elem_mark_dirty(struct rtb_element *);
 void rtb_elem_trigger_recalc(struct rtb_element *,
 		struct rtb_element *instigator, rtb_ev_direction_t direction);
+void rtb_elem_recalc_leafward(struct rtb_element *);
+void rtb_elem_recalc_rootward(struct rtb_element *);
 
 void rtb_elem_set_size_cb(struct rtb_element *, rtb_elem_cb_size_t size_cb);
 void rtb_elem_set_layout(struct rtb_element *, rtb_elem_cb_t layout_cb);

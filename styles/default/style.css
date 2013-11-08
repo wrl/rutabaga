@@ -42,19 +42,16 @@ button {
 
 	color: #FFF;
 	border-image: url('assets/button_normal.tga') 4px fill;
-	background-color: #404F3C;
 }
 
 button:hover {
 	color: #FFF;
 	border-image: url('assets/button_hover.tga') 4px fill;
-	background-color: #5C704C;
 }
 
 button:active {
 	color: rgba(#FFF, .7);
 	border-image: url('assets/button_active.tga') 4px fill;
-	background-color: #21291F;
 }
 
 button:focus {

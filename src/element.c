@@ -220,7 +220,7 @@ reflow(struct rtb_element *self,
 	self->inner_rect.y2 = self->y2 - self->outer_pad.y;
 	rtb_rect_update_size_from_points(&self->inner_rect);
 
-	rtb_stylequad_update_geometry(&self->stylequad);
+	rtb_stylequad_update_geometry(&self->stylequad, &self->rect);
 
 	switch (direction) {
 	case RTB_DIRECTION_ROOTWARD:
@@ -245,15 +245,21 @@ apply_layout_style_props(struct rtb_element *self)
 {
 	const struct rtb_style_property_definition *prop;
 
-#define ASSIGN_FLOAT_IF_DECLARED(pname, dest) do {        \
-	prop = rtb_style_query_prop(self->style, self->state, \
-			pname, RTB_STYLE_PROP_FLOAT, 0);              \
-	if (prop)                                             \
-		self->dest = prop->flt;                           \
+#define ASSIGN_LAYOUT_FLOAT(pname, dest) do {                 \
+	prop = rtb_style_query_prop(self->style, self->state,     \
+			pname, RTB_STYLE_PROP_FLOAT, 0);                  \
+	if (!prop)                                                \
+		break;                                                \
+	if (self->dest != prop->flt                               \
+			&& self->window->state != RTB_STATE_UNATTACHED) { \
+		self->dest = prop->flt;                               \
+		rtb_elem_recalc_rootward(self);                       \
+	} else                                                    \
+		self->dest = prop->flt;                               \
 } while (0)
 
-	ASSIGN_FLOAT_IF_DECLARED("min-width", min_size.w);
-	ASSIGN_FLOAT_IF_DECLARED("min-height", min_size.h);
+	ASSIGN_LAYOUT_FLOAT("min-width", min_size.w);
+	ASSIGN_LAYOUT_FLOAT("min-height", min_size.h);
 
 #undef ASSIGN_FLOAT_IF_DECLARED
 }
@@ -464,6 +470,18 @@ rtb_elem_trigger_recalc(struct rtb_element *self, struct rtb_element *instigator
 		rtb_ev_direction_t direction)
 {
 	self->reflow(self, instigator, direction);
+}
+
+void
+rtb_elem_recalc_leafward(struct rtb_element *self)
+{
+	rtb_elem_trigger_recalc(self, NULL, RTB_DIRECTION_LEAFWARD);
+}
+
+void
+rtb_elem_recalc_rootward(struct rtb_element *self)
+{
+	rtb_elem_trigger_recalc(self->parent, self, RTB_DIRECTION_ROOTWARD);
 }
 
 void

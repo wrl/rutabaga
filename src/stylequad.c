@@ -54,6 +54,7 @@ static const GLubyte border_indices[] = {
 	/* 3 */  4,  6,  5,  7,  6,  4,
 
 	/* 4 */  3,  9,  2,  8,  9,  3,
+	/* 5 */
 	/* 6 */  7, 13,  6, 12, 13,  7,
 
 	/* 7 */  8, 10,  9, 11, 10,  8,
@@ -179,7 +180,7 @@ rtb_stylequad_draw_with_modelview(struct rtb_stylequad *self, mat4 *modelview)
  */
 
 static void
-set_tex_coords(struct rtb_stylequad_texture *tx)
+set_border_tex_coords(struct rtb_stylequad_texture *tx)
 {
 	const struct rtb_style_texture_definition *d = tx->definition;
 
@@ -225,30 +226,38 @@ load_texture(struct rtb_stylequad_texture *dst,
 	if (dst->definition == src)
 		return 0;
 
-	if (!src)
-		return -1;
-
 	glBindTexture(GL_TEXTURE_2D, dst->gl_handle);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
-			src->w, src->h,
-			0, GL_BGRA, GL_UNSIGNED_BYTE,
-			RTB_ASSET_DATA(RTB_ASSET(src)));
+	if (!src) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0,
+				0, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
+	} else {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
+				src->w, src->h,
+				0, GL_BGRA, GL_UNSIGNED_BYTE,
+				RTB_ASSET_DATA(RTB_ASSET(src)));
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	dst->definition = src;
-	set_tex_coords(dst);
 	return 0;
 }
 
-static void
-load_available_textures(struct rtb_stylequad *self)
+int
+rtb_stylequad_set_border_image(struct rtb_stylequad *self,
+		const struct rtb_style_texture_definition *tx)
 {
-	load_texture(&self->border_image, self->properties.border_image);
+	if (load_texture(&self->border_image, tx))
+		return -1;
+
+	if (tx)
+		set_border_tex_coords(&self->border_image);
+
+	return 0;
 }
 
 void
@@ -289,22 +298,22 @@ rtb_stylequad_update_style(struct rtb_stylequad *self)
 #undef CACHE_PROP
 #undef ASSIGN_AND_MAYBE_MARK_DIRTY
 
-	load_available_textures(self);
+	rtb_stylequad_set_border_image(self, self->properties.border_image);
 }
 
 void
-rtb_stylequad_update_geometry(struct rtb_stylequad *self)
+rtb_stylequad_update_geometry(struct rtb_stylequad *self,
+		const struct rtb_rect *rect)
 {
-	struct rtb_element *owner = self->owner;
 	struct rtb_rect r;
 
-	r.x  = -(owner->w / 2.f);
-	r.y  = -(owner->h / 2.f);
+	r.x  = -(rect->w / 2.f);
+	r.y  = -(rect->h / 2.f);
 	r.x2 = -r.x;
 	r.y2 = -r.y;
 
-	self->offset.x = owner->x + r.x2;
-	self->offset.y = owner->y + r.y2;
+	self->offset.x = rect->x + r.x2;
+	self->offset.y = rect->y + r.y2;
 
 	glBindBuffer(GL_ARRAY_BUFFER, self->vertices);
 
