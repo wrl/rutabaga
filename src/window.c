@@ -226,7 +226,6 @@ rtb_window_open(struct rutabaga *r,
 	if (rtb_font_manager_init(&self->font_manager))
 		goto err_font;
 
-	mat4_set_identity(&self->identity);
 	rtb_elem_set_layout(RTB_ELEMENT(self), rtb_layout_vpack_top);
 
 	self->on_event   = win_event;

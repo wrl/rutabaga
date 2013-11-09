@@ -59,8 +59,6 @@ struct rtb_window {
 
 	struct rtb_style *style_list;
 
-	mat4 identity;
-
 	/* private ********************************/
 	struct rutabaga *rtb;
 
