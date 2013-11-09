@@ -30,6 +30,7 @@
 #include "rutabaga/geometry.h"
 #include "rutabaga/font-manager.h"
 #include "rutabaga/style.h"
+#include "rutabaga/render.h"
 
 #include "freetype-gl/vertex-buffer.h"
 
@@ -48,7 +49,7 @@ int rtb_text_object_count_glyphs(struct rtb_text_object *);
 int rtb_text_object_update(struct rtb_text_object *,
 		struct rtb_font *rfont, const rtb_utf8_t *text);
 void rtb_text_object_render(struct rtb_text_object *,
-		struct rtb_element *parent, float x, float y,
+		struct rtb_render_context *ctx, float x, float y,
 		const struct rtb_rgb_color *color);
 
 struct rtb_text_object *rtb_text_object_new(struct rtb_font_manager *fm);

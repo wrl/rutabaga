@@ -32,29 +32,30 @@
 
 #include "bsd/queue.h"
 
-TAILQ_HEAD(rtb_render_tailq, rtb_element);
-
 struct rtb_render_context {
+	struct rtb_window *window;
 	struct rtb_shader *shader;
 
-	struct {
-		struct rtb_render_tailq next_frame;
-	} queues;
+	mat4 projection;
 };
 
-void rtb_render_use_style_bg(struct rtb_element *);
-void rtb_render_use_style_fg(struct rtb_element *);
+void rtb_render_use_style_bg(struct rtb_render_context *ctx,
+		struct rtb_element *);
+void rtb_render_use_style_fg(struct rtb_render_context *ctx,
+		struct rtb_element *);
 
-void rtb_render_set_color(struct rtb_element *,
+void rtb_render_set_color(struct rtb_render_context *,
 		GLfloat r, GLfloat g, GLfloat b, GLfloat a);
-void rtb_render_set_position(struct rtb_element *, float x, float y);
-void rtb_render_set_modelview(struct rtb_element *, const GLfloat *matrix);
+void rtb_render_set_position(struct rtb_render_context *, float x, float y);
+void rtb_render_set_modelview(struct rtb_render_context *,
+		const GLfloat *matrix);
 
-void rtb_render_quad_outline(struct rtb_element *, struct rtb_quad *);
-void rtb_render_quad(struct rtb_element *, struct rtb_quad *);
+void rtb_render_quad_outline(struct rtb_render_context *, struct rtb_quad *);
+void rtb_render_quad(struct rtb_render_context *, struct rtb_quad *);
 void rtb_render_clear(struct rtb_element *);
 
-void rtb_render_use_shader(struct rtb_element *, struct rtb_shader *);
+void rtb_render_use_shader(struct rtb_render_context *, struct rtb_shader *);
 void rtb_render_reset(struct rtb_element *);
 void rtb_render_push(struct rtb_element *);
 void rtb_render_pop(struct rtb_element *);
+struct rtb_render_context *rtb_render_get_context(struct rtb_element *);

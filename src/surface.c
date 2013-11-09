@@ -78,7 +78,7 @@ reflow(struct rtb_element *elem, struct rtb_element *instigator,
 	if (self->w <= 0 || self->h <= 0)
 		return -1;
 
-	mat4_set_orthographic(&self->projection,
+	mat4_set_orthographic(&self->render_ctx.projection,
 			self->x, self->x + self->w,
 			self->y + self->h, self->y,
 			-1.f, 1.f);
@@ -139,10 +139,8 @@ mark_dirty(struct rtb_element *elem)
 int
 rtb_surface_is_dirty(struct rtb_surface *self)
 {
-	struct rtb_render_context *ctx = &self->render_ctx;
-
 	if (self->surface_state == RTB_SURFACE_VALID &&
-			!TAILQ_FIRST(&ctx->queues.next_frame)) {
+			!TAILQ_FIRST(&self->render_queue)) {
 		/* nothing to do. */
 		return 0;
 	}
@@ -155,10 +153,13 @@ rtb_surface_blit(struct rtb_surface *self)
 {
 	struct rtb_shader *shader = &self->window->shaders.surface;
 	struct rtb_element *elem = RTB_ELEMENT(self);
+	struct rtb_render_context *ctx;
+
+	ctx = rtb_render_get_context(elem);
 
 	rtb_render_reset(elem);
-	rtb_render_use_shader(elem, shader);
-	rtb_render_set_position(elem, 0, 0);
+	rtb_render_use_shader(ctx, shader);
+	rtb_render_set_position(ctx, 0, 0);
 
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, self->texture);
@@ -167,7 +168,7 @@ rtb_surface_blit(struct rtb_surface *self)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-	rtb_render_quad(elem, &self->quad);
+	rtb_render_quad(ctx, &self->quad);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -179,7 +180,6 @@ rtb_surface_blit(struct rtb_surface *self)
 void
 rtb_surface_draw_children(struct rtb_surface *self)
 {
-	struct rtb_render_context *ctx = &self->render_ctx;
 	struct rtb_element *iter;
 
 	GLint bound_fb;
@@ -206,8 +206,8 @@ rtb_surface_draw_children(struct rtb_surface *self)
 
 		/* first, we clean out the renderqueue for dirty elements (since
 		 * we're going to be redrawing everything anyway.) */
-		while ((iter = TAILQ_FIRST(&ctx->queues.next_frame))) {
-			TAILQ_REMOVE(&ctx->queues.next_frame, iter, render_entry);
+		while ((iter = TAILQ_FIRST(&self->render_queue))) {
+			TAILQ_REMOVE(&self->render_queue, iter, render_entry);
 
 			iter->render_entry.tqe_next = NULL;
 			iter->render_entry.tqe_prev = NULL;
@@ -223,8 +223,8 @@ rtb_surface_draw_children(struct rtb_surface *self)
 	case RTB_SURFACE_VALID:
 		/* if we're marked valid, we'll just do an incremental redraw
 		 * just of the elements which have requested it. */
-		while ((iter = TAILQ_FIRST(&ctx->queues.next_frame))) {
-			TAILQ_REMOVE(&ctx->queues.next_frame, iter, render_entry);
+		while ((iter = TAILQ_FIRST(&self->render_queue))) {
+			TAILQ_REMOVE(&self->render_queue, iter, render_entry);
 
 			iter->render_entry.tqe_next = NULL;
 			iter->render_entry.tqe_prev = NULL;
@@ -259,7 +259,7 @@ rtb_surface_init(struct rtb_surface *self)
 	self->impl.mark_dirty     = mark_dirty;
 	self->impl.child_attached = child_attached;
 
-	TAILQ_INIT(&self->render_ctx.queues.next_frame);
+	TAILQ_INIT(&self->render_queue);
 
 	glGenTextures(1, &self->texture);
 	glGenFramebuffers(1, &self->fbo);

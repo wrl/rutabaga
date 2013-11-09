@@ -169,7 +169,7 @@ rtb_text_object_update(struct rtb_text_object *self,
 
 void
 rtb_text_object_render(struct rtb_text_object *self,
-		struct rtb_element *parent, float x, float y,
+		struct rtb_render_context *ctx, float x, float y,
 		const struct rtb_rgb_color *color)
 {
 	struct rtb_font_shader *shader;
@@ -183,7 +183,7 @@ rtb_text_object_render(struct rtb_text_object *self,
 	shader = &fm->shader;
 	atlas = fm->atlas;
 
-	rtb_render_use_shader(parent, RTB_SHADER(shader));
+	rtb_render_use_shader(ctx, RTB_SHADER(shader));
 	glBindTexture(GL_TEXTURE_2D, atlas->id);
 
 	glUniform1i(shader->texture, 0);
@@ -196,7 +196,7 @@ rtb_text_object_render(struct rtb_text_object *self,
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glUniform2f(shader->offset, x, y);
-	rtb_render_set_color(parent,
+	rtb_render_set_color(ctx,
 			color->r, color->g, color->b, color->a);
 	vertex_buffer_render(self->vertices, GL_TRIANGLES);
 }

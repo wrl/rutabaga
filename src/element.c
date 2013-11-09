@@ -349,16 +349,16 @@ child_detached(struct rtb_element *self, struct rtb_element *child)
 static void
 mark_dirty(struct rtb_element *self)
 {
-	struct rtb_render_context *render_ctx = &self->surface->render_ctx;
+	struct rtb_surface *surface = self->surface;
 
 	self = rtb_elem_nearest_clearable(self);
 
-	if (!self->surface || self->surface->surface_state == RTB_SURFACE_INVALID
+	if (!surface || surface->surface_state == RTB_SURFACE_INVALID
 			|| self->render_entry.tqe_next || self->render_entry.tqe_prev)
 		return;
 
-	TAILQ_INSERT_TAIL(&render_ctx->queues.next_frame, self, render_entry);
-	rtb_elem_mark_dirty(RTB_ELEMENT(self->surface));
+	TAILQ_INSERT_TAIL(&surface->render_queue, self, render_entry);
+	rtb_elem_mark_dirty(RTB_ELEMENT(surface));
 }
 
 /**

@@ -158,9 +158,11 @@ draw_bg(struct rtb_patchbay *self)
 {
 	const struct rtb_style_property_definition *prop;
 	struct rtb_element *elem = RTB_ELEMENT(self);
+	struct rtb_render_context *ctx;
 
-	rtb_render_use_shader(elem, RTB_SHADER(&shader));
-	rtb_render_set_position(elem, 0, 0);
+	ctx = rtb_render_get_context(elem);
+	rtb_render_use_shader(ctx, RTB_SHADER(&shader));
+	rtb_render_set_position(ctx, 0, 0);
 
 	/* draw the background */
 	glBindBuffer(GL_ARRAY_BUFFER, self->bg_vbo[0]);
@@ -225,9 +227,11 @@ draw_patches(struct rtb_patchbay *self)
 	struct rtb_patchbay_patch *iter;
 	struct rtb_patchbay_port *from, *to;
 	struct rtb_element *elem = RTB_ELEMENT(self);
+	struct rtb_render_context *ctx;
 
 	rtb_render_reset(elem);
-	rtb_render_set_position(elem, 0, 0);
+	ctx = rtb_render_get_context(elem);
+	rtb_render_set_position(ctx, 0, 0);
 
 	glEnable(GL_LINE_SMOOTH);
 	glLineWidth(3.5f);
@@ -250,9 +254,9 @@ draw_patches(struct rtb_patchbay *self)
 			continue;
 		} else if (self->patch_in_progress.from == from ||
 				self->patch_in_progress.from == to)
-			rtb_render_set_color(elem, CONNECTION_COLOR, .9f);
+			rtb_render_set_color(ctx, CONNECTION_COLOR, .9f);
 		else
-			rtb_render_set_color(elem, CONNECTION_COLOR, .6f);
+			rtb_render_set_color(ctx, CONNECTION_COLOR, .6f);
 
 		draw_line(line);
 	}
@@ -283,11 +287,11 @@ draw_patches(struct rtb_patchbay *self)
 		}
 
 		if (disconnect_in_progress)
-			rtb_render_set_color(elem, DISCONNECT_COLOR, .9f);
+			rtb_render_set_color(ctx, DISCONNECT_COLOR, .9f);
 		else if (to)
-			rtb_render_set_color(elem, CONNECTION_COLOR, .8f);
+			rtb_render_set_color(ctx, CONNECTION_COLOR, .8f);
 		else
-			rtb_render_set_color(elem, CONNECTION_COLOR, .4f);
+			rtb_render_set_color(ctx, CONNECTION_COLOR, .4f);
 
 		draw_line(line);
 	}

@@ -32,8 +32,6 @@
 
 #include "private/util.h"
 
-#define CONTEXT (elem->window->render_ctx)
-
 static const GLubyte quad_tri_indices[] = {
 	0, 1, 3, 2
 };
@@ -49,13 +47,14 @@ static const GLubyte quad_outline_indices[] = {
  */
 
 void
-rtb_render_use_style_bg(struct rtb_element *elem)
+rtb_render_use_style_fg(struct rtb_render_context *ctx,
+		struct rtb_element *from)
 {
 	const struct rtb_style_property_definition *prop;
-	prop = rtb_style_query_prop(elem,
+	prop = rtb_style_query_prop(from,
 			"background-color", RTB_STYLE_PROP_COLOR, 1);
 
-	rtb_render_set_color(elem,
+	rtb_render_set_color(ctx,
 			prop->color.r,
 			prop->color.g,
 			prop->color.b,
@@ -63,13 +62,14 @@ rtb_render_use_style_bg(struct rtb_element *elem)
 }
 
 void
-rtb_render_use_style_fg(struct rtb_element *elem)
+rtb_render_use_style_bg(struct rtb_render_context *ctx,
+		struct rtb_element *from)
 {
 	const struct rtb_style_property_definition *prop;
-	prop = rtb_style_query_prop(elem,
+	prop = rtb_style_query_prop(from,
 			"color", RTB_STYLE_PROP_COLOR, 1);
 
-	rtb_render_set_color(elem,
+	rtb_render_set_color(ctx,
 			prop->color.r,
 			prop->color.g,
 			prop->color.b,
@@ -77,22 +77,22 @@ rtb_render_use_style_fg(struct rtb_element *elem)
 }
 
 void
-rtb_render_set_color(struct rtb_element *elem,
+rtb_render_set_color(struct rtb_render_context *ctx,
 		GLfloat r, GLfloat g, GLfloat b, GLfloat a)
 {
-	glUniform4f(CONTEXT.shader->color, r, g, b, a);
+	glUniform4f(ctx->shader->color, r, g, b, a);
 }
 
 void
-rtb_render_set_position(struct rtb_element *elem, float x, float y)
+rtb_render_set_position(struct rtb_render_context *ctx, float x, float y)
 {
-	glUniform2f(CONTEXT.shader->offset, x, y);
+	glUniform2f(ctx->shader->offset, x, y);
 }
 
 void
-rtb_render_set_modelview(struct rtb_element *elem, const GLfloat *matrix)
+rtb_render_set_modelview(struct rtb_render_context *ctx, const GLfloat *matrix)
 {
-	glUniformMatrix4fv(CONTEXT.shader->matrices.modelview,
+	glUniformMatrix4fv(ctx->shader->matrices.modelview,
 		1, GL_FALSE, matrix);
 }
 
@@ -101,10 +101,10 @@ rtb_render_set_modelview(struct rtb_element *elem, const GLfloat *matrix)
  */
 
 static void
-render_quad(struct rtb_element *elem, struct rtb_quad *quad,
+render_quad(struct rtb_render_context *ctx, struct rtb_quad *quad,
 		GLenum mode, const GLubyte *indices, GLsizei count)
 {
-	struct rtb_shader *shader = CONTEXT.shader;
+	struct rtb_shader *shader = ctx->shader;
 
 	if (!quad->vertices)
 		return;
@@ -131,16 +131,16 @@ render_quad(struct rtb_element *elem, struct rtb_quad *quad,
 }
 
 void
-rtb_render_quad_outline(struct rtb_element *elem, struct rtb_quad *quad)
+rtb_render_quad_outline(struct rtb_render_context *ctx, struct rtb_quad *quad)
 {
-	render_quad(elem, quad, GL_LINE_LOOP,
+	render_quad(ctx, quad, GL_LINE_LOOP,
 			quad_outline_indices, ARRAY_LENGTH(quad_outline_indices));
 }
 
 void
-rtb_render_quad(struct rtb_element *elem, struct rtb_quad *quad)
+rtb_render_quad(struct rtb_render_context *ctx, struct rtb_quad *quad)
 {
-	render_quad(elem, quad, GL_TRIANGLE_STRIP,
+	render_quad(ctx, quad, GL_TRIANGLE_STRIP,
 			quad_tri_indices, ARRAY_LENGTH(quad_tri_indices));
 }
 
@@ -155,29 +155,34 @@ rtb_render_clear(struct rtb_element *elem)
  * state changes
  */
 
+static const GLfloat identity_matrix[] = {
+	1.f, 0.f, 0.f, 0.f,
+	0.f, 1.f, 0.f, 0.f,
+	0.f, 0.f, 1.f, 0.f,
+	0.f, 0.f, 0.f, 1.f
+};
+
 void
-rtb_render_use_shader(struct rtb_element *elem, struct rtb_shader *shader)
+rtb_render_use_shader(struct rtb_render_context *ctx,
+		struct rtb_shader *shader)
 {
 	GLuint program;
-
-	if (!shader)
-		shader = &elem->window->shaders.dfault;
-
 	program = shader->program;
-	CONTEXT.shader = shader;
+	ctx->shader = shader;
 
 	glUseProgram(program);
 
 	glUniformMatrix4fv(shader->matrices.projection,
-		1, GL_FALSE, elem->surface->projection.data);
+		1, GL_FALSE, ctx->projection.data);
 	glUniformMatrix4fv(shader->matrices.modelview,
-		1, GL_FALSE, elem->window->identity.data);
+		1, GL_FALSE, identity_matrix);
 }
 
 void
 rtb_render_reset(struct rtb_element *elem)
 {
-	rtb_render_use_shader(elem, NULL);
+	struct rtb_render_context *ctx = rtb_render_get_context(elem);
+	rtb_render_use_shader(ctx, &elem->window->shaders.dfault);
 
 	glScissor(elem->x - elem->surface->x,
 			elem->surface->y + elem->surface->h - elem->h - elem->y,
@@ -199,4 +204,10 @@ void
 rtb_render_pop(struct rtb_element *elem)
 {
 	glUseProgram(0);
+}
+
+struct rtb_render_context *
+rtb_render_get_context(struct rtb_element *elem)
+{
+	return &elem->window->render_ctx;
 }
