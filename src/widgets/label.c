@@ -96,7 +96,7 @@ restyle(struct rtb_element *elem)
 		self->font = (struct rtb_font *) &prop->font.font_internal;
 
 		rtb_text_object_update(self->tobj, self->font, self->text);
-		rtb_elem_trigger_recalc(self->parent, RTB_ELEMENT(self),
+		rtb_elem_trigger_reflow(self->parent, RTB_ELEMENT(self),
 				RTB_DIRECTION_ROOTWARD);
 	}
 
@@ -128,7 +128,7 @@ rtb_label_set_text(struct rtb_label *self, const rtb_utf8_t *text)
 	rtb_text_object_update(self->tobj, self->font, self->text);
 
 	if (self->tobj->w != old_size.w || self->tobj->h != old_size.h)
-		rtb_elem_trigger_recalc(self->parent, RTB_ELEMENT(self),
+		rtb_elem_trigger_reflow(self->parent, RTB_ELEMENT(self),
 				RTB_DIRECTION_ROOTWARD);
 }
 

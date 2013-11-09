@@ -338,7 +338,7 @@ reposition(struct rtb_patchbay *self, struct rtb_point *by)
 		iter->x += by->x;
 		iter->y += by->y;
 
-		rtb_elem_trigger_recalc(iter, RTB_ELEMENT(self),
+		rtb_elem_trigger_reflow(iter, RTB_ELEMENT(self),
 				RTB_DIRECTION_LEAFWARD);
 	}
 

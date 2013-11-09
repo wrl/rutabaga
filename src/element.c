@@ -290,7 +290,7 @@ reload_style(struct rtb_element *self)
 #undef LOAD_PROP
 
 	if (need_reflow)
-		rtb_elem_recalc_rootward(self);
+		rtb_elem_reflow_rootward(self);
 }
 
 static void
@@ -494,22 +494,22 @@ rtb_elem_nearest_clearable(struct rtb_element *self)
 }
 
 void
-rtb_elem_trigger_recalc(struct rtb_element *self, struct rtb_element *instigator,
+rtb_elem_trigger_reflow(struct rtb_element *self, struct rtb_element *instigator,
 		rtb_ev_direction_t direction)
 {
 	self->reflow(self, instigator, direction);
 }
 
 void
-rtb_elem_recalc_leafward(struct rtb_element *self)
+rtb_elem_reflow_leafward(struct rtb_element *self)
 {
-	rtb_elem_trigger_recalc(self, NULL, RTB_DIRECTION_LEAFWARD);
+	rtb_elem_trigger_reflow(self, NULL, RTB_DIRECTION_LEAFWARD);
 }
 
 void
-rtb_elem_recalc_rootward(struct rtb_element *self)
+rtb_elem_reflow_rootward(struct rtb_element *self)
 {
-	rtb_elem_trigger_recalc(self->parent, self, RTB_DIRECTION_ROOTWARD);
+	rtb_elem_trigger_reflow(self->parent, self, RTB_DIRECTION_ROOTWARD);
 }
 
 void

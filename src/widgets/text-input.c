@@ -84,7 +84,7 @@ update_cursor(struct rtb_text_input *self)
 		self->label_offset += self->inner_rect.x2 - self->label.x2;
 		self->label_offset = MIN(self->label_offset, 0);
 
-		rtb_elem_trigger_recalc(RTB_ELEMENT(self), RTB_ELEMENT(self),
+		rtb_elem_trigger_reflow(RTB_ELEMENT(self), RTB_ELEMENT(self),
 				RTB_DIRECTION_LEAFWARD);
 		return;
 	}
@@ -97,7 +97,7 @@ update_cursor(struct rtb_text_input *self)
 		else
 			self->label_offset += self->inner_rect.x2 - x;
 
-		rtb_elem_trigger_recalc(RTB_ELEMENT(self), RTB_ELEMENT(self),
+		rtb_elem_trigger_reflow(RTB_ELEMENT(self), RTB_ELEMENT(self),
 				RTB_DIRECTION_LEAFWARD);
 		return;
 	}

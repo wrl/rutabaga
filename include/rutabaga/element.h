@@ -85,7 +85,7 @@ typedef void (*rtb_elem_cb_size_t)
 	(struct rtb_element *,
 	 const struct rtb_size *avail, struct rtb_size *want);
 
-typedef int (*rtb_elem_cb_recalc_t)
+typedef int (*rtb_elem_cb_reflow_t)
 	(struct rtb_element *elem,
 	 struct rtb_element *instigator, rtb_ev_direction_t direction);
 
@@ -179,14 +179,14 @@ struct rtb_element_implementation {
 	 * caused by an element above it somewhere in the tree, generally
 	 * by a containing element changing size.
 	 *
-	 * should return 1 if recalculation was necessary, 0 if none was,
-	 * and -1 in an exceptional condition (for example, if an element
-	 * is less than 1 pixel square in size).
+	 * should return 1 if reflow was necessary, 0 if none was, and -1
+	 * in an exceptional condition (for example, if an element is less
+	 * than 1 pixel square in size).
 	 *
 	 * the exceptional condition will not be handled or propagated up
 	 * the tree, but can be useful for debugging.
 	 */
-	rtb_elem_cb_recalc_t reflow;
+	rtb_elem_cb_reflow_t reflow;
 
 
 	/**
@@ -269,10 +269,10 @@ int rtb_elem_is_clearable(struct rtb_element *);
 struct rtb_element *rtb_elem_nearest_clearable(struct rtb_element *);
 
 void rtb_elem_mark_dirty(struct rtb_element *);
-void rtb_elem_trigger_recalc(struct rtb_element *,
+void rtb_elem_trigger_reflow(struct rtb_element *,
 		struct rtb_element *instigator, rtb_ev_direction_t direction);
-void rtb_elem_recalc_leafward(struct rtb_element *);
-void rtb_elem_recalc_rootward(struct rtb_element *);
+void rtb_elem_reflow_leafward(struct rtb_element *);
+void rtb_elem_reflow_rootward(struct rtb_element *);
 
 void rtb_elem_set_size_cb(struct rtb_element *, rtb_elem_cb_size_t size_cb);
 void rtb_elem_set_layout(struct rtb_element *, rtb_elem_cb_t layout_cb);

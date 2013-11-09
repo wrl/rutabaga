@@ -196,7 +196,7 @@ rtb_window_reinit(struct rtb_window *self)
 	if (!self->window)
 		self->attached(elem, NULL, self);
 
-	rtb_elem_trigger_recalc(elem, elem, RTB_DIRECTION_LEAFWARD);
+	rtb_elem_trigger_reflow(elem, elem, RTB_DIRECTION_LEAFWARD);
 }
 
 struct rtb_window *

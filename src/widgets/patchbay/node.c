@@ -55,7 +55,7 @@ handle_drag(struct rtb_patchbay_node *self, const struct rtb_drag_event *e)
 		self->x += e->delta.x;
 		self->y += e->delta.y;
 
-		rtb_elem_trigger_recalc(elem, elem, RTB_DIRECTION_LEAFWARD);
+		rtb_elem_trigger_reflow(elem, elem, RTB_DIRECTION_LEAFWARD);
 		rtb_surface_invalidate(self->surface);
 		return 1;
 
