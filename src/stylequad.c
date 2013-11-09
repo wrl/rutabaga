@@ -91,7 +91,7 @@ draw_solid(struct rtb_stylequad *self, const struct rtb_shader *shader,
 
 static void
 draw_textured(struct rtb_stylequad *self, const struct rtb_shader *shader,
-		const struct rtb_stylequad_texture *tx)
+		const struct rtb_stylequad_texture *tx, int border)
 {
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tx->gl_handle);
@@ -104,10 +104,11 @@ draw_textured(struct rtb_stylequad *self, const struct rtb_shader *shader,
 	glVertexAttribPointer(shader->tex_coord,
 			2, GL_FLOAT, GL_FALSE, 0, 0);
 
-	draw_solid(self, shader, GL_TRIANGLES,
-			border_indices, ARRAY_LENGTH(border_indices));
+	if (border)
+		draw_solid(self, shader, GL_TRIANGLES,
+				border_indices, ARRAY_LENGTH(border_indices));
 
-	if (tx->definition->flags & RTB_TEXTURE_FILL)
+	if (tx->definition->flags & RTB_TEXTURE_FILL || !border)
 		draw_solid(self, shader, GL_TRIANGLE_STRIP,
 				solid_indices, ARRAY_LENGTH(solid_indices));
 
@@ -134,8 +135,11 @@ draw(struct rtb_render_context *ctx, struct rtb_stylequad *self,
 				solid_indices, ARRAY_LENGTH(solid_indices));
 	}
 
+	if (self->background_image.definition)
+		draw_textured(self, shader, &self->background_image, 0);
+
 	if (self->border_image.definition)
-		draw_textured(self, shader, &self->border_image);
+		draw_textured(self, shader, &self->border_image, 1);
 
 	if (self->properties.border_color) {
 		rtb_render_set_color(ctx,
@@ -178,7 +182,7 @@ rtb_stylequad_draw_with_modelview(struct rtb_stylequad *self, struct rtb_element
 }
 
 /**
- * updating
+ * property/style wrangling
  */
 
 static void
@@ -262,45 +266,57 @@ rtb_stylequad_set_border_image(struct rtb_stylequad *self,
 	return 0;
 }
 
+int
+rtb_stylequad_set_background_color(struct rtb_stylequad *self,
+		const struct rtb_rgb_color *color)
+{
+	if (self->properties.bg_color == color)
+		return -1;
+
+	self->properties.bg_color = color;
+	return 0;
+}
+
+int
+rtb_stylequad_set_border_color(struct rtb_stylequad *self,
+		const struct rtb_rgb_color *color)
+{
+	if (self->properties.border_color == color)
+		return -1;
+
+	self->properties.border_color = color;
+	return 0;
+}
+
 void
 rtb_stylequad_update_style(struct rtb_stylequad *self,
 		struct rtb_element *elem)
 {
 	const struct rtb_style_property_definition *prop;
 
-#define ASSIGN_AND_MAYBE_MARK_DIRTY(dest, val) do {    \
-	if (dest != val) rtb_elem_mark_dirty(elem);        \
-	dest = val;                                        \
-} while (0)
+#define LOAD_PROP(name, type, member, load_func)           \
+	if ((prop = rtb_style_query_prop(elem, name, type, 0)) \
+			&& !load_func(self, &prop->member))            \
+		rtb_elem_mark_dirty(elem);
 
-#define CACHE_PROP(dest, name, type, member) do {      \
-	prop = rtb_style_query_prop(elem, name, type, 0);  \
-	if (prop)                                          \
-		ASSIGN_AND_MAYBE_MARK_DIRTY(                   \
-				self->properties.dest, &prop->member); \
-	else                                               \
-		ASSIGN_AND_MAYBE_MARK_DIRTY(                   \
-				self->properties.dest, NULL);          \
-} while (0)
+#define LOAD_COLOR(name, load_func) \
+		LOAD_PROP(name, RTB_STYLE_PROP_COLOR, color, load_func)
+#define LOAD_TEXTURE(name, load_func) \
+		LOAD_PROP(name, RTB_STYLE_PROP_TEXTURE, texture, load_func)
 
-#define CACHE_COLOR(dest, name) \
-		CACHE_PROP(dest, name, RTB_STYLE_PROP_COLOR, color)
-#define CACHE_TEXTURE(dest, name) \
-		CACHE_PROP(dest, name, RTB_STYLE_PROP_TEXTURE, texture)
+	LOAD_COLOR("background-color", rtb_stylequad_set_background_color);
+	LOAD_COLOR("border-color", rtb_stylequad_set_border_color);
 
-	CACHE_COLOR(bg_color, "background-color");
-	CACHE_COLOR(fg_color, "color");
-	CACHE_COLOR(border_color, "border-color");
+	LOAD_TEXTURE("border-image", rtb_stylequad_set_border_image);
 
-	CACHE_TEXTURE(border_image, "border-image");
-
-#undef CACHE_TEXTURE
-#undef CACHE_COLOR
-#undef CACHE_PROP
-#undef ASSIGN_AND_MAYBE_MARK_DIRTY
-
-	rtb_stylequad_set_border_image(self, self->properties.border_image);
+#undef LOAD_TEXTURE
+#undef LOAD_COLOR
+#undef LOAD_PROP
 }
+
+/**
+ * updating vertices
+ */
 
 void
 rtb_stylequad_update_geometry(struct rtb_stylequad *self,

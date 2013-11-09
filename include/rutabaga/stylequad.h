@@ -37,10 +37,7 @@ struct rtb_stylequad {
 
 	struct {
 		const struct rtb_rgb_color *bg_color;
-		const struct rtb_rgb_color *fg_color;
 		const struct rtb_rgb_color *border_color;
-
-		const struct rtb_style_texture_definition *border_image;
 	} properties;
 
 	struct rtb_stylequad_texture {
