@@ -274,7 +274,7 @@ restyle(struct rtb_element *self)
 		self->style = rtb_style_for_element(self, self->window->style_list);
 
 	apply_layout_style_props(self);
-	rtb_stylequad_update_style(&self->stylequad);
+	rtb_stylequad_update_style(&self->stylequad, self);
 
 	TAILQ_FOREACH(iter, &self->children, child)
 		iter->restyle(iter);
@@ -287,7 +287,7 @@ restyle(struct rtb_element *self)
 static void
 draw(struct rtb_element *self)
 {
-	rtb_stylequad_draw(&self->stylequad);
+	rtb_stylequad_draw(&self->stylequad, self);
 	rtb_elem_draw_children(self);
 }
 

@@ -117,15 +117,14 @@ draw_textured(struct rtb_stylequad *self, const struct rtb_shader *shader,
 }
 
 static void
-draw(struct rtb_stylequad *self, struct rtb_shader *shader)
+draw(struct rtb_stylequad *self, struct rtb_element *on,
+		struct rtb_shader *shader)
 {
-	struct rtb_element *owner = self->owner;
-
-	rtb_render_set_position(owner, self->offset.x, self->offset.y);
+	rtb_render_set_position(on, self->offset.x, self->offset.y);
 	glUniform2f(shader->texture_size, 0.f, 0.f);
 
 	if (self->properties.bg_color) {
-		rtb_render_set_color(owner,
+		rtb_render_set_color(on,
 				self->properties.bg_color->r,
 				self->properties.bg_color->g,
 				self->properties.bg_color->b,
@@ -139,7 +138,7 @@ draw(struct rtb_stylequad *self, struct rtb_shader *shader)
 		draw_textured(self, shader, &self->border_image);
 
 	if (self->properties.border_color) {
-		rtb_render_set_color(owner,
+		rtb_render_set_color(on,
 				self->properties.border_color->r,
 				self->properties.border_color->g,
 				self->properties.border_color->b,
@@ -153,26 +152,27 @@ draw(struct rtb_stylequad *self, struct rtb_shader *shader)
 }
 
 void
-rtb_stylequad_draw(struct rtb_stylequad *self)
+rtb_stylequad_draw(struct rtb_stylequad *self, struct rtb_element *on)
 {
-	struct rtb_shader *shader = &self->owner->window->shaders.stylequad;
+	struct rtb_shader *shader = &on->window->shaders.stylequad;
 
-	rtb_render_reset(self->owner);
-	rtb_render_use_shader(self->owner, shader);
+	rtb_render_reset(on);
+	rtb_render_use_shader(on, shader);
 
-	draw(self, shader);
+	draw(self, on, shader);
 }
 
 void
-rtb_stylequad_draw_with_modelview(struct rtb_stylequad *self, mat4 *modelview)
+rtb_stylequad_draw_with_modelview(struct rtb_stylequad *self, struct rtb_element *on,
+		mat4 *modelview)
 {
-	struct rtb_shader *shader = &self->owner->window->shaders.stylequad;
+	struct rtb_shader *shader = &on->window->shaders.stylequad;
 
-	rtb_render_reset(self->owner);
-	rtb_render_use_shader(self->owner, shader);
-	rtb_render_set_modelview(self->owner, modelview->data);
+	rtb_render_reset(on);
+	rtb_render_use_shader(on, shader);
+	rtb_render_set_modelview(on, modelview->data);
 
-	draw(self, shader);
+	draw(self, on, shader);
 }
 
 /**
@@ -261,10 +261,10 @@ rtb_stylequad_set_border_image(struct rtb_stylequad *self,
 }
 
 void
-rtb_stylequad_update_style(struct rtb_stylequad *self)
+rtb_stylequad_update_style(struct rtb_stylequad *self,
+		struct rtb_element *elem)
 {
 	const struct rtb_style_property_definition *prop;
-	struct rtb_element *elem = self->owner;
 
 #define ASSIGN_AND_MAYBE_MARK_DIRTY(dest, val) do {    \
 	if (dest != val) rtb_elem_mark_dirty(elem);        \
@@ -380,8 +380,6 @@ rtb_stylequad_update_geometry(struct rtb_stylequad *self,
 void
 rtb_stylequad_init(struct rtb_stylequad *self, struct rtb_element *owner)
 {
-	self->owner = owner;
-
 	glGenBuffers(1, &self->vertices);
 
 	INIT_STYLEQUAD_TEXTURE(&self->border_image);

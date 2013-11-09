@@ -62,7 +62,8 @@ draw(struct rtb_element *elem)
 {
 	SELF_FROM(elem);
 
-	rtb_stylequad_draw_with_modelview(&self->stylequad, &self->modelview);
+	rtb_stylequad_draw_with_modelview(&self->stylequad, elem,
+			&self->modelview);
 	rtb_elem_draw_children(RTB_ELEMENT(self));
 }
 

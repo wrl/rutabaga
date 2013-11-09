@@ -31,7 +31,6 @@
 #include "rutabaga/mat4.h"
 
 struct rtb_stylequad {
-	struct rtb_element *owner;
 	struct rtb_point offset;
 
 	GLuint vertices;
@@ -51,14 +50,14 @@ struct rtb_stylequad {
 	} border_image, background_image;
 };
 
-void rtb_stylequad_draw(struct rtb_stylequad *);
+void rtb_stylequad_draw(struct rtb_stylequad *, struct rtb_element *);
 void rtb_stylequad_draw_with_modelview(struct rtb_stylequad *,
-		mat4 *modelview);
+		struct rtb_element *, mat4 *modelview);
 
 int rtb_stylequad_set_border_image(struct rtb_stylequad *,
 		const struct rtb_style_texture_definition *);
 
-void rtb_stylequad_update_style(struct rtb_stylequad *);
+void rtb_stylequad_update_style(struct rtb_stylequad *, struct rtb_element *);
 void rtb_stylequad_update_geometry(struct rtb_stylequad *,
 		const struct rtb_rect *);
 
