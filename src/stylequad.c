@@ -288,32 +288,6 @@ rtb_stylequad_set_border_color(struct rtb_stylequad *self,
 	return 0;
 }
 
-void
-rtb_stylequad_update_style(struct rtb_stylequad *self,
-		struct rtb_element *elem)
-{
-	const struct rtb_style_property_definition *prop;
-
-#define LOAD_PROP(name, type, member, load_func)           \
-	if ((prop = rtb_style_query_prop(elem, name, type, 0)) \
-			&& !load_func(self, &prop->member))            \
-		rtb_elem_mark_dirty(elem);
-
-#define LOAD_COLOR(name, load_func) \
-		LOAD_PROP(name, RTB_STYLE_PROP_COLOR, color, load_func)
-#define LOAD_TEXTURE(name, load_func) \
-		LOAD_PROP(name, RTB_STYLE_PROP_TEXTURE, texture, load_func)
-
-	LOAD_COLOR("background-color", rtb_stylequad_set_background_color);
-	LOAD_COLOR("border-color", rtb_stylequad_set_border_color);
-
-	LOAD_TEXTURE("border-image", rtb_stylequad_set_border_image);
-
-#undef LOAD_TEXTURE
-#undef LOAD_COLOR
-#undef LOAD_PROP
-}
-
 /**
  * updating vertices
  */

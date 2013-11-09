@@ -240,27 +240,57 @@ reflow(struct rtb_element *self,
  */
 
 static void
-apply_layout_style_props(struct rtb_element *self)
+reload_style(struct rtb_element *self)
 {
 	const struct rtb_style_property_definition *prop;
+	int need_reflow = 0;
 
-#define ASSIGN_LAYOUT_FLOAT(pname, dest) do {                 \
-	prop = rtb_style_query_prop(self,                         \
-			pname, RTB_STYLE_PROP_FLOAT, 0);                  \
-	if (!prop)                                                \
-		break;                                                \
-	if (self->dest != prop->flt                               \
-			&& self->window->state != RTB_STATE_UNATTACHED) { \
-		self->dest = prop->flt;                               \
-		rtb_elem_recalc_rootward(self);                       \
-	} else                                                    \
-		self->dest = prop->flt;                               \
+	/* layout-related properties trigger a reflow if they change, so
+	 * we'll handle them first. */
+
+#define ASSIGN_LAYOUT_FLOAT(pname, dest) do {                         \
+	prop = rtb_style_query_prop(self,                                 \
+			pname, RTB_STYLE_PROP_FLOAT, 0);                          \
+	if (!prop)                                                        \
+		break;                                                        \
+	if (self->dest != prop->flt                                       \
+			&& self->window->state != RTB_STATE_UNATTACHED) {         \
+		self->dest = prop->flt;                                       \
+		need_reflow = 1;                                              \
+	} else                                                            \
+		self->dest = prop->flt;                                       \
 } while (0)
 
 	ASSIGN_LAYOUT_FLOAT("min-width", min_size.w);
 	ASSIGN_LAYOUT_FLOAT("min-height", min_size.h);
 
-#undef ASSIGN_FLOAT_IF_DECLARED
+#undef ASSIGN_LAYOUT_FLOAT
+
+#define LOAD_PROP(name, type, member, load_func)                      \
+	if ((prop = rtb_style_query_prop(self, name, type, 0))            \
+			&& !load_func(&self->stylequad, &prop->member))           \
+
+#define LOAD_COLOR(name, load_func)                                   \
+		LOAD_PROP(name, RTB_STYLE_PROP_COLOR, color, load_func) {     \
+			rtb_elem_mark_dirty(self);                                \
+		}
+
+#define LOAD_TEXTURE(name, load_func)                                 \
+		LOAD_PROP(name, RTB_STYLE_PROP_TEXTURE, texture, load_func) { \
+			rtb_elem_mark_dirty(self);                                \
+		}
+
+	LOAD_COLOR("background-color", rtb_stylequad_set_background_color);
+	LOAD_COLOR("border-color", rtb_stylequad_set_border_color);
+
+	LOAD_TEXTURE("border-image", rtb_stylequad_set_border_image);
+
+#undef LOAD_TEXTURE
+#undef LOAD_COLOR
+#undef LOAD_PROP
+
+	if (need_reflow)
+		rtb_elem_recalc_rootward(self);
 }
 
 static void
@@ -273,8 +303,7 @@ restyle(struct rtb_element *self)
 	if (!self->style)
 		self->style = rtb_style_for_element(self, self->window->style_list);
 
-	apply_layout_style_props(self);
-	rtb_stylequad_update_style(&self->stylequad, self);
+	reload_style(self);
 
 	TAILQ_FOREACH(iter, &self->children, child)
 		iter->restyle(iter);
