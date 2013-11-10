@@ -670,7 +670,7 @@ rtb_elem_init(struct rtb_element *self)
 
 	VECTOR_INIT(&self->handlers, &stdlib_allocator, 1);
 
-	rtb_stylequad_init(&self->stylequad, self);
+	rtb_stylequad_init(&self->stylequad);
 
 	LAYOUT_DEBUG_INIT();
 

@@ -261,7 +261,7 @@ rtb_knob_init(struct rtb_knob *self)
 	self->restyle  = restyle;
 	self->reflow   = reflow;
 
-	rtb_stylequad_init(&self->rotor, RTB_ELEMENT(self));
+	rtb_stylequad_init(&self->rotor);
 
 	return 0;
 }

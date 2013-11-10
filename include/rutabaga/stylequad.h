@@ -63,5 +63,5 @@ int rtb_stylequad_set_border_color(struct rtb_stylequad *,
 void rtb_stylequad_update_geometry(struct rtb_stylequad *,
 		const struct rtb_rect *);
 
-void rtb_stylequad_init(struct rtb_stylequad *, struct rtb_element *owner);
+void rtb_stylequad_init(struct rtb_stylequad *);
 void rtb_stylequad_fini(struct rtb_stylequad *);

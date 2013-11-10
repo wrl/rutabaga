@@ -400,7 +400,7 @@ rtb_stylequad_update_geometry(struct rtb_stylequad *self,
 } while (0)
 
 void
-rtb_stylequad_init(struct rtb_stylequad *self, struct rtb_element *owner)
+rtb_stylequad_init(struct rtb_stylequad *self)
 {
 	glGenBuffers(1, &self->vertices);
 
