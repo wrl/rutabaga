@@ -225,6 +225,23 @@ set_border_tex_coords(struct rtb_stylequad_texture *tx)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+static void
+set_background_tex_coords(struct rtb_stylequad_texture *tx)
+{
+	GLfloat v[16][2] = {
+		[2]  = {0.f, 1.f},
+		[7]  = {1.f, 1.f},
+		[9]  = {0.f, 0.f},
+		[12] = {1.f, 0.f}
+	};
+
+	glBindBuffer(GL_ARRAY_BUFFER, tx->coords);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+
+
 static int
 load_texture(struct rtb_stylequad_texture *dst,
 		const struct rtb_style_texture_definition *src)
@@ -262,6 +279,19 @@ rtb_stylequad_set_border_image(struct rtb_stylequad *self,
 
 	if (tx)
 		set_border_tex_coords(&self->border_image);
+
+	return 0;
+}
+
+int
+rtb_stylequad_set_background_image(struct rtb_stylequad *self,
+		const struct rtb_style_texture_definition *tx)
+{
+	if (load_texture(&self->background_image, tx))
+		return -1;
+
+	if (tx)
+		set_background_tex_coords(&self->background_image);
 
 	return 0;
 }

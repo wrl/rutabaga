@@ -53,6 +53,8 @@ void rtb_stylequad_draw_with_modelview(struct rtb_stylequad *,
 
 int rtb_stylequad_set_border_image(struct rtb_stylequad *,
 		const struct rtb_style_texture_definition *);
+int rtb_stylequad_set_background_image(struct rtb_stylequad *,
+		const struct rtb_style_texture_definition *);
 int rtb_stylequad_set_background_color(struct rtb_stylequad *,
 		const struct rtb_rgb_color *);
 int rtb_stylequad_set_border_color(struct rtb_stylequad *,

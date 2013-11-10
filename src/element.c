@@ -284,6 +284,7 @@ reload_style(struct rtb_element *self)
 	LOAD_COLOR("border-color", rtb_stylequad_set_border_color);
 
 	LOAD_TEXTURE("border-image", rtb_stylequad_set_border_image);
+	LOAD_TEXTURE("background-image", rtb_stylequad_set_background_image);
 
 #undef LOAD_TEXTURE
 #undef LOAD_COLOR
