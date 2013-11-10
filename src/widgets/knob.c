@@ -34,6 +34,7 @@
 #include "rutabaga/window.h"
 #include "rutabaga/render.h"
 #include "rutabaga/event.h"
+#include "rutabaga/style.h"
 #include "rutabaga/keyboard.h"
 
 #include "rutabaga/widgets/knob.h"
@@ -62,9 +63,8 @@ draw(struct rtb_element *elem)
 {
 	SELF_FROM(elem);
 
-	rtb_stylequad_draw_with_modelview(&self->stylequad, elem,
-			&self->modelview);
-	rtb_elem_draw_children(RTB_ELEMENT(self));
+	super.draw(elem);
+	rtb_stylequad_draw_with_modelview(&self->rotor, elem, &self->modelview);
 }
 
 /**
@@ -203,6 +203,34 @@ attached(struct rtb_element *elem,
 	rtb_knob_set_value(self, self->origin);
 }
 
+static void
+restyle(struct rtb_element *elem)
+{
+	SELF_FROM(elem);
+
+	const struct rtb_style_property_definition *prop;
+	super.restyle(elem);
+
+	prop = rtb_style_query_prop(elem,
+			"-rtb-knob-rotor", RTB_STYLE_PROP_TEXTURE, 0);
+	if (prop &&
+			!rtb_stylequad_set_background_image(&self->rotor, &prop->texture))
+		rtb_elem_mark_dirty(elem);
+}
+
+static int
+reflow(struct rtb_element *elem,
+		struct rtb_element *instigator, rtb_ev_direction_t direction)
+{
+	SELF_FROM(elem);
+
+	if (!super.reflow(elem, instigator, direction))
+		return 0;
+
+	rtb_stylequad_update_geometry(&self->rotor, &self->rect);
+	return 1;
+}
+
 /**
  * public API
  */
@@ -230,6 +258,10 @@ rtb_knob_init(struct rtb_knob *self)
 	self->draw     = draw;
 	self->on_event = on_event;
 	self->attached = attached;
+	self->restyle  = restyle;
+	self->reflow   = reflow;
+
+	rtb_stylequad_init(&self->rotor, RTB_ELEMENT(self));
 
 	return 0;
 }
@@ -237,6 +269,7 @@ rtb_knob_init(struct rtb_knob *self)
 void
 rtb_knob_fini(struct rtb_knob *self)
 {
+	rtb_stylequad_fini(&self->rotor);
 	rtb_elem_fini(RTB_ELEMENT(self));
 }
 

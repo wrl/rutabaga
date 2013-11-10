@@ -28,6 +28,7 @@
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/element.h"
+#include "rutabaga/stylequad.h"
 #include "rutabaga/event.h"
 #include "rutabaga/mat4.h"
 
@@ -51,6 +52,7 @@ struct rtb_knob {
 	float max;
 
 	/* private ********************************/
+	struct rtb_stylequad rotor;
 	mat4 modelview;
 	float value;
 };

@@ -46,6 +46,10 @@ state_mapping = {
 }
 
 prop_mapping = {
+    ####
+    # mostly standard props
+    ####
+
     'color': RutabagaRGBAProperty,
     'background-color': RutabagaRGBAProperty,
     'background-image': RutabagaTextureProperty,
@@ -53,7 +57,13 @@ prop_mapping = {
     'border-color': RutabagaRGBAProperty,
 
     'min-width':  RutabagaFloatProperty,
-    'min-height': RutabagaFloatProperty
+    'min-height': RutabagaFloatProperty,
+
+    ####
+    # unabashedly nonstandard props
+    ####
+
+    '-rtb-knob-rotor': RutabagaTextureProperty,
 }
 
 class RutabagaStyleState(object):
