@@ -63,7 +63,8 @@ button:focus {
  */
 
 knob {
-	border-image: url('assets/knob.tga') fill;
+	background-image: url('assets/bknob_bg.tga');
+	-rtb-knob-rotor: url('assets/bknob_rotor.tga');
 }
 
 /**
