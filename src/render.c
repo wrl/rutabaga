@@ -209,5 +209,5 @@ rtb_render_pop(struct rtb_element *elem)
 struct rtb_render_context *
 rtb_render_get_context(struct rtb_element *elem)
 {
-	return &elem->window->render_ctx;
+	return &elem->surface->render_ctx;
 }
