@@ -145,9 +145,9 @@ rtb_font_manager_init(struct rtb_font_manager *fm)
 #undef CACHE_UNIFORM
 
 #ifdef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
-	fm->atlas = texture_atlas_new(512, 512, 3);
+	fm->atlas = texture_atlas_new(512, 512, 3, 96, 96);
 #else
-	fm->atlas = texture_atlas_new(512, 512, 1);
+	fm->atlas = texture_atlas_new(512, 512, 1, 96, 96);
 #endif
 
 	return 0;

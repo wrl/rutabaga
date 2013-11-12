@@ -116,6 +116,14 @@ typedef struct
     size_t depth;
 
     /**
+     * Display resolution (dots per inch)
+     */
+    struct {
+        int x;
+        int y;
+    } dpi;
+
+    /**
      * Allocated surface size
      */
     size_t used;
@@ -146,7 +154,9 @@ typedef struct
   texture_atlas_t *
   texture_atlas_new( const size_t width,
                      const size_t height,
-                     const size_t depth );
+                     const size_t depth,
+                     const int x_dpi,
+                     const int y_dpi );
 
 
 /**
@@ -221,3 +231,4 @@ typedef struct
 #endif
 
 #endif /* __TEXTURE_ATLAS_H__ */
+/* vim: set expandtab sw=4 ts=4 :*/

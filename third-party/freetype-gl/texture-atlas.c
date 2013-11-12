@@ -45,7 +45,9 @@
 texture_atlas_t *
 texture_atlas_new( const size_t width,
                    const size_t height,
-                   const size_t depth )
+                   const size_t depth,
+                   const int x_dpi,
+                   const int y_dpi )
 {
     texture_atlas_t *self = (texture_atlas_t *) malloc( sizeof(texture_atlas_t) );
 
@@ -66,6 +68,9 @@ texture_atlas_new( const size_t width,
     self->height = height;
     self->depth = depth;
     self->id = 0;
+
+    self->dpi.x = x_dpi;
+    self->dpi.y = y_dpi;
 
     vector_push_back( self->nodes, &node );
     self->data = (unsigned char *)
@@ -344,3 +349,4 @@ texture_atlas_upload( texture_atlas_t * self )
     }
 }
 
+/* vim: set expandtab sw=4 ts=4 :*/

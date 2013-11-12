@@ -107,8 +107,10 @@ texture_font_load_face(texture_font_t *self, float size,
 		return 0;
 	}
 
-	/* Set char size */
-	error = FT_Set_Char_Size(*face, (int)(size * HRES), 0, 96 * HRES, 96);
+    /* Set char size */
+    error = FT_Set_Char_Size(*face,
+            (int)(size * HRES), 0,
+            self->atlas->dpi.x * HRES, self->atlas->dpi.y);
 
 	if(error) {
 		fprintf(stderr, "FT_Error (line %d, code 0x%02x) : %s\n",
@@ -705,4 +707,4 @@ texture_font_get_glyph( texture_font_t * self,
     return NULL;
 }
 
-
+/* vim: set expandtab sw=4 ts=4 :*/

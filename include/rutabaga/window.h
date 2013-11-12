@@ -60,6 +60,11 @@ struct rtb_window {
 	struct rtb_style *style_list;
 
 	/* private ********************************/
+	struct {
+		int x;
+		int y;
+	} dpi;
+
 	struct rutabaga *rtb;
 
 	int need_reconfigure;
