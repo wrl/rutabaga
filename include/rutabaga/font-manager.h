@@ -66,5 +66,5 @@ int rtb_font_manager_load_external_font(struct rtb_font_manager *fm,
 		struct rtb_external_font *font, int pt_size, const char *path);
 void rtb_font_manager_free_external_font(struct rtb_external_font *font);
 
-int rtb_font_manager_init(struct rtb_font_manager *);
+int rtb_font_manager_init(struct rtb_font_manager *, int dpi_x, int dpi_y);
 void rtb_font_manager_fini(struct rtb_font_manager *);

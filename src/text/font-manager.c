@@ -126,7 +126,7 @@ rtb_font_manager_free_external_font(struct rtb_external_font *font)
 }
 
 int
-rtb_font_manager_init(struct rtb_font_manager *fm)
+rtb_font_manager_init(struct rtb_font_manager *fm, int dpi_x, int dpi_y)
 {
 	if (!rtb_shader_create(RTB_SHADER(&fm->shader),
 				TEXT_VERT_SHADER, TEXT_FRAG_SHADER)) {
@@ -145,9 +145,9 @@ rtb_font_manager_init(struct rtb_font_manager *fm)
 #undef CACHE_UNIFORM
 
 #ifdef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
-	fm->atlas = texture_atlas_new(512, 512, 3, 96, 96);
+	fm->atlas = texture_atlas_new(512, 512, 3, dpi_x, dpi_y);
 #else
-	fm->atlas = texture_atlas_new(512, 512, 1, 96, 96);
+	fm->atlas = texture_atlas_new(512, 512, 1, dpi_x, dpi_y);
 #endif
 
 	return 0;

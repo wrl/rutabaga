@@ -237,10 +237,6 @@ find_xcb_screen(xcb_connection_t *c, int default_screen)
 	return screen_iter.data;
 }
 
-#ifndef GLX_BACK_BUFFER_AGE_EXT
-#define GLX_BACK_BUFFER_AGE_EXT 0x20F4
-#endif
-
 static GLXFBConfig
 find_reasonable_fb_config(Display *dpy, GLXFBConfig *cfgs, int ncfgs)
 {
@@ -333,25 +329,30 @@ set_xprop(xcb_connection_t *c, xcb_window_t win,
 	return 0;
 }
 
-void
-rtb_window_lock(struct rtb_window *rwin)
+/**
+ * from http://stackoverflow.com/questions/2621439
+ * thanx <3
+ */
+
+static void
+get_dpi(Display *dpy, int screen, int *x, int *y)
 {
-	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
+	double xres, yres;
 
-	uv_mutex_lock(&self->lock);
-	XLockDisplay(self->xrtb->dpy);
-	glXMakeContextCurrent(
-				self->xrtb->dpy, self->gl_draw, self->gl_draw, self->gl_ctx);
-}
+	/*
+	 * there are 2.54 centimeters to an inch; so there are 25.4 millimeters.
+	 *
+	 *     dpi = N pixels / (M millimeters / (25.4 millimeters / 1 inch))
+	 *         = N pixels / (M inch / 25.4)
+	 *         = N * 25.4 pixels / M inch
+	 */
+	xres = ((((double) DisplayWidth(dpy, screen))  * 25.4) / 
+			((double) DisplayWidthMM(dpy, screen)));
+	yres = ((((double) DisplayHeight(dpy, screen)) * 25.4) / 
+			((double) DisplayHeightMM(dpy, screen)));
 
-void
-rtb_window_unlock(struct rtb_window *rwin)
-{
-	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
-
-	glXMakeContextCurrent(self->xrtb->dpy, None, None, NULL);
-	XUnlockDisplay(self->xrtb->dpy);
-	uv_mutex_unlock(&self->lock);
+	*x = (int) (xres + 0.5);
+	*y = (int) (yres + 0.5);
 }
 
 struct
@@ -464,6 +465,8 @@ rtb_window *window_impl_open(struct rutabaga *rtb,
 		goto err_xcb_win;
 	}
 
+	get_dpi(dpy, default_screen, &self->dpi.x, &self->dpi.y);
+
 	self->gl_win = glXCreateWindow(dpy, fb_config, self->xcb_win, 0);
 	if (!self->gl_win) {
 		ERR("couldn't create GL window\n");
@@ -528,4 +531,25 @@ window_impl_close(struct rtb_window *rwin)
 	glXDestroyContext(self->xrtb->dpy, self->gl_ctx);
 
 	free(self);
+}
+
+void
+rtb_window_lock(struct rtb_window *rwin)
+{
+	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
+
+	uv_mutex_lock(&self->lock);
+	XLockDisplay(self->xrtb->dpy);
+	glXMakeContextCurrent(
+				self->xrtb->dpy, self->gl_draw, self->gl_draw, self->gl_ctx);
+}
+
+void
+rtb_window_unlock(struct rtb_window *rwin)
+{
+	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
+
+	glXMakeContextCurrent(self->xrtb->dpy, None, None, NULL);
+	XUnlockDisplay(self->xrtb->dpy);
+	uv_mutex_unlock(&self->lock);
 }

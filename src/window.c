@@ -223,7 +223,8 @@ rtb_window_open(struct rutabaga *r,
 	if (initialize_shaders(self))
 		goto err_shaders;
 
-	if (rtb_font_manager_init(&self->font_manager))
+	if (rtb_font_manager_init(&self->font_manager,
+				self->dpi.x, self->dpi.y))
 		goto err_font;
 
 	rtb_elem_set_layout(RTB_ELEMENT(self), rtb_layout_vpack_top);
