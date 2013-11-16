@@ -31,11 +31,9 @@
 #include <uv.h>
 
 #include <xcb/xcb.h>
-#include <xcb/xcb_keysyms.h>
+#include <xkbcommon/xkbcommon.h>
 
 #include <GL/glx.h>
-
-#include <xkbcommon/xkbcommon.h>
 
 #define ERR(...) fprintf(stderr, "rutabaga XCB: " __VA_ARGS__)
 
