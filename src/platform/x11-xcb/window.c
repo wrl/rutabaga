@@ -151,7 +151,7 @@ get_core_kbd_id(xcb_connection_t *c)
 }
 
 struct rutabaga *
-window_impl_rtb_alloc()
+window_impl_rtb_alloc(void)
 {
 	struct xcb_rutabaga *self;
 	Display *dpy;
@@ -205,23 +205,6 @@ window_impl_rtb_free(struct rutabaga *rtb)
 	xrtb_keyboard_fini(self);
 	XCloseDisplay(self->dpy);
 	free(self);
-}
-
-static int
-init_gl(struct xcb_rutabaga *xrtb)
-{
-	int missing;
-
-	missing = ogl_LoadFunctions();
-
-	if (missing == ogl_LOAD_FAILED) {
-		ERR("couldn't initialize openGL.\n");
-		return -1;
-	} else if (missing > ogl_LOAD_SUCCEEDED)
-		ERR("openGL initialized, but missing %d functions.\n",
-				missing - ogl_LOAD_SUCCEEDED);
-
-	return 0;
 }
 
 static xcb_screen_t *
@@ -395,7 +378,6 @@ rtb_window *window_impl_open(struct rutabaga *rtb,
 	if (!(self = calloc(1, sizeof(*self))))
 		goto err_malloc;
 
-	self->rtb = rtb;
 	self->xrtb = xrtb;
 
 	dpy = xrtb->dpy;
@@ -490,8 +472,6 @@ rtb_window *window_impl_open(struct rutabaga *rtb,
 		ERR("can't map XCB window: %d\n", err->error_code);
 		goto err_win_map;
 	}
-
-	init_gl(xrtb);
 
 	xcb_icccm_set_wm_protocols(xcb_conn,
 			self->xcb_win, xrtb->atoms.wm_protocols,

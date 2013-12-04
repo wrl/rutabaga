@@ -199,6 +199,23 @@ rtb_window_reinit(struct rtb_window *self)
 	rtb_elem_trigger_reflow(elem, elem, RTB_DIRECTION_LEAFWARD);
 }
 
+static int
+init_gl(void)
+{
+	int missing;
+
+	missing = ogl_LoadFunctions();
+
+	if (missing == ogl_LOAD_FAILED) {
+		ERR("couldn't initialize openGL.\n");
+		return -1;
+	} else if (missing > ogl_LOAD_SUCCEEDED)
+		ERR("openGL initialized, but missing %d functions.\n",
+				missing - ogl_LOAD_SUCCEEDED);
+
+	return 0;
+}
+
 struct rtb_window *
 rtb_window_open(struct rutabaga *r,
 		int h, int w, const char *title)
@@ -213,6 +230,8 @@ rtb_window_open(struct rutabaga *r,
 	self = window_impl_open(r, h, w, title);
 	if (!self)
 		goto err_window_impl;
+
+	init_gl();
 
 	if (RTB_SUBCLASS(RTB_SURFACE(self), rtb_surface_init, &super))
 		goto err_surface_init;
@@ -235,6 +254,7 @@ rtb_window_open(struct rutabaga *r,
 
 	self->flags = RTB_ELEM_CLICK_FOCUS;
 
+	self->rtb = r;
 	r->win = self;
 	return self;
 
