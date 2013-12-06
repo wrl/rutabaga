@@ -123,10 +123,12 @@ def configure(conf):
     # setting defines, etc
 
     conf.env.VERSION = VERSION
-    conf.define("_GNU_SOURCE", "")
-    conf.env.append_unique("CFLAGS", [
-        "-std=c99", "-ggdb", "-Wall", "-Werror", "-Wno-microsoft", "-fms-extensions",
-        "-ffunction-sections", "-fdata-sections"])
+    conf.define('_GNU_SOURCE', '')
+    conf.env.append_unique('CFLAGS', [
+        '-std=c99', '-fms-extensions',
+        '-Wall', '-Werror', '-Wno-microsoft',
+        '-ffunction-sections', '-fdata-sections', '-fvisibility=hidden',
+        '-ggdb'])
 
     if conf.options.debug_layout:
         conf.env.RTB_LAYOUT_DEBUG = True

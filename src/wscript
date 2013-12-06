@@ -125,6 +125,4 @@ def build(bld):
 
         target='rutabaga',
         name='librutabaga',
-        cflags='-fvisibility=hidden',
-        linkflags='-fvisibility=hidden',
         vnum=bld.env.VERSION)

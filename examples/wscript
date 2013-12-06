@@ -14,7 +14,6 @@ def build(bld):
              "X11-XCB",
              "XCB"],
 
-        cflags=['-fvisibility=hidden'],
         target="test")
 
     bld.program(
