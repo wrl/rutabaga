@@ -126,7 +126,7 @@ def build(bld):
         export_includes='libuv/include',
         defines=from_gyp['defines'],
 
-        cflags=from_gyp['cflags'],
+        cflags=from_gyp['cflags'] + ['-fvisibility=hidden'],
         linkflags=from_gyp['ldflags'],
         lib=from_gyp['libraries'],
 
