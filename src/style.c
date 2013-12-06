@@ -182,8 +182,8 @@ style_resolve(struct rtb_window *window, struct rtb_style *style)
  * queries
  */
 
-const struct rtb_style_property_definition *query_no_fallback(
-		struct rtb_style *style_list, rtb_elem_state_t elem_state,
+static const struct rtb_style_property_definition *
+query_no_fallback(struct rtb_style *style_list, rtb_elem_state_t elem_state,
 		const char *property_name, rtb_style_prop_type_t type)
 {
 	struct rtb_style_property_definition *prop;
@@ -203,8 +203,8 @@ const struct rtb_style_property_definition *query_no_fallback(
 	return NULL;
 }
 
-const struct rtb_style_property_definition *query(
-		struct rtb_style *style_list, rtb_elem_state_t elem_state,
+static const struct rtb_style_property_definition *
+query(struct rtb_style *style_list, rtb_elem_state_t elem_state,
 		const char *property_name, rtb_style_prop_type_t type,
 		int return_fallback)
 {

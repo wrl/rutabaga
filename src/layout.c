@@ -317,7 +317,8 @@ rtb_layout_hpack_right(struct rtb_element *elem)
  * distribute
  */
 
-void hdistribute_one(struct rtb_element *elem, int child_width)
+static void
+hdistribute_one(struct rtb_element *elem, int child_width)
 {
 	struct rtb_element *only_child;
 	struct rtb_point position;

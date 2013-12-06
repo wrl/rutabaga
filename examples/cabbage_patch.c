@@ -85,7 +85,7 @@ struct jack_client_port {
 TAILQ_HEAD(clients, jack_client) clients;
 
 
-struct jack_client *
+static struct jack_client *
 client_alloc(const char *name, int len, int physical)
 {
 	struct jack_client *c;
@@ -116,7 +116,7 @@ client_alloc(const char *name, int len, int physical)
 	return c;
 }
 
-struct jack_client *
+static struct jack_client *
 get_client(const char *name, int physical)
 {
 	struct jack_client *iter;
@@ -129,7 +129,7 @@ get_client(const char *name, int physical)
 	return NULL;
 }
 
-struct jack_client *
+static struct jack_client *
 get_client_or_alloc(const char *name, int len, int physical)
 {
 	struct jack_client *c;
@@ -142,7 +142,7 @@ get_client_or_alloc(const char *name, int len, int physical)
 	return c;
 }
 
-struct jack_client_port *
+static struct jack_client_port *
 get_client_port(struct jack_client *client, const char *port_name)
 {
 	struct jack_client_port *iter;
@@ -159,7 +159,7 @@ get_client_port(struct jack_client *client, const char *port_name)
  * utility functions
  */
 
-void
+static void
 jackport_to_rtbport(jack_port_t *jack_port, struct jack_client **client,
 		struct jack_client_port **port, int alloc)
 {
@@ -204,7 +204,7 @@ rtbport_to_jackport(char *dst, size_t nbytes,
  * jack client list shit
  */
 
-void
+static void
 client_add_port(struct jack_client *c, const char *name, int len, int flags,
 		rtb_child_add_loc_t location)
 {
@@ -234,7 +234,7 @@ client_add_port(struct jack_client *c, const char *name, int len, int flags,
 	TAILQ_INSERT_TAIL(&c->ports, p, port);
 }
 
-struct jack_client_port *
+static struct jack_client_port *
 client_get_port(struct jack_client *c, const char *name, int len)
 {
 	struct jack_client_port *iter;
@@ -247,7 +247,7 @@ client_get_port(struct jack_client *c, const char *name, int len)
 	return NULL;
 }
 
-void
+static void
 free_port(struct jack_client *client, struct jack_client_port *port)
 {
 	TAILQ_REMOVE(&client->ports, port,port);
@@ -255,7 +255,7 @@ free_port(struct jack_client *client, struct jack_client_port *port)
 	free(port);
 }
 
-void
+static void
 free_client(struct jack_client *client)
 {
 	struct jack_client_port *port;
@@ -271,7 +271,7 @@ free_client(struct jack_client *client)
 	free(client);
 }
 
-void
+static void
 free_client_tailq(void)
 {
 	struct jack_client *node;

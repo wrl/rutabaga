@@ -356,7 +356,7 @@ handle_secret_xlib_event(Display *dpy, xcb_generic_event_t *ev)
  * actual event loop
  */
 
-int
+static int
 handle_generic_event(struct xrtb_window *win, xcb_generic_event_t *ev)
 {
 	int type = ev->response_type & ~0x80;
