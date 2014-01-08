@@ -108,7 +108,7 @@ draw_textured(struct rtb_stylequad *self, const struct rtb_shader *shader,
 		draw_solid(self, shader, GL_TRIANGLES,
 				border_indices, ARRAY_LENGTH(border_indices));
 
-	if (tx->definition->flags & RTB_TEXTURE_FILL || !border)
+	if (!border || tx->definition->flags & RTB_TEXTURE_FILL)
 		draw_solid(self, shader, GL_TRIANGLE_STRIP,
 				solid_indices, ARRAY_LENGTH(solid_indices));
 

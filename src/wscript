@@ -111,6 +111,7 @@ def build(bld):
             'shaders',
             'public',
             'styles',
+
             'libuv',
 
             'GL',

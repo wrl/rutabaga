@@ -1,44 +1,44 @@
 #!/usr/bin/env python
 
-top = ".."
+top = '..'
 
 def build(bld):
     bld.program(
-        source="test.c",
+        source='test.c',
 
         lib=['m'],
-        use=["public",
-             "librutabaga",
-             "LIBUV",
-             "X11",
-             "X11-XCB",
-             "XCB"],
+        use=['public',
+             'librutabaga',
+             'LIBUV',
+             'X11',
+             'X11-XCB',
+             'XCB'],
 
-        target="test")
+        target='test')
 
     bld.program(
-        source="txtest.c",
+        source='txtest.c',
 
         lib=['m'],
-        use=["public",
-             "librutabaga",
-             "LIBUV",
-             "X11",
-             "X11-XCB",
-             "XCB"],
+        use=['public',
+             'librutabaga',
+             'LIBUV',
+             'X11',
+             'X11-XCB',
+             'XCB'],
 
-        target="txtest")
+        target='txtest')
 
     if bld.env.LIB_JACK:
         bld.program(
-            source="cabbage_patch.c",
+            source='cabbage_patch.c',
 
             lib=['jack', 'pthread', 'm'],
-            use=["public",
-                "librutabaga",
-                "LIBUV",
-                "X11",
-                "X11-XCB",
-                "XCB"],
+            use=['public',
+                'librutabaga',
+                'LIBUV',
+                'X11',
+                'X11-XCB',
+                'XCB'],
 
-            target="cabbage_patch")
+            target='cabbage_patch')

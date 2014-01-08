@@ -116,10 +116,6 @@ def gimme_da_gyp_shit(ctx):
 def build(bld):
     from_gyp = gimme_da_gyp_shit(bld)
 
-    # i dont care i dont fucking care anymore
-    bld.env.append_unique('LINKFLAGS_LIBUV', from_gyp['ldflags'])
-    bld.env.append_unique('LIB_LIBUV', from_gyp['libraries'])
-
     bld.stlib(
         source=from_gyp['sources'],
         includes=['libuv/include', 'libuv/src'],
@@ -132,3 +128,7 @@ def build(bld):
 
         target='uv',
         name='libuv')
+
+    # i dont care i dont fucking care anymore
+    bld.env.append_unique('LINKFLAGS_LIBUV', from_gyp['ldflags'])
+    bld.env.append_unique('LIB_LIBUV', from_gyp['libraries'])
