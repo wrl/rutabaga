@@ -45,8 +45,10 @@ int main(int argc, char **argv)
 	struct rtb_window *win;
 	struct rtb_button butt;
 
-	assert(delicious = rtb_new());
-	assert((win = rtb_window_open(delicious, 450, 600, "texture text")));
+	delicious = rtb_new();
+	assert(delicious);
+	win = rtb_window_open(delicious, 450, 600, "texture test");
+	assert(win);
 
 	win->outer_pad.x = 0.f;
 	win->outer_pad.y = 0.f;

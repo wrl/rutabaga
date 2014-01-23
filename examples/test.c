@@ -318,8 +318,10 @@ int main(int argc, char **argv)
 
 	srand(time(NULL));
 
-	assert(delicious = rtb_new());
-	assert((win = rtb_window_open(delicious, 450, 600, "~delicious~")));
+	delicious = rtb_new();
+	assert(delicious);
+	win = rtb_window_open(delicious, 450, 600, "~delicious~");
+	assert(win);
 
 	win->outer_pad.x = 5.f;
 	win->outer_pad.y = 5.f;

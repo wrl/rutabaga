@@ -571,8 +571,10 @@ main(int argc, char **argv)
 
 	pthread_mutex_init(&state.connection_from_gui, NULL);
 
-	assert(state.rtb = rtb_new());
-	assert((state.win = rtb_window_open(state.rtb, 1440, 768, "cabbage patch")));
+	state.rtb = rtb_new();
+	assert(state.rtb);
+	state.win = rtb_window_open(state.rtb, 1440, 768, "cabbage patch");
+	assert(state.win);
 
 	state.win->outer_pad.x = 0.f;
 	state.win->outer_pad.y = 8.f;
