@@ -89,9 +89,12 @@ dict_key_func(const struct rtb_atom_descriptor *node)
 	return node->dict_entry.hash;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
 NEDTRIE_GENERATE(static, rtb_atom_dict, rtb_atom_descriptor,
 		dict_entry.trie_entry, dict_key_func,
 		NEDTRIE_NOBBLEZEROS(rtb_atom_dict));
+#pragma GCC diagnostic pop
 
 static struct rtb_type_atom_descriptor *
 find_type_descriptor(struct rtb_atom_dict *dict,

@@ -47,10 +47,6 @@
 
 static struct rtb_element_implementation super;
 
-static const GLubyte line_indices[] = {
-	0, 1
-};
-
 /**
  * vbo wrangling
  */
