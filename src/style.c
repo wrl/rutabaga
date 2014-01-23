@@ -35,7 +35,7 @@
 /* generated as part of the build process */
 #include "styles/default/style.h"
 
-const static struct rtb_style_property_definition fallbacks[RTB_STYLE_PROP_TYPE_COUNT] = {
+static const struct rtb_style_property_definition fallbacks[RTB_STYLE_PROP_TYPE_COUNT] = {
 	[RTB_STYLE_PROP_COLOR] = {
 		.property_name = "<fallback>",
 		.type = RTB_STYLE_PROP_COLOR,

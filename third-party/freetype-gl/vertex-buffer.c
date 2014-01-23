@@ -593,10 +593,10 @@ vertex_buffer_erase( vertex_buffer_t * self,
     assert( index < vector_size( self->items ) );
 
     ivec4 * item = (ivec4 *) vector_get( self->items, index );
-    size_t vstart = item->vstart;
-    size_t vcount = item->vcount;
-    size_t istart = item->istart;
-    size_t icount = item->icount;
+    ssize_t vstart = item->vstart;
+    ssize_t vcount = item->vcount;
+    ssize_t istart = item->istart;
+    ssize_t icount = item->icount;
 
     // Update items
     size_t i;

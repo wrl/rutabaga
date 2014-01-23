@@ -109,7 +109,7 @@ static loader_func loaders[] = {
 int
 rtb_asset_load(struct rtb_asset *asset)
 {
-	int loader;
+	unsigned int loader;
 
 	loader = asset->location | (asset->compression << 1);
 

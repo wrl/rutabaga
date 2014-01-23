@@ -107,7 +107,7 @@ distribute_demo(rtb_container_t *root)
 	struct rtb_knob *knob;
 	int i, j;
 
-	for (i = 0; i < ARRAY_LENGTH(containers); i++) {
+	for (i = 0; i < (int) ARRAY_LENGTH(containers); i++) {
 		containers[i] = rtb_container_new();
 
 		rtb_elem_set_size_cb(containers[i], rtb_size_hfill);
@@ -161,7 +161,7 @@ setup_ui(rtb_container_t *root)
 		lower->outer_pad.x =
 		lower->outer_pad.y = 5.f;
 
-	for (i = 0; i < sizeof(buttons) / sizeof(*buttons); i++) {
+	for (i = 0; i < (int) ARRAY_LENGTH(buttons); i++) {
 		buttons[i] = rtb_button_new(NULL);
 
 		buttons[i]->flags |= RTB_ELEM_CLICK_FOCUS;

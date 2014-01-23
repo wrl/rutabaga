@@ -225,8 +225,8 @@ texture_atlas_get_region( texture_atlas_t * self,
 		if( y >= 0 )
 		{
             node = (ivec3 *) vector_get( self->nodes, i );
-			if( ( (y + height) < best_height ) ||
-                ( ((y + height) == best_height) && (node->z < best_width)) )
+			if( ( (y + (int) height) < best_height ) ||
+                ( ((y + (int) height) == best_height) && (node->z < best_width)) )
 			{
 				best_height = y + height;
 				best_index = i;
