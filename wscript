@@ -126,7 +126,8 @@ def configure(conf):
     conf.define('_GNU_SOURCE', '')
     conf.env.append_unique('CFLAGS', [
         '-std=c99', '-fms-extensions',
-        '-Wall', '-Werror', '-Wno-microsoft', '-Wextra', '-Wno-missing-field-initializers', '-Wno-unused-parameter',
+        '-Wall', '-Werror', '-Wextra', '-Wcast-align',
+        '-Wno-microsoft', '-Wno-missing-field-initializers', '-Wno-unused-parameter',
         '-ffunction-sections', '-fdata-sections', '-ggdb'])
 
     if conf.options.debug_layout:
