@@ -60,7 +60,7 @@ def write_bin2c(header, data_file, data, var):
 
     data_file.write(
         copyright + bin2h_prelude
-        + '#include "{0}"\n\n'.format(header.relpath())
+        + '#include "{0}"\n\n'.format(header.abspath())
         + "const uint8_t {0}[{1}] = {{\n".format(var, len(data))
         + bin2c(data, line_wrap=71, line_start='\t')
         + "\n};")

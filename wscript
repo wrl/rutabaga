@@ -116,9 +116,15 @@ def configure(conf):
 
     separator()
 
-    check_jack(conf)
-
-    separator()
+    # if rutabaga is included as part of another project and this configure()
+    # is running because a wscript up the tree called it, we don't build
+    # the example projects.
+    if not conf.stack_path[-1]:
+        conf.env.BUILD_EXAMPLES = True
+        check_jack(conf)
+        separator()
+    else:
+        conf.env.BUILD_EXAMPLES = False
 
     # setting defines, etc
 
@@ -141,4 +147,6 @@ def build(bld):
     bld.recurse("styles")
     bld.recurse("src")
     bld.recurse("third-party")
-    bld.recurse("examples")
+
+    if bld.env.BUILD_EXAMPLES:
+        bld.recurse("examples")
