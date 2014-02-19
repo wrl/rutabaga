@@ -126,4 +126,5 @@ def build(bld):
 
         target='rutabaga',
         name='librutabaga',
+        export_includes='../include',
         vnum=bld.env.VERSION)
