@@ -63,6 +63,9 @@ button:focus {
  */
 
 knob {
+	min-width: 41px;
+	min-height: 41px;
+
 	background-image: url('assets/bknob_bg.tga');
 	-rtb-knob-rotor: url('assets/bknob_rotor.tga');
 }

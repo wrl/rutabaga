@@ -116,7 +116,6 @@ distribute_demo(rtb_container_t *root)
 		/* XXX: lol memory leak */
 		for (j = 0; j < i + 1; j++) {
 			knob = rtb_knob_new();
-			knob->w = knob->h = 41;
 
 			if (!i) {
 				knob->origin = 1.f;
