@@ -402,6 +402,7 @@ rtb_stylequad_update_geometry(struct rtb_stylequad *self,
 void
 rtb_stylequad_init(struct rtb_stylequad *self)
 {
+	memset(self, 0, sizeof(*self));
 	glGenBuffers(1, &self->vertices);
 
 	INIT_STYLEQUAD_TEXTURE(&self->border_image);
