@@ -36,6 +36,7 @@ static struct rtb_quad quad;
 void
 rtb_debug_draw_bounding_box(struct rtb_element *self)
 {
+	struct rtb_render_context *ctx;
 	struct rtb_rect rect = {
 		.x  = self->rect.x,
 		.y  = self->rect.y,
@@ -46,11 +47,13 @@ rtb_debug_draw_bounding_box(struct rtb_element *self)
 	rtb_quad_set_vertices(&quad, &rect);
 
 	rtb_render_reset(self);
-	rtb_render_set_position(self, 0.f, 0.f);
+	ctx = rtb_render_get_context(self);
 
-	rtb_render_set_color(self, 1.f, 0.f, 0.f, .4f);
+	rtb_render_set_position(ctx, 0.f, 0.f);
+
+	rtb_render_set_color(ctx, 1.f, 0.f, 0.f, .4f);
 	glLineWidth(1.f);
-	rtb_render_quad_outline(self, &quad);
+	rtb_render_quad_outline(ctx, &quad);
 }
 
 void
