@@ -37,6 +37,48 @@
 
 #define ERR(...) fprintf(stderr, "rutabaga XCB: " __VA_ARGS__)
 
+struct video_sync {
+	int functions_valid;
+
+	PFNGLXSWAPBUFFERSMSCOMLPROC swap_buffers_msc;
+	PFNGLXGETSYNCVALUESOMLPROC get_values;
+	PFNGLXGETMSCRATEOMLPROC get_msc_rate;
+
+	/**
+	 * The Unadjusted System Time (or UST) is a 64-bit monotonically
+	 * increasing counter that is available throughout the system. A UST
+	 * timestamp is obtained each time the graphics MSC is incremented.
+	 */
+	int64_t ust;
+
+	/**
+	 * The graphics Media Stream Counter (or graphics MSC) is a counter
+	 * that is unique to the graphics subsystem and increments for each
+	 * vertical retrace that occurs.
+	 */
+	int64_t msc;
+
+	/**
+	 * The Swap Buffer Counter (SBC) is an attribute of a GLXDrawable
+	 * and is incremented each time a swap buffer action is performed on
+	 * the associated drawable.
+	 */
+	int64_t sbc;
+};
+
+struct xrtb_frame_timer {
+	RTB_INHERIT(uv_timer_s);
+	struct xrtb_window *xwin;
+	unsigned int wait_msec;
+
+	struct video_sync sync;
+};
+
+struct xrtb_uv_poll {
+	RTB_INHERIT(uv_poll_s);
+	struct xcb_rutabaga *xrtb;
+};
+
 struct xcb_rutabaga {
 	struct rutabaga rtb;
 
@@ -62,6 +104,9 @@ struct xcb_rutabaga {
 	int xkb_supported;
 	int xkb_core_kbd_id;
 	int xkb_event;
+
+	struct xrtb_uv_poll xcb_poll;
+	struct xrtb_frame_timer frame_timer;
 };
 
 struct xrtb_window {

@@ -31,4 +31,4 @@ void window_impl_rtb_free(struct rutabaga *rtb);
 struct rutabaga *window_impl_rtb_alloc(void);
 void window_impl_close(struct rtb_window *self);
 struct rtb_window *window_impl_open(struct rutabaga *r,
-		int width, int height, const char *title);
+		int width, int height, const char *title, intptr_t parent);

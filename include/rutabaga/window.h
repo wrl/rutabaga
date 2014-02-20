@@ -84,6 +84,8 @@ void rtb_window_reinit(struct rtb_window *);
 void rtb_window_focus_element(struct rtb_window *,
 		struct rtb_element *focused);
 
-struct rtb_window *rtb_window_open(struct rutabaga *r,
+struct rtb_window *rtb_window_open_under(struct rutabaga *,
+		intptr_t parent, int width, int height, const char *title);
+struct rtb_window *rtb_window_open(struct rutabaga *,
 		int width, int height, const char *title);
 void rtb_window_close(struct rtb_window *);

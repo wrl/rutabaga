@@ -124,6 +124,8 @@ def build(bld):
             'XKBFILE',
             'XKBCOMMON'],
 
+		cflags=bld.env['CFLAGS_cshlib'],
+
         target='rutabaga',
         name='librutabaga',
         export_includes='../include',

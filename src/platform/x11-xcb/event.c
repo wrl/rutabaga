@@ -253,13 +253,20 @@ handle_configure_notify(struct xrtb_window *win, xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_configure_notify_event_t);
 
-	if (ev->width  != win->w ||
-		ev->height != win->h) {
-		win->w = ev->width;
-		win->h = ev->height;
+	if (ev->width == win->w && ev->height == win->h)
+		return;
 
+	win->w = ev->width;
+	win->h = ev->height;
+
+	win->need_reconfigure = 1;
+}
+
+static void
+handle_map_notify(struct xrtb_window *win, xcb_generic_event_t *_ev)
+{
+	if (win->state == RTB_STATE_UNATTACHED)
 		win->need_reconfigure = 1;
-	}
 }
 
 static void
@@ -411,6 +418,7 @@ handle_generic_event(struct xrtb_window *win, xcb_generic_event_t *ev)
 		break;
 
 	case XCB_MAP_NOTIFY:
+		handle_map_notify(win, ev);
 		break;
 
 	case XCB_EXPOSE:
@@ -477,35 +485,6 @@ drain_xcb_event_queue(xcb_connection_t *conn, struct rtb_window *win)
  * event loop
  */
 
-struct video_sync {
-	int functions_valid;
-
-	PFNGLXSWAPBUFFERSMSCOMLPROC swap_buffers_msc;
-	PFNGLXGETSYNCVALUESOMLPROC get_values;
-	PFNGLXGETMSCRATEOMLPROC get_msc_rate;
-
-	/**
-	 * The Unadjusted System Time (or UST) is a 64-bit monotonically
-	 * increasing counter that is available throughout the system. A UST
-	 * timestamp is obtained each time the graphics MSC is incremented.
-	 */
-	int64_t ust;
-
-	/**
-	 * The graphics Media Stream Counter (or graphics MSC) is a counter
-	 * that is unique to the graphics subsystem and increments for each
-	 * vertical retrace that occurs.
-	 */
-	int64_t msc;
-
-	/**
-	 * The Swap Buffer Counter (SBC) is an attribute of a GLXDrawable
-	 * and is incremented each time a swap buffer action is performed on
-	 * the associated drawable.
-	 */
-	int64_t sbc;
-};
-
 static int
 video_sync_init(struct video_sync *p)
 {
@@ -524,11 +503,6 @@ video_sync_init(struct video_sync *p)
 	return 0;
 }
 
-struct xrtb_uv_poll {
-	RTB_INHERIT(uv_poll_s);
-	struct xcb_rutabaga *xrtb;
-};
-
 static void
 xcb_poll_cb(uv_poll_t *_handle, int status, int events)
 {
@@ -542,14 +516,6 @@ xcb_poll_cb(uv_poll_t *_handle, int status, int events)
 
 	drain_xcb_event_queue(xrtb->xcb_conn, win);
 }
-
-struct xrtb_frame_timer {
-	RTB_INHERIT(uv_timer_s);
-	struct xrtb_window *xwin;
-	unsigned int wait_msec;
-
-	struct video_sync sync;
-};
 
 static void
 frame_cb(uv_timer_t *_handle, int status)
@@ -615,33 +581,62 @@ frame_timer_init(struct xrtb_frame_timer *timer)
 }
 
 void
-rtb_event_loop(struct rutabaga *r)
+rtb_event_loop_init(struct rutabaga *r)
 {
 	struct xcb_rutabaga *xrtb = (void *) r;
 	struct xrtb_window *xwin = (void *) r->win;
-	struct xrtb_uv_poll xcb_poll;
-	struct xrtb_frame_timer timer;
 	uv_loop_t *rtb_loop;
 
 	rtb_loop = uv_loop_new();
 	r->event_loop = rtb_loop;
 
-	xcb_poll.xrtb = xrtb;
+	xrtb->xcb_poll.xrtb = xrtb;
 
-	uv_poll_init(rtb_loop, RTB_UPCAST(&xcb_poll, uv_poll_s),
+	uv_poll_init(rtb_loop, RTB_UPCAST(&xrtb->xcb_poll, uv_poll_s),
 			xcb_get_file_descriptor(xrtb->xcb_conn));
-	uv_poll_start(RTB_UPCAST(&xcb_poll, uv_poll_s), UV_READABLE,
+	uv_poll_start(RTB_UPCAST(&xrtb->xcb_poll, uv_poll_s), UV_READABLE,
 			xcb_poll_cb);
 
-	timer.xwin = xwin;
-	frame_timer_init(&timer);
+	xrtb->frame_timer.xwin = xwin;
+	frame_timer_init(&xrtb->frame_timer);
 
-	uv_timer_init(rtb_loop, RTB_UPCAST(&timer, uv_timer_s));
-	uv_timer_start(RTB_UPCAST(&timer, uv_timer_s),
-			frame_cb, 0, timer.wait_msec);
+	uv_timer_init(rtb_loop, RTB_UPCAST(&xrtb->frame_timer, uv_timer_s));
+	uv_timer_start(RTB_UPCAST(&xrtb->frame_timer, uv_timer_s),
+			frame_cb, 0, xrtb->frame_timer.wait_msec);
+}
 
-	uv_run(rtb_loop, UV_RUN_DEFAULT);
+void
+rtb_event_loop_step(struct rutabaga *r)
+{
+#if 0
+	uv_run(r->event_loop, UV_RUN_ONCE | UV_RUN_NOWAIT);
+#else
+	struct xrtb_window *xwin = (void *) r->win;
+	struct rtb_window *win;
 
+	win = RTB_WINDOW(xwin);
+
+	drain_xcb_event_queue(xwin->xrtb->xcb_conn, win);
+
+	rtb_window_lock(win);
+	rtb_window_draw(win);
+	glXSwapBuffers(xwin->xrtb->dpy, xwin->gl_draw);
+	rtb_window_unlock(win);
+#endif
+}
+
+void
+rtb_event_loop_fini(struct rutabaga *r)
+{
+	uv_loop_t *rtb_loop = r->event_loop;
 	r->event_loop = NULL;
 	uv_loop_delete(rtb_loop);
+}
+
+void
+rtb_event_loop(struct rutabaga *r)
+{
+	rtb_event_loop_init(r);
+	uv_run(r->event_loop, UV_RUN_DEFAULT);
+	rtb_event_loop_fini(r);
 }

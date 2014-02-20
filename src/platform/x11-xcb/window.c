@@ -329,9 +329,9 @@ get_dpi(Display *dpy, int screen, int *x, int *y)
 	 *         = N pixels / (M inch / 25.4)
 	 *         = N * 25.4 pixels / M inch
 	 */
-	xres = ((((double) DisplayWidth(dpy, screen))  * 25.4) / 
+	xres = ((((double) DisplayWidth(dpy, screen))  * 25.4) /
 			((double) DisplayWidthMM(dpy, screen)));
-	yres = ((((double) DisplayHeight(dpy, screen)) * 25.4) / 
+	yres = ((((double) DisplayHeight(dpy, screen)) * 25.4) /
 			((double) DisplayHeightMM(dpy, screen)));
 
 	*x = (int) (xres + 0.5);
@@ -340,7 +340,7 @@ get_dpi(Display *dpy, int screen, int *x, int *y)
 
 struct
 rtb_window *window_impl_open(struct rutabaga *rtb,
-		int w, int h, const char *title)
+		int w, int h, const char *title, intptr_t parent)
 {
 	struct xcb_rutabaga *xrtb = (void *) rtb;
 	struct xrtb_window *self;
@@ -435,7 +435,8 @@ rtb_window *window_impl_open(struct rutabaga *rtb,
 	value_list[5] = 0;
 
 	ck_window = xcb_create_window_checked(
-			xcb_conn, XCB_COPY_FROM_PARENT, self->xcb_win, self->screen->root,
+			xcb_conn, XCB_COPY_FROM_PARENT, self->xcb_win,
+			parent ? parent : self->screen->root,
 			0, 0,
 			w, h,
 			0,
@@ -473,9 +474,10 @@ rtb_window *window_impl_open(struct rutabaga *rtb,
 		goto err_win_map;
 	}
 
-	xcb_icccm_set_wm_protocols(xcb_conn,
-			self->xcb_win, xrtb->atoms.wm_protocols,
-			1, &xrtb->atoms.wm_delete_window);
+	if (!parent)
+		xcb_icccm_set_wm_protocols(xcb_conn,
+				self->xcb_win, xrtb->atoms.wm_protocols,
+				1, &xrtb->atoms.wm_delete_window);
 
 	free(fb_configs);
 
