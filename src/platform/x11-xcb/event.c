@@ -608,21 +608,7 @@ rtb_event_loop_init(struct rutabaga *r)
 void
 rtb_event_loop_step(struct rutabaga *r)
 {
-#if 0
 	uv_run(r->event_loop, UV_RUN_ONCE | UV_RUN_NOWAIT);
-#else
-	struct xrtb_window *xwin = (void *) r->win;
-	struct rtb_window *win;
-
-	win = RTB_WINDOW(xwin);
-
-	drain_xcb_event_queue(xwin->xrtb->xcb_conn, win);
-
-	rtb_window_lock(win);
-	rtb_window_draw(win);
-	glXSwapBuffers(xwin->xrtb->dpy, xwin->gl_draw);
-	rtb_window_unlock(win);
-#endif
 }
 
 void
@@ -636,7 +622,9 @@ rtb_event_loop_fini(struct rutabaga *r)
 void
 rtb_event_loop(struct rutabaga *r)
 {
-	rtb_event_loop_init(r);
+	if (!r->event_loop)
+		rtb_event_loop_init(r);
+
 	uv_run(r->event_loop, UV_RUN_DEFAULT);
 	rtb_event_loop_fini(r);
 }
