@@ -97,10 +97,16 @@ def gimme_da_gyp_shit(ctx):
         'ldflags':   [],
         'libraries': []}
 
+    os_map = {
+        'linux':  'linux',
+        'win32':  'win',
+        'darwin': 'mac'
+    }
+
     for clist in (gyp['target_defaults']['conditions'], t['conditions'],
             t['direct_dependent_settings']['conditions']):
         r = eval_condition_list_recursively(clist,
-                OS=ctx.env.DEST_OS,
+                OS=os_map[ctx.env.DEST_OS],
                 library='static_library')
 
         [from_gyp[x].extend(r.get(x, [])) for x in from_gyp.keys()]
@@ -110,6 +116,10 @@ def gimme_da_gyp_shit(ctx):
 
     # libraries from gyp all start with -l
     from_gyp['libraries'] = [l[2:] for l in from_gyp['libraries']]
+
+    if ctx.env.DEST_OS == 'darwin':
+        # some bullshit about converting between void pointer and function pointer
+        from_gyp['cflags'].remove('-pedantic')
 
     return from_gyp
 
