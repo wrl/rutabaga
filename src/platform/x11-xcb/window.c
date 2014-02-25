@@ -338,8 +338,8 @@ get_dpi(Display *dpy, int screen, int *x, int *y)
 	*y = (int) (yres + 0.5);
 }
 
-struct
-rtb_window *window_impl_open(struct rutabaga *rtb,
+struct rtb_window *
+window_impl_open(struct rutabaga *rtb,
 		int w, int h, const char *title, intptr_t parent)
 {
 	struct xcb_rutabaga *xrtb = (void *) rtb;
