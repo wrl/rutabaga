@@ -29,7 +29,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/container.h"
@@ -70,6 +69,31 @@ static struct rtb_button *last_button = NULL;
 static struct rtb_text_input *input;
 static struct rtb_label time_label;
 static float speed = 1.f;
+
+#ifdef __MACH__
+# include <mach/mach.h>
+# include <mach/mach_time.h>
+
+static int
+time_monotonic(struct timespec *ts)
+{
+	uint64_t t;
+
+	t = mach_absolute_time();
+	ts->tv_sec  = t / 1000000000;
+	ts->tv_nsec = t % 1000000000;
+
+	return 0;
+}
+#else
+# include <time.h>
+
+static int
+time_monotonic(struct timespec *ts)
+{
+	return clock_gettime(CLOCK_MONOTONIC, ts);
+}
+#endif
 
 static int
 print_streeng(struct rtb_element *victim,
@@ -282,7 +306,7 @@ frame_start(struct rtb_element *elem, const struct rtb_event *e, void *ctx)
 	float now;
 	char buf[32];
 
-	clock_gettime(CLOCK_MONOTONIC, &ts);
+	time_monotonic(&ts);
 
 	now = (ts.tv_sec + (ts.tv_nsec / 1e+09));
 	timer += (now - last) * speed;
@@ -305,7 +329,7 @@ static void
 init_timer(void)
 {
 	struct timespec ts;
-	clock_gettime(CLOCK_MONOTONIC, &ts);
+	time_monotonic(&ts);
 	last = ts.tv_sec + (ts.tv_nsec / 1e+09);
 	timer = 0.0;
 }

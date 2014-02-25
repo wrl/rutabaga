@@ -34,9 +34,12 @@ def build(bld):
 
     obj('platform/mouse.c')
 
-    obj('platform/x11-xcb/event.c')
-    obj('platform/x11-xcb/window.c')
-    obj('platform/x11-xcb/keyboard.c')
+    if bld.env.PLATFORM == 'x11-xcb':
+        obj('platform/x11-xcb/event.c')
+        obj('platform/x11-xcb/window.c')
+        obj('platform/x11-xcb/keyboard.c')
+    elif bld.env.PLATFORM == 'cocoa':
+        pass
 
     # common
 

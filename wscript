@@ -61,7 +61,12 @@ def check_gl(conf):
     pkg_check(conf, "gl")
 
 def check_freetype(conf):
-    pkg_check(conf, "freetype2")
+    if conf.env.DEST_OS in ['darwin', 'win32']:
+        conf.check_cc(lib='freetype', libpath='/opt/X11/lib',
+            header_name='ft2build.h', includes=['/opt/X11/include', '/opt/X11/include/freetype2'],
+            uselib_store='FREETYPE2')
+    else:
+        pkg_check(conf, "freetype2")
 
 def check_x11(conf):
     check = lambda pkg: pkg_check(conf, pkg)
@@ -74,7 +79,10 @@ def check_x11(conf):
     check("xkbcommon")
 
 def check_jack(conf):
-    pkg_check(conf, "jack")
+    if conf.env.DEST_OS in ['darwin', 'win32']:
+        conf.check_cc(lib='jack', uselib_store='JACK', mandatory=False)
+    else:
+        pkg_check(conf, "jack")
 
 def check_submodules(conf):
     if not conf.path.find_resource('third-party/libuv/uv.gyp'):
@@ -109,12 +117,18 @@ def configure(conf):
     check_alloca(conf)
     separator()
 
-    check_gl(conf)
-    check_freetype(conf)
+    if conf.env.DEST_OS == 'win32':
+        pass
+    elif conf.env.DEST_OS == 'darwin':
+        check_freetype(conf)
+        conf.env.PLATFORM = 'cocoa'
+    else:
+        check_gl(conf)
+        check_freetype(conf)
+        check_x11(conf)
 
-    check_x11(conf)
-
-    separator()
+        conf.env.PLATFORM = 'x11-xcb'
+        separator()
 
     # if rutabaga is included as part of another project and this configure()
     # is running because a wscript up the tree called it, we don't build
@@ -132,7 +146,7 @@ def configure(conf):
     conf.define('_GNU_SOURCE', '')
     conf.env.append_unique('CFLAGS', [
         '-std=c99', '-fms-extensions',
-        '-Wall', '-Werror', '-Wextra', '-Wcast-align',
+        '-Wall', '-Werror', '-Wextra', '-Wno-cast-align',
         '-Wno-microsoft', '-Wno-missing-field-initializers', '-Wno-unused-parameter',
         '-ffunction-sections', '-fdata-sections', '-ggdb'])
 
