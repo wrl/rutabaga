@@ -35,20 +35,20 @@
 struct rutabaga *
 window_impl_rtb_alloc(void)
 {
-	return NULL;
+	struct rutabaga *rtb = calloc(1, sizeof(*rtb));
+	return rtb;
 }
 
 void
 window_impl_rtb_free(struct rutabaga *rtb)
 {
-	return;
+	free(rtb);
 }
 
 struct rtb_window *
 window_impl_open(struct rutabaga *rtb,
 		int w, int h, const char *title, intptr_t parent)
 {
-	return NULL;
 }
 
 void
