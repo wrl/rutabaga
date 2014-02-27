@@ -186,7 +186,11 @@ def rtb_style(bld, style_name):
         source = asset_stlib_sources
             + ["{0}/style.c".format(style_name)],
         depends_on=asset_stlib_sources,
-        use="assets public private",
+        use=[
+            'assets',
+            'public',
+            'private',
+            'LIBUV'],
 		cflags=bld.env['CFLAGS_cshlib'],
         target="style_{0}".format(style_name))
 

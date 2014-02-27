@@ -111,6 +111,8 @@ def configure(conf):
     conf.load("compiler_c")
     conf.load("gnu_dirs")
 
+    conf.load('objc', tooldir='python/waftools')
+
     # conf checks
 
     separator()
@@ -122,6 +124,8 @@ def configure(conf):
     elif conf.env.DEST_OS == 'darwin':
         check_freetype(conf)
         conf.env.PLATFORM = 'cocoa'
+
+        conf.env.append_unique('FRAMEWORK_COCOA', 'Cocoa')
     else:
         check_gl(conf)
         check_freetype(conf)

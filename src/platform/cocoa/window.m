@@ -24,7 +24,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <uv.h>
 #include <glloadgen/gl_core.3.0.h>
 
 #import <Cocoa/Cocoa.h>
@@ -43,11 +42,10 @@
 - (id) initWithContentRect: (NSRect) contentRect
 				 styleMask: (unsigned int) aStyle
 				   backing: (NSBackingStoreType) bufferingType
-					 defer: (BOOL) deferCreation
+					 defer: (BOOL) deferCreation;
 
-- (void) setRtbWindow: (struct rtb_window *) rtbWin
-
-- (BOOL) canBecomeKeyWindow: (id) sender
+- (void) setRtbWindow: (struct rtb_window *) rtbWin;
+- (BOOL) canBecomeKeyWindow: (id) sender;
 @end
 
 @implementation RutabagaWindow
@@ -57,16 +55,16 @@
 				   backing: (NSBackingStoreType) bufferingType
 					 defer: (BOOL) deferCreation
 {
-	NSWindow *win =
+	self =
 		[super initWithContentRect:contentRect
 						 styleMask:aStyle
 						   backing:bufferingType
 							 defer:deferCreation];
 
-	[win setAcceptsMouseMovedEvents:YES];
-	[win setLevel:CGShieldingWindowLevel() + 1);
+	[self setAcceptsMouseMovedEvents:YES];
+	[self setLevel:CGShieldingWindowLevel() + 1];
 
-	return win;
+	return self;
 }
 
 - (void) setRtbWindow: (struct rtb_window *) rtbWin
@@ -99,6 +97,7 @@ struct rtb_window *
 window_impl_open(struct rutabaga *rtb,
 		int w, int h, const char *title, intptr_t parent)
 {
+	return NULL;
 }
 
 void

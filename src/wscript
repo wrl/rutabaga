@@ -127,19 +127,13 @@ def build(bld):
             'XCB-KEYSYMS',
             'XCB-ICCCM',
             'XKBFILE',
-            'XKBCOMMON'],
+            'XKBCOMMON', 
+            
+            'COCOA'],
 
 		cflags=bld.env['CFLAGS_cshlib'],
 
         target='rutabaga',
-        name='RUTABAGA',
+        name='rutabaga',
         export_includes='../include',
         vnum=bld.env.VERSION)
-
-    def get_dep_flags(prefix, *args):
-        return list(filter(lambda x: x, [bld.env[prefix + x] for x in args]))
-
-    def coalesce_use_flags(prefix, *deps):
-        bld.env.append_unique(prefix + librtb.name, get_dep_flags(prefix, *deps))
-
-    bld.env.append_unique('LIB_' + librtb.name, librtb.lib)
