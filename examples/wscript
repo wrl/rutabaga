@@ -19,7 +19,7 @@ def build(bld):
         bld.program(
             source='cabbage_patch.c',
             use=[
-                'RUTABAGA',
+                'rutabaga',
                 'JACK'],
 
             target='cabbage_patch')
