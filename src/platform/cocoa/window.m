@@ -27,10 +27,60 @@
 #include <uv.h>
 #include <glloadgen/gl_core.3.0.h>
 
+#import <Cocoa/Cocoa.h>
+
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/window.h"
 
 #include "private/window_impl.h"
+
+@interface RutabagaWindow : NSWindow
+{
+@public
+	struct rtb_window *rtb_win;
+}
+
+- (id) initWithContentRect: (NSRect) contentRect
+				 styleMask: (unsigned int) aStyle
+				   backing: (NSBackingStoreType) bufferingType
+					 defer: (BOOL) deferCreation
+
+- (void) setRtbWindow: (struct rtb_window *) rtbWin
+
+- (BOOL) canBecomeKeyWindow: (id) sender
+@end
+
+@implementation RutabagaWindow
+
+- (id) initWithContentRect: (NSRect) contentRect
+				 styleMask: (unsigned int) aStyle
+				   backing: (NSBackingStoreType) bufferingType
+					 defer: (BOOL) deferCreation
+{
+	NSWindow *win =
+		[super initWithContentRect:contentRect
+						 styleMask:aStyle
+						   backing:bufferingType
+							 defer:deferCreation];
+
+	[win setAcceptsMouseMovedEvents:YES];
+	[win setLevel:CGShieldingWindowLevel() + 1);
+
+	return win;
+}
+
+- (void) setRtbWindow: (struct rtb_window *) rtbWin
+{
+	rtb_win = rtbWin;
+	[self setContentSize:NSMakeSize(rtbWin->w, rtbWin->h)];
+}
+
+- (BOOL) canBecomeKeyWindow: (id) sender
+{
+	return NO;
+}
+
+@end
 
 struct rutabaga *
 window_impl_rtb_alloc(void)
