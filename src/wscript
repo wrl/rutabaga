@@ -102,7 +102,7 @@ def build(bld):
 
     # outputs
 
-    bld.stlib(
+    librtb = bld.stlib(
         source=objs,
 
         lib=['m'],
@@ -112,11 +112,12 @@ def build(bld):
             'public',
             'styles',
 
-            'libuv',
+            'LIBUV',
 
             'GL',
             'FREETYPE2',
             'X11',
+            'X11-XCB',
             'XCB',
             'XCB-XKB',
             'XCB-KEYSYMS',
@@ -127,6 +128,14 @@ def build(bld):
 		cflags=bld.env['CFLAGS_cshlib'],
 
         target='rutabaga',
-        name='librutabaga',
+        name='RUTABAGA',
         export_includes='../include',
         vnum=bld.env.VERSION)
+
+    def get_dep_flags(prefix, *args):
+        return list(filter(lambda x: x, [bld.env[prefix + x] for x in args]))
+
+    def coalesce_use_flags(prefix, *deps):
+        bld.env.append_unique(prefix + librtb.name, get_dep_flags(prefix, *deps))
+
+    bld.env.append_unique('LIB_' + librtb.name, librtb.lib)
