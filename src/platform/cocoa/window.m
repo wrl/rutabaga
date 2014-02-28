@@ -44,7 +44,7 @@
 				   backing: (NSBackingStoreType) bufferingType
 					 defer: (BOOL) deferCreation;
 
-- (void) setRtbWindow: (struct rtb_window *) rtbWin;
+- (BOOL) windowShouldClose: (id) sender;
 - (BOOL) canBecomeKeyWindow: (id) sender;
 @end
 
@@ -67,23 +67,83 @@
 	return self;
 }
 
-- (void) setRtbWindow: (struct rtb_window *) rtbWin
+- (BOOL) windowShouldClose: (id) sender
 {
-	rtb_win = rtbWin;
-	[self setContentSize:NSMakeSize(rtbWin->w, rtbWin->h)];
+	return NO;
 }
 
 - (BOOL) canBecomeKeyWindow: (id) sender
 {
 	return NO;
 }
-
 @end
+
+@interface RutabagaOpenGLView : NSOpenGLView
+{
+@public
+	struct rtb_window *rtb_win;
+}
+
+- (id) initWithFrame: (NSRect) frame
+		   colorBits: (int) numColorBits
+		   depthBits: (int) numDepthBits;
+@end
+
+@implementation RutabagaOpenGLView
+- (id) initWithFrame: (NSRect) frame
+		   colorBits: (int) colorBits
+		   depthBits: (int) depthBits
+{
+	NSOpenGLPixelFormat *format;
+	NSOpenGLPixelFormatAttribute attribs[] = {
+		NSOpenGLPFAOpenGLProfile,
+		NSOpenGLProfileVersion3_2Core,
+		NSOpenGLPFADoubleBuffer,
+		NSOpenGLPFAAccelerated,
+		NSOpenGLPFAColorSize,
+		colorBits,
+		NSOpenGLPFADepthSize,
+		depthBits,
+		0
+	};
+
+	format = [[NSOpenGLPixelFormat alloc] initWithAttributes:attribs];
+	if (!format)
+		return nil;
+
+	self = [super initWithFrame:frame pixelFormat:format];
+	[format release];
+
+	if (!self)
+		return nil;
+
+	[[self openGLContext] makeCurrentContext];
+	[self reshape];
+
+	return self;
+}
+@end
+
+/**
+ * rutabaga interface
+ */
+
+struct cocoartb_window {
+	RTB_INHERIT(rtb_window);
+	RutabagaWindow *cocoa_win;
+};
 
 struct rutabaga *
 window_impl_rtb_alloc(void)
 {
 	struct rutabaga *rtb = calloc(1, sizeof(*rtb));
+
+	if (!NSApp) {
+		[NSApplication sharedApplication];
+		[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+		[NSApp finishLaunching];
+	}
+
 	return rtb;
 }
 
@@ -97,7 +157,41 @@ struct rtb_window *
 window_impl_open(struct rutabaga *rtb,
 		int w, int h, const char *title, intptr_t parent)
 {
-	return NULL;
+	struct rtb_window *self;
+
+	RutabagaOpenGLView *glview;
+	RutabagaWindow *cwin;
+	NSString *nstitle;
+
+	[NSAutoreleasePool new];
+
+	self = calloc(1, sizeof(*self));
+	if (!self)
+		return NULL;
+
+	nstitle =
+		[[NSString alloc]
+		initWithBytes:title
+			   length:strlen(title)
+			 encoding:NSUTF8StringEncoding];
+
+	cwin = [[RutabagaWindow new] retain];
+	[cwin setContentSize:NSMakeSize(w, h)];
+	[cwin setTitle:nstitle];
+	cwin->rtb_win = self;
+
+	glview =
+		[[RutabagaOpenGLView new]
+			initWithFrame:NSMakeRect(0, 0, w, h)
+				colorBits:24
+				depthBits:24];
+	[cwin setContentView:glview];
+	[cwin makeFirstResponder:glview];
+
+	[NSApp activateIgnoringOtherApps:YES];
+	[cwin makeKeyAndOrderFront:cwin];
+
+	return self;
 }
 
 void

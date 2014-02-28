@@ -26,6 +26,10 @@
 
 #include <uv.h>
 
+#include <glloadgen/gl_core.3.0.h>
+
+#import <Cocoa/Cocoa.h>
+
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/window.h"
 
@@ -34,5 +38,5 @@
 void
 rtb_event_loop(struct rutabaga *r)
 {
-	return;
+	[NSApp run];
 }
