@@ -32,7 +32,7 @@ uniform mat4 modelview;
 uniform vec2 offset;
 uniform vec4 color;
 
-attribute vec2 vertex;
+in vec2 vertex;
 out vec4 front_color;
 
 void main()

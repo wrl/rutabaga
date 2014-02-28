@@ -31,7 +31,7 @@ uniform mat4 modelview;
 
 uniform vec2 offset;
 
-attribute vec2 vertex;
+in vec2 vertex;
 
 void main()
 {

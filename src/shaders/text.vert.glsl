@@ -32,9 +32,9 @@ uniform mat4 modelview;
 uniform vec2 offset;
 uniform vec4 color;
 
-attribute vec2 vertex;
-attribute vec2 tex_coord;
-attribute float subpixel_shift;
+in vec2 vertex;
+in vec2 tex_coord;
+in float subpixel_shift;
 
 out float shift;
 out vec2 uv;

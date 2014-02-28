@@ -32,8 +32,8 @@ uniform mat4 modelview;
 uniform vec2 offset;
 uniform vec4 color;
 
-attribute vec2 vertex;
-attribute vec2 tex_coord;
+in vec2 vertex;
+in vec2 tex_coord;
 
 out vec2 coord;
 out vec4 front_color;
