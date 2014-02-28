@@ -31,10 +31,11 @@ layout(origin_upper_left, pixel_center_integer) in vec4 gl_FragCoord;
 
 uniform sampler2D texture;
 
+in vec2 coord;
+in vec4 front_color;
+out vec4 frag_color;
+
 void main()
 {
-	gl_FragColor = texture2D(texture,
-		vec2(
-			gl_TexCoord[0].x,
-			gl_TexCoord[0].y));
+	frag_color = texture2D(texture, coord);
 }

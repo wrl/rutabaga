@@ -35,12 +35,15 @@ uniform vec4 color;
 attribute vec2 vertex;
 attribute vec2 tex_coord;
 
+out vec2 coord;
+out vec4 front_color;
+
 void main()
 {
 	vec4 offset_vector = vec4(offset.x, offset.y, 0.0, 0.0);
 
-	gl_TexCoord[0].xy = tex_coord.xy;
-	gl_FrontColor = color;
+	coord = tex_coord.xy;
+	front_color = color;
 
 	gl_Position = projection *
 		(offset_vector +

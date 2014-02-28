@@ -31,7 +31,10 @@ layout(origin_upper_left, pixel_center_integer) in vec4 gl_FragCoord;
 
 uniform vec2 offset;
 
+in vec4 front_color;
+out vec4 frag_color;
+
 void main()
 {
-	gl_FragColor = gl_Color;
+	frag_color = front_color;
 }

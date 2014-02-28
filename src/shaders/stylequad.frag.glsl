@@ -36,12 +36,13 @@ uniform sampler2D texture;
 
 uniform vec4 color;
 
+in vec2 coord;
+out vec4 frag_color;
+
 void main()
 {
-	vec2 tex_coord = gl_TexCoord[0].xy;
-
 	if (texture_size.x > 0.0 && texture_size.y > 0.0)
-		gl_FragColor = texture2D(texture, tex_coord);
+		frag_color = texture2D(texture, coord);
 	else
-		gl_FragColor = color;
+		frag_color = color;
 }

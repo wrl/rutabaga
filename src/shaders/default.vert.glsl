@@ -33,12 +33,13 @@ uniform vec2 offset;
 uniform vec4 color;
 
 attribute vec2 vertex;
+out vec4 front_color;
 
 void main()
 {
 	vec4 offset_vector = vec4(offset.x, offset.y, 0.0, 0.0);
 
-	gl_FrontColor = color;
+	front_color = color;
 	gl_Position = projection *
 		(offset_vector + (modelview * vec4(vertex.xy, 0.0, 1.0)));
 }

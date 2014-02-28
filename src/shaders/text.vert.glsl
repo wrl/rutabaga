@@ -36,15 +36,17 @@ attribute vec2 vertex;
 attribute vec2 tex_coord;
 attribute float subpixel_shift;
 
-varying float shift;
+out float shift;
+out vec2 uv;
+out vec4 front_color;
 
 void main()
 {
 	vec4 offset_vector = vec4(offset.x, offset.y, 0.0, 0.0);
 
+	uv = tex_coord.xy;
 	shift = subpixel_shift;
-	gl_TexCoord[0].xy = tex_coord.xy;
-	gl_FrontColor = color;
+	front_color = color;
 
 	gl_Position = projection *
 		(offset_vector + (modelview * vec4(vertex.xy, 0.0, 1.0)));

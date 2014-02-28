@@ -66,10 +66,12 @@ initialize_shaders(struct rtb_window *self)
 
 	if (!rtb_shader_create(&self->shaders.stylequad,
 				STYLEQUAD_VERT_SHADER, STYLEQUAD_FRAG_SHADER))
-		goto err_surface;
+		goto err_stylequad;
 
 	return 0;
 
+err_stylequad:
+	rtb_shader_free(&self->shaders.surface);
 err_surface:
 	rtb_shader_free(&self->shaders.dfault);
 err_dfault:

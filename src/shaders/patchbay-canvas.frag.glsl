@@ -37,6 +37,8 @@ uniform sampler2D texture;
 uniform vec4 front_color;
 uniform vec4 back_color;
 
+out vec4 frag_color;
+
 void main()
 {
 	vec2 offset_coord = gl_FragCoord.xy + tx_offset;
@@ -45,5 +47,5 @@ void main()
 		(offset_coord.y / tx_size.y));
 
 	float a = texture2D(texture, tex_coord).a;
-	gl_FragColor = mix(front_color, back_color, a);
+	frag_color = mix(front_color, back_color, a);
 }

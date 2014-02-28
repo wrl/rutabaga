@@ -34,11 +34,14 @@ uniform vec2 offset;
 attribute vec2 vertex;
 attribute vec2 tex_coord;
 
+out vec2 coord;
+
 void main()
 {
 	vec4 offset_vector = vec4(offset.x, offset.y, 0.0, 0.0);
 
-	gl_TexCoord[0].xy = tex_coord.xy;
+	coord = tex_coord.xy;
+
 	gl_Position = projection *
 		(offset_vector + (modelview * vec4(vertex.xy, 0.0, 1.0)));
 }

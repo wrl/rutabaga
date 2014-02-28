@@ -36,16 +36,18 @@
 uniform sampler2D texture;
 uniform vec3 atlas_pixel;
 uniform float gamma;
-varying float shift;
+in float shift;
+
+in vec2 uv;
+in vec4 front_color;
+out vec4 frag_color;
 
 void main()
 {
-	vec2 uv = gl_TexCoord[0].xy;
-
 	// LCD Off
 	if (atlas_pixel.z == 1.0) {
 		float a = texture2D(texture, uv).a;
-		gl_FragColor = gl_Color * pow(a, 1.0 / gamma);
+		frag_color = front_color * pow(a, 1.0 / gamma);
 		return;
 	}
 
@@ -79,7 +81,7 @@ void main()
 	}
 
 	float t = max(max(r,g),b);
-	vec4 color = vec4(gl_Color.rgb, (r+g+b)/3.0);
+	vec4 color = vec4(front_color.rgb, (r+g+b)/3.0);
 	color = t*color + (1.0-t)*vec4(r,g,b, min(min(r,g),b));
-	gl_FragColor = vec4( color.rgb, gl_Color.a*color.a);
+	frag_color = vec4( color.rgb, front_color.a*color.a);
 }
