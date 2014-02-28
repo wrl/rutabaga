@@ -272,7 +272,7 @@ err_font:
 	rtb_shader_free(&self->shaders.dfault);
 err_shaders:
 err_surface_init:
-	rtb_window_close(self);
+	window_impl_close(self);
 err_window_impl:
 	return NULL;
 }
