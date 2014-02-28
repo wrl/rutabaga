@@ -257,6 +257,10 @@ rtb_window_open_under(struct rutabaga *r, intptr_t parent,
 
 	self->flags = RTB_ELEM_CLICK_FOCUS;
 
+	/* for core profiles */
+	glGenVertexArrays(1, &self->vao);
+	glBindVertexArray(self->vao);
+
 	self->rtb = r;
 	r->win = self;
 
@@ -284,6 +288,9 @@ void
 rtb_window_close(struct rtb_window *self)
 {
 	assert(self);
+
+	glBindVertexArray(0);
+	glDeleteVertexArrays(1, &self->vao);
 
 	rtb_shader_free(&self->shaders.stylequad);
 	rtb_shader_free(&self->shaders.surface);

@@ -67,6 +67,8 @@ struct rtb_window {
 
 	struct rutabaga *rtb;
 
+	GLuint vao;
+
 	int need_reconfigure;
 	int dirty;
 	uv_mutex_t lock;
