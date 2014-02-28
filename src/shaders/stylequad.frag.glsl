@@ -29,7 +29,7 @@
 uniform vec2 offset;
 uniform vec2 tx_offset;
 uniform vec2 texture_size;
-uniform sampler2D texture;
+uniform sampler2D tx_sampler;
 
 uniform vec4 color;
 
@@ -39,7 +39,7 @@ out vec4 frag_color;
 void main()
 {
 	if (texture_size.x > 0.0 && texture_size.y > 0.0)
-		frag_color = texture2D(texture, coord);
+		frag_color = texture(tx_sampler, coord);
 	else
 		frag_color = color;
 }
