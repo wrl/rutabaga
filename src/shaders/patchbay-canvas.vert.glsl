@@ -24,6 +24,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#version 130
+
 uniform mat4 projection;
 uniform mat4 modelview;
 

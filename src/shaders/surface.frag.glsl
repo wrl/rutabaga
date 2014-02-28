@@ -24,7 +24,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#version 130
 #extension GL_ARB_fragment_coord_conventions : enable
+
 layout(origin_upper_left, pixel_center_integer) in vec4 gl_FragCoord;
 
 uniform sampler2D texture;
