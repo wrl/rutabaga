@@ -62,8 +62,12 @@ def check_gl(conf):
 
 def check_freetype(conf):
     if conf.env.DEST_OS in ['darwin', 'win32']:
-        conf.check_cc(lib='freetype', libpath='/opt/X11/lib',
-            header_name='ft2build.h', includes=['/opt/X11/include', '/opt/X11/include/freetype2'],
+        ft_prefix = conf.options.freetype_prefix
+
+        conf.check_cc(stlib='freetype', header_name='ft2build.h',
+            libpath=ft_prefix + '/lib',
+            includes=[ft_prefix + x for x in
+                ['/include', '/include/freetype2']],
             uselib_store='FREETYPE2')
     else:
         pkg_check(conf, "freetype2")
@@ -103,6 +107,8 @@ def options(opt):
     rtb_opts.add_option("--debug-frame", action="store_true", default=False,
             help="when enabled, the rendering time for each frame (as "
                  "reported by openGL) will be printed to stdout")
+    rtb_opts.add_option('--freetype-prefix', action='store', default='/usr',
+            help='specify the path to the freetype2 installation')
 
 def configure(conf):
     separator()
