@@ -338,6 +338,28 @@ get_dpi(Display *dpy, int screen, int *x, int *y)
 	*y = (int) (yres + 0.5);
 }
 
+static GLXContext
+new_gl_context(Display *dpy, GLXFBConfig fb_config)
+{
+	PFNGLXCREATECONTEXTATTRIBSARBPROC create_context_attribs;
+	GLXContext ctx;
+	int attribs[] = {
+		GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
+		GLX_CONTEXT_MINOR_VERSION_ARB, 2,
+		GLX_CONTEXT_PROFILE_MASK_ARB,  GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
+		0
+	};
+
+	create_context_attribs =
+		(void *) glXGetProcAddress((GLubyte *) "glXCreateContextAttribsARB");
+
+	ctx = create_context_attribs(dpy, fb_config, 0, True, attribs);
+	if (!ctx)
+		ctx = glXCreateNewContext(dpy, fb_config, GLX_RGBA_TYPE, 0, True);
+
+	return ctx;
+}
+
 struct rtb_window *
 window_impl_open(struct rutabaga *rtb,
 		int w, int h, const char *title, intptr_t parent)
@@ -409,8 +431,7 @@ window_impl_open(struct rutabaga *rtb,
 
 	glXGetFBConfigAttrib(dpy, fb_config, GLX_VISUAL_ID, &visual_id);
 
-	self->gl_ctx = glXCreateNewContext(
-			dpy, fb_config, GLX_RGBA_TYPE, 0, True);
+	self->gl_ctx = new_gl_context(dpy, fb_config);
 	if (!self->gl_ctx) {
 		ERR("couldn't create GLX context\n");
 		goto err_gl_ctx;
