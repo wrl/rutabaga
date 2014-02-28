@@ -148,11 +148,11 @@ window_impl_open(struct rutabaga *rtb,
 		[cwin setTitle:nstitle];
 		cwin->rtb_win = self;
 
-		glview =
-			[[RutabagaOpenGLView new]
-			initWithFrame:NSMakeRect(0, 0, w, h)
-				colorBits:24
-				depthBits:24];
+		glview = [[RutabagaOpenGLView new]
+					initWithFrame:NSMakeRect(0, 0, w, h)
+						colorBits:24
+						depthBits:24];
+
 		[cwin setContentView:glview];
 		[cwin makeFirstResponder:glview];
 

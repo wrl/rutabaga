@@ -29,6 +29,7 @@
 #include <glloadgen/gl_core.3.0.h>
 
 #import <Cocoa/Cocoa.h>
+#include <CoreFoundation/CFRunLoop.h>
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/window.h"
@@ -36,15 +37,42 @@
 #include "private/window_impl.h"
 #include "cocoa_rtb.h"
 
+static void
+timer_cb(CFRunLoopTimerRef timer, void *info)
+{
+	struct rutabaga *r;
+	struct rtb_window *win;
+	struct cocoa_rtb_window *cwin;
+
+	r = info;
+	win = r->win;
+	cwin = RTB_WINDOW_AS(r->win, cocoa_rtb_window);
+
+	[[cwin->gl_view openGLContext] makeCurrentContext];
+	rtb_window_draw(win);
+	[[cwin->gl_view openGLContext] flushBuffer];
+}
+
 void
 rtb_event_loop(struct rutabaga *r)
 {
-	struct rtb_window *win = r->win;
-	struct cocoa_rtb_window *cwin = RTB_WINDOW_AS(r->win, cocoa_rtb_window);
+	struct rtb_window *win;
+	NSRunLoop *loop;
+	CFRunLoopTimerRef frame_timer;
+	CFRunLoopTimerContext timer_ctx = {
+		.version = 0,
+		.info = r,
+		.retain = NULL,
+		.release = NULL,
+		.copyDescription = NULL
+	};
 
+	win = r->win;
 	rtb_window_reinit(win);
-	rtb_window_draw(win);
-	[[cwin->gl_view openGLContext] flushBuffer];
 
+	frame_timer = CFRunLoopTimerCreate(NULL, 0, 1.0 / 60.0, 0, 0, timer_cb, &timer_ctx);
+
+	loop = [NSRunLoop currentRunLoop];
+	[loop addTimer:(__bridge NSTimer *)frame_timer forMode:NSDefaultRunLoopMode];
 	[NSApp run];
 }
