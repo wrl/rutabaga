@@ -24,27 +24,43 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <uv.h>
-
-#include <glloadgen/gl_core.3.0.h>
-
 #import <Cocoa/Cocoa.h>
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/window.h"
 
-#include "private/window_impl.h"
-#include "cocoa_rtb.h"
+struct cocoa_rtb_window;
 
-void
-rtb_event_loop(struct rutabaga *r)
+@interface RutabagaWindow : NSWindow
 {
-	struct rtb_window *win = r->win;
-	struct cocoa_rtb_window *cwin = RTB_WINDOW_AS(r->win, cocoa_rtb_window);
-
-	rtb_window_reinit(win);
-	rtb_window_draw(win);
-	[[cwin->gl_view openGLContext] flushBuffer];
-
-	[NSApp run];
+@public
+	struct cocoa_rtb_window *rtb_win;
 }
+
+- (id) initWithContentRect: (NSRect) contentRect
+				 styleMask: (unsigned int) aStyle
+				   backing: (NSBackingStoreType) bufferingType
+					 defer: (BOOL) deferCreation;
+
+- (BOOL) windowShouldClose: (id) sender;
+- (BOOL) canBecomeKeyWindow: (id) sender;
+@end
+
+@interface RutabagaOpenGLView : NSOpenGLView
+{
+@public
+	struct cocoa_rtb_window *rtb_win;
+}
+
+- (id) initWithFrame: (NSRect) frame
+		   colorBits: (int) numColorBits
+		   depthBits: (int) numDepthBits;
+@end
+
+struct cocoa_rtb_window {
+	RTB_INHERIT(rtb_window);
+	RutabagaWindow *cocoa_win;
+	RutabagaOpenGLView *gl_view;
+};
+
+/* vim: set ft=objc :*/

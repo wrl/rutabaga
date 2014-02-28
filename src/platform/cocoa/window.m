@@ -32,24 +32,9 @@
 #include "rutabaga/window.h"
 
 #include "private/window_impl.h"
-
-@interface RutabagaWindow : NSWindow
-{
-@public
-	struct rtb_window *rtb_win;
-}
-
-- (id) initWithContentRect: (NSRect) contentRect
-				 styleMask: (unsigned int) aStyle
-				   backing: (NSBackingStoreType) bufferingType
-					 defer: (BOOL) deferCreation;
-
-- (BOOL) windowShouldClose: (id) sender;
-- (BOOL) canBecomeKeyWindow: (id) sender;
-@end
+#include "cocoa_rtb.h"
 
 @implementation RutabagaWindow
-
 - (id) initWithContentRect: (NSRect) contentRect
 				 styleMask: (unsigned int) aStyle
 				   backing: (NSBackingStoreType) bufferingType
@@ -76,17 +61,6 @@
 {
 	return NO;
 }
-@end
-
-@interface RutabagaOpenGLView : NSOpenGLView
-{
-@public
-	struct rtb_window *rtb_win;
-}
-
-- (id) initWithFrame: (NSRect) frame
-		   colorBits: (int) numColorBits
-		   depthBits: (int) numDepthBits;
 @end
 
 @implementation RutabagaOpenGLView
@@ -128,11 +102,6 @@
  * rutabaga interface
  */
 
-struct cocoartb_window {
-	RTB_INHERIT(rtb_window);
-	RutabagaWindow *cocoa_win;
-};
-
 struct rutabaga *
 window_impl_rtb_alloc(void)
 {
@@ -157,41 +126,44 @@ struct rtb_window *
 window_impl_open(struct rutabaga *rtb,
 		int w, int h, const char *title, intptr_t parent)
 {
-	struct rtb_window *self;
+	struct cocoa_rtb_window *self;
 
 	RutabagaOpenGLView *glview;
 	RutabagaWindow *cwin;
 	NSString *nstitle;
 
-	[NSAutoreleasePool new];
-
 	self = calloc(1, sizeof(*self));
 	if (!self)
 		return NULL;
 
-	nstitle =
-		[[NSString alloc]
-		initWithBytes:title
-			   length:strlen(title)
-			 encoding:NSUTF8StringEncoding];
+	@autoreleasepool {
+		nstitle =
+			[[NSString alloc]
+			initWithBytes:title
+				   length:strlen(title)
+				 encoding:NSUTF8StringEncoding];
 
-	cwin = [[RutabagaWindow new] retain];
-	[cwin setContentSize:NSMakeSize(w, h)];
-	[cwin setTitle:nstitle];
-	cwin->rtb_win = self;
+		cwin = [[RutabagaWindow new] retain];
+		[cwin setContentSize:NSMakeSize(w, h)];
+		[cwin setTitle:nstitle];
+		cwin->rtb_win = self;
 
-	glview =
-		[[RutabagaOpenGLView new]
+		glview =
+			[[RutabagaOpenGLView new]
 			initWithFrame:NSMakeRect(0, 0, w, h)
 				colorBits:24
 				depthBits:24];
-	[cwin setContentView:glview];
-	[cwin makeFirstResponder:glview];
+		[cwin setContentView:glview];
+		[cwin makeFirstResponder:glview];
 
-	[NSApp activateIgnoringOtherApps:YES];
-	[cwin makeKeyAndOrderFront:cwin];
+		[NSApp activateIgnoringOtherApps:YES];
+		[cwin makeKeyAndOrderFront:cwin];
+	}
 
-	return self;
+	self->cocoa_win = cwin;
+	self->gl_view = glview;
+
+	return RTB_WINDOW(self);
 }
 
 void
