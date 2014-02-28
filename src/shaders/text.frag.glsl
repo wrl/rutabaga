@@ -31,7 +31,7 @@
  * policies, either expressed or implied, of Nicolas P. Rougier.
  * ========================================================================= */
 
-#version 130
+#version 150
 
 uniform sampler2D texture;
 uniform vec3 atlas_pixel;
