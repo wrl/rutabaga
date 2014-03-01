@@ -5,7 +5,7 @@ from waflib.TaskGen import after_method, before_method, feature
 top = '..'
 
 def build(bld):
-    p = bld.program(
+    bld.program(
         source='test.c',
         use='rutabaga',
         target='test')
@@ -14,6 +14,11 @@ def build(bld):
         source='txtest.c',
         use='rutabaga',
         target='txtest')
+
+    bld.program(
+        source='tiny.c',
+        use='rutabaga',
+        target='tiny')
 
     if bld.env.LIB_JACK:
         bld.program(
