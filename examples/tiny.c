@@ -40,6 +40,68 @@
 #include "rutabaga/widgets/text-input.h"
 #include "rutabaga/widgets/knob.h"
 
+struct fuck {
+	GLuint vbo;
+	struct rtb_rect rect;
+};
+
+static const GLubyte quad_tri_indices[] = {
+	0, 1, 3, 2
+};
+
+static const GLfloat identity_matrix[] = {
+	1.f, 0.f, 0.f, 0.f,
+	0.f, 1.f, 0.f, 0.f,
+	0.f, 0.f, 1.f, 0.f,
+	0.f, 0.f, 0.f, 1.f
+};
+
+static void
+fuck_init(struct fuck *fuck)
+{
+	glGenVertexArrays(1, &fuck->vbo);
+}
+
+static void
+fuck_draw(struct rtb_window *win, struct fuck *fuck)
+{
+	GLint vertex, color, offset, projection, modelview;
+
+	GLuint program;
+	GLfloat v[4][2] = {
+		{fuck->rect.x,  fuck->rect.y},
+		{fuck->rect.x2, fuck->rect.y},
+		{fuck->rect.x2, fuck->rect.y2},
+		{fuck->rect.x,  fuck->rect.y2}
+	};
+
+	program = win->shaders.dfault.program;
+	vertex     = glGetAttribLocation(program, "vertex");
+	color      = glGetUniformLocation(program, "color");
+	offset     = glGetUniformLocation(program, "offset");
+	projection = glGetUniformLocation(program, "projection");
+	modelview  = glGetUniformLocation(program, "modelview");
+
+	glUseProgram(program);
+	glEnableVertexAttribArray(vertex);
+
+	glBindBuffer(GL_ARRAY_BUFFER, fuck->vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
+	glVertexAttribPointer(vertex, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glUniform2f(offset, 0.f, 0.f);
+	glUniformMatrix4fv(projection, 1, GL_FALSE, identity_matrix);
+	glUniformMatrix4fv(modelview, 1, GL_FALSE, identity_matrix);
+	glUniform4f(color, 1.f, 0.f, 0.f, 1.f);
+
+	glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_BYTE, quad_tri_indices);
+
+	glDisableVertexAttribArray(vertex);
+}
+
+/********************************/
+
 static int
 frame_start(struct rtb_element *elem, const struct rtb_event *e, void *ctx)
 {
@@ -49,6 +111,17 @@ frame_start(struct rtb_element *elem, const struct rtb_event *e, void *ctx)
 static int
 frame_end(struct rtb_element *elem, const struct rtb_event *e, void *ctx)
 {
+	struct rtb_window *win = RTB_ELEMENT_AS(elem, rtb_window);
+	struct fuck *fuck = ctx;
+
+	fuck->rect = (struct rtb_rect) {
+		.x  = 0.f,
+		.y  = 0.f,
+		.x2 = 0.5f,
+		.y2 = 0.5f,
+	};
+
+	fuck_draw(win, fuck);
 	return 1;
 }
 
@@ -56,6 +129,7 @@ int main(int argc, char **argv)
 {
 	struct rutabaga *delicious;
 	struct rtb_window *win;
+	struct fuck fuck;
 
 	delicious = rtb_new();
 	assert(delicious);
@@ -71,7 +145,9 @@ int main(int argc, char **argv)
 	rtb_register_handler(RTB_ELEMENT(win),
 			RTB_FRAME_START, frame_start, NULL);
 	rtb_register_handler(RTB_ELEMENT(win),
-			RTB_FRAME_END, frame_end, NULL);
+			RTB_FRAME_END, frame_end, &fuck);
+
+	fuck_init(&fuck);
 
 	rtb_event_loop(delicious);
 
