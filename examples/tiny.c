@@ -41,7 +41,7 @@
 #include "rutabaga/widgets/knob.h"
 
 struct fuck {
-	GLuint vbo;
+	GLuint vbo, vao, ibo;
 	struct rtb_rect rect;
 };
 
@@ -59,8 +59,17 @@ static const GLfloat identity_matrix[] = {
 static void
 fuck_init(struct fuck *fuck)
 {
+	glGenVertexArrays(1, &fuck->ibo);
 	glGenVertexArrays(1, &fuck->vbo);
+	glGenVertexArrays(1, &fuck->vao);
 }
+
+#define GLE(exp) do {														\
+	GLuint err;																\
+	exp;																	\
+	if ((err = glGetError()))												\
+		printf(" :: " #exp " = %d\n", err);									\
+} while(0)
 
 static void
 fuck_draw(struct rtb_window *win, struct fuck *fuck)
@@ -75,29 +84,44 @@ fuck_draw(struct rtb_window *win, struct fuck *fuck)
 		{fuck->rect.x,  fuck->rect.y2}
 	};
 
-	program = win->shaders.dfault.program;
-	vertex     = glGetAttribLocation(program, "vertex");
-	color      = glGetUniformLocation(program, "color");
-	offset     = glGetUniformLocation(program, "offset");
-	projection = glGetUniformLocation(program, "projection");
-	modelview  = glGetUniformLocation(program, "modelview");
+	printf(" :: start: %d\n", glGetError());
 
-	glUseProgram(program);
-	glEnableVertexAttribArray(vertex);
+	program = win->local_storage.shader.dfault.program;
+	GLE(vertex     = glGetAttribLocation(program, "vertex"));
+	GLE(color      = glGetUniformLocation(program, "color"));
+	GLE(offset     = glGetUniformLocation(program, "offset"));
+	GLE(projection = glGetUniformLocation(program, "projection"));
+	GLE(modelview  = glGetUniformLocation(program, "modelview"));
 
-	glBindBuffer(GL_ARRAY_BUFFER, fuck->vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
-	glVertexAttribPointer(vertex, 2, GL_FLOAT, GL_FALSE, 0, 0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	printf(" :: vertex = %d\n",	vertex);
+	printf(" :: color = %d\n", color);
+	printf(" :: offset = %d\n", offset);
+	printf(" :: projection = %d\n", projection);
+	printf(" :: modelview = %d\n", modelview );
 
-	glUniform2f(offset, 0.f, 0.f);
-	glUniformMatrix4fv(projection, 1, GL_FALSE, identity_matrix);
-	glUniformMatrix4fv(modelview, 1, GL_FALSE, identity_matrix);
-	glUniform4f(color, 1.f, 0.f, 0.f, 1.f);
+	GLE(glUseProgram(program));
 
-	glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_BYTE, quad_tri_indices);
+	GLE(glBindBuffer(GL_ARRAY_BUFFER, fuck->vbo));
+	glBindVertexArray(fuck->vao);
 
-	glDisableVertexAttribArray(vertex);
+	GLE(glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW));
+	GLE(glEnableVertexAttribArray(vertex));
+	GLE(glVertexAttribPointer(vertex, 2, GL_FLOAT, GL_FALSE, 0, 0));
+	GLE(glBindBuffer(GL_ARRAY_BUFFER, 0));
+
+	GLE(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, fuck->ibo));
+	GLE(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quad_tri_indices), quad_tri_indices, GL_STATIC_DRAW));
+
+	GLE(glUniform2f(offset, 0.f, 0.f));
+	GLE(glUniformMatrix4fv(projection, 1, GL_FALSE, identity_matrix));
+	GLE(glUniformMatrix4fv(modelview, 1, GL_FALSE, identity_matrix));
+	GLE(glUniform4f(color, 1.f, 0.f, 0.f, 1.f));
+
+	GLE(glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_BYTE, 0));
+
+	GLE(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+	GLE(glDisableVertexAttribArray(vertex));
+	puts("");
 }
 
 /********************************/
