@@ -59,9 +59,14 @@ static const GLfloat identity_matrix[] = {
 static void
 fuck_init(struct fuck *fuck)
 {
-	glGenVertexArrays(1, &fuck->ibo);
-	glGenVertexArrays(1, &fuck->vbo);
+	glGenBuffers(1, &fuck->ibo);
+	glGenBuffers(1, &fuck->vbo);
 	glGenVertexArrays(1, &fuck->vao);
+
+	printf(" fuck %d %d %d\n",
+			fuck->ibo,
+			fuck->vbo,
+			fuck->vao);
 }
 
 #define GLE(exp) do {														\
@@ -93,16 +98,10 @@ fuck_draw(struct rtb_window *win, struct fuck *fuck)
 	GLE(projection = glGetUniformLocation(program, "projection"));
 	GLE(modelview  = glGetUniformLocation(program, "modelview"));
 
-	printf(" :: vertex = %d\n",	vertex);
-	printf(" :: color = %d\n", color);
-	printf(" :: offset = %d\n", offset);
-	printf(" :: projection = %d\n", projection);
-	printf(" :: modelview = %d\n", modelview );
-
 	GLE(glUseProgram(program));
 
 	GLE(glBindBuffer(GL_ARRAY_BUFFER, fuck->vbo));
-	glBindVertexArray(fuck->vao);
+	GLE(glBindVertexArray(fuck->vao));
 
 	GLE(glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW));
 	GLE(glEnableVertexAttribArray(vertex));

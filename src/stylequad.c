@@ -34,49 +34,13 @@
 
 #include "private/util.h"
 
-static const GLubyte border_indices[] = {
-	/**
-	 * +---+---+---+
-	 * | 1 | 2 | 3 |
-	 * +---+---+---+
-	 * | 4 | 5 | 6 |
-	 * +---+---+---+
-	 * | 7 | 8 | 9 |
-	 * +---+---+---+
-	 *
-	 * the middle section is not drawn because it's conditionally drawn
-	 * based on whether the texture has defined RTB_TEXTURE_FILL.
-	 * if it is, we'll just draw with solid_indices.
-	 */
-
-	/* 1 */  0,  2,  1,  3,  2,  0,
-	/* 2 */  1,  7,  4,  2,  7,  1,
-	/* 3 */  4,  6,  5,  7,  6,  4,
-
-	/* 4 */  3,  9,  2,  8,  9,  3,
-	/* 5 */
-	/* 6 */  7, 13,  6, 12, 13,  7,
-
-	/* 7 */  8, 10,  9, 11, 10,  8,
-	/* 8 */  9, 15, 12, 10, 15,  9,
-	/* 9 */ 12, 14, 13, 15, 14, 12
-};
-
-static const GLubyte solid_indices[] = {
-	2, 7, 9, 12
-};
-
-static const GLubyte outline_indices[] = {
-	2, 7, 12, 9
-};
-
 /**
  * drawing
  */
 
 static void
 draw_solid(struct rtb_stylequad *self, const struct rtb_shader *shader,
-		GLenum mode, const GLubyte *indices, GLsizei count)
+		GLenum mode, GLuint ibo, GLsizei count)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, self->vertices);
 	glEnableVertexAttribArray(shader->vertex);
@@ -84,16 +48,19 @@ draw_solid(struct rtb_stylequad *self, const struct rtb_shader *shader,
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glDrawElements(mode, count, GL_UNSIGNED_BYTE, indices);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	glDrawElements(mode, count, GL_UNSIGNED_BYTE, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	glDisableVertexAttribArray(shader->vertex);
 }
 
 static void
-draw_textured(struct rtb_stylequad *self, const struct rtb_shader *shader,
+draw_textured(struct rtb_render_context *ctx, struct rtb_stylequad *self,
 		const struct rtb_stylequad_texture *tx, int border)
 {
-	glEnable(GL_TEXTURE_2D);
+	const struct rtb_shader *shader = ctx->shader;
+
 	glBindTexture(GL_TEXTURE_2D, tx->gl_handle);
 	glUniform1i(shader->texture, 0);
 	glUniform2f(shader->texture_size,
@@ -104,13 +71,14 @@ draw_textured(struct rtb_stylequad *self, const struct rtb_shader *shader,
 	glVertexAttribPointer(shader->tex_coord,
 			2, GL_FLOAT, GL_FALSE, 0, 0);
 
+	/* XXX: hardcoded `count` value here */
 	if (border)
 		draw_solid(self, shader, GL_TRIANGLES,
-				border_indices, ARRAY_LENGTH(border_indices));
+				ctx->window->local_storage.ibo.stylequad.border, 48);
 
 	if (!border || tx->definition->flags & RTB_TEXTURE_FILL)
 		draw_solid(self, shader, GL_TRIANGLE_STRIP,
-				solid_indices, ARRAY_LENGTH(solid_indices));
+				ctx->window->local_storage.ibo.stylequad.solid, 4);
 
 	glDisableVertexAttribArray(shader->tex_coord);
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -132,14 +100,14 @@ draw(struct rtb_render_context *ctx, struct rtb_stylequad *self,
 				self->properties.bg_color->a);
 
 		draw_solid(self, shader, GL_TRIANGLE_STRIP,
-				solid_indices, ARRAY_LENGTH(solid_indices));
+				ctx->window->local_storage.ibo.stylequad.solid, 4);
 	}
 
 	if (self->background_image.definition)
-		draw_textured(self, shader, &self->background_image, 0);
+		draw_textured(ctx, self, &self->background_image, 0);
 
 	if (self->border_image.definition)
-		draw_textured(self, shader, &self->border_image, 1);
+		draw_textured(ctx, self, &self->border_image, 1);
 
 	if (self->properties.border_color) {
 		rtb_render_set_color(ctx,
@@ -151,14 +119,14 @@ draw(struct rtb_render_context *ctx, struct rtb_stylequad *self,
 		glLineWidth(1.f);
 
 		draw_solid(self, shader, GL_LINE_LOOP,
-				outline_indices, ARRAY_LENGTH(outline_indices));
+				ctx->window->local_storage.ibo.stylequad.outline, 4);
 	}
 }
 
 void
 rtb_stylequad_draw(struct rtb_stylequad *self, struct rtb_element *on)
 {
-	struct rtb_shader *shader = &on->window->shaders.stylequad;
+	struct rtb_shader *shader = &on->window->local_storage.shader.stylequad;
 	struct rtb_render_context *ctx = rtb_render_get_context(on);
 
 	rtb_render_reset(on);
@@ -171,7 +139,7 @@ void
 rtb_stylequad_draw_with_modelview(struct rtb_stylequad *self, struct rtb_element *on,
 		mat4 *modelview)
 {
-	struct rtb_shader *shader = &on->window->shaders.stylequad;
+	struct rtb_shader *shader = &on->window->local_storage.shader.stylequad;
 	struct rtb_render_context *ctx = rtb_render_get_context(on);
 
 	rtb_render_reset(on);

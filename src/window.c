@@ -53,29 +53,162 @@
 
 static struct rtb_element_implementation super;
 
-static int
-initialize_shaders(struct rtb_window *self)
+/**
+ * index buffer objects
+ *
+ * XXX: kind of bullshit to have these here, should have a better way
+ *      of sharing and managing window-local variables.
+ */
+
+static const GLubyte stylequad_border_indices[] = {
+	/**
+	 * +---+---+---+
+	 * | 1 | 2 | 3 |
+	 * +---+---+---+
+	 * | 4 | 5 | 6 |
+	 * +---+---+---+
+	 * | 7 | 8 | 9 |
+	 * +---+---+---+
+	 *
+	 * the middle section is not drawn because it's conditionally drawn
+	 * based on whether the texture has defined RTB_TEXTURE_FILL.
+	 * if it is, we'll just draw with solid_indices.
+	 */
+
+	/* 1 */  0,  2,  1,  3,  2,  0,
+	/* 2 */  1,  7,  4,  2,  7,  1,
+	/* 3 */  4,  6,  5,  7,  6,  4,
+
+	/* 4 */  3,  9,  2,  8,  9,  3,
+	/* 5 */
+	/* 6 */  7, 13,  6, 12, 13,  7,
+
+	/* 7 */  8, 10,  9, 11, 10,  8,
+	/* 8 */  9, 15, 12, 10, 15,  9,
+	/* 9 */ 12, 14, 13, 15, 14, 12
+};
+
+static const GLubyte stylequad_solid_indices[] = {
+	2, 7, 9, 12
+};
+
+static const GLubyte stylequad_outline_indices[] = {
+	2, 7, 12, 9
+};
+
+static const GLubyte quad_solid_indices[] = {
+	0, 1, 3, 2
+};
+
+static const GLubyte quad_outline_indices[] = {
+	0, 1, 2, 3
+};
+
+static GLuint
+ibo_new(const void *data, size_t size)
 {
-	if (!rtb_shader_create(&self->shaders.dfault,
+	GLuint ibo;
+
+	glGenBuffers(1, &ibo);
+	if (!ibo)
+		return 0;
+
+	printf(" :: %d -> %zd\n", ibo, size);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	return ibo;
+}
+
+static void
+ibo_free(GLuint ibo)
+{
+	if (ibo)
+		glDeleteBuffers(1, &ibo);
+}
+
+static int
+ibos_init(struct rtb_window *self)
+{
+#define IBO_ALLOC(dst, src) (self->local_storage.ibo.dst = ibo_new(src, sizeof(src)))
+	if (!IBO_ALLOC(quad.solid, quad_solid_indices))
+		goto err_quad_solid;
+
+	if (!IBO_ALLOC(quad.outline, quad_outline_indices))
+		goto err_quad_outline;
+
+	if (!IBO_ALLOC(stylequad.border, stylequad_border_indices))
+		goto err_stylequad_border;
+
+	if (!IBO_ALLOC(stylequad.solid, stylequad_solid_indices))
+		goto err_stylequad_solid;
+
+	if (!IBO_ALLOC(stylequad.outline, stylequad_outline_indices))
+		goto err_stylequad_outline;
+#undef IBO_ALLOC
+
+	return 0;
+
+err_stylequad_outline:
+	ibo_free(self->local_storage.ibo.stylequad.solid);
+err_stylequad_solid:
+	ibo_free(self->local_storage.ibo.stylequad.border);
+err_stylequad_border:
+	ibo_free(self->local_storage.ibo.quad.outline);
+err_quad_outline:
+	ibo_free(self->local_storage.ibo.quad.solid);
+err_quad_solid:
+	return -1;
+}
+
+static void
+ibos_fini(struct rtb_window *self)
+{
+	ibo_free(self->local_storage.ibo.stylequad.outline);
+	ibo_free(self->local_storage.ibo.stylequad.solid);
+	ibo_free(self->local_storage.ibo.stylequad.border);
+	ibo_free(self->local_storage.ibo.quad.outline);
+	ibo_free(self->local_storage.ibo.quad.solid);
+}
+
+/**
+ * shaders
+ */
+
+static int
+shaders_init(struct rtb_window *self)
+{
+	if (!rtb_shader_create(&self->local_storage.shader.dfault,
 				DEFAULT_VERT_SHADER, DEFAULT_FRAG_SHADER))
 		goto err_dfault;
 
-	if (!rtb_shader_create(&self->shaders.surface,
+	if (!rtb_shader_create(&self->local_storage.shader.surface,
 				SURFACE_VERT_SHADER, SURFACE_FRAG_SHADER))
 		goto err_surface;
 
-	if (!rtb_shader_create(&self->shaders.stylequad,
+	if (!rtb_shader_create(&self->local_storage.shader.stylequad,
 				STYLEQUAD_VERT_SHADER, STYLEQUAD_FRAG_SHADER))
 		goto err_stylequad;
 
 	return 0;
 
 err_stylequad:
-	rtb_shader_free(&self->shaders.surface);
+	rtb_shader_free(&self->local_storage.shader.surface);
 err_surface:
-	rtb_shader_free(&self->shaders.dfault);
+	rtb_shader_free(&self->local_storage.shader.dfault);
 err_dfault:
 	return -1;
+}
+
+static void
+shaders_fini(struct rtb_window *self)
+{
+	rtb_shader_free(&self->local_storage.shader.stylequad);
+	rtb_shader_free(&self->local_storage.shader.surface);
+	rtb_shader_free(&self->local_storage.shader.dfault);
+
 }
 
 /**
@@ -244,8 +377,11 @@ rtb_window_open_under(struct rutabaga *r, intptr_t parent,
 	self->surface = RTB_SURFACE(self);
 	self->style_list = rtb_style_get_defaults();
 
-	if (initialize_shaders(self))
+	if (shaders_init(self))
 		goto err_shaders;
+
+	if (ibos_init(self))
+		goto err_ibos;
 
 	if (rtb_font_manager_init(&self->font_manager,
 				self->dpi.x, self->dpi.y))
@@ -269,9 +405,9 @@ rtb_window_open_under(struct rutabaga *r, intptr_t parent,
 	return self;
 
 err_font:
-	rtb_shader_free(&self->shaders.stylequad);
-	rtb_shader_free(&self->shaders.surface);
-	rtb_shader_free(&self->shaders.dfault);
+	ibos_fini(self);
+err_ibos:
+	shaders_fini(self);
 err_shaders:
 err_surface_init:
 	window_impl_close(self);
@@ -294,12 +430,11 @@ rtb_window_close(struct rtb_window *self)
 	glBindVertexArray(0);
 	glDeleteVertexArrays(1, &self->vao);
 
-	rtb_shader_free(&self->shaders.stylequad);
-	rtb_shader_free(&self->shaders.surface);
-	rtb_shader_free(&self->shaders.dfault);
-
 	rtb_font_manager_fini(&self->font_manager);
-	rtb_type_unref(self->type);
 
+	ibos_fini(self);
+	shaders_fini(self);
+
+	rtb_type_unref(self->type);
 	window_impl_close(self);
 }

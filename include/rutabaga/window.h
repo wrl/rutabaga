@@ -46,16 +46,33 @@ struct rtb_window_event {
 	struct rtb_window *window;
 };
 
+struct rtb_window_local_storage {
+	struct {
+		struct rtb_shader dfault;
+		struct rtb_shader surface;
+		struct rtb_shader stylequad;
+	} shader;
+
+	struct {
+		struct {
+			GLuint border;
+			GLuint solid;
+			GLuint outline;
+		} stylequad;
+
+		struct {
+			GLuint solid;
+			GLuint outline;
+		} quad;
+	} ibo;
+};
+
 struct rtb_window {
 	RTB_INHERIT(rtb_surface);
 	struct rtb_font_manager font_manager;
 
 	/* public *********************************/
-	struct {
-		struct rtb_shader dfault;
-		struct rtb_shader surface;
-		struct rtb_shader stylequad;
-	} shaders;
+	struct rtb_window_local_storage local_storage;
 
 	struct rtb_style *style_list;
 

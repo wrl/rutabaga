@@ -172,7 +172,6 @@ draw_bg(struct rtb_patchbay *self)
 	prop = rtb_style_query_prop(RTB_ELEMENT(self),
 			"background-image", RTB_STYLE_PROP_TEXTURE, 1);
 
-	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, self->bg_texture);
 	glUniform1i(shader.uniform.texture, 0);
 	glUniform2f(shader.uniform.tx_size, prop->texture.w, prop->texture.h);

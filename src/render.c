@@ -32,14 +32,6 @@
 
 #include "private/util.h"
 
-static const GLubyte quad_tri_indices[] = {
-	0, 1, 3, 2
-};
-
-static const GLubyte quad_outline_indices[] = {
-	0, 1, 2, 3
-};
-
 /**
  * public API
  *
@@ -102,7 +94,7 @@ rtb_render_set_modelview(struct rtb_render_context *ctx, const GLfloat *matrix)
 
 static void
 render_quad(struct rtb_render_context *ctx, struct rtb_quad *quad,
-		GLenum mode, const GLubyte *indices, GLsizei count)
+		GLenum mode, GLuint ibo)
 {
 	struct rtb_shader *shader = ctx->shader;
 
@@ -122,7 +114,9 @@ render_quad(struct rtb_render_context *ctx, struct rtb_quad *quad,
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glDrawElements(mode, count, GL_UNSIGNED_BYTE, indices);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	glDrawElements(mode, 4, GL_UNSIGNED_BYTE, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	glDisableVertexAttribArray(shader->vertex);
 
@@ -134,14 +128,14 @@ void
 rtb_render_quad_outline(struct rtb_render_context *ctx, struct rtb_quad *quad)
 {
 	render_quad(ctx, quad, GL_LINE_LOOP,
-			quad_outline_indices, ARRAY_LENGTH(quad_outline_indices));
+			ctx->window->local_storage.ibo.quad.outline);
 }
 
 void
 rtb_render_quad(struct rtb_render_context *ctx, struct rtb_quad *quad)
 {
 	render_quad(ctx, quad, GL_TRIANGLE_STRIP,
-			quad_tri_indices, ARRAY_LENGTH(quad_tri_indices));
+			ctx->window->local_storage.ibo.quad.solid);
 }
 
 void
@@ -182,7 +176,7 @@ void
 rtb_render_reset(struct rtb_element *elem)
 {
 	struct rtb_render_context *ctx = rtb_render_get_context(elem);
-	rtb_render_use_shader(ctx, &elem->window->shaders.dfault);
+	rtb_render_use_shader(ctx, &elem->window->local_storage.shader.dfault);
 
 	glScissor(elem->x - elem->surface->x,
 			elem->surface->y + elem->surface->h - elem->h - elem->y,

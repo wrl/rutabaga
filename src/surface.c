@@ -151,7 +151,7 @@ rtb_surface_is_dirty(struct rtb_surface *self)
 void
 rtb_surface_blit(struct rtb_surface *self)
 {
-	struct rtb_shader *shader = &self->window->shaders.surface;
+	struct rtb_shader *shader = &self->window->local_storage.shader.surface;
 	struct rtb_element *elem = RTB_ELEMENT(self);
 	struct rtb_render_context *ctx;
 
@@ -161,7 +161,6 @@ rtb_surface_blit(struct rtb_surface *self)
 	rtb_render_use_shader(ctx, shader);
 	rtb_render_set_position(ctx, 0, 0);
 
-	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, self->texture);
 	glUniform1i(shader->texture, 0);
 
@@ -172,7 +171,6 @@ rtb_surface_blit(struct rtb_surface *self)
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glDisable(GL_TEXTURE_2D);
 
 	LAYOUT_DEBUG_DRAW_BOX(elem);
 }
@@ -193,6 +191,8 @@ rtb_surface_draw_children(struct rtb_surface *self)
 
 	glBindFramebuffer(GL_FRAMEBUFFER, self->fbo);
 	glViewport(0, 0, self->w, self->h);
+
+	self->render_ctx.window = self->window;
 
 	/* we have slightly different ways of handling this redraw depending
 	 * on what the state of the surface is. */
