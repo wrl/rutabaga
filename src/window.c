@@ -113,8 +113,6 @@ ibo_new(const void *data, size_t size)
 	if (!ibo)
 		return 0;
 
-	printf(" :: %d -> %zd\n", ibo, size);
-
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
