@@ -122,6 +122,23 @@ window_impl_rtb_free(struct rutabaga *rtb)
 	free(rtb);
 }
 
+static void
+get_dpi(int *x, int *y)
+{
+#if 0
+	NSScreen *screen = [NSScreen mainScreen];
+	NSDictionary *desc = [screen deviceDescription];
+	NSSize pixel_size = [[desc objectForKey:NSDeviceSize] sizeValue];
+	CGSize phy_size = CGDisplayScreenSize(
+		[[desc objectForKey:@"NSScreenNumber"] unsignedIntValue]);
+
+	*x = lrintf(ceilf((pixel_size.width / phy_size.width) * 25.4f));
+	*y = lrintf(ceilf((pixel_size.height / phy_size.height) * 25.4f));
+#else
+	*x = *y = 96;
+#endif
+}
+
 struct rtb_window *
 window_impl_open(struct rutabaga *rtb,
 		int w, int h, const char *title, intptr_t parent)
@@ -159,6 +176,8 @@ window_impl_open(struct rutabaga *rtb,
 		[NSApp activateIgnoringOtherApps:YES];
 		[cwin makeKeyAndOrderFront:cwin];
 	}
+
+	get_dpi(&self->dpi.x, &self->dpi.y);
 
 	self->cocoa_win = cwin;
 	self->gl_view = glview;
