@@ -118,6 +118,7 @@ def configure(conf):
     conf.load("gnu_dirs")
 
     conf.load('objc', tooldir='python/waftools')
+    conf.load('rtb_style', tooldir='python/waftools')
 
     # conf checks
 
