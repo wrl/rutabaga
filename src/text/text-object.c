@@ -54,7 +54,7 @@ rtb_text_object_get_glyph_rect(struct rtb_text_object *self, int idx,
 	vector_t *vertices = self->vertices->vertices;
 	struct text_vertex *v;
 
-	if (idx < 0 || (idx * 4) > (int) vector_size(vertices))
+	if (idx < 0 || ((size_t) idx * 4) > vector_size(vertices))
 		return -1;
 
 	v = (void *) vector_get(vertices, (idx * 4) - 4);
