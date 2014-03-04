@@ -31,36 +31,23 @@
 
 struct cocoa_rtb_window;
 
+@interface RutabagaOpenGLContext : NSOpenGLContext
+@end
+
 @interface RutabagaWindow : NSWindow
 {
 @public
 	struct cocoa_rtb_window *rtb_win;
 }
 
-- (id) initWithContentRect: (NSRect) contentRect
-				 styleMask: (unsigned int) aStyle
-				   backing: (NSBackingStoreType) bufferingType
-					 defer: (BOOL) deferCreation;
-
 - (BOOL) windowShouldClose: (id) sender;
 - (BOOL) canBecomeKeyWindow: (id) sender;
-@end
-
-@interface RutabagaOpenGLView : NSOpenGLView
-{
-@public
-	struct cocoa_rtb_window *rtb_win;
-}
-
-- (id) initWithFrame: (NSRect) frame
-		   colorBits: (int) numColorBits
-		   depthBits: (int) numDepthBits;
 @end
 
 struct cocoa_rtb_window {
 	RTB_INHERIT(rtb_window);
 	RutabagaWindow *cocoa_win;
-	RutabagaOpenGLView *gl_view;
+	RutabagaOpenGLContext *gl_ctx;
 };
 
 /* vim: set ft=objc :*/

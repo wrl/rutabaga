@@ -48,9 +48,9 @@ timer_cb(CFRunLoopTimerRef timer, void *info)
 	win = r->win;
 	cwin = RTB_WINDOW_AS(r->win, cocoa_rtb_window);
 
-	[[cwin->gl_view openGLContext] makeCurrentContext];
+	[cwin->gl_ctx makeCurrentContext];
 	rtb_window_draw(win);
-	[[cwin->gl_view openGLContext] flushBuffer];
+	[cwin->gl_ctx flushBuffer];
 }
 
 void
@@ -73,6 +73,6 @@ rtb_event_loop(struct rutabaga *r)
 	frame_timer = CFRunLoopTimerCreate(NULL, 0, 1.0 / 60.0, 0, 0, timer_cb, &timer_ctx);
 
 	loop = [NSRunLoop currentRunLoop];
-	[loop addTimer:(__bridge NSTimer *)frame_timer forMode:NSDefaultRunLoopMode];
+	[loop addTimer:(__bridge NSTimer *)frame_timer forMode:NSRunLoopCommonModes];
 	[NSApp run];
 }
