@@ -35,6 +35,20 @@
 #include "cocoa_rtb.h"
 
 @implementation RutabagaWindow
+- (id) initWithContentRect: (NSRect) contentRect
+				 styleMask: (NSUInteger) windowStyle
+				   backing: (NSBackingStoreType) bufferingType
+					 defer: (BOOL) deferCreation
+{
+	self = [super initWithContentRect:contentRect
+							styleMask:windowStyle
+							  backing:bufferingType
+								defer:deferCreation];
+
+	[self setAcceptsMouseMovedEvents:YES];
+	return self;
+}
+
 - (BOOL) windowShouldClose: (id) sender
 {
 	return NO;
@@ -43,6 +57,11 @@
 - (BOOL) canBecomeKeyWindow: (id) sender
 {
 	return YES;
+}
+
+- (void) sendEvent: (NSEvent *) event
+{
+	[super sendEvent:event];
 }
 @end
 
@@ -149,6 +168,7 @@ alloc_gl_ctx(void)
 {
 	RutabagaOpenGLContext *ctx;
 	NSOpenGLPixelFormat *fmt;
+	GLint interval = 1;
 
 	NSOpenGLPixelFormatAttribute attribs[] = {
 		NSOpenGLPFAOpenGLProfile,
@@ -165,8 +185,10 @@ alloc_gl_ctx(void)
 		return nil;
 
 	ctx = [[RutabagaOpenGLContext alloc] initWithFormat:fmt shareContext:nil];
-	ctx->pixelFormat = fmt;
 	[fmt retain];
+
+	ctx->pixelFormat = fmt;
+	[ctx setValues:&interval forParameter:NSOpenGLCPSwapInterval];
 
 	if (!ctx)
 		return nil;
