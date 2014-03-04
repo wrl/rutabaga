@@ -32,6 +32,10 @@
 struct cocoa_rtb_window;
 
 @interface RutabagaOpenGLContext : NSOpenGLContext
+{
+@public
+	const NSOpenGLPixelFormat *pixelFormat;
+}
 @end
 
 @interface RutabagaWindow : NSWindow

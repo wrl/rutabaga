@@ -24,6 +24,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <unistd.h>
 #include <uv.h>
 
 #include <glloadgen/gl_core.3.0.h>
@@ -38,41 +39,47 @@
 #include "cocoa_rtb.h"
 
 static void
-timer_cb(CFRunLoopTimerRef timer, void *info)
+draw_frame(struct rtb_window *win)
 {
-	struct rutabaga *r;
-	struct rtb_window *win;
 	struct cocoa_rtb_window *cwin;
 
-	r = info;
-	win = r->win;
-	cwin = RTB_WINDOW_AS(r->win, cocoa_rtb_window);
+	cwin = RTB_WINDOW_AS(win, cocoa_rtb_window);
 
-	[cwin->gl_ctx makeCurrentContext];
+	rtb_window_lock(win);
 	rtb_window_draw(win);
 	[cwin->gl_ctx flushBuffer];
+	rtb_window_unlock(win);
+}
+
+static CVReturn
+display_link_cb(CVDisplayLinkRef display_link, const CVTimeStamp *now,
+		const CVTimeStamp *frame_time, CVOptionFlags flags_in,
+		CVOptionFlags *flags_out, void *ctx)
+{
+	struct rtb_window *win = ctx;
+	draw_frame(win);
+
+	return kCVReturnSuccess;
 }
 
 void
 rtb_event_loop(struct rutabaga *r)
 {
 	struct rtb_window *win;
-	NSRunLoop *loop;
-	CFRunLoopTimerRef frame_timer;
-	CFRunLoopTimerContext timer_ctx = {
-		.version = 0,
-		.info = r,
-		.retain = NULL,
-		.release = NULL,
-		.copyDescription = NULL
-	};
+	RutabagaOpenGLContext *gl_ctx;
+	CVDisplayLinkRef display_link;
 
 	win = r->win;
+	gl_ctx = RTB_WINDOW_AS(win, cocoa_rtb_window)->gl_ctx;
+
+	CVDisplayLinkCreateWithActiveCGDisplays(&display_link);
+	CVDisplayLinkSetOutputCallback(display_link, display_link_cb, win);
+	CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(display_link,
+			[gl_ctx CGLContextObj], [gl_ctx->pixelFormat CGLPixelFormatObj]);
+
 	rtb_window_reinit(win);
 
-	frame_timer = CFRunLoopTimerCreate(NULL, 0, 1.0 / 60.0, 0, 0, timer_cb, &timer_ctx);
+	CVDisplayLinkStart(display_link);
 
-	loop = [NSRunLoop currentRunLoop];
-	[loop addTimer:(__bridge NSTimer *)frame_timer forMode:NSRunLoopCommonModes];
 	[NSApp run];
 }

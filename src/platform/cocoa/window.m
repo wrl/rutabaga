@@ -46,9 +46,6 @@
 }
 @end
 
-@implementation RutabagaOpenGLContext
-@end
-
 @interface RutabagaOpenGLView : NSView
 {
 @public
@@ -74,10 +71,10 @@
 	rtb_win->w = frame.size.width;
 	rtb_win->h = frame.size.height;
 
+	rtb_window_lock(RTB_WINDOW(rtb_win));
 	[rtb_win->gl_ctx update];
-	[rtb_win->gl_ctx makeCurrentContext];
-
 	rtb_window_reinit(RTB_WINDOW(rtb_win));
+	rtb_window_unlock(RTB_WINDOW(rtb_win));
 
 	[super setNeedsDisplay:YES];
 }
@@ -97,6 +94,9 @@
 {
 	return;
 }
+@end
+
+@implementation RutabagaOpenGLContext
 @end
 
 /**
@@ -165,7 +165,8 @@ alloc_gl_ctx(void)
 		return nil;
 
 	ctx = [[RutabagaOpenGLContext alloc] initWithFormat:fmt shareContext:nil];
-	[fmt release];
+	ctx->pixelFormat = fmt;
+	[fmt retain];
 
 	if (!ctx)
 		return nil;
@@ -243,6 +244,7 @@ window_impl_open(struct rutabaga *rtb,
 		view->rtb_win = self;
 	}
 
+	uv_mutex_init(&self->lock);
 	return RTB_WINDOW(self);
 }
 
@@ -250,4 +252,26 @@ void
 window_impl_close(struct rtb_window *rwin)
 {
 	return;
+}
+
+/**
+ * locking
+ */
+
+void
+rtb_window_lock(struct rtb_window *rwin)
+{
+	struct cocoa_rtb_window *self = RTB_WINDOW_AS(rwin, cocoa_rtb_window);
+
+	uv_mutex_lock(&self->lock);
+	[self->gl_ctx makeCurrentContext];
+}
+
+void
+rtb_window_unlock(struct rtb_window *rwin)
+{
+	struct cocoa_rtb_window *self = RTB_WINDOW_AS(rwin, cocoa_rtb_window);
+
+	[NSOpenGLContext clearCurrentContext];
+	uv_mutex_unlock(&self->lock);
 }

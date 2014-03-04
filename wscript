@@ -137,7 +137,7 @@ def configure(conf):
         check_freetype(conf)
         conf.env.PLATFORM = 'cocoa'
 
-        conf.env.append_unique('FRAMEWORK_COCOA', 'Cocoa')
+        conf.env.append_unique('FRAMEWORK_COCOA', ['Cocoa', 'QuartzCore'])
     else:
         check_gl(conf)
         check_freetype(conf)
