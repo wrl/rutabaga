@@ -192,7 +192,6 @@ rtb_text_object_render(struct rtb_text_object *self,
 	glUniform3f(shader->atlas_pixel,
 			1.f / atlas->width, 1.f / atlas->height, atlas->depth);
 
-	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glUniform2f(shader->offset, x, y);

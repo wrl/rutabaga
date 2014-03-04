@@ -300,6 +300,10 @@ rtb_window_draw(struct rtb_window *self)
 	prop = rtb_style_query_prop(RTB_ELEMENT(self),
 			"background-color", RTB_STYLE_PROP_COLOR, 1);
 
+	glEnable(GL_DITHER);
+	glEnable(GL_BLEND);
+	glEnable(GL_SCISSOR_TEST);
+
 	glClearColor(
 			prop->color.r,
 			prop->color.g,

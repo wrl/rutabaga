@@ -164,7 +164,6 @@ rtb_surface_blit(struct rtb_surface *self)
 	glBindTexture(GL_TEXTURE_2D, self->texture);
 	glUniform1i(shader->texture, 0);
 
-	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 	rtb_render_quad(ctx, &self->quad);

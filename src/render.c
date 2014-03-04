@@ -182,9 +182,6 @@ rtb_render_reset(struct rtb_element *elem)
 			elem->surface->y + elem->surface->h - elem->h - elem->y,
 			elem->w, elem->h);
 
-	glEnable(GL_SCISSOR_TEST);
-
-	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
