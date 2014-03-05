@@ -62,12 +62,33 @@ display_link_cb(CVDisplayLinkRef display_link, const CVTimeStamp *now,
 	return kCVReturnSuccess;
 }
 
+static void
+timer_cb(CFRunLoopTimerRef timer, void *info)
+{
+	struct rutabaga *r;
+	struct rtb_window *win;
+
+	r = info;
+	win = r->win;
+
+	draw_frame(win);
+}
+
 void
 rtb_event_loop(struct rutabaga *r)
 {
 	struct rtb_window *win;
 	RutabagaOpenGLContext *gl_ctx;
 	CVDisplayLinkRef display_link;
+	NSRunLoop *loop;
+	CFRunLoopTimerRef frame_timer;
+	CFRunLoopTimerContext timer_ctx = {
+		.version = 0,
+		.info = r,
+		.retain = NULL,
+		.release = NULL,
+		.copyDescription = NULL
+	};
 
 	win = r->win;
 	gl_ctx = RTB_WINDOW_AS(win, cocoa_rtb_window)->gl_ctx;
@@ -77,9 +98,15 @@ rtb_event_loop(struct rutabaga *r)
 	CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(display_link,
 			[gl_ctx CGLContextObj], [gl_ctx->pixelFormat CGLPixelFormatObj]);
 
+	frame_timer = CFRunLoopTimerCreate(NULL, 0, 1.0 / 60.0, 0, 0, timer_cb, &timer_ctx);
+	loop = [NSRunLoop currentRunLoop];
+
 	rtb_window_reinit(win);
 
-	CVDisplayLinkStart(display_link);
+	[loop addTimer:(__bridge NSTimer *)frame_timer forMode:NSRunLoopCommonModes];
+
+	if (0)
+		CVDisplayLinkStart(display_link);
 
 	[NSApp run];
 }

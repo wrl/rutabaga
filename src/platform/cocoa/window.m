@@ -30,6 +30,7 @@
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/window.h"
+#include "rutabaga/platform.h"
 
 #include "private/window_impl.h"
 #include "cocoa_rtb.h"
@@ -45,7 +46,6 @@
 							  backing:bufferingType
 								defer:deferCreation];
 
-	[self setAcceptsMouseMovedEvents:YES];
 	return self;
 }
 
@@ -69,6 +69,10 @@
 {
 @public
 	struct cocoa_rtb_window *rtb_win;
+@private
+	NSTrackingArea *tracking_area;
+	BOOL was_mouse_coalescing_enabled;
+	BOOL window_did_accept_mouse_moved_events;
 }
 @end
 
@@ -76,8 +80,50 @@
 - (id) initWithFrame: (NSRect) frame
 {
 	self = [super initWithFrame:frame];
+
+	if (!self)
+		return nil;
+
+	tracking_area = nil;
 	[self setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 	return self;
+}
+
+- (void) viewWillMoveToWindow: (NSWindow *) newWindow
+{
+	NSWindow *old_window;
+	NSTrackingAreaOptions tracking_opts =
+		NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved
+		| NSTrackingEnabledDuringMouseDrag | NSTrackingInVisibleRect
+		| NSTrackingActiveInActiveApp;
+
+	if (!tracking_area) {
+		tracking_area = [NSTrackingArea alloc];
+		[self addTrackingArea:tracking_area];
+	}
+
+	old_window = [self window];
+	if (old_window != nil) {
+		[old_window
+			setAcceptsMouseMovedEvents:window_did_accept_mouse_moved_events];
+		was_mouse_coalescing_enabled = [NSEvent isMouseCoalescingEnabled];
+		[NSEvent setMouseCoalescingEnabled:NO];
+	}
+
+	if (newWindow == nil) {
+		[self removeTrackingArea:tracking_area];
+		[tracking_area release];
+		[NSEvent setMouseCoalescingEnabled:was_mouse_coalescing_enabled];
+	} else {
+		[tracking_area initWithRect:[self bounds]
+							options:tracking_opts
+							  owner:self
+						   userInfo:nil];
+
+		[newWindow setAcceptsMouseMovedEvents:YES];
+	}
+
+	[super viewWillMoveToWindow:newWindow];
 }
 
 - (void) setFrame: (NSRect) frame
@@ -93,9 +139,48 @@
 	rtb_window_lock(RTB_WINDOW(rtb_win));
 	[rtb_win->gl_ctx update];
 	rtb_window_reinit(RTB_WINDOW(rtb_win));
+	rtb_window_draw(RTB_WINDOW(rtb_win));
+	[rtb_win->gl_ctx flushBuffer];
 	rtb_window_unlock(RTB_WINDOW(rtb_win));
 
 	[super setNeedsDisplay:YES];
+}
+
+- (void) mouseEntered: (NSEvent *) e
+{
+	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
+	rtb_platform_mouse_enter_window(RTB_WINDOW(rtb_win), pt.x, pt.y);
+}
+
+- (void) mouseExited: (NSEvent *) e
+{
+	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
+	rtb_platform_mouse_leave_window(RTB_WINDOW(rtb_win), pt.x, pt.y);
+}
+
+- (void) mouseMoved: (NSEvent *) e
+{
+	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
+	rtb_platform_mouse_motion(RTB_WINDOW(rtb_win), pt.x, rtb_win->h - pt.y);
+}
+
+- (void) mouseDragged: (NSEvent *) e
+{
+	[self mouseMoved:e];
+}
+
+- (void) mouseDown: (NSEvent *) e
+{
+	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
+	rtb_platform_mouse_press(RTB_WINDOW(rtb_win),
+			RTB_MOUSE_BUTTON1, pt.x, pt.y);
+}
+
+- (void) mouseUp: (NSEvent *) e
+{
+	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
+	rtb_platform_mouse_release(RTB_WINDOW(rtb_win),
+			RTB_MOUSE_BUTTON1, pt.x, pt.y);
 }
 @end
 
