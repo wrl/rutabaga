@@ -532,20 +532,21 @@ frame_cb(uv_timer_t *_handle, int status)
 
 	drain_xcb_event_queue(xwin->xrtb->xcb_conn, win);
 
-	if (win->visibility == RTB_FULLY_OBSCURED || !win->dirty)
-		return;
-
 	rtb_window_lock(win);
-	rtb_window_draw(win);
 
-	if (sync->functions_valid) {
-		sync->msc++;
-		sync->swap_buffers_msc(xwin->xrtb->dpy, xwin->gl_draw,
-				sync->msc, 0, 0);
-		sync->get_values(xwin->xrtb->dpy, xwin->gl_draw,
-				&sync->ust, &sync->msc, &sync->sbc);
-	} else
-		glXSwapBuffers(xwin->xrtb->dpy, xwin->gl_draw);
+	if (win->visibility != RTB_FULLY_OBSCURED && win->dirty) {
+		rtb_window_draw(win);
+
+		if (sync->functions_valid) {
+			sync->msc++;
+			sync->swap_buffers_msc(xwin->xrtb->dpy, xwin->gl_draw,
+					sync->msc, 0, 0);
+			sync->get_values(xwin->xrtb->dpy, xwin->gl_draw,
+					&sync->ust, &sync->msc, &sync->sbc);
+		} else
+			glXSwapBuffers(xwin->xrtb->dpy, xwin->gl_draw);
+	}
+
 	rtb_window_unlock(win);
 }
 
