@@ -146,22 +146,34 @@
 	[super setNeedsDisplay:YES];
 }
 
+#define LOCK (rtb_window_lock(RTB_WINDOW(rtb_win)))
+#define UNLOCK (rtb_window_unlock(RTB_WINDOW(rtb_win)))
+
 - (void) mouseEntered: (NSEvent *) e
 {
 	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
+
+	LOCK;
 	rtb_platform_mouse_enter_window(RTB_WINDOW(rtb_win), pt.x, pt.y);
+	UNLOCK;
 }
 
 - (void) mouseExited: (NSEvent *) e
 {
 	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
+
+	LOCK;
 	rtb_platform_mouse_leave_window(RTB_WINDOW(rtb_win), pt.x, pt.y);
+	UNLOCK;
 }
 
 - (void) mouseMoved: (NSEvent *) e
 {
 	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
+
+	LOCK;
 	rtb_platform_mouse_motion(RTB_WINDOW(rtb_win), pt.x, rtb_win->h - pt.y);
+	UNLOCK;
 }
 
 - (void) mouseDragged: (NSEvent *) e
@@ -169,18 +181,67 @@
 	[self mouseMoved:e];
 }
 
+- (void) rightMouseDragged: (NSEvent *) e
+{
+	[self mouseDragged:e];
+}
+
+- (void) otherMouseDragged: (NSEvent *) e
+{
+	[self mouseDragged:e];
+}
+
+static rtb_mouse_buttons_t
+app_kit_button_to_rtb_button(NSInteger app_kit_button)
+{
+	switch (app_kit_button) {
+	case 0: return RTB_MOUSE_BUTTON1;
+	case 1: return RTB_MOUSE_BUTTON3;
+	case 2: return RTB_MOUSE_BUTTON2;
+	default: return app_kit_button;
+	}
+}
+
 - (void) mouseDown: (NSEvent *) e
 {
 	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
+
+	LOCK;
 	rtb_platform_mouse_press(RTB_WINDOW(rtb_win),
-			RTB_MOUSE_BUTTON1, pt.x, pt.y);
+			app_kit_button_to_rtb_button([e buttonNumber]),
+			pt.x, rtb_win->h - pt.y);
+	UNLOCK;
+}
+
+- (void) rightMouseDown: (NSEvent *) e
+{
+	[self mouseDown:e];
+}
+
+- (void) otherMouseDown: (NSEvent *) e
+{
+	[self mouseDown:e];
 }
 
 - (void) mouseUp: (NSEvent *) e
 {
 	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
+
+	LOCK;
 	rtb_platform_mouse_release(RTB_WINDOW(rtb_win),
-			RTB_MOUSE_BUTTON1, pt.x, pt.y);
+			app_kit_button_to_rtb_button([e buttonNumber]),
+			pt.x, rtb_win->h - pt.y);
+	UNLOCK;
+}
+
+- (void) rightMouseUp: (NSEvent *) e
+{
+	[self mouseUp:e];
+}
+
+- (void) otherMouseUp: (NSEvent *) e
+{
+	[self mouseUp:e];
 }
 @end
 
