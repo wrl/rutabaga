@@ -136,7 +136,8 @@
 	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
 
 	LOCK;
-	rtb_platform_mouse_enter_window(RTB_WINDOW(rtb_win), pt.x, pt.y);
+	rtb_platform_mouse_enter_window(RTB_WINDOW(rtb_win),
+			pt.x, rtb_win->h - pt.y);
 	UNLOCK;
 }
 
@@ -145,7 +146,8 @@
 	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
 
 	LOCK;
-	rtb_platform_mouse_leave_window(RTB_WINDOW(rtb_win), pt.x, pt.y);
+	rtb_platform_mouse_leave_window(RTB_WINDOW(rtb_win),
+			pt.x, rtb_win->h - pt.y);
 	UNLOCK;
 }
 

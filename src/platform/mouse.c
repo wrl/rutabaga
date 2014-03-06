@@ -316,7 +316,7 @@ rtb_platform_mouse_release(struct rtb_window *win,
 void
 rtb_platform_mouse_motion(struct rtb_window *win, int x, int y)
 {
-	if (!win->mouse_in)
+	if (!win->mouse_in && !win->mouse.buttons_down)
 		return;
 
 	retarget(win, x, y);
@@ -339,6 +339,8 @@ rtb_platform_mouse_enter_window(struct rtb_window *win, int x, int y)
 
 	dispatch_simple_mouse_event(win, RTB_ELEMENT(win),
 			RTB_MOUSE_ENTER, -1, x, y);
+
+	/* XXX: only on x11-xcb? */
 	rtb_platform_mouse_motion(win, x, y);
 }
 
