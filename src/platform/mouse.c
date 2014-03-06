@@ -358,6 +358,6 @@ rtb_platform_mouse_leave_window(struct rtb_window *win, int x, int y)
 		underneath = underneath->parent;
 	}
 
-	win->mouse.element_underneath = NULL;
+	win->mouse.element_underneath = RTB_ELEMENT(win);
 	win->mouse_in = 0;
 }
