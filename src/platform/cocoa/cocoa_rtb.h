@@ -43,9 +43,6 @@ struct cocoa_rtb_window;
 @public
 	struct cocoa_rtb_window *rtb_win;
 }
-
-- (BOOL) windowShouldClose: (id) sender;
-- (BOOL) canBecomeKeyWindow: (id) sender;
 @end
 
 struct cocoa_rtb_window {

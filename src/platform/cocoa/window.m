@@ -36,19 +36,6 @@
 #include "cocoa_rtb.h"
 
 @implementation RutabagaWindow
-- (id) initWithContentRect: (NSRect) contentRect
-				 styleMask: (NSUInteger) windowStyle
-				   backing: (NSBackingStoreType) bufferingType
-					 defer: (BOOL) deferCreation
-{
-	self = [super initWithContentRect:contentRect
-							styleMask:windowStyle
-							  backing:bufferingType
-								defer:deferCreation];
-
-	return self;
-}
-
 - (BOOL) windowShouldClose: (id) sender
 {
 	return NO;
@@ -57,11 +44,6 @@
 - (BOOL) canBecomeKeyWindow: (id) sender
 {
 	return YES;
-}
-
-- (void) sendEvent: (NSEvent *) event
-{
-	[super sendEvent:event];
 }
 @end
 
@@ -243,6 +225,9 @@ app_kit_button_to_rtb_button(NSInteger app_kit_button)
 {
 	[self mouseUp:e];
 }
+
+#undef LOCK
+#undef UNLOCK
 @end
 
 @interface RutabagaWindowDelegate : NSResponder <NSWindowDelegate>
@@ -251,14 +236,10 @@ app_kit_button_to_rtb_button(NSInteger app_kit_button)
 	struct cocoa_rtb_window *rtb_win;
 }
 
-- (void) windowDidResize: (NSNotification *) notification;
+/* XXX: may not need a window delegate... */
 @end
 
 @implementation RutabagaWindowDelegate
-- (void) windowDidResize: (NSNotification *) notification
-{
-	return;
-}
 @end
 
 @implementation RutabagaOpenGLContext
@@ -305,6 +286,10 @@ get_dpi(int *x, int *y)
 	*x = lrintf(ceilf((pixel_size.width / phy_size.width) * 25.4f));
 	*y = lrintf(ceilf((pixel_size.height / phy_size.height) * 25.4f));
 #else
+	/* XXX: need some mechanism for scaling based on EMs. using the actual
+	 *      DPI looks like shit at the moment. going to bite us in the ass
+	 *      on hidpi tho. */
+
 	*x = *y = 96;
 #endif
 }
