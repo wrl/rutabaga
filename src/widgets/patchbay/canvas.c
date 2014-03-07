@@ -66,6 +66,7 @@ static struct {
 		GLint texture;
 		GLint tx_size;
 		GLint tx_offset;
+		GLint win_size;
 
 		GLint front_color;
 		GLint back_color;
@@ -90,6 +91,7 @@ init_shaders()
 	CACHE_UNIFORM_LOCATION(texture);
 	CACHE_UNIFORM_LOCATION(tx_size);
 	CACHE_UNIFORM_LOCATION(tx_offset);
+	CACHE_UNIFORM_LOCATION(win_size);
 
 	CACHE_UNIFORM_LOCATION(front_color);
 	CACHE_UNIFORM_LOCATION(back_color);
@@ -197,9 +199,13 @@ draw_bg(struct rtb_patchbay *self)
 			prop->color.b,
 			prop->color.a);
 
-	glDrawElements(
-			GL_TRIANGLE_STRIP, ARRAY_LENGTH(box_indices),
-			GL_UNSIGNED_BYTE, box_indices);
+	glUniform2f(shader.uniform.win_size,
+			self->window->w, self->window->h);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,
+			self->window->local_storage.ibo.quad.solid);
+	glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_BYTE, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	glDisableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);

@@ -25,14 +25,12 @@
  */
 
 #version 150
-#extension GL_ARB_fragment_coord_conventions : enable
-
-layout(origin_upper_left, pixel_center_integer) in vec4 gl_FragCoord;
 
 uniform vec2 offset;
 uniform vec2 tx_offset;
 uniform vec2 tx_size;
-uniform sampler2D texture;
+uniform vec2 win_size;
+uniform sampler2D tx_sampler;
 
 uniform vec4 front_color;
 uniform vec4 back_color;
@@ -41,11 +39,14 @@ out vec4 frag_color;
 
 void main()
 {
-	vec2 offset_coord = gl_FragCoord.xy + tx_offset;
+	vec2 offset_coord = vec2(
+		gl_FragCoord.x + tx_offset.x,
+		win_size.y - gl_FragCoord.y + tx_offset.y);
+
 	vec2 tex_coord = vec2(
 		(offset_coord.x / tx_size.x),
 		(offset_coord.y / tx_size.y));
 
-	float a = texture2D(texture, tex_coord).a;
+	float a = texture(tx_sampler, tex_coord).a;
 	frag_color = mix(front_color, back_color, a);
 }
