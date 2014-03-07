@@ -71,6 +71,13 @@
 	return self;
 }
 
+- (BOOL) isFlipped
+{
+	/* rutabaga's coordinate system puts (0,0) at the top left, cocoa's is
+	 * at the bottom left. returning YES here has cocoa flip the y coord. */
+	return YES;
+}
+
 - (void) viewWillMoveToWindow: (NSWindow *) newWindow
 {
 	NSWindow *old_window;
@@ -136,8 +143,7 @@
 	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
 
 	LOCK;
-	rtb_platform_mouse_enter_window(RTB_WINDOW(rtb_win),
-			pt.x, rtb_win->h - pt.y);
+	rtb_platform_mouse_enter_window(RTB_WINDOW(rtb_win), pt.x, pt.y);
 	UNLOCK;
 }
 
@@ -146,8 +152,7 @@
 	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
 
 	LOCK;
-	rtb_platform_mouse_leave_window(RTB_WINDOW(rtb_win),
-			pt.x, rtb_win->h - pt.y);
+	rtb_platform_mouse_leave_window(RTB_WINDOW(rtb_win), pt.x, pt.y);
 	UNLOCK;
 }
 
@@ -156,7 +161,7 @@
 	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
 
 	LOCK;
-	rtb_platform_mouse_motion(RTB_WINDOW(rtb_win), pt.x, rtb_win->h - pt.y);
+	rtb_platform_mouse_motion(RTB_WINDOW(rtb_win), pt.x, pt.y);
 	UNLOCK;
 }
 
@@ -192,8 +197,7 @@ app_kit_button_to_rtb_button(NSInteger app_kit_button)
 
 	LOCK;
 	rtb_platform_mouse_press(RTB_WINDOW(rtb_win),
-			app_kit_button_to_rtb_button([e buttonNumber]),
-			pt.x, rtb_win->h - pt.y);
+			app_kit_button_to_rtb_button([e buttonNumber]), pt.x, pt.y);
 	UNLOCK;
 }
 
@@ -213,8 +217,7 @@ app_kit_button_to_rtb_button(NSInteger app_kit_button)
 
 	LOCK;
 	rtb_platform_mouse_release(RTB_WINDOW(rtb_win),
-			app_kit_button_to_rtb_button([e buttonNumber]),
-			pt.x, rtb_win->h - pt.y);
+			app_kit_button_to_rtb_button([e buttonNumber]), pt.x, pt.y);
 	UNLOCK;
 }
 
