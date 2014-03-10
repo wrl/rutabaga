@@ -84,12 +84,7 @@
 	NSTrackingAreaOptions tracking_opts =
 		NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved
 		| NSTrackingEnabledDuringMouseDrag | NSTrackingInVisibleRect
-		| NSTrackingActiveInActiveApp;
-
-	if (!tracking_area) {
-		tracking_area = [NSTrackingArea alloc];
-		[self addTrackingArea:tracking_area];
-	}
+		| NSTrackingAssumeInside | NSTrackingActiveAlways;
 
 	old_window = [self window];
 	if (old_window != nil) {
@@ -100,16 +95,29 @@
 	}
 
 	if (newWindow == nil) {
-		[self removeTrackingArea:tracking_area];
-		[tracking_area release];
+		if (tracking_area) {
+			[self removeTrackingArea:tracking_area];
+			[tracking_area release];
+		}
+
 		[NSEvent setMouseCoalescingEnabled:was_mouse_coalescing_enabled];
 	} else {
-		[tracking_area initWithRect:[self bounds]
-							options:tracking_opts
-							  owner:self
-						   userInfo:nil];
-
 		[newWindow setAcceptsMouseMovedEvents:YES];
+
+		if (!tracking_area) {
+			tracking_area = [NSTrackingArea alloc];
+
+			[tracking_area initWithRect:[self bounds]
+								options:tracking_opts
+								  owner:self
+							   userInfo:nil];
+
+			[self addTrackingArea:tracking_area];
+		} else
+			[tracking_area initWithRect:[self bounds]
+								options:tracking_opts
+								  owner:self
+							   userInfo:nil];
 	}
 
 	[super viewWillMoveToWindow:newWindow];
@@ -394,8 +402,8 @@ window_impl_open(struct rutabaga *rtb,
 		[gl_ctx setView:view];
 		[gl_ctx makeCurrentContext];
 
-		[NSApp activateIgnoringOtherApps:YES];
 		[cwin makeKeyAndOrderFront:cwin];
+		[NSApp activateIgnoringOtherApps:YES];
 		[cwin center];
 
 		get_dpi(&self->dpi.x, &self->dpi.y);
