@@ -17,7 +17,7 @@ def separator():
     # print() (as a function) doesn't work in python <2.7
     sys.stdout.write("\n")
 
-sys.path.append("./python")
+sys.path.append('./waftools')
 
 #
 # dep checking functions
@@ -122,8 +122,8 @@ def configure(conf):
     conf.load("compiler_c")
     conf.load("gnu_dirs")
 
-    conf.load('objc', tooldir='python/waftools')
-    conf.load('rtb_style', tooldir='python/waftools')
+    conf.load('objc', tooldir='./waftools')
+    conf.load('rtb_style', tooldir='./waftools')
 
     # conf checks
 
