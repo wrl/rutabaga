@@ -8,16 +8,16 @@ from glsl2h import write_shader_header
 top = '..'
 
 def glsl2h_task(bld, dest):
-    def shader(task):
-        write_shader_header(task.outputs[0], task.inputs)
+    vertex, fragment = ['shaders/{0}.{1}.glsl'.format(dest, kind)
+            for kind in ('vert', 'frag')]
 
     bld(
-        rule=shader,
-        source=['shaders/{0}.{1}.glsl'.format(dest, kind) for kind in ('vert', 'frag')],
+        features='shader_header',
+        vertex=vertex,
+        fragment=fragment,
         target='shaders/{0}.glsl.h'.format(dest),
         name='shaders',
-        export_includes='.',
-        update_outputs=True)
+        export_includes='.')
 
 
 def build(bld):

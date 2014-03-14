@@ -17,8 +17,6 @@ def separator():
     # print() (as a function) doesn't work in python <2.7
     sys.stdout.write("\n")
 
-sys.path.append('./waftools')
-
 #
 # dep checking functions
 #
@@ -124,6 +122,7 @@ def configure(conf):
 
     conf.load('objc', tooldir='./waftools')
     conf.load('rtb_style', tooldir='./waftools')
+    conf.load('shader_header', tooldir='./waftools')
 
     # conf checks
 
