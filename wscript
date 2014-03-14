@@ -120,9 +120,10 @@ def configure(conf):
     conf.load("compiler_c")
     conf.load("gnu_dirs")
 
-    conf.load('objc', tooldir='./waftools')
-    conf.load('rtb_style', tooldir='./waftools')
-    conf.load('shader_header', tooldir='./waftools')
+    tooldir = conf.path.find_dir('waftools').abspath()
+    conf.load('objc', tooldir=tooldir)
+    conf.load('rtb_style', tooldir=tooldir)
+    conf.load('shader_header', tooldir=tooldir)
 
     # conf checks
 
