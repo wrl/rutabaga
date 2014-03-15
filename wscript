@@ -158,7 +158,8 @@ def configure(conf):
 
     # setting defines, etc
 
-    conf.env.VERSION = VERSION
+    conf.env.RTB_VERSION = VERSION
+
     conf.define('_GNU_SOURCE', '')
     conf.env.append_unique('CFLAGS', [
         '-std=c99', '-fms-extensions',
