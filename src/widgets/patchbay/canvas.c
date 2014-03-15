@@ -351,7 +351,7 @@ reposition(struct rtb_patchbay *self, struct rtb_point *by)
 }
 
 static int
-handle_drag(struct rtb_patchbay *self, struct rtb_drag_event *e)
+handle_drag(struct rtb_patchbay *self, const struct rtb_drag_event *e)
 {
 	struct rtb_point delta = {
 		e->delta.x,
@@ -378,7 +378,7 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 	switch (e->type) {
 	case RTB_DRAG_START:
 	case RTB_DRAGGING:
-		if (handle_drag(self, (struct rtb_drag_event *) e))
+		if (handle_drag(self, RTB_EVENT_AS(e, rtb_drag_event)))
 			return 1;
 
 	default:

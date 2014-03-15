@@ -132,7 +132,7 @@ def build(bld):
         export_includes='libuv/include',
         defines=from_gyp['defines'],
 
-        cflags=from_gyp['cflags'] + bld.env['CFLAGS_cshlib'],
+        cflags=from_gyp['cflags'] + bld.env['CFLAGS_cshlib'] + ['-Wno-cast-align'],
         linkflags=from_gyp['ldflags'],
         lib=from_gyp['libraries'],
 

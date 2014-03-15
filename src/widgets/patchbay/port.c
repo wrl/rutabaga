@@ -120,7 +120,7 @@ handle_connection(struct rtb_patchbay_port *a, struct rtb_patchbay_port *b)
 }
 
 static void
-start_patching(struct rtb_patchbay_port *self, struct rtb_mouse_event *e)
+start_patching(struct rtb_patchbay_port *self, const struct rtb_mouse_event *e)
 {
 	struct rtb_patchbay *patchbay = self->node->patchbay;
 
@@ -186,7 +186,7 @@ handle_drag(struct rtb_patchbay_port *self, const struct rtb_drag_event *e)
 }
 
 static int
-handle_mouse(struct rtb_patchbay_port *self, struct rtb_mouse_event *e)
+handle_mouse(struct rtb_patchbay_port *self, const struct rtb_mouse_event *e)
 {
 	if (e->button != RTB_MOUSE_BUTTON1)
 		return 0;
@@ -227,7 +227,7 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 	switch (e->type) {
 	case RTB_MOUSE_DOWN:
 	case RTB_MOUSE_UP:
-		if (handle_mouse(self, (struct rtb_mouse_event *) e)) {
+		if (handle_mouse(self, RTB_EVENT_AS(e, rtb_mouse_event))) {
 			rtb_elem_mark_dirty(RTB_ELEMENT(self->node->patchbay));
 			return 1;
 		}
@@ -239,7 +239,7 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 	case RTB_DRAG_START:
 	case RTB_DRAG_DROP:
 	case RTB_DRAGGING:
-		if (handle_drag(self, (struct rtb_drag_event *) e)) {
+		if (handle_drag(self, RTB_EVENT_AS(e, rtb_drag_event))) {
 			rtb_elem_mark_dirty(RTB_ELEMENT(self->node->patchbay));
 			return 1;
 		}

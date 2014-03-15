@@ -72,7 +72,7 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 	switch (e->type) {
 	case RTB_DRAG_START:
 	case RTB_DRAGGING:
-		return handle_drag(self, (struct rtb_drag_event *) e);
+		return handle_drag(self, RTB_EVENT_AS(e, rtb_drag_event));
 
 	default:
 		return super.on_event(elem, e);

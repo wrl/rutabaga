@@ -93,7 +93,7 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 		break;
 
 	case RTB_MOUSE_CLICK:
-		if (((struct rtb_mouse_event *) e)->button != RTB_MOUSE_BUTTON1)
+		if (RTB_EVENT_AS(e, rtb_mouse_event)->button != RTB_MOUSE_BUTTON1)
 			return 0;
 
 		return dispatch_click_event(self, RTB_EVENT_AS(e, rtb_mouse_event));

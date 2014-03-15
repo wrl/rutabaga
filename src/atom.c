@@ -45,6 +45,8 @@ typedef unsigned int uint_t;
 #define __forceinline inline
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
 static unsigned int
 hash_meiyan(const char *str, size_t wrdlen)
 {
@@ -76,6 +78,7 @@ hash_meiyan(const char *str, size_t wrdlen)
 
 	return hash32 ^ (hash32 >> 16);
 }
+#pragma GCC diagnostic pop
 
 #define HASH(str, len) hash_meiyan(str, len)
 
