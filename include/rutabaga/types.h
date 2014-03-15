@@ -50,11 +50,11 @@
 #ifdef __GNUC__
 #define RTB_CONTAINER_OF(ptr, type, member)	\
 	((type *)				\
-	 ((void *)(__typeof__(((type *) 0)->member) *){ptr} - offsetof(type, member)))
+	 ((void *) ((char *)(__typeof__(((type *) 0)->member) *){ptr} - offsetof(type, member))))
 #else
 #define RTB_CONTAINER_OF(ptr, type, member)	\
 	((type *)				\
-	 (void *)(void *){ptr} - offsetof(type, member))
+	 ((void *) ((char *)(void *){ptr} - offsetof(type, member))))
 #endif
 
 #define RTB_UPCAST(x, to) (&(x)->RTB_INHERITED_MEMBER(to))
