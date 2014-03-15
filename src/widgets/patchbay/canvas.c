@@ -124,10 +124,6 @@ load_tile(const struct rtb_style_texture_definition *definition,
  * drawing
  */
 
-static const GLubyte box_indices[] = {
-	0, 1, 3, 2
-};
-
 static void
 cache_to_vbo(struct rtb_patchbay *self)
 {
