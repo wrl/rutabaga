@@ -39,7 +39,7 @@
 
 #include "rutabaga/widgets/knob.h"
 
-#include "private/util.h"
+#include "rtb_private/util.h"
 
 #define SELF_FROM(elem) \
 	struct rtb_knob *self = RTB_ELEMENT_AS(elem, rtb_knob)

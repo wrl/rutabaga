@@ -39,7 +39,7 @@
 #include "freetype-gl/freetype-gl.h"
 #include "freetype-gl/vertex-buffer.h"
 
-#include "private/utf8.h"
+#include "rtb_private/utf8.h"
 
 struct text_vertex {
 	float x, y;

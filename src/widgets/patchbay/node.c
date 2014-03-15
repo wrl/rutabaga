@@ -32,7 +32,7 @@
 
 #include "rutabaga/widgets/patchbay.h"
 
-#include "private/util.h"
+#include "rtb_private/util.h"
 
 #define SELF_FROM(elem) \
 	struct rtb_patchbay_node *self = RTB_ELEMENT_AS(elem, rtb_patchbay_node)

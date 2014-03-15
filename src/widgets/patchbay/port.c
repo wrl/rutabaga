@@ -33,7 +33,7 @@
 
 #include "rutabaga/widgets/patchbay.h"
 
-#include "private/util.h"
+#include "rtb_private/util.h"
 
 static struct rtb_element_implementation super;
 

@@ -28,8 +28,8 @@
 #include "rutabaga/render.h"
 #include "rutabaga/quad.h"
 
-#include "private/layout-debug.h"
-#include "private/util.h"
+#include "rtb_private/layout-debug.h"
+#include "rtb_private/util.h"
 
 static struct rtb_quad quad;
 

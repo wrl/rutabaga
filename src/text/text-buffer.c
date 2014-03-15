@@ -31,7 +31,7 @@
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/text-buffer.h"
 
-#include "private/utf8.h"
+#include "rtb_private/utf8.h"
 
 #define UTF8_IS_CONTINUATION(byte) (((byte) & 0xC0) == 0x80)
 

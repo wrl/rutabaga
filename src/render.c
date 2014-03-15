@@ -30,7 +30,7 @@
 #include "rutabaga/style.h"
 #include "rutabaga/quad.h"
 
-#include "private/util.h"
+#include "rtb_private/util.h"
 
 /**
  * public API

@@ -32,7 +32,7 @@
 #include "rutabaga/stylequad.h"
 #include "rutabaga/window.h"
 
-#include "private/util.h"
+#include "rtb_private/util.h"
 
 /**
  * drawing

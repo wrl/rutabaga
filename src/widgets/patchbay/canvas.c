@@ -43,7 +43,7 @@
 
 #include "rutabaga/widgets/patchbay.h"
 
-#include "private/util.h"
+#include "rtb_private/util.h"
 
 #include "shaders/patchbay-canvas.glsl.h"
 

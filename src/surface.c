@@ -35,8 +35,8 @@
 #include "rutabaga/window.h"
 #include "rutabaga/quad.h"
 
-#include "private/util.h"
-#include "private/layout-debug.h"
+#include "rtb_private/util.h"
+#include "rtb_private/layout-debug.h"
 
 #define SELF_FROM(elem) \
 	struct rtb_surface *self = RTB_ELEMENT_AS(elem, rtb_surface)

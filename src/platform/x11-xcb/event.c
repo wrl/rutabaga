@@ -48,7 +48,7 @@
 #include "rutabaga/platform.h"
 #include "rutabaga/keyboard.h"
 
-#include "private/util.h"
+#include "rtb_private/util.h"
 
 #include "xrtb.h"
 

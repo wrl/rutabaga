@@ -44,8 +44,8 @@
 #include "rutabaga/event.h"
 #include "rutabaga/mouse.h"
 
-#include "private/stdlib-allocator.h"
-#include "private/layout-debug.h"
+#include "rtb_private/stdlib-allocator.h"
+#include "rtb_private/layout-debug.h"
 
 #include "wwrl/vector.h"
 

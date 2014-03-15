@@ -36,9 +36,9 @@
 
 #include "rutabaga/widgets/text-input.h"
 
-#include "private/stdlib-allocator.h"
-#include "private/util.h"
-#include "private/utf8.h"
+#include "rtb_private/stdlib-allocator.h"
+#include "rtb_private/util.h"
+#include "rtb_private/utf8.h"
 
 #define SELF_FROM(elem) \
 	struct rtb_text_input *self = RTB_ELEMENT_AS(elem, rtb_text_input)

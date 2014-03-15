@@ -36,7 +36,7 @@
 #include "rutabaga/layout.h"
 #include "rutabaga/keyboard.h"
 
-#include "private/util.h"
+#include "rtb_private/util.h"
 #include "rutabaga/widgets/button.h"
 
 #define SELF_FROM(elem) \

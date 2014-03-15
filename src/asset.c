@@ -29,7 +29,7 @@
 #include <stdio.h>
 
 #include "rutabaga/asset.h"
-#include "private/util.h"
+#include "rtb_private/util.h"
 
 /**
  * loaders

@@ -30,7 +30,7 @@
 #include "rutabaga/style.h"
 #include "rutabaga/asset.h"
 
-#include "private/util.h"
+#include "rtb_private/util.h"
 
 /* generated as part of the build process */
 #include "styles/default/style.h"

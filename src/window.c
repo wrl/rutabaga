@@ -40,8 +40,8 @@
 #include "rutabaga/style.h"
 #include "rutabaga/mat4.h"
 
-#include "private/util.h"
-#include "private/window_impl.h"
+#include "rtb_private/util.h"
+#include "rtb_private/window_impl.h"
 
 #include "shaders/default.glsl.h"
 #include "shaders/surface.glsl.h"

@@ -32,7 +32,7 @@
 #include "rutabaga/window.h"
 #include "rutabaga/platform.h"
 
-#include "private/window_impl.h"
+#include "rtb_private/window_impl.h"
 #include "cocoa_rtb.h"
 
 @implementation RutabagaWindow
