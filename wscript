@@ -59,11 +59,9 @@ def check_gl(conf):
     pkg_check(conf, "gl")
 
 def find_freetype_static(conf, prefix):
-    ft_prefix = conf.options.freetype_prefix
-
     conf.check_cc(stlib='freetype', header_name='ft2build.h',
-        libpath=ft_prefix + '/lib',
-        includes=[ft_prefix + x for x in
+        libpath=prefix + '/lib',
+        includes=[prefix + x for x in
             ['/include', '/include/freetype2']],
         uselib_store='FREETYPE2')
 
