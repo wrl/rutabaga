@@ -58,18 +58,30 @@ def pkg_check(conf, pkg):
 def check_gl(conf):
     pkg_check(conf, "gl")
 
-def find_freetype_static(conf, prefix):
-    conf.check_cc(stlib='freetype', header_name='ft2build.h',
-        libpath=prefix + '/lib',
-        includes=[prefix + x for x in
+def find_freetype(conf, prefix, static=True, mandatory=True):
+    params = {
+        'stlib': 'freetype',
+        'header_name': 'ft2build.h',
+        'libpath': prefix + '/lib',
+        'includes': [prefix + x for x in
             ['/include', '/include/freetype2']],
-        uselib_store='FREETYPE2')
+        'uselib_store': 'FREETYPE2',
+        'mandatory': mandatory
+    }
+
+    if static:
+        params['stlib'] = 'freetype'
+    else:
+        params['lib'] = 'freetype'
+
+    return conf.check_cc(**params)
 
 def check_freetype(conf):
-    if conf.env.DEST_OS in ['darwin', 'win32']:
-        find_freetype_static(conf, conf.options.freetype_prefix or '/usr')
-    elif conf.options.freetype_prefix:
-        find_freetype_static(conf, conf.options.freetype_prefix)
+    if conf.options.freetype_prefix:
+        find_freetype(conf, conf.options.freetype_prefix, static=True)
+    elif conf.env.DEST_OS == 'darwin':
+        find_freetype(conf, conf.options.freetype_prefix or '/usr/local',
+                static=False)
     else:
         pkg_check(conf, "freetype2")
 
