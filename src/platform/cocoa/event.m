@@ -41,18 +41,11 @@
 static void
 draw_frame(struct rtb_window *win)
 {
-	struct cocoa_rtb_window *cwin;
+	struct cocoa_rtb_window *cwin = RTB_WINDOW_AS(win, cocoa_rtb_window);
 
-	cwin = RTB_WINDOW_AS(win, cocoa_rtb_window);
-
-	rtb_window_lock(win);
-
-	if (win->visibility != RTB_FULLY_OBSCURED && win->dirty) {
-		rtb_window_draw(win);
-		[cwin->gl_ctx flushBuffer];
+	@autoreleasepool {
+		[cwin->view setNeedsDisplay:YES];
 	}
-
-	rtb_window_unlock(win);
 }
 
 static CVReturn

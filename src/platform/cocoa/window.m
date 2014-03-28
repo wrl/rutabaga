@@ -47,17 +47,6 @@
 }
 @end
 
-@interface RutabagaOpenGLView : NSView
-{
-@public
-	struct cocoa_rtb_window *rtb_win;
-@private
-	NSTrackingArea *tracking_area;
-	BOOL was_mouse_coalescing_enabled;
-	BOOL window_did_accept_mouse_moved_events;
-}
-@end
-
 @implementation RutabagaOpenGLView
 - (id) initWithFrame: (NSRect) frame
 {
@@ -123,6 +112,9 @@
 	[super viewWillMoveToWindow:newWindow];
 }
 
+#define LOCK (rtb_window_lock(RTB_WINDOW(rtb_win)))
+#define UNLOCK (rtb_window_unlock(RTB_WINDOW(rtb_win)))
+
 - (void) setFrame: (NSRect) frame
 {
 	[super setFrame:frame];
@@ -133,18 +125,24 @@
 	rtb_win->w = frame.size.width;
 	rtb_win->h = frame.size.height;
 
-	rtb_window_lock(RTB_WINDOW(rtb_win));
+	LOCK;
 	[rtb_win->gl_ctx update];
 	rtb_window_reinit(RTB_WINDOW(rtb_win));
-	rtb_window_draw(RTB_WINDOW(rtb_win));
-	[rtb_win->gl_ctx flushBuffer];
-	rtb_window_unlock(RTB_WINDOW(rtb_win));
+	UNLOCK;
 
 	[super setNeedsDisplay:YES];
 }
 
-#define LOCK (rtb_window_lock(RTB_WINDOW(rtb_win)))
-#define UNLOCK (rtb_window_unlock(RTB_WINDOW(rtb_win)))
+- (void) drawRect: (NSRect) dirtyRect
+{
+	if (!rtb_win)
+		return;
+
+	LOCK;
+	rtb_window_draw(RTB_WINDOW(rtb_win));
+	[rtb_win->gl_ctx flushBuffer];
+	UNLOCK;
+}
 
 - (void) mouseEntered: (NSEvent *) e
 {
@@ -408,6 +406,7 @@ window_impl_open(struct rutabaga *rtb,
 
 		get_dpi(&self->dpi.x, &self->dpi.y);
 		view->rtb_win = self;
+		self->view = view;
 	}
 
 	uv_mutex_init(&self->lock);

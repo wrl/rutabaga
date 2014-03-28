@@ -45,9 +45,21 @@ struct cocoa_rtb_window;
 }
 @end
 
+@interface RutabagaOpenGLView : NSView
+{
+@public
+	struct cocoa_rtb_window *rtb_win;
+@private
+	NSTrackingArea *tracking_area;
+	BOOL was_mouse_coalescing_enabled;
+	BOOL window_did_accept_mouse_moved_events;
+}
+@end
+
 struct cocoa_rtb_window {
 	RTB_INHERIT(rtb_window);
 	RutabagaWindow *cocoa_win;
+	RutabagaOpenGLView *view;
 	RutabagaOpenGLContext *gl_ctx;
 };
 
