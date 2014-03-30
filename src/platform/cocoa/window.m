@@ -74,13 +74,23 @@
 	return NO;
 }
 
-- (void) viewWillMoveToWindow: (NSWindow *) newWindow
+static void
+reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 {
-	NSWindow *old_window;
 	NSTrackingAreaOptions tracking_opts =
 		NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved
 		| NSTrackingEnabledDuringMouseDrag | NSTrackingInVisibleRect
 		| NSTrackingAssumeInside | NSTrackingActiveAlways;
+
+	[tracking_area initWithRect:[self bounds]
+						options:tracking_opts
+						  owner:self
+					   userInfo:nil];
+}
+
+- (void) viewWillMoveToWindow: (NSWindow *) newWindow
+{
+	NSWindow *old_window;
 
 	old_window = [self window];
 	if (old_window != nil) {
@@ -102,18 +112,10 @@
 
 		if (!tracking_area) {
 			tracking_area = [NSTrackingArea alloc];
-
-			[tracking_area initWithRect:[self bounds]
-								options:tracking_opts
-								  owner:self
-							   userInfo:nil];
-
+			reinit_tracking_area(self, tracking_area);
 			[self addTrackingArea:tracking_area];
 		} else
-			[tracking_area initWithRect:[self bounds]
-								options:tracking_opts
-								  owner:self
-							   userInfo:nil];
+			reinit_tracking_area(self, tracking_area);
 	}
 
 	[super viewWillMoveToWindow:newWindow];
@@ -432,12 +434,11 @@ rtb_cocoa_draw_frame(struct cocoa_rtb_window *self)
 	struct rtb_window *win = RTB_WINDOW(self);
 
 	rtb_window_lock(win);
-	rtb_window_draw(win);
 
-	if (self->skip_swap)
-		self->skip_swap = 0;
-	else
+	if (win->visibility != RTB_FULLY_OBSCURED && self->dirty) {
+		rtb_window_draw(win);
 		[self->gl_ctx flushBuffer];
+	}
 
 	rtb_window_unlock(win);
 }
