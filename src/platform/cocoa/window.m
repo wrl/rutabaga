@@ -57,6 +57,8 @@
 
 	tracking_area = nil;
 	[self setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+	[self setWantsBestResolutionOpenGLSurface:YES];
+
 	return self;
 }
 
@@ -65,6 +67,11 @@
 	/* rutabaga's coordinate system puts (0,0) at the top left, cocoa's is
 	 * at the bottom left. returning YES here has cocoa flip the y coord. */
 	return YES;
+}
+
+- (BOOL) preservesContentInLiveResize
+{
+	return NO;
 }
 
 - (void) viewWillMoveToWindow: (NSWindow *) newWindow
@@ -117,20 +124,20 @@
 
 - (void) setFrame: (NSRect) frame
 {
+	NSRect backing = [self convertRectToBacking:frame];
+
 	[super setFrame:frame];
 
 	if (!rtb_win)
 		return;
 
-	rtb_win->w = frame.size.width;
-	rtb_win->h = frame.size.height;
+	rtb_win->w = backing.size.width;
+	rtb_win->h = backing.size.height;
 
 	LOCK;
 	[rtb_win->gl_ctx update];
 	rtb_window_reinit(RTB_WINDOW(rtb_win));
 	UNLOCK;
-
-	[super setNeedsDisplay:YES];
 }
 
 - (void) drawRect: (NSRect) dirtyRect
@@ -138,10 +145,8 @@
 	if (!rtb_win)
 		return;
 
-	LOCK;
-	rtb_window_draw(RTB_WINDOW(rtb_win));
-	[rtb_win->gl_ctx flushBuffer];
-	UNLOCK;
+	rtb_cocoa_draw_frame(rtb_win);
+	rtb_win->skip_swap = 1;
 }
 
 - (void) mouseEntered: (NSEvent *) e
@@ -410,6 +415,8 @@ window_impl_open(struct rutabaga *rtb,
 	}
 
 	uv_mutex_init(&self->lock);
+	self->skip_swap = 0;
+
 	return RTB_WINDOW(self);
 }
 
@@ -417,6 +424,22 @@ void
 window_impl_close(struct rtb_window *rwin)
 {
 	return;
+}
+
+void
+rtb_cocoa_draw_frame(struct cocoa_rtb_window *self)
+{
+	struct rtb_window *win = RTB_WINDOW(self);
+
+	rtb_window_lock(win);
+	rtb_window_draw(win);
+
+	if (self->skip_swap)
+		self->skip_swap = 0;
+	else
+		[self->gl_ctx flushBuffer];
+
+	rtb_window_unlock(win);
 }
 
 /**

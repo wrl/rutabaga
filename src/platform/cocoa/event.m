@@ -27,34 +27,22 @@
 #include <unistd.h>
 #include <uv.h>
 
-#include <glloadgen/gl_core.3.0.h>
+#include "rutabaga/rutabaga.h"
+#include "rutabaga/window.h"
 
 #import <Cocoa/Cocoa.h>
 #include <CoreFoundation/CFRunLoop.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/window.h"
-
 #include "rtb_private/window_impl.h"
 #include "cocoa_rtb.h"
-
-static void
-draw_frame(struct rtb_window *win)
-{
-	struct cocoa_rtb_window *cwin = RTB_WINDOW_AS(win, cocoa_rtb_window);
-
-	@autoreleasepool {
-		[cwin->view setNeedsDisplay:YES];
-	}
-}
 
 static CVReturn
 display_link_cb(CVDisplayLinkRef display_link, const CVTimeStamp *now,
 		const CVTimeStamp *frame_time, CVOptionFlags flags_in,
 		CVOptionFlags *flags_out, void *ctx)
 {
-	struct rtb_window *win = ctx;
-	draw_frame(win);
+	struct cocoa_rtb_window *cwin = ctx;
+	rtb_cocoa_draw_frame(cwin);
 
 	return kCVReturnSuccess;
 }
@@ -63,14 +51,16 @@ void
 rtb_event_loop(struct rutabaga *r)
 {
 	struct rtb_window *win;
+	struct cocoa_rtb_window *cwin;
 	RutabagaOpenGLContext *gl_ctx;
 	CVDisplayLinkRef display_link;
 
-	win = r->win;
-	gl_ctx = RTB_WINDOW_AS(win, cocoa_rtb_window)->gl_ctx;
+	win    = r->win;
+	cwin   = RTB_WINDOW_AS(win, cocoa_rtb_window);
+	gl_ctx = cwin->gl_ctx;
 
 	CVDisplayLinkCreateWithActiveCGDisplays(&display_link);
-	CVDisplayLinkSetOutputCallback(display_link, display_link_cb, win);
+	CVDisplayLinkSetOutputCallback(display_link, display_link_cb, cwin);
 	CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(display_link,
 			[gl_ctx CGLContextObj], [gl_ctx->pixelFormat CGLPixelFormatObj]);
 

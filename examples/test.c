@@ -343,7 +343,7 @@ int main(int argc, char **argv)
 
 	delicious = rtb_new();
 	assert(delicious);
-	win = rtb_window_open(delicious, 600, 900, "~delicious~");
+	win = rtb_window_open(delicious, 600, 700, "~delicious~");
 	assert(win);
 
 	win->outer_pad.x = 5.f;

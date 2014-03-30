@@ -61,6 +61,10 @@ struct cocoa_rtb_window {
 	RutabagaWindow *cocoa_win;
 	RutabagaOpenGLView *view;
 	RutabagaOpenGLContext *gl_ctx;
+
+	int skip_swap;
 };
+
+void rtb_cocoa_draw_frame(struct cocoa_rtb_window *);
 
 /* vim: set ft=objc :*/
