@@ -92,7 +92,7 @@ def build(bld):
     obj('../third-party/freetype-gl/vertex-buffer.c')
     obj('../third-party/freetype-gl/vertex-attribute.c')
 
-    obj('../third-party/glloadgen/gl_core.3.0.c')
+    obj('../third-party/glloadgen/gl_core.3.2.c')
 
     # shaders
 

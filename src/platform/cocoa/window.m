@@ -24,7 +24,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <glloadgen/gl_core.3.0.h>
+#include <rutabaga/opengl.h>
 
 #import <Cocoa/Cocoa.h>
 

@@ -39,7 +39,7 @@
 #include <xcb/xcb_icccm.h>
 
 #define GLX_GLXEXT_PROTOTYPES "gimme dem"
-#include <glloadgen/gl_core.3.0.h>
+#include <rutabaga/opengl.h>
 #include <GL/glx.h>
 #include <GL/glxext.h>
 

@@ -26,35 +26,4 @@
 
 #pragma once
 
-#include <uv.h>
-#include "rutabaga/opengl.h"
-
-#include "rutabaga/defaults.h"
-#include "rutabaga/types.h"
-#include "rutabaga/atom.h"
-#include "rutabaga/dict.h"
-
-#include "wwrl/allocator.h"
-
-/**
- * structures
- */
-
-struct rutabaga {
-	/* private ********************************/
-	/* XXX: need to be able to handle several of these */
-	struct rtb_window *win;
-	int run_event_loop;
-
-	struct {
-		RTB_DICT(rtb_atom_dict, rtb_atom_descriptor) type;
-	} atoms;
-
-	struct wwrl_allocator allocator;
-	uv_loop_t *event_loop;
-};
-
-void rtb_stop_event_loop(struct rutabaga *);
-
-struct rutabaga *rtb_new(void);
-void rtb_free(struct rutabaga *);
+#include <glloadgen/gl_core.3.2.h>
