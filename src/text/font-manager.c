@@ -129,7 +129,7 @@ int
 rtb_font_manager_init(struct rtb_font_manager *fm, int dpi_x, int dpi_y)
 {
 	if (!rtb_shader_create(RTB_SHADER(&fm->shader),
-				TEXT_VERT_SHADER, TEXT_FRAG_SHADER)) {
+				TEXT_VERT_SHADER, NULL, TEXT_FRAG_SHADER)) {
 		ERR("couldn't compile text shader.\n");
 		goto err_shader;
 	}

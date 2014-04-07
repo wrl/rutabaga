@@ -179,15 +179,15 @@ static int
 shaders_init(struct rtb_window *self)
 {
 	if (!rtb_shader_create(&self->local_storage.shader.dfault,
-				DEFAULT_VERT_SHADER, DEFAULT_FRAG_SHADER))
+				DEFAULT_VERT_SHADER, NULL, DEFAULT_FRAG_SHADER))
 		goto err_dfault;
 
 	if (!rtb_shader_create(&self->local_storage.shader.surface,
-				SURFACE_VERT_SHADER, SURFACE_FRAG_SHADER))
+				SURFACE_VERT_SHADER, NULL, SURFACE_FRAG_SHADER))
 		goto err_surface;
 
 	if (!rtb_shader_create(&self->local_storage.shader.stylequad,
-				STYLEQUAD_VERT_SHADER, STYLEQUAD_FRAG_SHADER))
+				STYLEQUAD_VERT_SHADER, NULL, STYLEQUAD_FRAG_SHADER))
 		goto err_stylequad;
 
 	return 0;

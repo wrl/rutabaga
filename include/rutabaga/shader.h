@@ -35,6 +35,7 @@ struct rtb_shader {
 	GLuint program;
 
 	GLuint vertex_shader;
+	GLuint geometry_shader;
 	GLuint fragment_shader;
 
 	/*************** cached uniform and attrib locations */
@@ -56,4 +57,5 @@ struct rtb_shader {
 
 void rtb_shader_free(struct rtb_shader *);
 int rtb_shader_create(struct rtb_shader *shader,
-		const char *vertex_src, const char *fragment_src);
+		const char *vertex_src, const char *geometry_src,
+		const char *fragment_src);

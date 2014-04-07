@@ -82,7 +82,7 @@ init_shaders()
 		return;
 
 	if (!rtb_shader_create(RTB_SHADER(&shader),
-				PATCHBAY_CANVAS_VERT_SHADER,
+				PATCHBAY_CANVAS_VERT_SHADER, NULL,
 				PATCHBAY_CANVAS_FRAG_SHADER))
 		puts("rtb_patchbay: init_shaders() failed!");
 

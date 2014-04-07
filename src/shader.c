@@ -81,6 +81,9 @@ shader_link(struct rtb_shader *shader)
 	glAttachShader(program, shader->vertex_shader);
 	glAttachShader(program, shader->fragment_shader);
 
+	if (shader->geometry_shader)
+		glAttachShader(program, shader->geometry_shader);
+
 	glLinkProgram(program);
 	glGetProgramiv(program, GL_LINK_STATUS, &status);
 
@@ -119,7 +122,8 @@ glsl_compile(GLenum type, const char *source)
 
 int
 rtb_shader_create(struct rtb_shader *shader,
-		const char *vertex_src, const char *fragment_src)
+		const char *vertex_src, const char *geometry_src,
+		const char *fragment_src)
 {
 	GLuint program;
 	int status;
@@ -127,7 +131,13 @@ rtb_shader_create(struct rtb_shader *shader,
 	shader->vertex_shader = glsl_compile(GL_VERTEX_SHADER, vertex_src);
 	shader->fragment_shader = glsl_compile(GL_FRAGMENT_SHADER, fragment_src);
 
-	if (!shader->vertex_shader || !shader->fragment_shader)
+	if (geometry_src)
+		shader->geometry_shader = glsl_compile(GL_GEOMETRY_SHADER, geometry_src);
+	else
+		shader->geometry_shader = 0;
+
+	if (!shader->vertex_shader || !shader->fragment_shader
+			|| (geometry_src && !shader->geometry_shader))
 		return 0;
 
 	status = shader_link(shader);
@@ -165,5 +175,9 @@ rtb_shader_free(struct rtb_shader *shader)
 
 	glDeleteShader(shader->vertex_shader);
 	glDeleteShader(shader->fragment_shader);
+
+	if (shader->geometry_shader)
+		glDeleteShader(shader->geometry_shader);
+
 	glDeleteProgram(shader->program);
 }
