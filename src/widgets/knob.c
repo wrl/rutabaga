@@ -200,7 +200,7 @@ attached(struct rtb_element *elem,
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.knob");
 
-	rtb_knob_set_value(self, self->origin);
+	set_value_internal(self, self->value);
 }
 
 static void
@@ -248,7 +248,7 @@ rtb_knob_init(struct rtb_knob *self)
 	if (RTB_SUBCLASS(RTB_ELEMENT(self), rtb_elem_init, &super))
 		return -1;
 
-	self->origin = 0.f;
+	self->origin = self->value = 0.f;
 	self->min = 0.f;
 	self->max = 1.f;
 
