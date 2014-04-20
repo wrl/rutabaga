@@ -80,7 +80,7 @@ dispatch_value_change_event(struct rtb_knob *self)
 			(self->value * (self->max - self->min)) + self->min,
 	};
 
-	return rtb_handle(RTB_ELEMENT(self), RTB_EVENT(&event));
+	return rtb_elem_deliver_event(RTB_ELEMENT(self), RTB_EVENT(&event));
 }
 
 static void
