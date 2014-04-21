@@ -130,6 +130,8 @@ rtb_label_set_text(struct rtb_label *self, const rtb_utf8_t *text)
 	if (self->tobj->w != old_size.w || self->tobj->h != old_size.h)
 		rtb_elem_trigger_reflow(self->parent, RTB_ELEMENT(self),
 				RTB_DIRECTION_ROOTWARD);
+	else
+		rtb_elem_mark_dirty(RTB_ELEMENT(self));
 }
 
 int
