@@ -607,6 +607,12 @@ rtb_event_loop_init(struct rutabaga *r)
 }
 
 void
+rtb_event_loop_run(struct rutabaga *r)
+{
+	uv_run(r->event_loop, UV_RUN_DEFAULT);
+}
+
+void
 rtb_event_loop_step(struct rutabaga *r)
 {
 	uv_run(r->event_loop, UV_RUN_ONCE | UV_RUN_NOWAIT);
@@ -623,9 +629,7 @@ rtb_event_loop_fini(struct rutabaga *r)
 void
 rtb_event_loop(struct rutabaga *r)
 {
-	if (!r->event_loop)
-		rtb_event_loop_init(r);
-
-	uv_run(r->event_loop, UV_RUN_DEFAULT);
+	rtb_event_loop_init(r);
+	rtb_event_loop_run(r);
 	rtb_event_loop_fini(r);
 }
