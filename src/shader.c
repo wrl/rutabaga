@@ -176,8 +176,10 @@ rtb_shader_free(struct rtb_shader *shader)
 	glDeleteShader(shader->vertex_shader);
 	glDeleteShader(shader->fragment_shader);
 
-	if (shader->geometry_shader)
+	if (shader->geometry_shader) {
+		glDetachShader(shader->program, shader->geometry_shader);
 		glDeleteShader(shader->geometry_shader);
+	}
 
 	glDeleteProgram(shader->program);
 }
