@@ -406,11 +406,7 @@ rtb_elem_deliver_event(struct rtb_element *self, const struct rtb_event *e)
 		return 0;
 
 	ret = self->on_event(self, e);
-
-	if (self->flags & RTB_ELEM_EVENT_SNOOP)
-		ret = rtb_handle(self, e) || ret;
-	else
-		ret = ret || rtb_handle(self, e);
+	ret = rtb_handle(self, e) || ret;
 
 	switch (e->type) {
 	case RTB_MOUSE_ENTER:

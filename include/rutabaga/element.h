@@ -45,14 +45,9 @@
 	ret;})
 
 typedef enum {
-	/* all events, regardless of whether they are already handled by
-	 * the element in question, are passed to client code after the
-	 * element's event_cb has been run. */
-	RTB_ELEM_EVENT_SNOOP        = 0x01,
-
 	RTB_ELEM_NO_FOCUS           = 0,
-	RTB_ELEM_CLICK_FOCUS        = 0x02,
-	RTB_ELEM_TAB_FOCUS          = 0x04
+	RTB_ELEM_CLICK_FOCUS        = 0x01,
+	RTB_ELEM_TAB_FOCUS          = 0x02
 } rtb_elem_flags_t;
 
 typedef enum {
