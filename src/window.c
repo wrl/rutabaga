@@ -437,6 +437,6 @@ rtb_window_close(struct rtb_window *self)
 	ibos_fini(self);
 	shaders_fini(self);
 
-	rtb_type_unref(self->type);
+	rtb_elem_fini(RTB_ELEMENT(self));
 	window_impl_close(self);
 }
