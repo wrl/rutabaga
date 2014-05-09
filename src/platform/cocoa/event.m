@@ -88,6 +88,8 @@ rtb_event_loop_run(struct rutabaga *r)
 		while (cwin->event_loop_running)
 			uv_sem_wait(&cwin->fake_event_loop);
 	}
+
+	CVDisplayLinkStop(cwin->display_link);
 }
 
 void
@@ -101,13 +103,10 @@ rtb_event_loop_stop(struct rutabaga *r)
 
 	cwin->event_loop_running = 0;
 
-	if (cwin->we_are_running_nsapp) {
+	if (cwin->we_are_running_nsapp)
 		[NSApp stop:nil];
-	} else {
+	else
 		uv_sem_post(&cwin->fake_event_loop);
-	}
-
-	CVDisplayLinkStop(cwin->display_link);
 }
 
 void
