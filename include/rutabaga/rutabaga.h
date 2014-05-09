@@ -54,7 +54,5 @@ struct rutabaga {
 	uv_loop_t *event_loop;
 };
 
-void rtb_stop_event_loop(struct rutabaga *);
-
 struct rutabaga *rtb_new(void);
 void rtb_free(struct rutabaga *);

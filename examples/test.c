@@ -277,7 +277,7 @@ handle_key_press(struct rtb_element *victim,
 		printf("numpad: %lc\n", ev->character);
 
 		if (ev->character == L'-')
-			rtb_stop_event_loop((struct rutabaga *) ctx);
+			rtb_event_loop_stop((struct rutabaga *) ctx);
 
 		break;
 

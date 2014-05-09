@@ -139,7 +139,7 @@ void rtb_unregister_handler(struct rtb_element *on_elem,
 
 void rtb_event_loop_init(struct rutabaga *);
 void rtb_event_loop_run(struct rutabaga *);
-void rtb_event_loop_step(struct rutabaga *);
 void rtb_event_loop_fini(struct rutabaga *);
 
 void rtb_event_loop(struct rutabaga *);
+void rtb_event_loop_stop(struct rutabaga *);

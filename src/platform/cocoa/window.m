@@ -148,7 +148,6 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 		return;
 
 	rtb_cocoa_draw_frame(rtb_win);
-	rtb_win->skip_swap = 1;
 }
 
 - (void) mouseEntered: (NSEvent *) e
@@ -417,8 +416,6 @@ window_impl_open(struct rutabaga *rtb,
 	}
 
 	uv_mutex_init(&self->lock);
-	self->skip_swap = 0;
-
 	return RTB_WINDOW(self);
 }
 

@@ -25,6 +25,7 @@
  */
 
 #import <Cocoa/Cocoa.h>
+#include <CoreFoundation/CFRunLoop.h>
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/window.h"
@@ -62,7 +63,11 @@ struct cocoa_rtb_window {
 	RutabagaOpenGLView *view;
 	RutabagaOpenGLContext *gl_ctx;
 
-	int skip_swap;
+	CVDisplayLinkRef display_link;
+	uv_sem_t fake_event_loop;
+
+	volatile int event_loop_running;
+	int we_are_running_nsapp;
 };
 
 void rtb_cocoa_draw_frame(struct cocoa_rtb_window *);

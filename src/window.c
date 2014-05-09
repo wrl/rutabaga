@@ -221,7 +221,7 @@ win_event(struct rtb_element *elem, const struct rtb_event *e)
 	switch (e->type) {
 	case RTB_WINDOW_CLOSE:
 		if (!rtb_handle(elem, e))
-			rtb_stop_event_loop(self->rtb);
+			rtb_event_loop_stop(self->rtb);
 		return 1;
 
 	case RTB_KEY_PRESS:

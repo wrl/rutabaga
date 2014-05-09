@@ -48,25 +48,77 @@ display_link_cb(CVDisplayLinkRef display_link, const CVTimeStamp *now,
 }
 
 void
-rtb_event_loop(struct rutabaga *r)
+rtb_event_loop_init(struct rutabaga *r)
 {
 	struct rtb_window *win;
 	struct cocoa_rtb_window *cwin;
 	RutabagaOpenGLContext *gl_ctx;
-	CVDisplayLinkRef display_link;
 
 	win    = r->win;
 	cwin   = RTB_WINDOW_AS(win, cocoa_rtb_window);
 	gl_ctx = cwin->gl_ctx;
 
-	CVDisplayLinkCreateWithActiveCGDisplays(&display_link);
-	CVDisplayLinkSetOutputCallback(display_link, display_link_cb, cwin);
-	CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(display_link,
+	CVDisplayLinkCreateWithActiveCGDisplays(&cwin->display_link);
+	CVDisplayLinkSetOutputCallback(cwin->display_link, display_link_cb, cwin);
+	CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(cwin->display_link,
 			[gl_ctx CGLContextObj], [gl_ctx->pixelFormat CGLPixelFormatObj]);
 
+	uv_sem_init(&cwin->fake_event_loop, 0);
+	cwin->we_are_running_nsapp = 0;
+}
+
+void
+rtb_event_loop_run(struct rutabaga *r)
+{
+	struct rtb_window *win;
+	struct cocoa_rtb_window *cwin;
+
+	win    = r->win;
+	cwin   = RTB_WINDOW_AS(win, cocoa_rtb_window);
+
 	rtb_window_reinit(win);
+	CVDisplayLinkStart(cwin->display_link);
 
-	CVDisplayLinkStart(display_link);
+	cwin->event_loop_running = 1;
 
-	[NSApp run];
+	if (![NSApp isRunning]) {
+		cwin->we_are_running_nsapp = 1;
+		[NSApp run];
+	} else {
+		while (cwin->event_loop_running)
+			uv_sem_wait(&cwin->fake_event_loop);
+	}
+}
+
+void
+rtb_event_loop_stop(struct rutabaga *r)
+{
+	struct rtb_window *win;
+	struct cocoa_rtb_window *cwin;
+
+	win    = r->win;
+	cwin   = RTB_WINDOW_AS(win, cocoa_rtb_window);
+
+	cwin->event_loop_running = 0;
+
+	if (cwin->we_are_running_nsapp) {
+		[NSApp stop:nil];
+	} else {
+		uv_sem_post(&cwin->fake_event_loop);
+	}
+
+	CVDisplayLinkStop(cwin->display_link);
+}
+
+void
+rtb_event_loop_fini(struct rutabaga *r)
+{
+	struct rtb_window *win;
+	struct cocoa_rtb_window *cwin;
+
+	win    = r->win;
+	cwin   = RTB_WINDOW_AS(win, cocoa_rtb_window);
+
+	CVDisplayLinkRelease(cwin->display_link);
+	uv_sem_destroy(&cwin->fake_event_loop);
 }
