@@ -253,18 +253,6 @@ app_kit_button_to_rtb_button(NSInteger app_kit_button)
 #undef UNLOCK
 @end
 
-@interface RutabagaWindowDelegate : NSResponder <NSWindowDelegate>
-{
-@public
-	struct cocoa_rtb_window *rtb_win;
-}
-
-/* XXX: may not need a window delegate... */
-@end
-
-@implementation RutabagaWindowDelegate
-@end
-
 @implementation RutabagaOpenGLContext
 @end
 
@@ -355,7 +343,6 @@ window_impl_open(struct rutabaga *rtb,
 		int w, int h, const char *title, intptr_t parent)
 {
 	struct cocoa_rtb_window *self;
-	RutabagaWindowDelegate *win_delegate;
 	RutabagaWindow *cwin;
 	RutabagaOpenGLContext *gl_ctx;
 	RutabagaOpenGLView *view;
@@ -396,9 +383,6 @@ window_impl_open(struct rutabaga *rtb,
 		[cwin setContentSize:NSMakeSize(w, h)];
 		[cwin setTitle:nstitle];
 		cwin->rtb_win = self;
-
-		win_delegate = [[RutabagaWindowDelegate alloc] init];
-		[cwin setDelegate:win_delegate];
 
 		view = [RutabagaOpenGLView new];
 		gl_ctx = alloc_gl_ctx();
