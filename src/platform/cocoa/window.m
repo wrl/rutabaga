@@ -35,9 +35,18 @@
 #include "rtb_private/window_impl.h"
 #include "cocoa_rtb.h"
 
+#define LOCK (rtb_window_lock(RTB_WINDOW(rtb_win)))
+#define UNLOCK (rtb_window_unlock(RTB_WINDOW(rtb_win)))
+
 @implementation RutabagaWindow
 - (BOOL) windowShouldClose: (id) sender
 {
+	struct rtb_window_event ev = {
+		.type = RTB_WINDOW_CLOSE,
+		.window = RTB_WINDOW(rtb_win)
+	};
+
+	rtb_dispatch_raw(RTB_ELEMENT(rtb_win), RTB_EVENT(&ev));
 	return NO;
 }
 
@@ -120,9 +129,6 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 
 	[super viewWillMoveToWindow:newWindow];
 }
-
-#define LOCK (rtb_window_lock(RTB_WINDOW(rtb_win)))
-#define UNLOCK (rtb_window_unlock(RTB_WINDOW(rtb_win)))
 
 - (void) setFrame: (NSRect) frame
 {
@@ -293,7 +299,7 @@ window_impl_rtb_free(struct rutabaga *rtb)
 static void
 get_dpi(int *x, int *y)
 {
-#if 0
+#if 1
 	NSScreen *screen = [NSScreen mainScreen];
 	NSDictionary *desc = [screen deviceDescription];
 	NSSize pixel_size = [[desc objectForKey:NSDeviceSize] sizeValue];
@@ -422,6 +428,16 @@ window_impl_open(struct rutabaga *rtb,
 void
 window_impl_close(struct rtb_window *rwin)
 {
+	struct cocoa_rtb_window *self = RTB_WINDOW_AS(rwin, cocoa_rtb_window);
+
+	[self->cocoa_win close];
+	[self->view release];
+	[self->gl_ctx release];
+	[self->cocoa_win release];
+
+	uv_mutex_destroy(&self->lock);
+	free(self);
+
 	return;
 }
 
