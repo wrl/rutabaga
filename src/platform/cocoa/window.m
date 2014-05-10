@@ -66,7 +66,10 @@
 
 	tracking_area = nil;
 	[self setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+
+	/*
 	[self setWantsBestResolutionOpenGLSurface:YES];
+	*/
 
 	return self;
 }
@@ -338,6 +341,41 @@ alloc_gl_ctx(void)
 	return ctx;
 }
 
+static RutabagaWindow *
+alloc_nswindow(int w, int h, const char *title, int resizable)
+{
+	RutabagaWindow *win;
+	NSString *nstitle;
+	unsigned style_mask;
+
+	style_mask =
+		NSTitledWindowMask
+		| NSClosableWindowMask
+		| NSMiniaturizableWindowMask;
+
+	nstitle = [[NSString alloc] initWithBytes:title
+									   length:strlen(title)
+									 encoding:NSUTF8StringEncoding];
+
+	if (resizable)
+		style_mask |= NSResizableWindowMask;
+
+	@try {
+		win = [[RutabagaWindow alloc]
+			initWithContentRect:NSMakeRect(0, 0, w, h)
+					  styleMask:style_mask
+						backing:NSBackingStoreBuffered
+						  defer:NO];
+	} @catch (NSException *e) {
+		return NULL;
+	}
+
+	[win setContentSize:NSMakeSize(w, h)];
+	[win setTitle:nstitle];
+
+	return win;
+}
+
 struct rtb_window *
 window_impl_open(struct rutabaga *rtb,
 		int w, int h, const char *title, intptr_t parent)
@@ -346,8 +384,7 @@ window_impl_open(struct rutabaga *rtb,
 	RutabagaWindow *cwin;
 	RutabagaOpenGLContext *gl_ctx;
 	RutabagaOpenGLView *view;
-	NSString *nstitle;
-	unsigned style_mask;
+	NSView *parent_view;
 
 	self = calloc(1, sizeof(*self));
 	if (!self)
@@ -356,49 +393,34 @@ window_impl_open(struct rutabaga *rtb,
 	gl_ctx = NULL;
 
 	@autoreleasepool {
-		nstitle =
-			[[NSString alloc]
-			initWithBytes:title
-				   length:strlen(title)
-				 encoding:NSUTF8StringEncoding];
-
-		style_mask =
-			NSTitledWindowMask
-			| NSClosableWindowMask
-			| NSMiniaturizableWindowMask;
-
-		if (!parent)
-			style_mask |= NSResizableWindowMask;
-
-		@try {
-			cwin = [[RutabagaWindow alloc]
-				initWithContentRect:NSMakeRect(0, 0, w, h)
-						  styleMask:style_mask
-							backing:NSBackingStoreBuffered
-							  defer:NO];
-		} @catch (NSException *e) {
-			return NULL;
-		}
-
-		[cwin setContentSize:NSMakeSize(w, h)];
-		[cwin setTitle:nstitle];
-		cwin->rtb_win = self;
-
 		view = [RutabagaOpenGLView new];
-		gl_ctx = alloc_gl_ctx();
+		self->gl_ctx = gl_ctx = alloc_gl_ctx();
 
-		self->cocoa_win = cwin;
-		self->gl_ctx    = gl_ctx;
+		if (parent) {
+			self->cocoa_win = cwin = NULL;
 
-		[cwin setContentView:view];
-		[cwin makeFirstResponder:view];
+			parent_view = (void *) parent;
+			[parent_view addSubview:view];
+		} else {
+			cwin = alloc_nswindow(w, h, title, 1);
+			if (!cwin)
+				goto err_alloc_nswindow;
+
+			cwin->rtb_win = self;
+			self->cocoa_win = cwin;
+
+			[cwin setContentView:view];
+			[cwin makeFirstResponder:view];
+		}
 
 		[gl_ctx setView:view];
 		[gl_ctx makeCurrentContext];
 
-		[cwin makeKeyAndOrderFront:cwin];
-		[NSApp activateIgnoringOtherApps:YES];
-		[cwin center];
+		if (!parent) {
+			[cwin makeKeyAndOrderFront:cwin];
+			[NSApp activateIgnoringOtherApps:YES];
+			[cwin center];
+		}
 
 		get_dpi(&self->dpi.x, &self->dpi.y);
 		view->rtb_win = self;
@@ -407,6 +429,10 @@ window_impl_open(struct rutabaga *rtb,
 
 	uv_mutex_init(&self->lock);
 	return RTB_WINDOW(self);
+
+err_alloc_nswindow:
+	free(self);
+	return NULL;
 }
 
 void
