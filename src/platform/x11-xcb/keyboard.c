@@ -207,3 +207,30 @@ xrtb_keyboard_fini(struct xcb_rutabaga *xrtb)
 	if (xrtb->xkb_state)
 		xkb_state_unref(xrtb->xkb_state);
 }
+
+/**
+ * rtb public apis
+ */
+
+static rtb_modkey_t
+modifier_state(struct xcb_rutabaga *xrtb)
+{
+#define MOD_ACTIVE(xkb_mod, rtb_mod) \
+	((xkb_state_mod_index_is_active(xrtb->xkb_state, \
+			xrtb->mod_indices.xkb_mod, XKB_STATE_MODS_EFFECTIVE) > 0) \
+	 * rtb_mod)
+
+	return
+		MOD_ACTIVE(super,   RTB_KEY_MOD_SUPER)
+		| MOD_ACTIVE(shift, RTB_KEY_MOD_SHIFT)
+		| MOD_ACTIVE(ctrl,  RTB_KEY_MOD_CTRL)
+		| MOD_ACTIVE(alt,   RTB_KEY_MOD_ALT);
+
+#undef MOD_ACTIVE
+}
+
+rtb_modkey_t
+rtb_get_modkeys(struct rtb_window *win)
+{
+	return modifier_state(RTB_WINDOW_AS(win, xrtb_window)->xrtb);
+}

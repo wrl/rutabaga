@@ -127,3 +127,5 @@ struct rtb_key_event {
 
 	rtb_utf32_t character;
 };
+
+rtb_modkey_t rtb_get_modkeys(struct rtb_window *);
