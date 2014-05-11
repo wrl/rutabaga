@@ -36,6 +36,10 @@
 #include "rtb_private/window_impl.h"
 #include "cocoa_rtb.h"
 
+/**
+ * display link
+ */
+
 static CVReturn
 display_link_cb(CVDisplayLinkRef display_link, const CVTimeStamp *now,
 		const CVTimeStamp *frame_time, CVOptionFlags flags_in,
@@ -46,6 +50,22 @@ display_link_cb(CVDisplayLinkRef display_link, const CVTimeStamp *now,
 
 	return kCVReturnSuccess;
 }
+
+/**
+ * libuv <-> CFRunLoop interop
+ */
+
+static void
+drain_uv_loop(CFRunLoopObserverRef observer, CFRunLoopActivity activity,
+		void *ctx)
+{
+	uv_loop_t *loop = ctx;
+	uv_run(loop, UV_RUN_NOWAIT);
+}
+
+/**
+ * public API
+ */
 
 void
 rtb_event_loop_init(struct rutabaga *r)
@@ -63,6 +83,8 @@ rtb_event_loop_init(struct rutabaga *r)
 	CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(cwin->display_link,
 			[gl_ctx CGLContextObj], [gl_ctx->pixelFormat CGLPixelFormatObj]);
 
+	r->event_loop = uv_loop_new();
+
 	uv_sem_init(&cwin->fake_event_loop, 0);
 	cwin->we_are_running_nsapp = 0;
 }
@@ -72,9 +94,20 @@ rtb_event_loop_run(struct rutabaga *r)
 {
 	struct rtb_window *win;
 	struct cocoa_rtb_window *cwin;
+	CFRunLoopObserverRef observer;
+	CFRunLoopObserverContext obs_ctx = {
+		.info = r->event_loop
+	};
 
 	win    = r->win;
 	cwin   = RTB_WINDOW_AS(win, cocoa_rtb_window);
+
+	observer = CFRunLoopObserverCreate(
+			kCFAllocatorDefault, kCFRunLoopBeforeSources,
+			true, 0, drain_uv_loop, &obs_ctx);
+	CFRunLoopAddObserver(
+			[[NSRunLoop mainRunLoop] getCFRunLoop],
+			observer, kCFRunLoopCommonModes);
 
 	rtb_window_reinit(win);
 	CVDisplayLinkStart(cwin->display_link);
@@ -90,6 +123,9 @@ rtb_event_loop_run(struct rutabaga *r)
 	}
 
 	CVDisplayLinkStop(cwin->display_link);
+
+	CFRunLoopObserverInvalidate(observer);
+	CFRelease(observer);
 }
 
 void
@@ -112,6 +148,7 @@ rtb_event_loop_stop(struct rutabaga *r)
 void
 rtb_event_loop_fini(struct rutabaga *r)
 {
+	uv_loop_t *rtb_loop;
 	struct rtb_window *win;
 	struct cocoa_rtb_window *cwin;
 
@@ -120,4 +157,8 @@ rtb_event_loop_fini(struct rutabaga *r)
 
 	CVDisplayLinkRelease(cwin->display_link);
 	uv_sem_destroy(&cwin->fake_event_loop);
+
+	rtb_loop = r->event_loop;
+	r->event_loop = NULL;
+	uv_loop_delete(rtb_loop);
 }

@@ -290,7 +290,7 @@ window_impl_rtb_free(struct rutabaga *rtb)
 static void
 get_dpi(int *x, int *y)
 {
-#if 1
+#if 0
 	NSScreen *screen = [NSScreen mainScreen];
 	NSDictionary *desc = [screen deviceDescription];
 	NSSize pixel_size = [[desc objectForKey:NSDeviceSize] sizeValue];
@@ -401,6 +401,8 @@ window_impl_open(struct rutabaga *rtb,
 
 			parent_view = (void *) parent;
 			[parent_view addSubview:view];
+
+			[view setFrame:NSMakeRect(0, 0, w, h)];
 		} else {
 			cwin = alloc_nswindow(w, h, title, 1);
 			if (!cwin)
@@ -416,7 +418,9 @@ window_impl_open(struct rutabaga *rtb,
 		[gl_ctx setView:view];
 		[gl_ctx makeCurrentContext];
 
-		if (!parent) {
+		if (parent) {
+			[view setHidden:NO];
+		} else {
 			[cwin makeKeyAndOrderFront:cwin];
 			[NSApp activateIgnoringOtherApps:YES];
 			[cwin center];
