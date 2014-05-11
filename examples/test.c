@@ -124,8 +124,9 @@ print_streeng(struct rtb_element *victim,
 	const struct rtb_button_event *bv = (void *) e;
 	int i;
 
-	printf("(%f, %f) click!\n", bv->cursor.x, bv->cursor.y);
+	printf("(%f, %f) click!", bv->cursor.x, bv->cursor.y);
 	print_modkeys(bv->mod_keys);
+	printf("\n");
 
 	i = rand() % (ARRAY_LENGTH(rlabels));
 	rtb_button_set_label((void *) victim, rlabels[i]);

@@ -37,13 +37,15 @@
  */
 
 static struct rtb_element *
-dispatch_drag_event(struct rtb_window *win, rtb_ev_type_t type,
+dispatch_drag_event(struct rtb_window *window, rtb_ev_type_t type,
 		struct rtb_element *also_dispatch_to, int button, int x, int y)
 {
-	struct rtb_mouse_button *b = &win->mouse.button[button];
+	struct rtb_mouse_button *b = &window->mouse.button[button];
 	struct rtb_drag_event ev = {
 		.type = type,
-		.window = win,
+		.window = window,
+
+		.mod_keys = rtb_get_modkeys(window),
 
 		.button = button,
 		.target = b->target,
@@ -69,7 +71,7 @@ dispatch_drag_event(struct rtb_window *win, rtb_ev_type_t type,
 }
 
 static void
-dispatch_drag_enter(struct rtb_window *win,
+dispatch_drag_enter(struct rtb_window *window,
 		struct rtb_element *dispatch_to, int x, int y)
 {
 	struct rtb_mouse_button *b;
@@ -77,7 +79,9 @@ dispatch_drag_enter(struct rtb_window *win,
 
 	struct rtb_drag_event ev = {
 		.type = RTB_DRAG_ENTER,
-		.window = win,
+		.window = window,
+
+		.mod_keys = rtb_get_modkeys(window),
 
 		.button = 0,
 		.cursor = {
@@ -88,7 +92,7 @@ dispatch_drag_enter(struct rtb_window *win,
 	};
 
 	for (i = 0; i < RTB_MOUSE_BUTTON_MAX + 1; i++) {
-		b = &win->mouse.button[i];
+		b = &window->mouse.button[i];
 
 		if (b->state != DRAG)
 			continue;
@@ -101,7 +105,7 @@ dispatch_drag_enter(struct rtb_window *win,
 }
 
 static void
-dispatch_drag_leave(struct rtb_window *win,
+dispatch_drag_leave(struct rtb_window *window,
 		struct rtb_element *dispatch_to, int x, int y)
 {
 	struct rtb_mouse_button *b;
@@ -109,7 +113,9 @@ dispatch_drag_leave(struct rtb_window *win,
 
 	struct rtb_drag_event ev = {
 		.type = RTB_DRAG_LEAVE,
-		.window = win,
+		.window = window,
+
+		.mod_keys = rtb_get_modkeys(window),
 
 		.button = 0,
 		.cursor = {
@@ -120,7 +126,7 @@ dispatch_drag_leave(struct rtb_window *win,
 	};
 
 	for (i = 0; i < RTB_MOUSE_BUTTON_MAX + 1; i++) {
-		b = &win->mouse.button[i];
+		b = &window->mouse.button[i];
 
 		if (b->state != DRAG)
 			continue;
@@ -141,6 +147,8 @@ dispatch_click_event(struct rtb_window *window,
 		.window = window,
 		.target = target,
 
+		.mod_keys = rtb_get_modkeys(window),
+
 		.button = button,
 		.cursor = {
 			.x = x,
@@ -159,6 +167,8 @@ dispatch_simple_mouse_event(struct rtb_window *window,
 		.type = type,
 		.window = window,
 		.target = target,
+
+		.mod_keys = rtb_get_modkeys(window),
 
 		.button = button,
 		.cursor = {
