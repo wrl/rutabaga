@@ -95,14 +95,37 @@ time_monotonic(struct timespec *ts)
 }
 #endif
 
+static void
+print_modkeys(rtb_modkey_t mod_keys)
+{
+	if (!mod_keys)
+		return;
+
+	printf(" (modkeys:");
+
+#define PRINT_MOD(constant, name) \
+	if (mod_keys & constant)   \
+		printf(" " name)
+
+	PRINT_MOD(RTB_KEY_MOD_SHIFT, "shift");
+	PRINT_MOD(RTB_KEY_MOD_CTRL,  "ctrl");
+	PRINT_MOD(RTB_KEY_MOD_ALT,   "alt");
+	PRINT_MOD(RTB_KEY_MOD_SUPER, "super");
+
+#undef PRINT_MOD
+
+	printf(")");
+}
+
 static int
 print_streeng(struct rtb_element *victim,
 		const struct rtb_event *e, void *ctx)
 {
-	const struct rtb_mouse_event *mv = (void *) e;
+	const struct rtb_button_event *bv = (void *) e;
 	int i;
 
-	printf("(%f, %f) click!\n", mv->cursor.x, mv->cursor.y);
+	printf("(%f, %f) click!\n", bv->cursor.x, bv->cursor.y);
+	print_modkeys(bv->mod_keys);
 
 	i = rand() % (ARRAY_LENGTH(rlabels));
 	rtb_button_set_label((void *) victim, rlabels[i]);
@@ -243,39 +266,15 @@ add_input(struct rutabaga *rtb, rtb_container_t *root)
 	rtb_elem_add_child(root, RTB_ELEMENT(input), RTB_ADD_TAIL);
 }
 
-static void
-print_modkeys(const struct rtb_key_event *ev)
-{
-	if (!ev->mod_keys)
-		return;
-
-	printf("modkeys:");
-
-#define PRINT_MOD(constant, name) \
-	if (ev->mod_keys & constant)   \
-		printf(" " name)
-
-	PRINT_MOD(RTB_KEY_MOD_SHIFT, "shift");
-	PRINT_MOD(RTB_KEY_MOD_CTRL,  "ctrl");
-	PRINT_MOD(RTB_KEY_MOD_ALT,   "alt");
-	PRINT_MOD(RTB_KEY_MOD_SUPER, "super");
-
-#undef PRINT_MOD
-
-	printf("\n");
-}
-
 static int
 handle_key_press(struct rtb_element *victim,
 		const struct rtb_event *e, void *ctx)
 {
 	const struct rtb_key_event *ev = RTB_EVENT_AS(e, rtb_key_event);
 
-	print_modkeys(ev);
-
 	switch (ev->keysym) {
 	case RTB_KEY_NUMPAD:
-		printf("numpad: %lc\n", ev->character);
+		printf("numpad: %lc", ev->character);
 
 		if (ev->character == L'-')
 			rtb_event_loop_stop((struct rutabaga *) ctx);
@@ -283,13 +282,28 @@ handle_key_press(struct rtb_element *victim,
 		break;
 
 	case RTB_KEY_NORMAL:
-		printf("normal: %lc\n", ev->character);
+		printf("normal: %lc", ev->character);
 		break;
 
-	case RTB_KEY_UP:    puts("^"); break;
-	case RTB_KEY_LEFT:  puts("<"); break;
-	case RTB_KEY_DOWN:  puts("v"); break;
-	case RTB_KEY_RIGHT: puts(">"); break;
+	case RTB_KEY_UP:    printf("^"); break;
+	case RTB_KEY_LEFT:  printf("<"); break;
+	case RTB_KEY_DOWN:  printf("v"); break;
+	case RTB_KEY_RIGHT: printf(">"); break;
+
+	default:
+		break;
+	}
+
+	print_modkeys(ev->mod_keys);
+
+	switch (ev->keysym) {
+	case RTB_KEY_NUMPAD:
+	case RTB_KEY_NORMAL:
+	case RTB_KEY_UP:
+	case RTB_KEY_LEFT:
+	case RTB_KEY_DOWN:
+	case RTB_KEY_RIGHT:
+		printf("\n");
 
 	default:
 		break;
