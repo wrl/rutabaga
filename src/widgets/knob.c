@@ -115,6 +115,7 @@ static int
 handle_drag(struct rtb_knob *self, const struct rtb_drag_event *e)
 {
 	float new_value;
+	float mult;
 
 	if (e->target != RTB_ELEMENT(self))
 		return 0;
@@ -122,10 +123,23 @@ handle_drag(struct rtb_knob *self, const struct rtb_drag_event *e)
 	new_value = self->value;
 
 	switch (e->button) {
-	case RTB_MOUSE_BUTTON1: new_value += -e->delta.y * DELTA_VALUE_STEP_BUTTON1; break;
-	case RTB_MOUSE_BUTTON3: new_value += -e->delta.y * DELTA_VALUE_STEP_BUTTON3; break;
-	default: return 1;
+	case RTB_MOUSE_BUTTON1:
+		if (!(e->mod_keys & RTB_KEY_MOD_SHIFT))
+			mult = DELTA_VALUE_STEP_BUTTON1;
+		else
+			mult = DELTA_VALUE_STEP_BUTTON3;
+
+		break;
+
+	case RTB_MOUSE_BUTTON3:
+		mult = DELTA_VALUE_STEP_BUTTON3;
+		break;
+
+	default:
+		return 1;
 	}
+
+	new_value += -e->delta.y * mult;
 
 	set_value_internal(self, new_value, 0);
 	return 1;
