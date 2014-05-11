@@ -210,7 +210,7 @@ handle_key_press(struct rtb_text_input *self, const struct rtb_key_event *e)
 {
 	switch (e->keysym) {
 	case RTB_KEY_NORMAL:
-		if (e->modkeys & ~RTB_KEY_MOD_SHIFT)
+		if (e->mod_keys & ~RTB_KEY_MOD_SHIFT)
 			return 0;
 
 		push_u32(self, e->character);

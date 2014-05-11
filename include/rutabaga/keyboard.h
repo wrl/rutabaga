@@ -122,7 +122,7 @@ typedef enum {
 struct rtb_key_event {
 	RTB_INHERIT(rtb_event);
 
-	rtb_modkey_t modkeys;
+	rtb_modkey_t mod_keys;
 	rtb_keysym_t keysym;
 
 	rtb_utf32_t character;

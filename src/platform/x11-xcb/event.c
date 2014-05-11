@@ -194,7 +194,7 @@ dispatch_key_event(struct xrtb_window *win,
 			return;
 	}
 
-	rtb_ev.modkeys = modifier_state(win->xrtb);
+	rtb_ev.mod_keys = modifier_state(win->xrtb);
 	rtb_dispatch_raw(RTB_ELEMENT(win), RTB_EVENT(&rtb_ev));
 }
 

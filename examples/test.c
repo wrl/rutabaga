@@ -246,13 +246,13 @@ add_input(struct rutabaga *rtb, rtb_container_t *root)
 static void
 print_modkeys(const struct rtb_key_event *ev)
 {
-	if (!ev->modkeys)
+	if (!ev->mod_keys)
 		return;
 
 	printf("modkeys:");
 
 #define PRINT_MOD(constant, name) \
-	if (ev->modkeys & constant)   \
+	if (ev->mod_keys & constant)   \
 		printf(" " name)
 
 	PRINT_MOD(RTB_KEY_MOD_SHIFT, "shift");

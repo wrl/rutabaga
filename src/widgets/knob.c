@@ -152,9 +152,9 @@ handle_key(struct rtb_knob *self, const struct rtb_key_event *e)
 {
 	float step;
 
-	if (e->modkeys & RTB_KEY_MOD_ALT)
+	if (e->mod_keys & RTB_KEY_MOD_ALT)
 		step = DELTA_VALUE_STEP_BUTTON3;
-	else if (e->modkeys & RTB_KEY_MOD_SHIFT)
+	else if (e->mod_keys & RTB_KEY_MOD_SHIFT)
 		step = DELTA_VALUE_STEP_BUTTON1 * 2;
 	else
 		step = DELTA_VALUE_STEP_BUTTON1;

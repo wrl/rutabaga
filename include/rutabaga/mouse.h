@@ -28,6 +28,7 @@
 
 #include "rutabaga/types.h"
 #include "rutabaga/event.h"
+#include "rutabaga/keyboard.h"
 
 #define RTB_EVENT_MOUSE(x) RTB_UPCAST(x, rtb_event_mouse)
 #define RTB_EVENT_DRAG(x) RTB_UPCAST(x, rtb_event_drag)
@@ -59,6 +60,7 @@ struct rtb_mouse_event {
 
 	struct rtb_window *window;
 	struct rtb_element *target;
+	rtb_modkey_t mod_keys;
 
 	struct rtb_point cursor;
 	rtb_mouse_buttons_t button;
