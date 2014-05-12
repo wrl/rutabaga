@@ -5,26 +5,30 @@ from waflib.TaskGen import after_method, before_method, feature
 top = '..'
 
 def build(bld):
+    bld(
+        use=['rutabaga', 'rtb_style_default'],
+        target='rutabaga_with_default_style')
+
     bld.program(
         source='test.c',
-        use='rutabaga',
+        use=['rutabaga_with_default_style'],
         target='test')
 
     bld.program(
         source='txtest.c',
-        use='rutabaga',
+        use=['rutabaga_with_default_style'],
         target='txtest')
 
     bld.program(
         source='tiny.c',
-        use='rutabaga',
+        use=['rutabaga_with_default_style'],
         target='tiny')
 
     if bld.env.LIB_JACK:
         bld.program(
             source='cabbage_patch.c',
             use=[
-                'rutabaga',
+                'rutabaga_with_default_style',
                 'JACK'],
 
             target='cabbage_patch')

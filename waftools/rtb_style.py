@@ -157,7 +157,7 @@ def process_embedded_assets(bld, style_name, css):
     return sources
 
 @conf
-def rtb_style(bld, style_name):
+def rtb_style(bld, style_name, **kwargs):
     """Parses a CSS file and generates build rules for embedding assets."""
 
     css_path = "{0}/style.css".format(style_name)
@@ -192,7 +192,7 @@ def rtb_style(bld, style_name):
             'private',
             'LIBUV'],
 		cflags=bld.env['CFLAGS_cshlib'],
-        target="style_{0}".format(style_name))
+        **kwargs)
 
 ####
 # some blocks of text

@@ -7,8 +7,4 @@ def build(bld):
     style("default")
 
     for s in styles:
-        bld.rtb_style(s)
-
-    bld(
-        use=["style_{0}".format(s) for s in styles],
-        target="styles")
+        bld.rtb_style(s, target='rtb_style_{}'.format(s))

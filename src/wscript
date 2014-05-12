@@ -114,7 +114,6 @@ def build(bld):
             'private',
             'shaders',
             'public',
-            'styles',
 
             'LIBUV',
 
@@ -131,9 +130,13 @@ def build(bld):
             
             'COCOA'],
 
-		cflags=bld.env['CFLAGS_cshlib'],
+        cflags=bld.env['CFLAGS_cshlib'],
 
         target='rutabaga',
         name='rutabaga',
-        export_includes='../include',
-        vnum=bld.env.VERSION)
+        export_includes='../include')
+
+    for use in librtb.use:
+        for prefix in ('LIB', 'LINKFLAGS'):
+            dest, src = ['{}_{}'.format(prefix, x) for x in ('rutabaga', use)]
+            bld.env.append_unique(dest, bld.env[src])
