@@ -179,19 +179,18 @@ def rtb_style(bld, style_name, **kwargs):
         source=css_node,
         target=["{0}/style.{1}".format(style_name, ext)
             for ext in ['c', 'h']],
-        export_includes=".",
         update_outputs=True)
 
     bld.stlib(
         source = asset_stlib_sources
             + ["{0}/style.c".format(style_name)],
         depends_on=asset_stlib_sources,
+        includes=['..'],
         use=[
-            'assets',
             'public',
             'private',
             'LIBUV'],
-		cflags=bld.env['CFLAGS_cshlib'],
+        cflags=bld.env['CFLAGS_cshlib'],
         **kwargs)
 
 ####
