@@ -51,6 +51,7 @@ struct cocoa_rtb_window;
 @public
 	struct cocoa_rtb_window *rtb_win;
 	RutabagaOpenGLContext *gl_ctx;
+
 @private
 	NSTrackingArea *tracking_area;
 	BOOL was_mouse_coalescing_enabled;

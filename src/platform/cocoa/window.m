@@ -97,7 +97,7 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 	NSTrackingAreaOptions tracking_opts =
 		NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved
 		| NSTrackingEnabledDuringMouseDrag | NSTrackingInVisibleRect
-		| NSTrackingAssumeInside | NSTrackingActiveAlways;
+		| NSTrackingAssumeInside | NSTrackingActiveInActiveApp;
 
 	[tracking_area initWithRect:[self bounds]
 						options:tracking_opts
@@ -105,19 +105,17 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 					   userInfo:nil];
 }
 
-- (NSPoint) cursorPoint
+- (NSPoint) mouseLocationOutsideOfEventStream
 {
-	NSPoint screen_cursor = [NSEvent mouseLocation];
 	NSPoint win_cursor;
 
-	win_cursor = [[self window] convertScreenToBase:screen_cursor];
+	win_cursor = [[self window] mouseLocationOutsideOfEventStream];
 	return [self convertPoint:win_cursor fromView:nil];
 }
 
 - (void) viewWillMoveToWindow: (NSWindow *) newWindow
 {
 	NSWindow *old_window;
-	NSPoint cursor;
 
 	old_window = [self window];
 	if (old_window != nil) {
@@ -125,16 +123,6 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 			setAcceptsMouseMovedEvents:window_did_accept_mouse_moved_events];
 		was_mouse_coalescing_enabled = [NSEvent isMouseCoalescingEnabled];
 		[NSEvent setMouseCoalescingEnabled:NO];
-
-		if (rtb_win && 0) {
-			cursor = [self cursorPoint];
-			if (NSPointInRect(cursor, [self bounds])) {
-				LOCK;
-				rtb_platform_mouse_leave_window(RTB_WINDOW(rtb_win),
-						cursor.x, cursor.y);
-				UNLOCK;
-			}
-		}
 	}
 
 	if (newWindow == nil) {
@@ -147,33 +135,19 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 	} else {
 		[newWindow setAcceptsMouseMovedEvents:YES];
 		[newWindow makeFirstResponder:self];
-
-		if (!tracking_area) {
-			tracking_area = [NSTrackingArea alloc];
-			reinit_tracking_area(self, tracking_area);
-			[self addTrackingArea:tracking_area];
-		} else
-			reinit_tracking_area(self, tracking_area);
 	}
 
 	[super viewWillMoveToWindow:newWindow];
 }
 
-- (void) viewDidMoveToWindow
+- (void) updateTrackingAreas
 {
-	NSPoint cursor;
-
-	if (!rtb_win)
-		return;
-
-	cursor = [self cursorPoint];
-
-	if (NSPointInRect(cursor, [self bounds])) {
-		LOCK;
-		rtb_platform_mouse_enter_window(RTB_WINDOW(rtb_win),
-				cursor.x, cursor.y);
-		UNLOCK;
-	}
+	if (!tracking_area) {
+		tracking_area = [NSTrackingArea alloc];
+		reinit_tracking_area(self, tracking_area);
+		[self addTrackingArea:tracking_area];
+	} else
+		reinit_tracking_area(self, tracking_area);
 }
 
 - (void) setFrame: (NSRect) frame
@@ -446,9 +420,9 @@ window_impl_open(struct rutabaga *rtb,
 		view->gl_ctx = gl_ctx;
 		self->gl_ctx = gl_ctx;
 
+		get_dpi(&self->dpi.x, &self->dpi.y);
 		[view initWithFrame:NSMakeRect(0, 0, w, h)];
 
-		get_dpi(&self->dpi.x, &self->dpi.y);
 		[gl_ctx makeCurrentContext];
 
 		if (parent) {
@@ -513,17 +487,19 @@ rtb_cocoa_draw_frame(struct cocoa_rtb_window *self)
 {
 	struct rtb_window *win = RTB_WINDOW(self);
 
-	rtb_window_lock(win);
+	@autoreleasepool {
+		rtb_window_lock(win);
 
-	if (win->visibility != RTB_FULLY_OBSCURED && self->dirty) {
-		if ([self->gl_ctx view] != self->view)
-			[self->gl_ctx setView:self->view];
+		if (win->visibility != RTB_FULLY_OBSCURED && self->dirty) {
+			if ([self->gl_ctx view] != self->view)
+				[self->gl_ctx setView:self->view];
 
-		rtb_window_draw(win);
-		[self->gl_ctx flushBuffer];
+			rtb_window_draw(win);
+			[self->gl_ctx flushBuffer];
+		}
+
+		rtb_window_unlock(win);
 	}
-
-	rtb_window_unlock(win);
 }
 
 /**

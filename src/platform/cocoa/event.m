@@ -29,6 +29,7 @@
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/window.h"
+#include "rutabaga/platform.h"
 
 #import <Cocoa/Cocoa.h>
 #include <CoreFoundation/CFRunLoop.h>

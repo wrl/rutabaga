@@ -334,8 +334,13 @@ rtb_platform_mouse_release(struct rtb_window *win,
 void
 rtb_platform_mouse_motion(struct rtb_window *win, int x, int y)
 {
-	if (!win->mouse_in && !win->mouse.buttons_down)
-		return;
+	if (!win->mouse_in) {
+		if ((0 < x && x < win->w) && (0 < y && y < win->h)) {
+			rtb_platform_mouse_enter_window(win, x, y);
+			return;
+		} else if (!win->mouse.buttons_down)
+			return;
+	}
 
 	retarget(win, x, y);
 
