@@ -64,7 +64,9 @@
 	if (!self)
 		return nil;
 
-	tracking_area = nil;
+	tracking_area = [NSTrackingArea alloc];
+	[self addTrackingArea:tracking_area];
+
 	[self setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 
 	/*
@@ -142,12 +144,7 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 
 - (void) updateTrackingAreas
 {
-	if (!tracking_area) {
-		tracking_area = [NSTrackingArea alloc];
-		reinit_tracking_area(self, tracking_area);
-		[self addTrackingArea:tracking_area];
-	} else
-		reinit_tracking_area(self, tracking_area);
+	reinit_tracking_area(self, tracking_area);
 }
 
 - (void) setFrame: (NSRect) frame
