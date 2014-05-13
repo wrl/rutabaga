@@ -340,6 +340,9 @@ static int
 init_gl(void)
 {
 	int missing;
+#ifdef __APPLE__
+	GLuint throwaway_texture;
+#endif
 
 	missing = ogl_LoadFunctions();
 
@@ -349,6 +352,12 @@ init_gl(void)
 	} else if (missing > ogl_LOAD_SUCCEEDED)
 		ERR("openGL initialized, but missing %d functions.\n",
 				missing - ogl_LOAD_SUCCEEDED);
+
+#ifdef __APPLE__
+	/* XXX: ableton live loses its shit if texture id 1 gets freed.
+	 *      i suspect this is an underlying driver issue. */
+	glGenTextures(1, &throwaway_texture);
+#endif
 
 	return 0;
 }
@@ -437,6 +446,6 @@ rtb_window_close(struct rtb_window *self)
 	ibos_fini(self);
 	shaders_fini(self);
 
-	rtb_elem_fini(RTB_ELEMENT(self));
+	rtb_surface_fini(RTB_SURFACE(self));
 	window_impl_close(self);
 }

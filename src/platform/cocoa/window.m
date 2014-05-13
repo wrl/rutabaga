@@ -74,6 +74,11 @@
 	return self;
 }
 
+- (BOOL) acceptsFirstMouse: (NSEvent *) theEvent
+{
+	return YES;
+}
+
 - (BOOL) isFlipped
 {
 	/* rutabaga's coordinate system puts (0,0) at the top left, cocoa's is
@@ -100,9 +105,19 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 					   userInfo:nil];
 }
 
+- (NSPoint) cursorPoint
+{
+	NSPoint screen_cursor = [NSEvent mouseLocation];
+	NSPoint win_cursor;
+
+	win_cursor = [[self window] convertScreenToBase:screen_cursor];
+	return [self convertPoint:win_cursor fromView:nil];
+}
+
 - (void) viewWillMoveToWindow: (NSWindow *) newWindow
 {
 	NSWindow *old_window;
+	NSPoint cursor;
 
 	old_window = [self window];
 	if (old_window != nil) {
@@ -110,6 +125,16 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 			setAcceptsMouseMovedEvents:window_did_accept_mouse_moved_events];
 		was_mouse_coalescing_enabled = [NSEvent isMouseCoalescingEnabled];
 		[NSEvent setMouseCoalescingEnabled:NO];
+
+		if (rtb_win && 0) {
+			cursor = [self cursorPoint];
+			if (NSPointInRect(cursor, [self bounds])) {
+				LOCK;
+				rtb_platform_mouse_leave_window(RTB_WINDOW(rtb_win),
+						cursor.x, cursor.y);
+				UNLOCK;
+			}
+		}
 	}
 
 	if (newWindow == nil) {
@@ -121,6 +146,7 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 		[NSEvent setMouseCoalescingEnabled:was_mouse_coalescing_enabled];
 	} else {
 		[newWindow setAcceptsMouseMovedEvents:YES];
+		[newWindow makeFirstResponder:self];
 
 		if (!tracking_area) {
 			tracking_area = [NSTrackingArea alloc];
@@ -133,14 +159,33 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 	[super viewWillMoveToWindow:newWindow];
 }
 
+- (void) viewDidMoveToWindow
+{
+	NSPoint cursor;
+
+	if (!rtb_win)
+		return;
+
+	cursor = [self cursorPoint];
+
+	if (NSPointInRect(cursor, [self bounds])) {
+		LOCK;
+		rtb_platform_mouse_enter_window(RTB_WINDOW(rtb_win),
+				cursor.x, cursor.y);
+		UNLOCK;
+	}
+}
+
 - (void) setFrame: (NSRect) frame
 {
-	NSRect backing = [self convertRectToBacking:frame];
+	NSRect backing;
 
 	[super setFrame:frame];
 
 	if (!rtb_win)
 		return;
+
+	backing = [self convertRectToBacking:frame];
 
 	rtb_win->w = backing.size.width;
 	rtb_win->h = backing.size.height;
@@ -353,9 +398,10 @@ alloc_nswindow(int w, int h, const char *title, int resizable)
 		| NSClosableWindowMask
 		| NSMiniaturizableWindowMask;
 
-	nstitle = [[NSString alloc] initWithBytes:title
-									   length:strlen(title)
-									 encoding:NSUTF8StringEncoding];
+	nstitle = [[NSString alloc]
+		initWithBytes:title
+			   length:strlen(title)
+			 encoding:NSUTF8StringEncoding];
 
 	if (resizable)
 		style_mask |= NSResizableWindowMask;
@@ -391,18 +437,27 @@ window_impl_open(struct rutabaga *rtb,
 		return NULL;
 
 	gl_ctx = NULL;
+	uv_mutex_init(&self->lock);
 
 	@autoreleasepool {
-		view = [RutabagaOpenGLView new];
-		self->gl_ctx = gl_ctx = alloc_gl_ctx();
+		self->view = view = [RutabagaOpenGLView alloc];
+		gl_ctx = alloc_gl_ctx();
+
+		view->gl_ctx = gl_ctx;
+		self->gl_ctx = gl_ctx;
+
+		[view initWithFrame:NSMakeRect(0, 0, w, h)];
+
+		get_dpi(&self->dpi.x, &self->dpi.y);
+		[gl_ctx makeCurrentContext];
 
 		if (parent) {
 			self->cocoa_win = cwin = NULL;
 
-			parent_view = (void *) parent;
+			parent_view = (NSView *) parent;
 			[parent_view addSubview:view];
 
-			[view setFrame:NSMakeRect(0, 0, w, h)];
+			[view setHidden:NO];
 		} else {
 			cwin = alloc_nswindow(w, h, title, 1);
 			if (!cwin)
@@ -413,25 +468,15 @@ window_impl_open(struct rutabaga *rtb,
 
 			[cwin setContentView:view];
 			[cwin makeFirstResponder:view];
-		}
-
-		[gl_ctx setView:view];
-		[gl_ctx makeCurrentContext];
-
-		if (parent) {
-			[view setHidden:NO];
-		} else {
 			[cwin makeKeyAndOrderFront:cwin];
+
 			[NSApp activateIgnoringOtherApps:YES];
 			[cwin center];
 		}
 
-		get_dpi(&self->dpi.x, &self->dpi.y);
 		view->rtb_win = self;
-		self->view = view;
 	}
 
-	uv_mutex_init(&self->lock);
 	return RTB_WINDOW(self);
 
 err_alloc_nswindow:
@@ -444,10 +489,18 @@ window_impl_close(struct rtb_window *rwin)
 {
 	struct cocoa_rtb_window *self = RTB_WINDOW_AS(rwin, cocoa_rtb_window);
 
-	[self->cocoa_win close];
+	self->view->rtb_win = NULL;
+
+	if (self->cocoa_win)
+		[self->cocoa_win close];
+
+	[self->view removeFromSuperview];
+	[self->gl_ctx clearDrawable];
 	[self->view release];
 	[self->gl_ctx release];
-	[self->cocoa_win release];
+
+	if (self->cocoa_win)
+		[self->cocoa_win release];
 
 	uv_mutex_destroy(&self->lock);
 	free(self);
@@ -463,6 +516,9 @@ rtb_cocoa_draw_frame(struct cocoa_rtb_window *self)
 	rtb_window_lock(win);
 
 	if (win->visibility != RTB_FULLY_OBSCURED && self->dirty) {
+		if ([self->gl_ctx view] != self->view)
+			[self->gl_ctx setView:self->view];
+
 		rtb_window_draw(win);
 		[self->gl_ctx flushBuffer];
 	}

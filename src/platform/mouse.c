@@ -246,10 +246,18 @@ drag(struct rtb_window *win, int x, int y)
 	}
 }
 
+static struct rtb_element *
+element_underneath_mouse(struct rtb_window *win)
+{
+	if (win->mouse.element_underneath)
+		return win->mouse.element_underneath;
+	return RTB_ELEMENT(win);
+}
+
 static void
 retarget(struct rtb_window *win, int x, int y)
 {
-	struct rtb_element *iter, *ret = win->mouse.element_underneath;
+	struct rtb_element *iter, *ret = element_underneath_mouse(win);
 	struct rtb_point cursor = {x, y};
 
 	while (ret != (struct rtb_element *) win) {
@@ -296,7 +304,7 @@ rtb_platform_mouse_press(struct rtb_window *win,
 	if (button > RTB_MOUSE_BUTTON_MAX)
 		return;
 
-	target = win->mouse.element_underneath;
+	target = element_underneath_mouse(win);
 
 	mouse_down(win, target, button, x, y);
 
@@ -317,7 +325,7 @@ rtb_platform_mouse_release(struct rtb_window *win,
 	if (button > RTB_MOUSE_BUTTON_MAX)
 		return;
 
-	target = win->mouse.element_underneath;
+	target = element_underneath_mouse(win);
 
 	mouse_up(win, target, button, x, y);
 	dispatch_simple_mouse_event(win, target, RTB_MOUSE_UP, button, x, y);
@@ -357,7 +365,7 @@ rtb_platform_mouse_enter_window(struct rtb_window *win, int x, int y)
 void
 rtb_platform_mouse_leave_window(struct rtb_window *win, int x, int y)
 {
-	struct rtb_element *underneath = win->mouse.element_underneath;
+	struct rtb_element *underneath = element_underneath_mouse(win);
 
 	while (underneath) {
 		underneath->mouse_in = 0;
@@ -370,6 +378,6 @@ rtb_platform_mouse_leave_window(struct rtb_window *win, int x, int y)
 		underneath = underneath->parent;
 	}
 
-	win->mouse.element_underneath = RTB_ELEMENT(win);
+	win->mouse.element_underneath = NULL;
 	win->mouse_in = 0;
 }

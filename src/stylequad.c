@@ -217,6 +217,11 @@ load_texture(struct rtb_stylequad_texture *dst,
 	if (dst->definition == src)
 		return -1;
 
+	if (!dst->coords) {
+		glGenBuffers(1, &dst->coords);
+		glGenTextures(1, &dst->gl_handle);
+	}
+
 	glBindTexture(GL_TEXTURE_2D, dst->gl_handle);
 
 	if (!src) {
@@ -356,15 +361,17 @@ rtb_stylequad_update_geometry(struct rtb_stylequad *self,
  * lifecycle
  */
 
-#define INIT_STYLEQUAD_TEXTURE(tx) do {    \
-	(tx)->definition = NULL;               \
-	glGenBuffers(1, &(tx)->coords);        \
-	glGenTextures(1, &(tx)->gl_handle);    \
+#define INIT_STYLEQUAD_TEXTURE(tx) do {										\
+	(tx)->definition = NULL;												\
+	(tx)->coords    = 0;													\
+	(tx)->gl_handle = 0;													\
 } while (0)
 
-#define FINI_STYLEQUAD_TEXTURE(tx) do {    \
-	glDeleteBuffers(1, &(tx)->coords);     \
-	glDeleteTextures(1, &(tx)->gl_handle); \
+#define FINI_STYLEQUAD_TEXTURE(tx) do {										\
+	if ((tx)->coords) {														\
+		glDeleteBuffers(1, &(tx)->coords);									\
+		glDeleteTextures(1, &(tx)->gl_handle);								\
+	}																		\
 } while (0)
 
 void

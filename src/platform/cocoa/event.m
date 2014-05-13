@@ -46,21 +46,11 @@ display_link_cb(CVDisplayLinkRef display_link, const CVTimeStamp *now,
 		CVOptionFlags *flags_out, void *ctx)
 {
 	struct cocoa_rtb_window *cwin = ctx;
+
+	uv_run(cwin->rtb->event_loop, UV_RUN_NOWAIT);
 	rtb_cocoa_draw_frame(cwin);
 
 	return kCVReturnSuccess;
-}
-
-/**
- * libuv <-> CFRunLoop interop
- */
-
-static void
-drain_uv_loop(CFRunLoopObserverRef observer, CFRunLoopActivity activity,
-		void *ctx)
-{
-	uv_loop_t *loop = ctx;
-	uv_run(loop, UV_RUN_NOWAIT);
 }
 
 /**
@@ -87,10 +77,6 @@ rtb_event_loop_init(struct rutabaga *r)
 	r->event_loop = uv_loop_new();
 	obs_ctx.info = r->event_loop;
 
-	cwin->uv_shim = CFRunLoopObserverCreate(
-			kCFAllocatorDefault, kCFRunLoopBeforeSources,
-			true, 0, drain_uv_loop, &obs_ctx);
-
 	cwin->we_are_running_nsapp = 0;
 }
 
@@ -107,15 +93,11 @@ rtb_event_loop_run(struct rutabaga *r)
 	cwin->event_loop_running = 1;
 
 	CVDisplayLinkStart(cwin->display_link);
-	CFRunLoopAddObserver(
-			[[NSRunLoop mainRunLoop] getCFRunLoop],
-			cwin->uv_shim, kCFRunLoopCommonModes);
 
 	if (![NSApp isRunning]) {
 		cwin->we_are_running_nsapp = 1;
 		[NSApp run];
 	}
-
 }
 
 void
@@ -132,10 +114,6 @@ rtb_event_loop_stop(struct rutabaga *r)
 	if (cwin->we_are_running_nsapp)
 		[NSApp stop:nil];
 
-	CFRunLoopRemoveObserver(
-			[[NSRunLoop mainRunLoop] getCFRunLoop],
-			cwin->uv_shim, kCFRunLoopCommonModes);
-
 	CVDisplayLinkStop(cwin->display_link);
 }
 
@@ -150,9 +128,6 @@ rtb_event_loop_fini(struct rutabaga *r)
 	cwin   = RTB_WINDOW_AS(win, cocoa_rtb_window);
 
 	CVDisplayLinkRelease(cwin->display_link);
-
-	CFRunLoopObserverInvalidate(cwin->uv_shim);
-	CFRelease(cwin->uv_shim);
 
 	rtb_loop = r->event_loop;
 	r->event_loop = NULL;
