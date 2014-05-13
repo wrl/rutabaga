@@ -73,6 +73,7 @@ rtb_event_loop_init(struct rutabaga *r)
 	struct rtb_window *win;
 	struct cocoa_rtb_window *cwin;
 	RutabagaOpenGLContext *gl_ctx;
+	CFRunLoopObserverContext obs_ctx = {};
 
 	win    = r->win;
 	cwin   = RTB_WINDOW_AS(win, cocoa_rtb_window);
@@ -84,8 +85,12 @@ rtb_event_loop_init(struct rutabaga *r)
 			[gl_ctx CGLContextObj], [gl_ctx->pixelFormat CGLPixelFormatObj]);
 
 	r->event_loop = uv_loop_new();
+	obs_ctx.info = r->event_loop;
 
-	uv_sem_init(&cwin->fake_event_loop, 0);
+	cwin->uv_shim = CFRunLoopObserverCreate(
+			kCFAllocatorDefault, kCFRunLoopBeforeSources,
+			true, 0, drain_uv_loop, &obs_ctx);
+
 	cwin->we_are_running_nsapp = 0;
 }
 
@@ -94,38 +99,23 @@ rtb_event_loop_run(struct rutabaga *r)
 {
 	struct rtb_window *win;
 	struct cocoa_rtb_window *cwin;
-	CFRunLoopObserverRef observer;
-	CFRunLoopObserverContext obs_ctx = {
-		.info = r->event_loop
-	};
 
 	win    = r->win;
 	cwin   = RTB_WINDOW_AS(win, cocoa_rtb_window);
 
-	observer = CFRunLoopObserverCreate(
-			kCFAllocatorDefault, kCFRunLoopBeforeSources,
-			true, 0, drain_uv_loop, &obs_ctx);
+	rtb_window_reinit(win);
+	cwin->event_loop_running = 1;
+
+	CVDisplayLinkStart(cwin->display_link);
 	CFRunLoopAddObserver(
 			[[NSRunLoop mainRunLoop] getCFRunLoop],
-			observer, kCFRunLoopCommonModes);
-
-	rtb_window_reinit(win);
-	CVDisplayLinkStart(cwin->display_link);
-
-	cwin->event_loop_running = 1;
+			cwin->uv_shim, kCFRunLoopCommonModes);
 
 	if (![NSApp isRunning]) {
 		cwin->we_are_running_nsapp = 1;
 		[NSApp run];
-	} else {
-		while (cwin->event_loop_running)
-			uv_sem_wait(&cwin->fake_event_loop);
 	}
 
-	CVDisplayLinkStop(cwin->display_link);
-
-	CFRunLoopObserverInvalidate(observer);
-	CFRelease(observer);
 }
 
 void
@@ -141,8 +131,12 @@ rtb_event_loop_stop(struct rutabaga *r)
 
 	if (cwin->we_are_running_nsapp)
 		[NSApp stop:nil];
-	else
-		uv_sem_post(&cwin->fake_event_loop);
+
+	CFRunLoopRemoveObserver(
+			[[NSRunLoop mainRunLoop] getCFRunLoop],
+			cwin->uv_shim, kCFRunLoopCommonModes);
+
+	CVDisplayLinkStop(cwin->display_link);
 }
 
 void
@@ -156,7 +150,9 @@ rtb_event_loop_fini(struct rutabaga *r)
 	cwin   = RTB_WINDOW_AS(win, cocoa_rtb_window);
 
 	CVDisplayLinkRelease(cwin->display_link);
-	uv_sem_destroy(&cwin->fake_event_loop);
+
+	CFRunLoopObserverInvalidate(cwin->uv_shim);
+	CFRelease(cwin->uv_shim);
 
 	rtb_loop = r->event_loop;
 	r->event_loop = NULL;

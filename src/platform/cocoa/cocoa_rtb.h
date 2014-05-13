@@ -64,7 +64,7 @@ struct cocoa_rtb_window {
 	RutabagaOpenGLContext *gl_ctx;
 
 	CVDisplayLinkRef display_link;
-	uv_sem_t fake_event_loop;
+	CFRunLoopObserverRef uv_shim;
 
 	volatile int event_loop_running;
 	int we_are_running_nsapp;

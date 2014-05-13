@@ -491,3 +491,13 @@ rtb_window_unlock(struct rtb_window *rwin)
 	[NSOpenGLContext clearCurrentContext];
 	uv_mutex_unlock(&self->lock);
 }
+
+/**
+ * misc rutabaga interfaces
+ */
+
+rtb_modkey_t
+rtb_get_modkeys(struct rtb_window *win)
+{
+	return 0;
+}
