@@ -67,8 +67,6 @@
 	tracking_area = [NSTrackingArea alloc];
 	[self addTrackingArea:tracking_area];
 
-	[self setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-
 	/*
 	[self setWantsBestResolutionOpenGLSurface:YES];
 	*/
@@ -172,7 +170,10 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 	if (!rtb_win)
 		return;
 
-	rtb_cocoa_draw_frame(rtb_win);
+	if ([self inLiveResize])
+		rtb_cocoa_draw_frame(rtb_win, 1);
+	else
+		rtb_win->dirty = 1;
 }
 
 - (void) mouseEntered: (NSEvent *) e
@@ -437,6 +438,9 @@ window_impl_open(struct rutabaga *rtb,
 			cwin->rtb_win = self;
 			self->cocoa_win = cwin;
 
+			[view setAutoresizingMask:
+				NSViewWidthSizable | NSViewHeightSizable];
+
 			[cwin setContentView:view];
 			[cwin makeFirstResponder:view];
 			[cwin makeKeyAndOrderFront:cwin];
@@ -451,6 +455,7 @@ window_impl_open(struct rutabaga *rtb,
 	return RTB_WINDOW(self);
 
 err_alloc_nswindow:
+	uv_mutex_destroy(&self->lock);
 	free(self);
 	return NULL;
 }
@@ -480,17 +485,20 @@ window_impl_close(struct rtb_window *rwin)
 }
 
 void
-rtb_cocoa_draw_frame(struct cocoa_rtb_window *self)
+rtb_cocoa_draw_frame(struct cocoa_rtb_window *self, int force)
 {
 	struct rtb_window *win = RTB_WINDOW(self);
+	NSRect r;
 
 	@autoreleasepool {
 		rtb_window_lock(win);
 
-		if (win->visibility != RTB_FULLY_OBSCURED && self->dirty) {
+		if (win->visibility != RTB_FULLY_OBSCURED
+				&& (self->dirty || force)) {
 			if ([self->gl_ctx view] != self->view)
 				[self->gl_ctx setView:self->view];
 
+			r = [self->view visibleRect];
 			rtb_window_draw(win);
 			[self->gl_ctx flushBuffer];
 		}

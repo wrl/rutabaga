@@ -49,7 +49,7 @@ display_link_cb(CVDisplayLinkRef display_link, const CVTimeStamp *now,
 	struct cocoa_rtb_window *cwin = ctx;
 
 	uv_run(cwin->rtb->event_loop, UV_RUN_NOWAIT);
-	rtb_cocoa_draw_frame(cwin);
+	rtb_cocoa_draw_frame(cwin, 0);
 
 	return kCVReturnSuccess;
 }
