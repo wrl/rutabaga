@@ -536,5 +536,16 @@ rtb_window_unlock(struct rtb_window *rwin)
 rtb_modkey_t
 rtb_get_modkeys(struct rtb_window *win)
 {
-	return 0;
+#define MOD_ACTIVE(cocoa_mod, rtb_mod) \
+	((!!(cocoa_modkeys & cocoa_mod)) * rtb_mod)
+
+	NSUInteger cocoa_modkeys = [NSEvent modifierFlags];
+
+	return
+		MOD_ACTIVE(NSAlternateKeyMask, RTB_KEY_MOD_ALT)
+		| MOD_ACTIVE(NSShiftKeyMask,   RTB_KEY_MOD_SHIFT)
+		| MOD_ACTIVE(NSControlKeyMask, RTB_KEY_MOD_CTRL)
+		| MOD_ACTIVE(NSCommandKeyMask, RTB_KEY_MOD_SUPER);
+
+#undef MOD_ACTIVE
 }
