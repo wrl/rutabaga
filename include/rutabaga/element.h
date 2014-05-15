@@ -38,10 +38,13 @@
 #define RTB_ELEMENT(x) RTB_UPCAST(x, rtb_element)
 #define RTB_ELEMENT_AS(x, type) RTB_DOWNCAST(x, type, rtb_element)
 
-#define RTB_SUBCLASS(self, init_func, copy_impl_to) ({ \
-	int ret;                                           \
-	if (!(ret = init_func(self)))                      \
-		*copy_impl_to = self->impl;                    \
+#define RTB_ELEMENT_IS_MARKED_DIRTY(elem)									\
+	(elem->render_entry.tqe_next || elem->render_entry.tqe_prev)
+
+#define RTB_SUBCLASS(self, init_func, copy_impl_to) ({						\
+	int ret;																\
+	if (!(ret = init_func(self)))											\
+		*copy_impl_to = self->impl;											\
 	ret;})
 
 typedef enum {
