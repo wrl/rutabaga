@@ -18,10 +18,9 @@
   type information, FreeType font rendering, and indirect
   rendering for performance.
 
-  though openGL gives us a simple cross-platform drawing
-  API, currently the only implemented backend is GLX 1.3
-  implemented with XCB. i.e. we're linux and *bsd only
-  right now.
+  there is full support for X11 systems (tested on Linux and
+  FreeBSD), and a Cocoa backend is in progress. win32 support
+  is also planned in short order.
 
   build with:
 
