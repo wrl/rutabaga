@@ -37,19 +37,20 @@
 #include "rtb_private/window_impl.h"
 #include "cocoa_rtb.h"
 
+/* XXX: hard-coding this because i don't know how to get vblank interval from
+ *      the os yet. using a CVDisplayLink is unreliable. */
+#define FPS 60
+#define FRAME_SECONDS (1.0 / (double) FPS)
+
 /**
- * display link
+ * frame rendering
  */
 
-static CVReturn
-display_link_cb(CVDisplayLinkRef display_link, const CVTimeStamp *now,
-		const CVTimeStamp *frame_time, CVOptionFlags flags_in,
-		CVOptionFlags *flags_out, void *ctx)
+static void
+frame_timer_callback(CFRunLoopTimerRef timer, void *info)
 {
-	struct cocoa_rtb_window *cwin = ctx;
+	struct cocoa_rtb_window *cwin = info;
 	rtb_cocoa_draw_frame(cwin, 0);
-
-	return kCVReturnSuccess;
 }
 
 /**
@@ -80,11 +81,6 @@ rtb_event_loop_init(struct rutabaga *r)
 	cwin   = RTB_WINDOW_AS(win, cocoa_rtb_window);
 	gl_ctx = cwin->gl_ctx;
 
-	CVDisplayLinkCreateWithActiveCGDisplays(&cwin->display_link);
-	CVDisplayLinkSetOutputCallback(cwin->display_link, display_link_cb, cwin);
-	CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(cwin->display_link,
-			[gl_ctx CGLContextObj], [gl_ctx->pixelFormat CGLPixelFormatObj]);
-
 	r->event_loop = uv_loop_new();
 	obs_ctx.info = r->event_loop;
 
@@ -101,15 +97,28 @@ rtb_event_loop_run(struct rutabaga *r)
 	struct rtb_window *win;
 	struct cocoa_rtb_window *cwin;
 
-	win    = r->win;
-	cwin   = RTB_WINDOW_AS(win, cocoa_rtb_window);
+	CFRunLoopTimerContext timer_ctx = {};
+
+	win  = r->win;
+	cwin = RTB_WINDOW_AS(win, cocoa_rtb_window);
+
+	if (cwin->event_loop_running)
+		return;
 
 	rtb_window_reinit(win);
 	cwin->event_loop_running = 1;
 
+	timer_ctx.info = cwin;
+
+	cwin->frame_timer = CFRunLoopTimerCreate(
+			kCFAllocatorDefault, CFAbsoluteTimeGetCurrent(),
+			FRAME_SECONDS, 0, 0, frame_timer_callback, &timer_ctx);
+
 	CFRunLoopAddObserver([[NSRunLoop mainRunLoop] getCFRunLoop],
 			cwin->run_uv_observer, kCFRunLoopCommonModes);
-	CVDisplayLinkStart(cwin->display_link);
+
+	CFRunLoopAddTimer([[NSRunLoop mainRunLoop] getCFRunLoop],
+			cwin->frame_timer, kCFRunLoopCommonModes);
 
 	if (![NSApp isRunning]) {
 		cwin->we_are_running_nsapp = 1;
@@ -123,15 +132,17 @@ rtb_event_loop_stop(struct rutabaga *r)
 	struct rtb_window *win;
 	struct cocoa_rtb_window *cwin;
 
-	win    = r->win;
-	cwin   = RTB_WINDOW_AS(win, cocoa_rtb_window);
+	win  = r->win;
+	cwin = RTB_WINDOW_AS(win, cocoa_rtb_window);
 
 	cwin->event_loop_running = 0;
 
 	if (cwin->we_are_running_nsapp)
 		[NSApp stop:nil];
 
-	CVDisplayLinkStop(cwin->display_link);
+	CFRunLoopTimerInvalidate(cwin->frame_timer);
+	CFRelease(cwin->frame_timer);
+
 	CFRunLoopRemoveObserver([[NSRunLoop mainRunLoop] getCFRunLoop],
 			cwin->run_uv_observer, kCFRunLoopCommonModes);
 }
@@ -148,8 +159,6 @@ rtb_event_loop_fini(struct rutabaga *r)
 
 	if (cwin->event_loop_running)
 		rtb_event_loop_stop(r);
-
-	CVDisplayLinkRelease(cwin->display_link);
 
 	CFRunLoopObserverInvalidate(cwin->run_uv_observer);
 	CFRelease(cwin->run_uv_observer);
