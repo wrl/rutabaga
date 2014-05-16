@@ -360,6 +360,17 @@ new_gl_context(Display *dpy, GLXFBConfig fb_config)
 	return ctx;
 }
 
+static void
+raise_window(xcb_connection_t *xcb_conn, xcb_window_t window)
+{
+	const uint32_t values[] = {
+		XCB_STACK_MODE_ABOVE
+	};
+
+	xcb_configure_window(xcb_conn, window,
+			XCB_CONFIG_WINDOW_STACK_MODE, values);
+}
+
 struct rtb_window *
 window_impl_open(struct rutabaga *rtb,
 		int w, int h, const char *title, intptr_t parent)
@@ -489,13 +500,14 @@ window_impl_open(struct rutabaga *rtb,
 	}
 
 	ck_map = xcb_map_window_checked(xcb_conn, self->xcb_win);
-
 	if ((err = xcb_request_check(xcb_conn, ck_map))) {
 		ERR("can't map XCB window: %d\n", err->error_code);
 		goto err_win_map;
 	}
 
-	if (!parent)
+	if (parent)
+		raise_window(xcb_conn, self->xcb_win);
+	else
 		xcb_icccm_set_wm_protocols(xcb_conn,
 				self->xcb_win, xrtb->atoms.wm_protocols,
 				1, &xrtb->atoms.wm_delete_window);
