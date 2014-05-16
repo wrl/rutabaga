@@ -457,7 +457,7 @@ window_impl_open(struct rutabaga *rtb,
 
 	ck_window = xcb_create_window_checked(
 			xcb_conn, XCB_COPY_FROM_PARENT, self->xcb_win,
-			parent ? parent : self->screen->root,
+			parent ? (xcb_window_t) parent : self->screen->root,
 			0, 0,
 			w, h,
 			0,
