@@ -41,7 +41,7 @@ print_shader_error(GLuint shader)
 	char *buf;
 
 	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_length);
-	buf = alloca(log_length + 1);
+	buf = malloc(log_length + 1);
 	glGetShaderInfoLog(shader, log_length, NULL, buf);
 
 	if (buf[log_length - 2] == '\n')
@@ -50,6 +50,8 @@ print_shader_error(GLuint shader)
 	fprintf(stderr,
 			"\nrtb_shader_compile(): couldn't compile shader. "
 			"openGL said:\n     %s\n\n", buf);
+
+	free(buf);
 }
 
 static void
@@ -59,7 +61,7 @@ print_program_error(GLuint program)
 	char *buf;
 
 	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_length);
-	buf = alloca(log_length + 1);
+	buf = malloc(log_length + 1);
 	glGetProgramInfoLog(program, log_length, NULL, buf);
 
 	if (buf[log_length - 2] == '\n')
@@ -68,6 +70,8 @@ print_program_error(GLuint program)
 	fprintf(stderr,
 			"\nrtb_shader_program_link(): couldn't link. "
 			"openGL said:\n     %s\n\n", buf);
+
+	free(buf);
 }
 
 static GLuint
