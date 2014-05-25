@@ -132,6 +132,8 @@ def build(bld):
         import re
 
         from_gyp['defines'].remove('_GNU_SOURCE')
+        from_gyp['cflags'].append('-std=gnu90')
+
         extra_cflags += [
             '-Wno-sign-compare',
             '-Wno-unused-function',
