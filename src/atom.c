@@ -39,13 +39,13 @@ typedef unsigned int uint_t;
  * meiyan hash from http://www.sanmayce.com/Fastest_Hash/
  */
 
-#ifndef _MSC_VER
+#ifndef _rotl
 # define _rotl(x, n) (((x) << (n)) | ((x) >> (32-(n))))
 # define _rotr(x, n) (((x) << (n)) | ((x) >> (32-(n))))
+#endif
 
-# ifndef __forceinline
-#  define __forceinline inline
-# endif
+#ifndef __forceinline
+# define __forceinline inline
 #endif
 
 #pragma GCC diagnostic push

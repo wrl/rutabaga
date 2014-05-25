@@ -63,11 +63,13 @@ strndup( const char *s1, size_t n)
 
 #if defined(_WIN32) || defined(_WIN64) 
 #include <inttypes.h>
-# ifdef __LP64__
+
+# ifdef _WIN64
 #  define PRIuSIZE PRIu64
 # else
 #  define PRIuSIZE PRIu32
 # endif
+
 #else
 # define PRIuSIZE "zu"
 #endif
@@ -262,11 +264,11 @@ vertex_buffer_print( vertex_buffer_t * self )
         case GL_FLOAT:          j=7; break;
         default:                j=8; break;
         }
-        fprintf(stderr, "%s : %dx%s (+%ld)\n",
+        fprintf(stderr, "%s : %dx%s (+%" PRIuSIZE ")\n",
                 self->attributes[i]->name, 
                 self->attributes[i]->size, 
                 gltypes[j],
-                (long) self->attributes[i]->pointer);
+                (size_t) self->attributes[i]->pointer);
 
         i += 1;
     }
