@@ -126,13 +126,27 @@ def gimme_da_gyp_shit(ctx):
 def build(bld):
     from_gyp = gimme_da_gyp_shit(bld)
 
+    extra_cflags = ['-Wno-cast-align']
+
+    if bld.env.DEST_OS == 'win32':
+        import re
+
+        from_gyp['defines'].remove('_GNU_SOURCE')
+        extra_cflags += [
+            '-Wno-sign-compare',
+            '-Wno-unused-function',
+            '-Wno-pointer-sign']
+
+        from_gyp['libraries'] = [re.sub('\.lib$', '', x)
+                for x in from_gyp['libraries']]
+
     bld.stlib(
         source=from_gyp['sources'],
         includes=['libuv/include', 'libuv/src'],
         export_includes='libuv/include',
         defines=from_gyp['defines'],
 
-        cflags=from_gyp['cflags'] + bld.env['CFLAGS_cshlib'] + ['-Wno-cast-align'],
+        cflags=from_gyp['cflags'] + bld.env['CFLAGS_cshlib'] + extra_cflags,
         linkflags=from_gyp['ldflags'],
         lib=from_gyp['libraries'],
 

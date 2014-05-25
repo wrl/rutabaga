@@ -50,8 +50,8 @@
 #define SELF_FROM(elem) \
 	struct rtb_patchbay *self = RTB_ELEMENT_AS(elem, rtb_patchbay)
 
-#define CONNECTION_COLOR	RGB(0x404F3C)
-#define DISCONNECT_COLOR	RGB(0x69181B)
+#define CONNECTION_COLOR	RTB_RGB(0x404F3C)
+#define DISCONNECT_COLOR	RTB_RGB(0x69181B)
 
 static struct rtb_element_implementation super;
 

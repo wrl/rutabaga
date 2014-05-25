@@ -39,7 +39,7 @@ static const struct rtb_style_property_definition fallbacks[RTB_STYLE_PROP_TYPE_
 	[RTB_STYLE_PROP_COLOR] = {
 		.property_name = "<fallback>",
 		.type = RTB_STYLE_PROP_COLOR,
-		.color = {RGB(0xFF0000), 1.f}
+		.color = {RTB_RGB(0xFF0000), 1.f}
 	},
 
 	/* XXX: have a basic fallback font? */

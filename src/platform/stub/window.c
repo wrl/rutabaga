@@ -24,13 +24,29 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#include "rtb_private/window_impl.h"
 
-#define ARRAY_LENGTH(a) (sizeof(a) / sizeof(*a))
-#define MAX(a, b) ({float _a = (a), _b = (b); (_a > _b) ? _a : _b;})
-#define MIN(a, b) ({float _a = (a), _b = (b); (_a < _b) ? _a : _b;})
+struct rutabaga *
+window_impl_rtb_alloc(void)
+{
+	return NULL;
+}
 
-#define RTB_RGB(color)														\
-	(((color & 0xFF0000) >> 16) / 255.f),									\
-	(((color & 0x00FF00) >> 8)  / 255.f),									\
-	(((color & 0x0000FF))       / 255.f)
+void
+window_impl_rtb_free(struct rutabaga *rtb)
+{
+	return;
+}
+
+struct rtb_window *
+window_impl_open(struct rutabaga *r,
+		int width, int height, const char *title, intptr_t parent)
+{
+	return NULL;
+}
+
+void
+window_impl_close(struct rtb_window *self)
+{
+	return;
+}

@@ -39,7 +39,9 @@
 #include "vec234.h"
 #include "vertex-attribute.h"
 
-
+#if defined(__APPLE__) || defined(_WIN32) || defined(_WIN64) 
+extern char *strndup( const char *s1, size_t n);
+#endif
 
 // ----------------------------------------------------------------------------
 vertex_attribute_t *

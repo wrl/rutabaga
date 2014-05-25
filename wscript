@@ -138,17 +138,19 @@ def configure(conf):
     # conf checks
 
     separator()
-    check_alloca(conf)
-    separator()
 
     if conf.env.DEST_OS == 'win32':
-        pass
+        check_freetype(conf)
+        conf.env.append_unique('LIB_GL', 'opengl32')
+        conf.env.PLATFORM = 'win32'
     elif conf.env.DEST_OS == 'darwin':
+        check_alloca(conf)
         check_freetype(conf)
         conf.env.PLATFORM = 'cocoa'
 
         conf.env.append_unique('FRAMEWORK_COCOA', ['Cocoa', 'QuartzCore'])
     else:
+        check_alloca(conf)
         check_gl(conf)
         check_freetype(conf)
         check_x11(conf)
@@ -170,9 +172,9 @@ def configure(conf):
 
     conf.env.RTB_VERSION = VERSION
 
-    conf.define('_GNU_SOURCE', '')
+    conf.define('_GNU_SOURCE', 1)
     conf.env.append_unique('CFLAGS', [
-        '-std=c99', '-fms-extensions',
+        '-std=gnu99', '-fms-extensions',
         '-Wall', '-Werror', '-Wextra', '-Wcast-align',
         '-Wno-microsoft', '-Wno-missing-field-initializers', '-Wno-unused-parameter',
         '-ffunction-sections', '-fdata-sections', '-ggdb'])

@@ -61,6 +61,17 @@ strndup( const char *s1, size_t n)
 };
 #endif
 
+#if defined(_WIN32) || defined(_WIN64) 
+#include <inttypes.h>
+# ifdef __LP64__
+#  define PRIuSIZE PRIu64
+# else
+#  define PRIuSIZE PRIu32
+# endif
+#else
+# define PRIuSIZE "zu"
+#endif
+
 
 /**
  * Buffer status
@@ -234,7 +245,7 @@ vertex_buffer_print( vertex_buffer_t * self )
         "GL_VOID"
     };
 
-    fprintf( stderr, "%zu vertices, %zu indices\n",
+    fprintf( stderr, "%" PRIuSIZE " vertices, %" PRIuSIZE " indices\n",
              vector_size( self->vertices ), vector_size( self->indices ) );
     while( self->attributes[i] )
     {

@@ -24,13 +24,32 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#include "rutabaga/rutabaga.h"
+#include "rutabaga/event.h"
+#include "rtb_private/window_impl.h"
 
-#define ARRAY_LENGTH(a) (sizeof(a) / sizeof(*a))
-#define MAX(a, b) ({float _a = (a), _b = (b); (_a > _b) ? _a : _b;})
-#define MIN(a, b) ({float _a = (a), _b = (b); (_a < _b) ? _a : _b;})
+void
+rtb_event_loop_init(struct rutabaga *r)
+{
+	r->event_loop = uv_loop_new();
+}
 
-#define RTB_RGB(color)														\
-	(((color & 0xFF0000) >> 16) / 255.f),									\
-	(((color & 0x00FF00) >> 8)  / 255.f),									\
-	(((color & 0x0000FF))       / 255.f)
+void
+rtb_event_loop_run(struct rutabaga *r)
+{
+}
+
+void
+rtb_event_loop_stop(struct rutabaga *r)
+{
+}
+
+void
+rtb_event_loop_fini(struct rutabaga *r)
+{
+	uv_loop_t *rtb_loop;
+
+	rtb_loop = r->event_loop;
+	r->event_loop = NULL;
+	uv_loop_delete(rtb_loop);
+}
