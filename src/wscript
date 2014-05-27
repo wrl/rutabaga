@@ -41,9 +41,9 @@ def build(bld):
     elif bld.env.PLATFORM == 'cocoa':
         obj('platform/cocoa/event.m')
         obj('platform/cocoa/window.m')
-    elif bld.env.PLATFORM == 'win32':
-        obj('platform/stub/window.c')
-        obj('platform/stub/event.c')
+    elif bld.env.PLATFORM == 'win':
+        obj('platform/win/window.c')
+        obj('platform/win/event.c')
 
     # common
 
