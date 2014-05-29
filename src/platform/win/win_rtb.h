@@ -30,6 +30,9 @@
 struct win_rtb_window {
 	RTB_INHERIT(rtb_window);
 
-	ATOM window_class;
-	HWND hwnd;
+	ATOM  window_class;
+	HWND  hwnd;
+
+	HGLRC gl_ctx;
+	HDC   dc;
 };

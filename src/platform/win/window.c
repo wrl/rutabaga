@@ -30,7 +30,10 @@
 
 #include <windows.h>
 
+#include "rutabaga/rutabaga.h"
 #include "rtb_private/window_impl.h"
+
+#include <GL/wglext.h>
 
 #include "win_rtb.h"
 
@@ -87,6 +90,67 @@ static void
 free_window_class(ATOM window_class)
 {
 	UnregisterClassW((void *) MAKELONG(window_class, 0), NULL);
+}
+
+/**
+ * gl context bullshit
+ */
+
+static int
+init_gl_ctx(struct win_rtb_window *self)
+{
+	PFNWGLCREATECONTEXTATTRIBSARBPROC create_context_attribs;
+	PIXELFORMATDESCRIPTOR pd = {};
+	HGLRC gl_ctx;
+
+	const int ctx_attribs[] = {
+		WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+		WGL_CONTEXT_MINOR_VERSION_ARB, 2,
+		WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+		WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+		0
+	};
+
+	pd = (PIXELFORMATDESCRIPTOR) {
+		sizeof(pd),
+		1,
+		PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,
+		PFD_TYPE_RGBA,
+		32,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		8,
+		8,
+		0,
+		PFD_MAIN_PLANE,
+		0, 0, 0, 0
+	};
+
+	SetPixelFormat(self->dc, ChoosePixelFormat(self->dc, &pd), &pd);
+
+	gl_ctx = wglCreateContext(self->dc);
+	if (!gl_ctx)
+		goto err_create_ctx;
+
+	wglMakeCurrent(self->dc, gl_ctx);
+	create_context_attribs = (PFNWGLCREATECONTEXTATTRIBSARBPROC)
+		wglGetProcAddress("wglCreateContextAttribsARB");
+
+	wglMakeCurrent(self->dc, NULL);
+	wglDeleteContext(gl_ctx);
+
+	/* XXX: check for WGL_ARB_create_context explicitly? */
+	if (!create_context_attribs)
+		goto err_create_ctx;
+
+	gl_ctx = create_context_attribs(self->dc, NULL, ctx_attribs);
+	if (!gl_ctx)
+		goto err_create_ctx;
+
+	self->gl_ctx = gl_ctx;
+	return 0;
+
+err_create_ctx:
+	return -1;
 }
 
 /**
@@ -147,9 +211,16 @@ window_impl_open(struct rutabaga *r,
 		goto err_createwindow;
 
 	SetWindowLongPtr(self->hwnd, 0, self);
+	self->dc = GetDC(self->hwnd);
 
+	if (init_gl_ctx(self))
+		goto err_gl_ctx;
+
+	wglMakeCurrent(self->dc, self->gl_ctx);
 	return RTB_WINDOW(self);
 
+err_gl_ctx:
+	DestroyWindow(self->hwnd);
 err_createwindow:
 err_wtitle:
 	free_window_class(self->window_class);
@@ -161,6 +232,8 @@ void
 window_impl_close(struct rtb_window *rwin)
 {
 	struct win_rtb_window *self = RTB_WINDOW_AS(rwin, win_rtb_window);
+
+	DestroyWindow(self->hwnd);
 
 	free_window_class(self->window_class);
 	free(self);
