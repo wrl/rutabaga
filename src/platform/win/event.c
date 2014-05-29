@@ -35,6 +35,18 @@
 
 #include "win_rtb.h"
 
+/* since resizing the window stalls our event loop, we register a system
+ * timer so we can keep redrawing content during the window resize. */
+
+#define WIN_RTB_SIZING_FRAME_TIMER 4242
+
+static void
+draw_frame(struct win_rtb_window *self)
+{
+	rtb_window_draw(RTB_WINDOW(self));
+	SwapBuffers(self->dc);
+}
+
 /**
  * various message types
  */
@@ -68,6 +80,19 @@ handle_close(struct win_rtb_window *self)
 	rtb_dispatch_raw(RTB_ELEMENT(self), RTB_EVENT(&rev));
 }
 
+static void
+handle_timer(struct win_rtb_window *self, int timer_id)
+{
+	switch (timer_id) {
+	case WIN_RTB_SIZING_FRAME_TIMER:
+		draw_frame(self);
+		break;
+
+	default:
+		break;
+	}
+}
+
 /**
  * message handling
  */
@@ -77,6 +102,9 @@ win_rtb_handle_message(struct win_rtb_window *self,
 		UINT message, WPARAM wparam, LPARAM lparam)
 {
 	switch (message) {
+	/**
+	 * lifecycle
+	 */
 	case WM_CREATE:
 	case WM_SHOWWINDOW:
 	case WM_SIZE:
@@ -87,10 +115,34 @@ win_rtb_handle_message(struct win_rtb_window *self,
 		handle_close(self);
 		return 0;
 
+	/**
+	 * mouse events
+	 */
+
 	case WM_MOUSEMOVE:
 		handle_mouse_motion(self,
 				GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
 		return 0;
+
+	/**
+	 * misc win32 bullshit
+	 */
+
+	case WM_TIMER:
+		handle_timer(self, wparam);
+		return 0;
+
+	case WM_ENTERSIZEMOVE:
+		SetTimer(self->hwnd, WIN_RTB_SIZING_FRAME_TIMER, 16, 0);
+		return 0;
+
+	case WM_EXITSIZEMOVE:
+		KillTimer(self->hwnd, WIN_RTB_SIZING_FRAME_TIMER);
+		return 0;
+
+	/**
+	 * reply hazy, ask bill
+	 */
 
 	default:
 		return DefWindowProc(self->hwnd, message, wparam, lparam);
@@ -119,9 +171,7 @@ frame_cb(uv_timer_t *handle, int status)
 	struct win_rtb_window *self = handle->data;
 
 	drain_windows_message_queue(self);
-
-	rtb_window_draw(RTB_WINDOW(self));
-	SwapBuffers(self->dc);
+	draw_frame(self);
 }
 
 
@@ -144,7 +194,6 @@ rtb_event_loop_init(struct rutabaga *r)
 void
 rtb_event_loop_run(struct rutabaga *r)
 {
-	rtb_window_reinit(r->win);
 	uv_run(r->event_loop, UV_RUN_DEFAULT);
 }
 

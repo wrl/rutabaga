@@ -53,18 +53,25 @@ static LRESULT CALLBACK
 win_rtb_wndproc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
 	struct win_rtb_window *self = GetWindowLongPtr(hwnd, GWL_USERDATA);
+	LRESULT ret;
 
 	switch (message) {
 	case WM_CREATE:
-		PostMessage(hwnd, WM_CREATE, wparam, lparam);
+		PostMessage(hwnd, WM_SHOWWINDOW, 0, 0);
 		return 0;
 
 	default:
-		if (self)
-			return win_rtb_handle_message(self, message, wparam, lparam);
+		if (self) {
+			ret = win_rtb_handle_message(self, message, wparam, lparam);
+
+			if (self->need_reconfigure)
+				rtb_window_reinit(RTB_WINDOW(self));
+
+			return ret;
+		}
+
 		return DefWindowProc(hwnd, message, wparam, lparam);
 	}
-
 }
 
 /**
@@ -202,7 +209,7 @@ window_impl_open(struct rutabaga *r,
 
 	flags = WS_POPUPWINDOW | WS_CAPTION | WS_SIZEBOX | WS_VISIBLE;
 	wrect = (RECT) {0, 0, width, height};
-	AdjustWindowRectEx(&wrect, flags, FALSE, WS_EX_TOPMOST);
+	AdjustWindowRectEx(&wrect, flags, FALSE, 0);
 
 	wtitle = utf8_to_utf16_alloc(title);
 	if (!wtitle)
@@ -213,7 +220,7 @@ window_impl_open(struct rutabaga *r,
 
 	self->hwnd = CreateWindowExW((DWORD) 0,
 			(void *) MAKELONG(self->window_class, 0), wtitle, flags,
-			wrect.left, wrect.top,
+			0, 0,
 			wrect.right - wrect.left, wrect.bottom - wrect.top,
 			(HWND) parent, NULL, NULL, NULL);
 
