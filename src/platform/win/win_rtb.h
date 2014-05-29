@@ -24,55 +24,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#import <Cocoa/Cocoa.h>
-#include <CoreFoundation/CFRunLoop.h>
-
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/window.h"
 
-struct cocoa_rtb_window;
-
-@interface RutabagaOpenGLContext : NSOpenGLContext
-{
-@public
-	const NSOpenGLPixelFormat *pixelFormat;
-}
-@end
-
-@interface RutabagaWindow : NSWindow
-{
-@public
-	struct cocoa_rtb_window *rtb_win;
-}
-@end
-
-@interface RutabagaOpenGLView : NSView
-{
-@public
-	struct cocoa_rtb_window *rtb_win;
-	RutabagaOpenGLContext *gl_ctx;
-
-@private
-	NSTrackingArea *tracking_area;
-	BOOL was_mouse_coalescing_enabled;
-	BOOL window_did_accept_mouse_moved_events;
-}
-@end
-
-struct cocoa_rtb_window {
+struct win_rtb_window {
 	RTB_INHERIT(rtb_window);
 
-	RutabagaWindow *cocoa_win;
-	RutabagaOpenGLView *view;
-	RutabagaOpenGLContext *gl_ctx;
-
- 	CFRunLoopTimerRef frame_timer;
-	CFRunLoopObserverRef run_uv_observer;
-
-	volatile int event_loop_running;
-	int we_are_running_nsapp;
+	ATOM window_class;
+	HWND hwnd;
 };
-
-void rtb_cocoa_draw_frame(struct cocoa_rtb_window *, int force);
-
-/* vim: set ft=objc :*/

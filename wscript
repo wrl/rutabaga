@@ -141,7 +141,9 @@ def configure(conf):
 
     if conf.env.DEST_OS == 'win32':
         check_freetype(conf)
+
         conf.env.append_unique('LIB_GL', 'opengl32')
+        conf.define('WIN32_LEAN_AND_MEAN', 1)
         conf.env.PLATFORM = 'win'
     elif conf.env.DEST_OS == 'darwin':
         check_alloca(conf)
