@@ -52,7 +52,19 @@
 static LRESULT CALLBACK
 win_rtb_wndproc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
-	return DefWindowProc(hwnd, message, wparam, lparam);
+	struct win_rtb_window *self = GetWindowLongPtr(hwnd, GWL_USERDATA);
+
+	switch (message) {
+	case WM_CREATE:
+		PostMessage(hwnd, WM_CREATE, wparam, lparam);
+		return 0;
+
+	default:
+		if (self)
+			return win_rtb_handle_message(self, message, wparam, lparam);
+		return DefWindowProc(hwnd, message, wparam, lparam);
+	}
+
 }
 
 /**
@@ -210,13 +222,18 @@ window_impl_open(struct rutabaga *r,
 	if (!self->hwnd)
 		goto err_createwindow;
 
-	SetWindowLongPtr(self->hwnd, 0, self);
+	SetWindowLongPtr(self->hwnd, GWL_USERDATA, self);
 	self->dc = GetDC(self->hwnd);
 
 	if (init_gl_ctx(self))
 		goto err_gl_ctx;
 
 	wglMakeCurrent(self->dc, self->gl_ctx);
+
+	/* XXX: hardcode this for now */
+	self->dpi.x = 96;
+	self->dpi.y = 96;
+
 	return RTB_WINDOW(self);
 
 err_gl_ctx:

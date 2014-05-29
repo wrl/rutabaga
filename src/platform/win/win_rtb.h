@@ -24,6 +24,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <uv.h>
+
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/window.h"
 
@@ -35,4 +37,9 @@ struct win_rtb_window {
 
 	HGLRC gl_ctx;
 	HDC   dc;
+
+	uv_timer_t frame_timer;
 };
+
+LRESULT win_rtb_handle_message(struct win_rtb_window *,
+		UINT message, WPARAM wparam, LPARAM lparam);

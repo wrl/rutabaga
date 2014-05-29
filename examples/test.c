@@ -26,6 +26,7 @@
 
 #include <assert.h>
 
+#include <time.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,9 +86,19 @@ time_monotonic(struct timespec *ts)
 
 	return 0;
 }
-#else
-# include <time.h>
+#elif defined(_WIN32) || defined(_WIN64)
+static int
+time_monotonic(struct timespec *ts)
+{
+	uint64_t t;
 
+	t = uv_hrtime();
+	ts->tv_sec  = t / 1000000000;
+	ts->tv_nsec = t % 1000000000;
+
+	return 0;
+}
+#else
 static int
 time_monotonic(struct timespec *ts)
 {

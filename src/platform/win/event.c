@@ -24,24 +24,134 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <uv.h>
+#include <windows.h>
+#include <windowsx.h>
+
 #include "rutabaga/rutabaga.h"
+#include "rutabaga/window.h"
 #include "rutabaga/event.h"
 #include "rtb_private/window_impl.h"
+
+#include "win_rtb.h"
+
+/**
+ * various message types
+ */
+
+static void
+handle_mouse_motion(struct win_rtb_window *self, int x, int y)
+{
+}
+
+static void
+handle_resize(struct win_rtb_window *self)
+{
+	RECT wrect;
+
+	GetClientRect(self->hwnd, &wrect);
+
+	self->w = wrect.right;
+	self->h = wrect.bottom;
+
+	self->need_reconfigure = 1;
+}
+
+static void
+handle_close(struct win_rtb_window *self)
+{
+	struct rtb_window_event rev = {
+		.type   = RTB_WINDOW_CLOSE,
+		.window = RTB_WINDOW(self)
+	};
+
+	rtb_dispatch_raw(RTB_ELEMENT(self), RTB_EVENT(&rev));
+}
+
+/**
+ * message handling
+ */
+
+LRESULT
+win_rtb_handle_message(struct win_rtb_window *self,
+		UINT message, WPARAM wparam, LPARAM lparam)
+{
+	switch (message) {
+	case WM_CREATE:
+	case WM_SHOWWINDOW:
+	case WM_SIZE:
+		handle_resize(self);
+		return 0;
+
+	case WM_CLOSE:
+		handle_close(self);
+		return 0;
+
+	case WM_MOUSEMOVE:
+		handle_mouse_motion(self,
+				GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
+		return 0;
+
+	default:
+		return DefWindowProc(self->hwnd, message, wparam, lparam);
+	}
+}
+
+static void
+drain_windows_message_queue(struct win_rtb_window *self)
+{
+	MSG msg;
+
+	while (PeekMessage(&msg, self->hwnd, 0, 0, PM_REMOVE))
+		win_rtb_handle_message(self, msg.message, msg.wParam, msg.lParam);
+
+	if (self->need_reconfigure)
+		rtb_window_reinit(RTB_WINDOW(self));
+}
+
+/**
+ * frame drawing
+ */
+
+static void
+frame_cb(uv_timer_t *handle, int status)
+{
+	struct win_rtb_window *self = handle->data;
+
+	drain_windows_message_queue(self);
+
+	rtb_window_draw(RTB_WINDOW(self));
+	SwapBuffers(self->dc);
+}
+
+
+/**
+ * public API
+ */
 
 void
 rtb_event_loop_init(struct rutabaga *r)
 {
+	struct win_rtb_window *win = RTB_WINDOW_AS(r->win, win_rtb_window);
 	r->event_loop = uv_loop_new();
+
+	uv_timer_init(r->event_loop, &win->frame_timer);
+	win->frame_timer.data = win;
+
+	uv_timer_start(&win->frame_timer, frame_cb, 0, 16);
 }
 
 void
 rtb_event_loop_run(struct rutabaga *r)
 {
+	rtb_window_reinit(r->win);
+	uv_run(r->event_loop, UV_RUN_DEFAULT);
 }
 
 void
 rtb_event_loop_stop(struct rutabaga *r)
 {
+	uv_stop(r->event_loop);
 }
 
 void
