@@ -31,6 +31,8 @@
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/window.h"
 #include "rutabaga/event.h"
+#include "rutabaga/platform.h"
+
 #include "rtb_private/window_impl.h"
 
 #include "win_rtb.h"
@@ -39,6 +41,10 @@
  * timer so we can keep redrawing content during the window resize. */
 
 #define WIN_RTB_SIZING_FRAME_TIMER 4242
+
+/**
+ * frame drawing
+ */
 
 static void
 draw_frame(struct win_rtb_window *self)
@@ -52,8 +58,36 @@ draw_frame(struct win_rtb_window *self)
  */
 
 static void
+setup_mouse_tracking(struct win_rtb_window *self)
+{
+	TRACKMOUSEEVENT t = {
+		sizeof(t),
+		TME_LEAVE,
+		self->hwnd,
+		0
+	};
+
+	TrackMouseEvent(&t);
+}
+
+static void
 handle_mouse_motion(struct win_rtb_window *self, int x, int y)
 {
+	if (!self->mouse_in)
+		setup_mouse_tracking(self);
+
+	rtb_platform_mouse_motion(RTB_WINDOW(self), x, y);
+}
+
+static void
+handle_mouse_leave(struct win_rtb_window *self)
+{
+	POINT p;
+
+	GetCursorPos(&p);
+	ScreenToClient(self->hwnd, &p);
+
+	rtb_platform_mouse_leave_window(RTB_WINDOW(self), p.x, p.y);
 }
 
 static void
@@ -124,6 +158,10 @@ win_rtb_handle_message(struct win_rtb_window *self,
 				GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
 		return 0;
 
+	case WM_MOUSELEAVE:
+		handle_mouse_leave(self);
+		return 0;
+
 	/**
 	 * misc win32 bullshit
 	 */
@@ -162,7 +200,7 @@ drain_windows_message_queue(struct win_rtb_window *self)
 }
 
 /**
- * frame drawing
+ * uv timer callback
  */
 
 static void
@@ -174,7 +212,6 @@ frame_cb(uv_timer_t *handle, int status)
 	draw_frame(self);
 }
 
-
 /**
  * public API
  */
@@ -182,13 +219,13 @@ frame_cb(uv_timer_t *handle, int status)
 void
 rtb_event_loop_init(struct rutabaga *r)
 {
-	struct win_rtb_window *win = RTB_WINDOW_AS(r->win, win_rtb_window);
+	struct win_rtb_window *self = RTB_WINDOW_AS(r->win, win_rtb_window);
 	r->event_loop = uv_loop_new();
 
-	uv_timer_init(r->event_loop, &win->frame_timer);
-	win->frame_timer.data = win;
+	uv_timer_init(r->event_loop, &self->frame_timer);
+	self->frame_timer.data = self;
 
-	uv_timer_start(&win->frame_timer, frame_cb, 0, 16);
+	uv_timer_start(&self->frame_timer, frame_cb, 0, 16);
 }
 
 void
@@ -211,4 +248,13 @@ rtb_event_loop_fini(struct rutabaga *r)
 	rtb_loop = r->event_loop;
 	r->event_loop = NULL;
 	uv_loop_delete(rtb_loop);
+}
+
+rtb_modkey_t
+rtb_get_modkeys(struct rtb_window *rwin)
+{
+	struct win_rtb_window *self = RTB_WINDOW_AS(rwin, win_rtb_window);
+
+	((void) self);
+	return 0;
 }
