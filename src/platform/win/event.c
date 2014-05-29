@@ -54,41 +54,8 @@ draw_frame(struct win_rtb_window *self)
 }
 
 /**
- * various message types
+ * window events
  */
-
-static void
-setup_mouse_tracking(struct win_rtb_window *self)
-{
-	TRACKMOUSEEVENT t = {
-		sizeof(t),
-		TME_LEAVE,
-		self->hwnd,
-		0
-	};
-
-	TrackMouseEvent(&t);
-}
-
-static void
-handle_mouse_motion(struct win_rtb_window *self, int x, int y)
-{
-	if (!self->mouse_in)
-		setup_mouse_tracking(self);
-
-	rtb_platform_mouse_motion(RTB_WINDOW(self), x, y);
-}
-
-static void
-handle_mouse_leave(struct win_rtb_window *self)
-{
-	POINT p;
-
-	GetCursorPos(&p);
-	ScreenToClient(self->hwnd, &p);
-
-	rtb_platform_mouse_leave_window(RTB_WINDOW(self), p.x, p.y);
-}
 
 static void
 handle_resize(struct win_rtb_window *self)
@@ -128,6 +95,65 @@ handle_timer(struct win_rtb_window *self, int timer_id)
 }
 
 /**
+ * mouse events
+ */
+
+static void
+setup_mouse_tracking(struct win_rtb_window *self)
+{
+	TRACKMOUSEEVENT t = {
+		sizeof(t),
+		TME_LEAVE,
+		self->hwnd,
+		0
+	};
+
+	TrackMouseEvent(&t);
+}
+
+static void
+handle_mouse_motion(struct win_rtb_window *self, int x, int y)
+{
+	if (!self->mouse_in)
+		setup_mouse_tracking(self);
+
+	rtb_platform_mouse_motion(RTB_WINDOW(self), x, y);
+}
+
+static void
+handle_mouse_leave(struct win_rtb_window *self)
+{
+	POINT p;
+
+	GetCursorPos(&p);
+	ScreenToClient(self->hwnd, &p);
+
+	rtb_platform_mouse_leave_window(RTB_WINDOW(self), p.x, p.y);
+}
+
+static void
+handle_mouse_down(struct win_rtb_window *self, int button, LPARAM lparam)
+{
+	rtb_platform_mouse_press(RTB_WINDOW(self), button,
+			GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
+
+	if (!self->capture_depth++)
+		SetCapture(self->hwnd);
+}
+
+static void
+handle_mouse_up(struct win_rtb_window *self, int button, LPARAM lparam)
+{
+	rtb_platform_mouse_release(RTB_WINDOW(self), button,
+			GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
+
+	if (--self->capture_depth <= 0) {
+		ReleaseCapture();
+		self->capture_depth = 0;
+	}
+}
+
+/**
  * message handling
  */
 
@@ -160,6 +186,30 @@ win_rtb_handle_message(struct win_rtb_window *self,
 
 	case WM_MOUSELEAVE:
 		handle_mouse_leave(self);
+		return 0;
+
+	case WM_LBUTTONDOWN:
+		handle_mouse_down(self, RTB_MOUSE_BUTTON1, lparam);
+		return 0;
+
+	case WM_LBUTTONUP:
+		handle_mouse_up(self, RTB_MOUSE_BUTTON1, lparam);
+		return 0;
+
+	case WM_MBUTTONDOWN:
+		handle_mouse_down(self, RTB_MOUSE_BUTTON2, lparam);
+		return 0;
+
+	case WM_MBUTTONUP:
+		handle_mouse_up(self, RTB_MOUSE_BUTTON2, lparam);
+		return 0;
+
+	case WM_RBUTTONDOWN:
+		handle_mouse_down(self, RTB_MOUSE_BUTTON3, lparam);
+		return 0;
+
+	case WM_RBUTTONUP:
+		handle_mouse_up(self, RTB_MOUSE_BUTTON3, lparam);
 		return 0;
 
 	/**
@@ -231,7 +281,16 @@ rtb_event_loop_init(struct rutabaga *r)
 void
 rtb_event_loop_run(struct rutabaga *r)
 {
+	struct win_rtb_window *self = RTB_WINDOW_AS(r->win, win_rtb_window);
+
+	self->capture_depth = 0;
+
 	uv_run(r->event_loop, UV_RUN_DEFAULT);
+
+	if (self->capture_depth > 0) {
+		ReleaseCapture();
+		self->capture_depth = 0;
+	}
 }
 
 void
