@@ -216,12 +216,17 @@ win_rtb_handle_message(struct win_rtb_window *self,
 	 * misc win32 bullshit
 	 */
 
+	case WM_PAINT:
+		/* thx but no thx */
+		ValidateRect(self->hwnd, NULL);
+		return 0;
+
 	case WM_TIMER:
 		handle_timer(self, wparam);
 		return 0;
 
 	case WM_ENTERSIZEMOVE:
-		SetTimer(self->hwnd, WIN_RTB_SIZING_FRAME_TIMER, 16, 0);
+		SetTimer(self->hwnd, WIN_RTB_SIZING_FRAME_TIMER, 15, 0);
 		return 0;
 
 	case WM_EXITSIZEMOVE:

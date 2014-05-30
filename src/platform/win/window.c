@@ -26,6 +26,7 @@
 
 #include <stdlib.h>
 #include <inttypes.h>
+#include <string.h>
 #include <wchar.h>
 
 #include <windows.h>
@@ -115,10 +116,58 @@ free_window_class(ATOM window_class)
  * gl context bullshit
  */
 
+struct win_rtb_gl_extensions {
+	int create_context_attribs;
+	int swap_control;
+	int swap_control_tear;
+	int appears_to_be_nvidia;
+};
+
+static int
+check_extensions(struct win_rtb_window *self,
+		struct win_rtb_gl_extensions *ext)
+{
+	PFNWGLGETEXTENSIONSSTRINGEXTPROC get_extensions_string;
+	const char *extensions;
+
+	*ext = (struct win_rtb_gl_extensions) {
+		.appears_to_be_nvidia   = 0,
+		.create_context_attribs = 0,
+		.swap_control           = 0,
+		.swap_control_tear      = 0
+	};
+
+	get_extensions_string = (PFNWGLGETEXTENSIONSSTRINGEXTPROC)
+		wglGetProcAddress("wglGetExtensionsStringEXT");
+
+	if (!get_extensions_string)
+		return -1;
+
+	extensions = get_extensions_string();
+
+	if (strstr(extensions, "WGL_ARB_create_context"))
+		ext->create_context_attribs = 1;
+
+	if (strstr(extensions, "WGL_EXT_swap_control")) {
+		ext->swap_control = 1;
+
+		if (strstr(extensions, "WGL_EXT_swap_control_tear"))
+			ext->swap_control_tear = 1;
+	}
+
+	if (strstr(extensions, "NV"))
+		ext->appears_to_be_nvidia = 1;
+
+	return 0;
+}
+
 static int
 init_gl_ctx(struct win_rtb_window *self)
 {
 	PFNWGLCREATECONTEXTATTRIBSARBPROC create_context_attribs;
+	PFNWGLSWAPINTERVALEXTPROC swap_interval;
+	struct win_rtb_gl_extensions ext;
+
 	PIXELFORMATDESCRIPTOR pd = {};
 	HGLRC gl_ctx;
 
@@ -151,13 +200,17 @@ init_gl_ctx(struct win_rtb_window *self)
 		goto err_create_ctx;
 
 	wglMakeCurrent(self->dc, gl_ctx);
+	check_extensions(self, &ext);
+
+	if (!ext.create_context_attribs)
+		goto err_dont_have_create_context_attribs;
+
 	create_context_attribs = (PFNWGLCREATECONTEXTATTRIBSARBPROC)
 		wglGetProcAddress("wglCreateContextAttribsARB");
 
 	wglMakeCurrent(self->dc, NULL);
 	wglDeleteContext(gl_ctx);
 
-	/* XXX: check for WGL_ARB_create_context explicitly? */
 	if (!create_context_attribs)
 		goto err_create_ctx;
 
@@ -166,8 +219,24 @@ init_gl_ctx(struct win_rtb_window *self)
 		goto err_create_ctx;
 
 	self->gl_ctx = gl_ctx;
+	wglMakeCurrent(self->dc, gl_ctx);
+
+	if (ext.swap_control) {
+		swap_interval = (PFNWGLSWAPINTERVALEXTPROC)
+			wglGetProcAddress("wglSwapIntervalEXT");
+
+		/* vsync + wgl + nvidia == stupid high CPU usage */
+		if (ext.appears_to_be_nvidia)
+			swap_interval(0);
+		else
+			swap_interval(1);
+	}
+
 	return 0;
 
+err_dont_have_create_context_attribs:
+	wglMakeCurrent(self->dc, NULL);
+	wglDeleteContext(gl_ctx);
 err_create_ctx:
 	return -1;
 }
@@ -234,8 +303,6 @@ window_impl_open(struct rutabaga *r,
 
 	if (init_gl_ctx(self))
 		goto err_gl_ctx;
-
-	wglMakeCurrent(self->dc, self->gl_ctx);
 
 	/* XXX: hardcode this for now */
 	self->dpi.x = 96;
