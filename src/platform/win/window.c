@@ -53,7 +53,7 @@
 static LRESULT CALLBACK
 win_rtb_wndproc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
-	struct win_rtb_window *self = GetWindowLongPtr(hwnd, GWL_USERDATA);
+	struct win_rtb_window *self = GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	LRESULT ret;
 
 	switch (message) {
@@ -109,7 +109,7 @@ make_window_class(struct win_rtb_window *self)
 static void
 free_window_class(ATOM window_class)
 {
-	UnregisterClassW((void *) MAKELONG(window_class, 0), NULL);
+	UnregisterClassW((void *) MAKEINTATOM(window_class), NULL);
 }
 
 /**
@@ -291,7 +291,7 @@ window_impl_open(struct rutabaga *r,
 		flags = WS_CHILD;
 
 	self->hwnd = CreateWindowExW((DWORD) 0,
-			(void *) MAKELONG(self->window_class, 0), wtitle, flags,
+			(void *) MAKEINTATOM(self->window_class), wtitle, flags,
 			0, 0,
 			wrect.right - wrect.left, wrect.bottom - wrect.top,
 			(HWND) parent, NULL, NULL, NULL);
@@ -299,7 +299,7 @@ window_impl_open(struct rutabaga *r,
 	if (!self->hwnd)
 		goto err_createwindow;
 
-	SetWindowLongPtr(self->hwnd, GWL_USERDATA, self);
+	SetWindowLongPtr(self->hwnd, GWLP_USERDATA, self);
 	self->dc = GetDC(self->hwnd);
 
 	if (init_gl_ctx(self))
