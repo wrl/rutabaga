@@ -299,7 +299,7 @@ window_impl_open(struct rutabaga *r,
 	if (!self->hwnd)
 		goto err_createwindow;
 
-	SetWindowLongPtr(self->hwnd, GWLP_USERDATA, self);
+	SetWindowLongPtr(self->hwnd, GWLP_USERDATA, (LONG_PTR) self);
 	self->dc = GetDC(self->hwnd);
 
 	if (init_gl_ctx(self))

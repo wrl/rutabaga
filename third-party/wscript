@@ -132,12 +132,16 @@ def build(bld):
         import re
 
         from_gyp['defines'].remove('_GNU_SOURCE')
-        from_gyp['cflags'].append('-std=gnu90')
 
         extra_cflags += [
+            '-std=gnu89',
+
             '-Wno-sign-compare',
             '-Wno-unused-function',
-            '-Wno-pointer-sign']
+            '-Wno-pointer-sign',
+            '-Wno-maybe-uninitialized',
+
+            '-fno-strict-aliasing']
 
         from_gyp['libraries'] = [re.sub('\.lib$', '', x)
                 for x in from_gyp['libraries']]
