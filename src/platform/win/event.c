@@ -241,7 +241,7 @@ win_rtb_handle_message(struct win_rtb_window *self,
 	 */
 
 	default:
-		return DefWindowProc(self->hwnd, message, wparam, lparam);
+		return DefWindowProcW(self->hwnd, message, wparam, lparam);
 	}
 }
 

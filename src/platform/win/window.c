@@ -71,7 +71,7 @@ win_rtb_wndproc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 			return ret;
 		}
 
-		return DefWindowProc(hwnd, message, wparam, lparam);
+		return DefWindowProcW(hwnd, message, wparam, lparam);
 	}
 }
 
@@ -272,6 +272,10 @@ window_impl_open(struct rutabaga *r,
 	RECT wrect;
 	int flags;
 
+	wtitle = utf8_to_utf16_alloc(title);
+	if (!wtitle)
+		goto err_wtitle;
+
 	self->window_class = make_window_class(self);
 	if (!self->window_class)
 		goto err_window_class;
@@ -279,12 +283,9 @@ window_impl_open(struct rutabaga *r,
 	flags =
 		WS_POPUPWINDOW | WS_CAPTION | WS_VISIBLE
 		| WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
+
 	wrect = (RECT) {0, 0, width, height};
 	AdjustWindowRectEx(&wrect, flags, FALSE, 0);
-
-	wtitle = utf8_to_utf16_alloc(title);
-	if (!wtitle)
-		goto err_wtitle;
 
 	if (parent)
 		flags = WS_CHILD;
@@ -294,8 +295,6 @@ window_impl_open(struct rutabaga *r,
 			0, 0,
 			wrect.right - wrect.left, wrect.bottom - wrect.top,
 			(HWND) parent, NULL, NULL, NULL);
-
-	free(wtitle);
 
 	if (!self->hwnd)
 		goto err_createwindow;
@@ -310,14 +309,16 @@ window_impl_open(struct rutabaga *r,
 	self->dpi.x = 96;
 	self->dpi.y = 96;
 
+	free(wtitle);
 	return RTB_WINDOW(self);
 
 err_gl_ctx:
 	DestroyWindow(self->hwnd);
 err_createwindow:
-err_wtitle:
 	free_window_class(self->window_class);
 err_window_class:
+	free(wtitle);
+err_wtitle:
 	return NULL;
 }
 
