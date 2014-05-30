@@ -321,8 +321,15 @@ rtb_event_loop_fini(struct rutabaga *r)
 rtb_modkey_t
 rtb_get_modkeys(struct rtb_window *rwin)
 {
-	struct win_rtb_window *self = RTB_WINDOW_AS(rwin, win_rtb_window);
+#define MOD_ACTIVE(win_key, rtb_mod) \
+	(!!(GetAsyncKeyState(win_key) >> 15) * rtb_mod)
 
-	((void) self);
-	return 0;
+	return
+		MOD_ACTIVE(VK_MENU,      RTB_KEY_MOD_ALT)
+		| MOD_ACTIVE(VK_SHIFT,   RTB_KEY_MOD_SHIFT)
+		| MOD_ACTIVE(VK_CONTROL, RTB_KEY_MOD_CTRL)
+		| MOD_ACTIVE(VK_LWIN,    RTB_KEY_MOD_SUPER)
+		| MOD_ACTIVE(VK_RWIN,    RTB_KEY_MOD_SUPER);
+
+#undef MOD_ACTIVE
 }
