@@ -217,7 +217,8 @@ win_rtb_handle_message(struct win_rtb_window *self,
 	 */
 
 	case WM_PAINT:
-		/* thx but no thx */
+		if (self->in_size_move)
+			draw_frame(self);
 		ValidateRect(self->hwnd, NULL);
 		return 0;
 
@@ -226,11 +227,13 @@ win_rtb_handle_message(struct win_rtb_window *self,
 		return 0;
 
 	case WM_ENTERSIZEMOVE:
+		self->in_size_move = 1;
 		SetTimer(self->hwnd, WIN_RTB_SIZING_FRAME_TIMER, 15, 0);
 		return 0;
 
 	case WM_EXITSIZEMOVE:
 		KillTimer(self->hwnd, WIN_RTB_SIZING_FRAME_TIMER);
+		self->in_size_move = 0;
 		return 0;
 
 	/**
@@ -289,6 +292,7 @@ rtb_event_loop_run(struct rutabaga *r)
 	struct win_rtb_window *self = RTB_WINDOW_AS(r->win, win_rtb_window);
 
 	self->capture_depth = 0;
+	self->in_size_move  = 0;
 
 	uv_run(r->event_loop, UV_RUN_DEFAULT);
 

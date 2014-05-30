@@ -276,7 +276,9 @@ window_impl_open(struct rutabaga *r,
 	if (!self->window_class)
 		goto err_window_class;
 
-	flags = WS_POPUPWINDOW | WS_CAPTION | WS_SIZEBOX | WS_VISIBLE;
+	flags =
+		WS_POPUPWINDOW | WS_CAPTION | WS_VISIBLE
+		| WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
 	wrect = (RECT) {0, 0, width, height};
 	AdjustWindowRectEx(&wrect, flags, FALSE, 0);
 

@@ -39,7 +39,9 @@ struct win_rtb_window {
 	HDC   dc;
 
 	uv_timer_t frame_timer;
+
 	int capture_depth;
+	int in_size_move;
 };
 
 LRESULT win_rtb_handle_message(struct win_rtb_window *,
