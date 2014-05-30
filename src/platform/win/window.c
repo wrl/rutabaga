@@ -282,19 +282,21 @@ window_impl_open(struct rutabaga *r,
 
 	flags =
 		WS_POPUPWINDOW | WS_CAPTION | WS_VISIBLE
-		| WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
+		| WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
+		| WS_CLIPSIBLINGS;
 
 	wrect = (RECT) {0, 0, width, height};
 	AdjustWindowRectEx(&wrect, flags, FALSE, 0);
 
 	if (parent)
-		flags = WS_CHILD;
+		flags = WS_CHILD | WS_VISIBLE;
 
 	self->hwnd = CreateWindowExW((DWORD) 0,
 			(void *) MAKEINTATOM(self->window_class), wtitle, flags,
 			0, 0,
 			wrect.right - wrect.left, wrect.bottom - wrect.top,
-			(HWND) parent, NULL, NULL, NULL);
+			(HWND) parent,
+			NULL, NULL, NULL);
 
 	if (!self->hwnd)
 		goto err_createwindow;
@@ -327,6 +329,10 @@ void
 window_impl_close(struct rtb_window *rwin)
 {
 	struct win_rtb_window *self = RTB_WINDOW_AS(rwin, win_rtb_window);
+
+	wglMakeCurrent(NULL, NULL);
+	wglDeleteContext(self->gl_ctx);
+	ReleaseDC(self->hwnd, self->dc);
 
 	DestroyWindow(self->hwnd);
 	free_window_class(self->window_class);
