@@ -38,7 +38,7 @@ struct win_rtb_window {
 	HGLRC gl_ctx;
 	HDC   dc;
 
-	uv_timer_t frame_timer;
+	volatile int event_loop_running;
 
 	int capture_depth;
 	int in_size_move;

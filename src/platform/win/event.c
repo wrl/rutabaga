@@ -40,7 +40,7 @@
 /* since resizing the window stalls our event loop, we register a system
  * timer so we can keep redrawing content during the window resize. */
 
-#define WIN_RTB_SIZING_FRAME_TIMER 4242
+#define WIN_RTB_FRAME_TIMER 4242
 
 /**
  * frame drawing
@@ -67,7 +67,7 @@ handle_resize(struct win_rtb_window *self)
 	self->w = wrect.right;
 	self->h = wrect.bottom;
 
-	self->need_reconfigure = 1;
+	rtb_window_reinit(RTB_WINDOW(self));
 }
 
 static void
@@ -85,7 +85,8 @@ static void
 handle_timer(struct win_rtb_window *self, int timer_id)
 {
 	switch (timer_id) {
-	case WIN_RTB_SIZING_FRAME_TIMER:
+	case WIN_RTB_FRAME_TIMER:
+		uv_run(self->rtb->event_loop, UV_RUN_NOWAIT);
 		draw_frame(self);
 		break;
 
@@ -228,11 +229,9 @@ win_rtb_handle_message(struct win_rtb_window *self,
 
 	case WM_ENTERSIZEMOVE:
 		self->in_size_move = 1;
-		SetTimer(self->hwnd, WIN_RTB_SIZING_FRAME_TIMER, 15, 0);
 		return 0;
 
 	case WM_EXITSIZEMOVE:
-		KillTimer(self->hwnd, WIN_RTB_SIZING_FRAME_TIMER);
 		self->in_size_move = 0;
 		return 0;
 
@@ -245,31 +244,6 @@ win_rtb_handle_message(struct win_rtb_window *self,
 	}
 }
 
-static void
-drain_windows_message_queue(struct win_rtb_window *self)
-{
-	MSG msg;
-
-	while (PeekMessage(&msg, self->hwnd, 0, 0, PM_REMOVE))
-		win_rtb_handle_message(self, msg.message, msg.wParam, msg.lParam);
-
-	if (self->need_reconfigure)
-		rtb_window_reinit(RTB_WINDOW(self));
-}
-
-/**
- * uv timer callback
- */
-
-static void
-frame_cb(uv_timer_t *handle, int status)
-{
-	struct win_rtb_window *self = handle->data;
-
-	drain_windows_message_queue(self);
-	draw_frame(self);
-}
-
 /**
  * public API
  */
@@ -277,13 +251,7 @@ frame_cb(uv_timer_t *handle, int status)
 void
 rtb_event_loop_init(struct rutabaga *r)
 {
-	struct win_rtb_window *self = RTB_WINDOW_AS(r->win, win_rtb_window);
 	r->event_loop = uv_loop_new();
-
-	uv_timer_init(r->event_loop, &self->frame_timer);
-	self->frame_timer.data = self;
-
-	uv_timer_start(&self->frame_timer, frame_cb, 0, 16);
 }
 
 void
@@ -292,20 +260,49 @@ rtb_event_loop_run(struct rutabaga *r)
 	struct win_rtb_window *self = RTB_WINDOW_AS(r->win, win_rtb_window);
 
 	self->capture_depth = 0;
-	self->in_size_move  = 0;
 
-	uv_run(r->event_loop, UV_RUN_DEFAULT);
+	SetTimer(self->hwnd, WIN_RTB_FRAME_TIMER, 15, 0);
+	self->event_loop_running = 1;
 
-	if (self->capture_depth > 0) {
-		ReleaseCapture();
-		self->capture_depth = 0;
+	/**
+	 * so, need to figure out how the semantics of this will work.
+	 * on linux, calling rtb_event_loop_run() blocks while the loop is
+	 * running. this is fine. on osx, rtb_event_loop_run() blocks if the
+	 * NSApp event loop is not already running.
+	 *
+	 * on windows, there's no way to tell if there's already an event loop
+	 * running, so there's no good way of telling whether we should block
+	 * here. since the first shipped product based on rutabaga is an audio
+	 * plug-in, we obviously can't do that.
+	 */
+
+#if 0
+	int status;
+	MSG msg;
+
+	while (self->event_loop_running &&
+			(status = GetMessage(&msg, self->hwnd, 0, 0))) {
+		if (status == -1)
+			break;
+
+		TranslateMessage(&msg);
+		win_rtb_handle_message(self, msg.message, msg.wParam, msg.lParam);
 	}
+#endif
 }
 
 void
 rtb_event_loop_stop(struct rutabaga *r)
 {
-	uv_stop(r->event_loop);
+	struct win_rtb_window *self = RTB_WINDOW_AS(r->win, win_rtb_window);
+
+	self->event_loop_running = 0;
+	KillTimer(self->hwnd, WIN_RTB_FRAME_TIMER);
+
+	if (self->capture_depth > 0) {
+		ReleaseCapture();
+		self->capture_depth = 0;
+	}
 }
 
 void
