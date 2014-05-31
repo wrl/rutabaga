@@ -125,6 +125,7 @@ def options(opt):
 
 def configure(conf):
     separator()
+
     check_submodules(conf)
 
     conf.load("compiler_c")
@@ -137,7 +138,8 @@ def configure(conf):
 
     # conf checks
 
-    separator()
+    if not conf.stack_path[-1]:
+        separator()
 
     if conf.env.DEST_OS == 'win32':
         check_freetype(conf)
