@@ -27,6 +27,7 @@
 #include <uv.h>
 #include <windows.h>
 #include <windowsx.h>
+#include <winsock2.h>
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/window.h"
@@ -43,14 +44,25 @@
 #define WIN_RTB_FRAME_TIMER 4242
 
 /**
+ * bullshit logging fuck
+ */
+
+#define LOCK(s) rtb_window_lock(RTB_WINDOW(s))
+#define UNLOCK(s) rtb_window_unlock(RTB_WINDOW(s))
+
+/**
  * frame drawing
  */
 
 static void
 draw_frame(struct win_rtb_window *self)
 {
+	LOCK(self);
+
 	rtb_window_draw(RTB_WINDOW(self));
 	SwapBuffers(self->dc);
+
+	UNLOCK(self);
 }
 
 /**
@@ -67,7 +79,9 @@ handle_resize(struct win_rtb_window *self)
 	self->w = wrect.right;
 	self->h = wrect.bottom;
 
+	LOCK(self);
 	rtb_window_reinit(RTB_WINDOW(self));
+	UNLOCK(self);
 }
 
 static void
@@ -78,7 +92,9 @@ handle_close(struct win_rtb_window *self)
 		.window = RTB_WINDOW(self)
 	};
 
+	LOCK(self);
 	rtb_dispatch_raw(RTB_ELEMENT(self), RTB_EVENT(&rev));
+	UNLOCK(self);
 }
 
 static void
@@ -118,7 +134,9 @@ handle_mouse_motion(struct win_rtb_window *self, int x, int y)
 	if (!self->mouse_in)
 		setup_mouse_tracking(self);
 
+	LOCK(self);
 	rtb_platform_mouse_motion(RTB_WINDOW(self), x, y);
+	UNLOCK(self);
 }
 
 static void
@@ -129,14 +147,18 @@ handle_mouse_leave(struct win_rtb_window *self)
 	GetCursorPos(&p);
 	ScreenToClient(self->hwnd, &p);
 
+	LOCK(self);
 	rtb_platform_mouse_leave_window(RTB_WINDOW(self), p.x, p.y);
+	UNLOCK(self);
 }
 
 static void
 handle_mouse_down(struct win_rtb_window *self, int button, LPARAM lparam)
 {
+	LOCK(self);
 	rtb_platform_mouse_press(RTB_WINDOW(self), button,
 			GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
+	UNLOCK(self);
 
 	if (!self->capture_depth++)
 		SetCapture(self->hwnd);
@@ -145,8 +167,10 @@ handle_mouse_down(struct win_rtb_window *self, int button, LPARAM lparam)
 static void
 handle_mouse_up(struct win_rtb_window *self, int button, LPARAM lparam)
 {
+	LOCK(self);
 	rtb_platform_mouse_release(RTB_WINDOW(self), button,
 			GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
+	UNLOCK(self);
 
 	if (--self->capture_depth <= 0) {
 		ReleaseCapture();
@@ -252,6 +276,7 @@ void
 rtb_event_loop_init(struct rutabaga *r)
 {
 	r->event_loop = uv_loop_new();
+	uv_run(r->event_loop, UV_RUN_NOWAIT);
 }
 
 void
@@ -261,7 +286,7 @@ rtb_event_loop_run(struct rutabaga *r)
 
 	self->capture_depth = 0;
 
-	SetTimer(self->hwnd, WIN_RTB_FRAME_TIMER, 15, 0);
+	SetTimer(self->hwnd, WIN_RTB_FRAME_TIMER, 13, 0);
 	self->event_loop_running = 1;
 
 	/**
@@ -312,6 +337,8 @@ rtb_event_loop_fini(struct rutabaga *r)
 
 	rtb_loop = r->event_loop;
 	r->event_loop = NULL;
+
+	uv_run(rtb_loop, UV_RUN_NOWAIT);
 	uv_loop_delete(rtb_loop);
 }
 

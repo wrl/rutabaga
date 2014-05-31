@@ -168,14 +168,13 @@ init_gl_ctx(struct win_rtb_window *self)
 	PFNWGLSWAPINTERVALEXTPROC swap_interval;
 	struct win_rtb_gl_extensions ext;
 
-	PIXELFORMATDESCRIPTOR pd = {};
+	PIXELFORMATDESCRIPTOR pd = {0};
 	HGLRC gl_ctx;
 
 	const int ctx_attribs[] = {
 		WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
 		WGL_CONTEXT_MINOR_VERSION_ARB, 2,
 		WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
-		WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
 		0
 	};
 
@@ -322,6 +321,7 @@ err_createwindow:
 err_window_class:
 	free(wtitle);
 err_wtitle:
+	free(self);
 	return NULL;
 }
 
@@ -337,7 +337,9 @@ window_impl_close(struct rtb_window *rwin)
 	DestroyWindow(self->hwnd);
 	free_window_class(self->window_class);
 
+	uv_mutex_unlock(&self->lock);
 	uv_mutex_destroy(&self->lock);
+
 	free(self);
 }
 
