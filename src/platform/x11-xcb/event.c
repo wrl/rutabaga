@@ -605,7 +605,14 @@ rtb_event_loop_stop(struct rutabaga *r)
 void
 rtb_event_loop_fini(struct rutabaga *r)
 {
+	struct xcb_rutabaga *xrtb = (void *) r;
 	uv_loop_t *rtb_loop = r->event_loop;
+
 	r->event_loop = NULL;
+
+	uv_close((void *) RTB_UPCAST(&xrtb->frame_timer, uv_timer_s), NULL);
+	uv_close((void *) RTB_UPCAST(&xrtb->xcb_poll, uv_poll_s), NULL);
+
+	uv_run(rtb_loop, UV_RUN_NOWAIT);
 	uv_loop_delete(rtb_loop);
 }
