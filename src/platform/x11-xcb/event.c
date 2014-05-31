@@ -501,7 +501,7 @@ xcb_poll_cb(uv_poll_t *_handle, int status, int events)
 }
 
 static void
-frame_cb(uv_timer_t *_handle, int status)
+frame_cb(uv_timer_t *_handle)
 {
 	struct xrtb_frame_timer *timer;
 	struct xrtb_window *xwin;
