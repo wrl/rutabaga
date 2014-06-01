@@ -398,6 +398,8 @@ int main(int argc, char **argv)
 	init_timer();
 	rtb_event_loop(delicious);
 
+	rtb_window_lock(win);
+
 	rtb_label_fini(&time_label);
 	rtb_window_close(delicious->win);
 	rtb_free(delicious);

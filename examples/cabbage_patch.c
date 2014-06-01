@@ -605,6 +605,7 @@ main(int argc, char **argv)
 
 	rtb_event_loop(state.rtb);
 
+	rtb_window_lock(state.win);
 	rtb_patchbay_node_fini(RTB_PATCHBAY_NODE(&state.system_out));
 	rtb_patchbay_node_fini(RTB_PATCHBAY_NODE(&state.system_in));
 

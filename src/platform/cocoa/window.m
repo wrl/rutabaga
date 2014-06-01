@@ -465,6 +465,8 @@ window_impl_close(struct rtb_window *rwin)
 {
 	struct cocoa_rtb_window *self = RTB_WINDOW_AS(rwin, cocoa_rtb_window);
 
+	[NSOpenGLContext clearCurrentContext];
+
 	self->view->rtb_win = NULL;
 
 	if (self->cocoa_win)
@@ -478,7 +480,9 @@ window_impl_close(struct rtb_window *rwin)
 	if (self->cocoa_win)
 		[self->cocoa_win release];
 
+	uv_mutex_unlock(&self->lock);
 	uv_mutex_destroy(&self->lock);
+
 	free(self);
 
 	return;

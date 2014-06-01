@@ -545,6 +545,9 @@ window_impl_close(struct rtb_window *rwin)
 	xcb_destroy_window(self->xrtb->xcb_conn, self->xcb_win);
 	glXDestroyContext(self->xrtb->dpy, self->gl_ctx);
 
+	uv_mutex_unlock(&self->lock);
+	uv_mutex_destroy(&self->lock);
+
 	free(self);
 }
 

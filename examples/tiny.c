@@ -174,6 +174,7 @@ int main(int argc, char **argv)
 
 	rtb_event_loop(delicious);
 
-	rtb_window_close(delicious->win);
+	rtb_window_lock(win);
+	rtb_window_close(win);
 	rtb_free(delicious);
 }
