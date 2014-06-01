@@ -165,5 +165,11 @@ rtb_event_loop_fini(struct rutabaga *r)
 
 	rtb_loop = r->event_loop;
 	r->event_loop = NULL;
+
+	/* once to run the event handlers for the last time, and once more
+	 * to run the endgames for all of them. */
+	uv_run(rtb_loop, UV_RUN_NOWAIT);
+	uv_run(rtb_loop, UV_RUN_NOWAIT);
+
 	uv_loop_delete(rtb_loop);
 }
