@@ -253,7 +253,7 @@ init_gl_ctx(struct win_rtb_window *self, const wchar_t *title)
 	 * wglCreateContextAttribsARB. */
 
 	if (ogl_LoadFunctions() == ogl_LOAD_FAILED) {
-		messageboxf(title, "openGL context lacks support for 3.0 functions");
+		messageboxf(title, L"openGL context lacks support for 3.0 functions");
 		goto err_ctx_version;
 	}
 
