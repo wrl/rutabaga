@@ -47,6 +47,50 @@
 #endif
 
 /**
+ * utils
+ */
+
+static wchar_t *
+utf8_to_utf16_alloc(const rtb_utf8_t *utf8)
+{
+	wchar_t *buf;
+	size_t need;
+
+	need = uv_utf8_to_utf16(utf8, NULL, 0);
+	if (!need)
+		return NULL;
+
+	buf = calloc(sizeof(*buf), need);
+	if (!buf)
+		return NULL;
+
+	uv_utf8_to_utf16(utf8, buf, need);
+	return buf;
+}
+
+static void
+messageboxf(const wchar_t *title, const wchar_t *fmt, ...)
+{
+	va_list args;
+	wchar_t *buf;
+	size_t len;
+
+	va_start(args, fmt);
+
+	len = _vscwprintf(fmt, args) + 1;
+	if( !(buf = calloc(sizeof(*buf), len)) )
+		return;
+
+	vswprintf(buf, len, fmt, args);
+	va_end(args);
+
+	MessageBoxW(NULL, buf, title,
+			MB_ICONERROR | MB_OK | MB_TOPMOST);
+
+	free(buf);
+}
+
+/**
  * wndproc
  */
 
@@ -162,14 +206,15 @@ check_extensions(struct win_rtb_window *self,
 }
 
 static int
-init_gl_ctx(struct win_rtb_window *self)
+init_gl_ctx(struct win_rtb_window *self, const wchar_t *title)
 {
 	PFNWGLCREATECONTEXTATTRIBSARBPROC create_context_attribs;
 	PFNWGLSWAPINTERVALEXTPROC swap_interval;
 	struct win_rtb_gl_extensions ext;
+	int maj, min;
 
 	PIXELFORMATDESCRIPTOR pd = {0};
-	HGLRC gl_ctx;
+	HGLRC trampoline_ctx, gl_ctx;
 
 	const int ctx_attribs[] = {
 		WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
@@ -185,7 +230,7 @@ init_gl_ctx(struct win_rtb_window *self)
 		PFD_TYPE_RGBA,
 		32,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		8,
+		24,
 		8,
 		0,
 		PFD_MAIN_PLANE,
@@ -194,31 +239,64 @@ init_gl_ctx(struct win_rtb_window *self)
 
 	SetPixelFormat(self->dc, ChoosePixelFormat(self->dc, &pd), &pd);
 
-	gl_ctx = wglCreateContext(self->dc);
-	if (!gl_ctx)
+	trampoline_ctx = wglCreateContext(self->dc);
+	if (!trampoline_ctx) {
+		messageboxf(title, L"couldn't create openGL context");
 		goto err_create_ctx;
+	}
 
-	wglMakeCurrent(self->dc, gl_ctx);
+	wglMakeCurrent(self->dc, trampoline_ctx);
 	check_extensions(self, &ext);
 
-	if (!ext.create_context_attribs)
-		goto err_dont_have_create_context_attribs;
+	/* we want at least an openGL 3.2 context. if we've already got one,
+	 * bail out here. otherwise, we'll need to use
+	 * wglCreateContextAttribsARB. */
 
-	create_context_attribs = (PFNWGLCREATECONTEXTATTRIBSARBPROC)
-		wglGetProcAddress("wglCreateContextAttribsARB");
+	if (ogl_LoadFunctions() == ogl_LOAD_FAILED) {
+		messageboxf(title, "openGL context lacks support for 3.0 functions");
+		goto err_ctx_version;
+	}
 
-	wglMakeCurrent(self->dc, NULL);
-	wglDeleteContext(gl_ctx);
+	glGetError();
 
-	if (!create_context_attribs)
-		goto err_create_ctx;
+	glGetIntegerv(GL_MAJOR_VERSION, &maj);
+	glGetIntegerv(GL_MINOR_VERSION, &min);
 
-	gl_ctx = create_context_attribs(self->dc, NULL, ctx_attribs);
-	if (!gl_ctx)
-		goto err_create_ctx;
+	if (glGetError() == GL_INVALID_ENUM) {
+		messageboxf(title,
+				L"need an openGL version of 3.2 or higher, "
+				L"context only supports %s", glGetString(GL_VERSION));
 
-	self->gl_ctx = gl_ctx;
-	wglMakeCurrent(self->dc, gl_ctx);
+		goto err_ctx_version;
+	}
+
+	if ((maj == 3 && min >= 2) || maj > 3) {
+		self->gl_ctx = trampoline_ctx;
+	} else if (ext.create_context_attribs) {
+		create_context_attribs = (PFNWGLCREATECONTEXTATTRIBSARBPROC)
+			wglGetProcAddress("wglCreateContextAttribsARB");
+
+		if (!create_context_attribs)
+			goto err_create_ctx;
+
+		gl_ctx = create_context_attribs(self->dc, NULL, ctx_attribs);
+
+		if (!gl_ctx)
+			goto err_ctx_version;
+
+		wglMakeCurrent(self->dc, NULL);
+		wglDeleteContext(trampoline_ctx);
+
+		self->gl_ctx = gl_ctx;
+		wglMakeCurrent(self->dc, gl_ctx);
+	} else {
+		messageboxf(title,
+				L"openGL context version %d.%d is too old, "
+				L"and wglCreateContextAttribsARB is not present",
+				min, maj);
+
+		goto err_ctx_version;
+	}
 
 	if (ext.swap_control) {
 		swap_interval = (PFNWGLSWAPINTERVALEXTPROC)
@@ -233,9 +311,9 @@ init_gl_ctx(struct win_rtb_window *self)
 
 	return 0;
 
-err_dont_have_create_context_attribs:
+err_ctx_version:
 	wglMakeCurrent(self->dc, NULL);
-	wglDeleteContext(gl_ctx);
+	wglDeleteContext(trampoline_ctx);
 err_create_ctx:
 	return -1;
 }
@@ -243,24 +321,6 @@ err_create_ctx:
 /**
  * window lifecycle
  */
-
-static wchar_t *
-utf8_to_utf16_alloc(const rtb_utf8_t *utf8)
-{
-	wchar_t *buf;
-	size_t need;
-
-	need = uv_utf8_to_utf16(utf8, NULL, 0);
-	if (!need)
-		return NULL;
-
-	buf = calloc(sizeof(*buf), need);
-	if (!buf)
-		return NULL;
-
-	uv_utf8_to_utf16(utf8, buf, need);
-	return buf;
-}
 
 struct rtb_window *
 window_impl_open(struct rutabaga *r,
@@ -272,12 +332,16 @@ window_impl_open(struct rutabaga *r,
 	int flags;
 
 	wtitle = utf8_to_utf16_alloc(title);
-	if (!wtitle)
+	if (!wtitle) {
+		messageboxf(wtitle, L"couldn't allocate memory");
 		goto err_wtitle;
+	}
 
 	self->window_class = make_window_class(self);
-	if (!self->window_class)
+	if (!self->window_class) {
+		messageboxf(wtitle, L"couldn't register window class");
 		goto err_window_class;
+	}
 
 	flags =
 		WS_POPUPWINDOW | WS_CAPTION | WS_VISIBLE
@@ -297,14 +361,17 @@ window_impl_open(struct rutabaga *r,
 			(HWND) parent,
 			NULL, NULL, NULL);
 
-	if (!self->hwnd)
+	if (!self->hwnd) {
+		messageboxf(wtitle, L"couldn't create window");
 		goto err_createwindow;
+	}
 
-	SetWindowLongPtr(self->hwnd, GWLP_USERDATA, (LONG_PTR) self);
 	self->dc = GetDC(self->hwnd);
 
-	if (init_gl_ctx(self))
+	if (init_gl_ctx(self, wtitle))
 		goto err_gl_ctx;
+
+	SetWindowLongPtr(self->hwnd, GWLP_USERDATA, (LONG_PTR) self);
 
 	/* XXX: hardcode this for now */
 	self->dpi.x = 96;

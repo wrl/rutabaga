@@ -1093,9 +1093,13 @@ int ogl_LoadFunctions()
 	ClearExtensionVars();
 
 	_ptrc_glGetIntegerv = (void (CODEGEN_FUNCPTR *)(GLenum, GLint *))IntGetProcAddress("glGetIntegerv");
-	if(!_ptrc_glGetIntegerv) return ogl_LOAD_FAILED;
+	_ptrc_glGetError = (GLenum (CODEGEN_FUNCPTR *)())IntGetProcAddress("glGetError");
+	_ptrc_glGetString = (const GLubyte * (CODEGEN_FUNCPTR *)(GLenum))IntGetProcAddress("glGetString");
 	_ptrc_glGetStringi = (const GLubyte * (CODEGEN_FUNCPTR *)(GLenum, GLuint))IntGetProcAddress("glGetStringi");
-	if(!_ptrc_glGetStringi) return ogl_LOAD_FAILED;
+
+	if(!_ptrc_glGetIntegerv || !_ptrc_glGetString
+		|| !_ptrc_glGetError || !_ptrc_glGetStringi)
+	return ogl_LOAD_FAILED;
 
 	ProcExtsFromExtList();
 	numFailed = Load_Version_3_2();
