@@ -140,6 +140,8 @@ def build(bld):
             '-Wno-unused-function',
             '-Wno-pointer-sign',
             '-Wno-maybe-uninitialized',
+            '-Wno-unused-but-set-variable',
+            '-Wno-unused-variable',
 
             '-fno-strict-aliasing']
 
