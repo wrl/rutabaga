@@ -94,7 +94,8 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 	NSTrackingAreaOptions tracking_opts =
 		NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved
 		| NSTrackingEnabledDuringMouseDrag | NSTrackingInVisibleRect
-		| NSTrackingAssumeInside | NSTrackingActiveInActiveApp;
+		| NSTrackingAssumeInside | NSTrackingActiveInActiveApp
+		| NSTrackingCursorUpdate;
 
 	[tracking_area initWithRect:[self bounds]
 						options:tracking_opts
@@ -177,6 +178,11 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 		rtb_cocoa_draw_frame(rtb_win, 1);
 	else
 		rtb_win->dirty = 1;
+}
+
+- (void) cursorUpdate: (NSEvent *) e
+{
+	[[NSCursor arrowCursor] set];
 }
 
 - (void) mouseEntered: (NSEvent *) e
