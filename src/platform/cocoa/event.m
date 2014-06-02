@@ -110,6 +110,7 @@ rtb_event_loop_run(struct rutabaga *r)
 
 	timer_ctx.info = cwin;
 
+
 	cwin->frame_timer = CFRunLoopTimerCreate(
 			kCFAllocatorDefault, CFAbsoluteTimeGetCurrent(),
 			FRAME_SECONDS, 0, 0, frame_timer_callback, &timer_ctx);
@@ -119,6 +120,9 @@ rtb_event_loop_run(struct rutabaga *r)
 
 	CFRunLoopAddTimer([[NSRunLoop mainRunLoop] getCFRunLoop],
 			cwin->frame_timer, kCFRunLoopCommonModes);
+
+	if (cwin->cocoa_win)
+		[cwin->cocoa_win makeKeyAndOrderFront:cwin->cocoa_win];
 
 	if (![NSApp isRunning]) {
 		cwin->we_are_running_nsapp = 1;

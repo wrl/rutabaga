@@ -64,9 +64,6 @@
 	if (!self)
 		return nil;
 
-	tracking_area = [NSTrackingArea alloc];
-	[self addTrackingArea:tracking_area];
-
 	/*
 	[self setWantsBestResolutionOpenGLSurface:YES];
 	*/
@@ -129,10 +126,16 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 		if (tracking_area) {
 			[self removeTrackingArea:tracking_area];
 			[tracking_area release];
+			tracking_area = NULL;
 		}
 
 		[NSEvent setMouseCoalescingEnabled:was_mouse_coalescing_enabled];
 	} else {
+		if (!tracking_area) {
+			tracking_area = [NSTrackingArea alloc];
+			[self addTrackingArea:tracking_area];
+		}
+
 		[newWindow setAcceptsMouseMovedEvents:YES];
 		[newWindow makeFirstResponder:self];
 	}
@@ -443,10 +446,9 @@ window_impl_open(struct rutabaga *rtb,
 
 			[cwin setContentView:view];
 			[cwin makeFirstResponder:view];
-			[cwin makeKeyAndOrderFront:cwin];
+			[cwin center];
 
 			[NSApp activateIgnoringOtherApps:YES];
-			[cwin center];
 		}
 
 		view->rtb_win = self;
