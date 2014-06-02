@@ -49,8 +49,8 @@
 #define DEGREE_RANGE (MAX_DEGREES - MIN_DEGREES)
 
 /* would be cool to have this be like a smoothed equation or smth */
-#define DELTA_VALUE_STEP_BUTTON1 .005f
-#define DELTA_VALUE_STEP_BUTTON3 .0005f
+#define DELTA_VALUE_STEP_COARSE	.005f
+#define DELTA_VALUE_STEP_FINE	.0005f
 
 struct rtb_element_implementation super;
 
@@ -124,15 +124,15 @@ handle_drag(struct rtb_knob *self, const struct rtb_drag_event *e)
 
 	switch (e->button) {
 	case RTB_MOUSE_BUTTON1:
-		if (!(e->mod_keys & RTB_KEY_MOD_SHIFT))
-			mult = DELTA_VALUE_STEP_BUTTON1;
+		if (e->mod_keys & RTB_KEY_MOD_SHIFT)
+			mult = DELTA_VALUE_STEP_FINE;
 		else
-			mult = DELTA_VALUE_STEP_BUTTON3;
+			mult = DELTA_VALUE_STEP_COARSE;
 
 		break;
 
-	case RTB_MOUSE_BUTTON3:
-		mult = DELTA_VALUE_STEP_BUTTON3;
+	case RTB_MOUSE_BUTTON2:
+		mult = DELTA_VALUE_STEP_FINE;
 		break;
 
 	default:
@@ -146,12 +146,27 @@ handle_drag(struct rtb_knob *self, const struct rtb_drag_event *e)
 }
 
 static int
+handle_drag_drop(struct rtb_knob *self, const struct rtb_drag_event *e)
+{
+	switch (e->button) {
+	case RTB_MOUSE_BUTTON1:
+		if (e->mod_keys & RTB_KEY_MOD_ALT) {
+			set_value_internal_uncooked(self, self->origin, 0);
+			return 1;
+		}
+
+	default:
+		return 0;
+	}
+}
+
+static int
 handle_mouse_down(struct rtb_knob *self, const struct rtb_mouse_event *e)
 {
 	switch (e->button) {
 	case RTB_MOUSE_BUTTON1:
 		if (!(e->mod_keys & RTB_KEY_MOD_ALT))
-			return 1;
+			return 0;
 
 		/* else fall through */
 
@@ -169,12 +184,12 @@ handle_key(struct rtb_knob *self, const struct rtb_key_event *e)
 {
 	float step;
 
-	if (e->mod_keys & RTB_KEY_MOD_ALT)
-		step = DELTA_VALUE_STEP_BUTTON3;
-	else if (e->mod_keys & RTB_KEY_MOD_SHIFT)
-		step = DELTA_VALUE_STEP_BUTTON1 * 2;
+	if (e->mod_keys & RTB_KEY_MOD_SHIFT)
+		step = DELTA_VALUE_STEP_FINE;
+	else if (e->mod_keys & RTB_KEY_MOD_CTRL)
+		step = DELTA_VALUE_STEP_COARSE * 2;
 	else
-		step = DELTA_VALUE_STEP_BUTTON1;
+		step = DELTA_VALUE_STEP_COARSE;
 
 	switch (e->keysym) {
 	case RTB_KEY_UP:
@@ -201,6 +216,9 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 	case RTB_DRAG_START:
 	case RTB_DRAGGING:
 		return handle_drag(self, RTB_EVENT_AS(e, rtb_drag_event));
+
+	case RTB_DRAG_DROP:
+		return handle_drag_drop(self, RTB_EVENT_AS(e, rtb_drag_event));
 
 	case RTB_MOUSE_DOWN:
 		return handle_mouse_down(self, RTB_EVENT_AS(e, rtb_mouse_event));
