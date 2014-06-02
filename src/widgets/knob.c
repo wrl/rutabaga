@@ -117,7 +117,7 @@ handle_drag(struct rtb_knob *self, const struct rtb_drag_event *e)
 	float new_value;
 	float mult;
 
-	if (e->target != RTB_ELEMENT(self))
+	if (e->target != RTB_ELEMENT(self) || e->mod_keys & RTB_KEY_MOD_ALT)
 		return 0;
 
 	new_value = self->value;
@@ -149,11 +149,14 @@ static int
 handle_mouse_down(struct rtb_knob *self, const struct rtb_mouse_event *e)
 {
 	switch (e->button) {
+	case RTB_MOUSE_BUTTON1:
+		if (!(e->mod_keys & RTB_KEY_MOD_ALT))
+			return 1;
+
+		/* else fall through */
+
 	case RTB_MOUSE_BUTTON2:
 		set_value_internal_uncooked(self, self->origin, 0);
-		return 1;
-
-	case RTB_MOUSE_BUTTON1:
 		return 1;
 
 	default:
