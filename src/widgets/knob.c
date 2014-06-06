@@ -117,7 +117,7 @@ handle_drag(struct rtb_knob *self, const struct rtb_drag_event *e)
 	float new_value;
 	float mult;
 
-	if (e->target != RTB_ELEMENT(self) || e->mod_keys & RTB_KEY_MOD_ALT)
+	if (e->target != RTB_ELEMENT(self))
 		return 0;
 
 	new_value = self->value;
@@ -146,14 +146,12 @@ handle_drag(struct rtb_knob *self, const struct rtb_drag_event *e)
 }
 
 static int
-handle_drag_drop(struct rtb_knob *self, const struct rtb_drag_event *e)
+handle_mouse_down(struct rtb_knob *self, const struct rtb_mouse_event *e)
 {
 	switch (e->button) {
 	case RTB_MOUSE_BUTTON1:
-		if (e->mod_keys & RTB_KEY_MOD_ALT) {
-			set_value_internal_uncooked(self, self->origin, 0);
-			return 1;
-		}
+	case RTB_MOUSE_BUTTON3:
+		return 1;
 
 	default:
 		return 0;
@@ -161,22 +159,15 @@ handle_drag_drop(struct rtb_knob *self, const struct rtb_drag_event *e)
 }
 
 static int
-handle_mouse_down(struct rtb_knob *self, const struct rtb_mouse_event *e)
+handle_mouse_click(struct rtb_knob *self, const struct rtb_mouse_event *e)
 {
-	switch (e->button) {
-	case RTB_MOUSE_BUTTON1:
-		if (!(e->mod_keys & RTB_KEY_MOD_ALT))
-			return 0;
-
-		/* else fall through */
-
-	case RTB_MOUSE_BUTTON2:
+	if (e->button == RTB_MOUSE_BUTTON1 &&
+			((e->click_count - 1) & 1)) {
 		set_value_internal_uncooked(self, self->origin, 0);
 		return 1;
-
-	default:
-		return 0;
 	}
+
+	return 0;
 }
 
 static int
@@ -217,11 +208,11 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 	case RTB_DRAG_MOTION:
 		return handle_drag(self, RTB_EVENT_AS(e, rtb_drag_event));
 
-	case RTB_DRAG_DROP:
-		return handle_drag_drop(self, RTB_EVENT_AS(e, rtb_drag_event));
-
 	case RTB_MOUSE_DOWN:
 		return handle_mouse_down(self, RTB_EVENT_AS(e, rtb_mouse_event));
+
+	case RTB_MOUSE_CLICK:
+		return handle_mouse_click(self, RTB_EVENT_AS(e, rtb_mouse_event));
 
 	case RTB_KEY_PRESS:
 		return handle_key(self, RTB_EVENT_AS(e, rtb_key_event));
