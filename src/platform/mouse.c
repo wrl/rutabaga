@@ -32,8 +32,6 @@
 #include "rutabaga/mouse.h"
 #include "rutabaga/platform.h"
 
-#define RTB_DBLCICK_WINDOW_NSEC 4e+08
-
 /**
  * event dispatching
  */
@@ -208,11 +206,13 @@ mouse_up(struct rtb_window *window, struct rtb_element *target,
 	struct rtb_mouse *mouse = &window->mouse;
 	struct rtb_mouse_button *b = &mouse->button[button];
 	uint64_t now;
+	int64_t delta;
 
 	if (rtb_elem_is_in_tree(b->target, target)) {
 		now = uv_hrtime();
 
-		if ((int64_t) (now - b->last_click) < RTB_DBLCICK_WINDOW_NSEC)
+		delta = now - b->last_click;
+		if (delta < rtb__mouse_double_click_interval(window))
 			b->click_count++;
 		else
 			b->click_count = 0;

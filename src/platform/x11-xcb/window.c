@@ -571,3 +571,12 @@ rtb_window_unlock(struct rtb_window *rwin)
 	XUnlockDisplay(self->xrtb->dpy);
 	uv_mutex_unlock(&self->lock);
 }
+
+#define FALLBACK_DOUBLE_CLICK_MS 300
+
+int64_t
+rtb__mouse_double_click_interval(struct rtb_window *win)
+{
+	/* XXX: should get this from the desktop environment or Xdefaults */
+	return FALLBACK_DOUBLE_CLICK_MS * 1000000;
+}
