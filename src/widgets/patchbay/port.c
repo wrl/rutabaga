@@ -149,7 +149,7 @@ handle_drag(struct rtb_patchbay_port *self, const struct rtb_drag_event *e)
 	case RTB_MOUSE_BUTTON1: /* left button -- connection */
 		switch (e->type) {
 		case RTB_DRAG_START:
-		case RTB_DRAGGING:
+		case RTB_DRAG_MOTION:
 			patchbay->patch_in_progress.cursor.x = e->cursor.x;
 			patchbay->patch_in_progress.cursor.y = e->cursor.y;
 			return 1;
@@ -238,7 +238,7 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 	case RTB_DRAG_LEAVE:
 	case RTB_DRAG_START:
 	case RTB_DRAG_DROP:
-	case RTB_DRAGGING:
+	case RTB_DRAG_MOTION:
 		if (handle_drag(self, RTB_EVENT_AS(e, rtb_drag_event))) {
 			rtb_elem_mark_dirty(RTB_ELEMENT(self->node->patchbay));
 			return 1;

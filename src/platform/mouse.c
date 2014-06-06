@@ -250,7 +250,7 @@ drag(struct rtb_window *win, int x, int y)
 			break;
 
 		case RTB_MOUSE_BUTTON_STATE_DRAG:
-			dispatch_drag_event(win, RTB_DRAGGING, NULL, i, x, y);
+			dispatch_drag_event(win, RTB_DRAG_MOTION, NULL, i, x, y);
 			break;
 		}
 
