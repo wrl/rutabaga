@@ -170,6 +170,21 @@ handle_mouse_click(struct rtb_knob *self, const struct rtb_mouse_event *e)
 }
 
 static int
+handle_mouse_wheel(struct rtb_knob *self, const struct rtb_mouse_event *e)
+{
+	float new_value, mult;
+
+	if (e->mod_keys & RTB_KEY_MOD_SHIFT)
+		mult = DELTA_VALUE_STEP_FINE;
+	else
+		mult = DELTA_VALUE_STEP_COARSE;
+
+	new_value = self->value + (e->wheel.delta * mult);
+	set_value_internal(self, new_value, 0);
+	return 1;
+}
+
+static int
 handle_key(struct rtb_knob *self, const struct rtb_key_event *e)
 {
 	float step;
@@ -212,6 +227,9 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 
 	case RTB_MOUSE_CLICK:
 		return handle_mouse_click(self, RTB_EVENT_AS(e, rtb_mouse_event));
+
+	case RTB_MOUSE_WHEEL:
+		return handle_mouse_wheel(self, RTB_EVENT_AS(e, rtb_mouse_event));
 
 	case RTB_KEY_PRESS:
 		return handle_key(self, RTB_EVENT_AS(e, rtb_key_event));
