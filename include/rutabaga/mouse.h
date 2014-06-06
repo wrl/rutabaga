@@ -62,8 +62,19 @@ struct rtb_mouse_event {
 	struct rtb_element *target;
 	rtb_modkey_t mod_keys;
 
-	rtb_mouse_buttons_t button;
-	int click_count;
+	union {
+		struct {
+			rtb_mouse_buttons_t button;
+			
+			/* counts from 0, so 0 is the first click, 1 is a double
+			 * click, etc. */
+			int click_number;
+		};
+
+		struct {
+			float delta;
+		} wheel;
+	};
 
 	struct rtb_point cursor;
 };

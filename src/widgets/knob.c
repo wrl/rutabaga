@@ -161,8 +161,7 @@ handle_mouse_down(struct rtb_knob *self, const struct rtb_mouse_event *e)
 static int
 handle_mouse_click(struct rtb_knob *self, const struct rtb_mouse_event *e)
 {
-	if (e->button == RTB_MOUSE_BUTTON1 &&
-			((e->click_count - 1) & 1)) {
+	if (e->button == RTB_MOUSE_BUTTON1 && (e->click_number & 1)) {
 		set_value_internal_uncooked(self, self->origin, 0);
 		return 1;
 	}

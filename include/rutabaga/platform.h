@@ -32,7 +32,7 @@
 
 /******************************
  * from platform, to rutabaga
- */
+ ******************************/
 
 /**
  * mouse
@@ -42,14 +42,16 @@ void rtb_platform_mouse_press(struct rtb_window *,
 		int buttons, int x, int y);
 void rtb_platform_mouse_release(struct rtb_window *,
 		int buttons, int x, int y);
-void rtb_platform_mouse_motion(struct rtb_window *win, int x, int y);
+void rtb_platform_mouse_motion(struct rtb_window *, int x, int y);
+
+void rtb_platform_mouse_wheel(struct rtb_window *, int x, int y, float delta);
 
 void rtb_platform_mouse_enter_window(struct rtb_window *, int x, int y);
 void rtb_platform_mouse_leave_window(struct rtb_window *, int x, int y);
 
 /******************************
  * from rutabaga, to platform
- */
+ ******************************/
 
 /**
  * should return the number of nanoseconds inside of which two clicks

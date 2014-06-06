@@ -136,7 +136,7 @@ print_streeng(struct rtb_element *victim,
 	int i;
 
 	printf("(%f, %f) click (%d)!",
-			bv->cursor.x, bv->cursor.y, bv->click_count);
+			bv->cursor.x, bv->cursor.y, bv->click_number);
 	print_modkeys(bv->mod_keys);
 	printf("\n");
 
@@ -325,6 +325,18 @@ handle_key_press(struct rtb_element *victim,
 	return 1;
 }
 
+static int
+handle_mouse_wheel(struct rtb_element *victim,
+		const struct rtb_event *_e, void *ctx)
+{
+	const struct rtb_mouse_event *ev = RTB_EVENT_AS(_e, rtb_mouse_event);
+
+	printf(" :: got mouse wheel, [%f, %f] delta %f\n",
+			ev->cursor.x, ev->cursor.y, ev->wheel.delta);
+
+	return 1;
+}
+
 static float timer, last;
 
 static int
@@ -382,6 +394,9 @@ int main(int argc, char **argv)
 
 	rtb_register_handler(RTB_ELEMENT(win),
 			RTB_KEY_PRESS, handle_key_press, delicious);
+
+	rtb_register_handler(RTB_ELEMENT(win),
+			RTB_MOUSE_WHEEL, handle_mouse_wheel, NULL);
 
 	rtb_label_init(&time_label);
 	rtb_elem_add_child(RTB_ELEMENT(win), RTB_ELEMENT(&time_label),

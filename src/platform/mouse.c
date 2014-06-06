@@ -150,7 +150,7 @@ dispatch_click_event(struct rtb_window *window,
 		.mod_keys = rtb_get_modkeys(window),
 
 		.button = button,
-		.click_count = window->mouse.button[button].click_count + 1,
+		.click_number = window->mouse.button[button].click_count,
 
 		.cursor = {
 			.x = x,
@@ -362,6 +362,26 @@ rtb_platform_mouse_motion(struct rtb_window *win, int x, int y)
 
 	win->mouse.x = x;
 	win->mouse.y = y;
+}
+
+void
+rtb_platform_mouse_wheel(struct rtb_window *window, int x, int y, float delta)
+{
+	struct rtb_element *target = element_underneath_mouse(window);
+	struct rtb_mouse_event ev = {
+		.type = RTB_MOUSE_WHEEL,
+		.window = window,
+		.target = target,
+
+		.mod_keys = rtb_get_modkeys(window),
+
+		.wheel.delta = delta,
+		.cursor = {
+			.x = x,
+			.y = y}
+	};
+
+	rtb_dispatch_raw(target, RTB_EVENT(&ev));
 }
 
 void

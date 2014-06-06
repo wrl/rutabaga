@@ -79,6 +79,16 @@ handle_mouse_leave(struct xrtb_window *win, const xcb_generic_event_t *_ev)
 }
 
 static void
+handle_mouse_wheel(struct xrtb_window *window,
+		const xcb_button_press_event_t *ev)
+{
+	float delta = (ev->detail == 4) ? 1.f : -1.f;
+
+	rtb_platform_mouse_wheel(RTB_WINDOW(window),
+			ev->event_x, ev->event_y, delta);
+}
+
+static void
 handle_mouse_button_press(struct xrtb_window *win,
 		const xcb_generic_event_t *_ev)
 {
@@ -92,6 +102,11 @@ handle_mouse_button_press(struct xrtb_window *win,
 	case 1: button = RTB_MOUSE_BUTTON1; break;
 	case 2: button = RTB_MOUSE_BUTTON2; break;
 	case 3: button = RTB_MOUSE_BUTTON3; break;
+
+	case 4:
+	case 5:
+		handle_mouse_wheel(win, ev);
+		return;
 
 	default:
 		goto dont_handle;
