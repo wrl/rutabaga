@@ -135,7 +135,8 @@ print_streeng(struct rtb_element *victim,
 	const struct rtb_button_event *bv = (void *) e;
 	int i;
 
-	printf("(%f, %f) click!", bv->cursor.x, bv->cursor.y);
+	printf("(%f, %f) click (%d)!",
+			bv->cursor.x, bv->cursor.y, bv->click_count);
 	print_modkeys(bv->mod_keys);
 	printf("\n");
 

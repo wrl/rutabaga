@@ -62,8 +62,10 @@ struct rtb_mouse_event {
 	struct rtb_element *target;
 	rtb_modkey_t mod_keys;
 
-	struct rtb_point cursor;
 	rtb_mouse_buttons_t button;
+	int click_count;
+
+	struct rtb_point cursor;
 };
 
 struct rtb_drag_event {
@@ -97,6 +99,9 @@ struct rtb_mouse {
 			RTB_MOUSE_BUTTON_STATE_DOWN,
 			RTB_MOUSE_BUTTON_STATE_DRAG
 		} state;
+
+		uint64_t last_click;
+		int click_count;
 	} button[RTB_MOUSE_BUTTON_MAX + 1];
 	rtb_mouse_button_mask_t buttons_down;
 };

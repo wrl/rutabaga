@@ -24,13 +24,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
+#include <uv.h>
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/window.h"
 #include "rutabaga/event.h"
 #include "rutabaga/mouse.h"
 #include "rutabaga/platform.h"
+
+#define RTB_DBLCICK_WINDOW_NSEC 4e+08
 
 /**
  * event dispatching
@@ -150,9 +152,11 @@ dispatch_click_event(struct rtb_window *window,
 		.mod_keys = rtb_get_modkeys(window),
 
 		.button = button,
+		.click_count = window->mouse.button[button].click_count + 1,
+
 		.cursor = {
 			.x = x,
-			.y = y}
+			.y = y},
 	};
 
 	return rtb_dispatch_raw(target, RTB_EVENT(&ev));
@@ -203,10 +207,19 @@ mouse_up(struct rtb_window *window, struct rtb_element *target,
 {
 	struct rtb_mouse *mouse = &window->mouse;
 	struct rtb_mouse_button *b = &mouse->button[button];
+	uint64_t now;
 
-	if (rtb_elem_is_in_tree(b->target, target))
+	if (rtb_elem_is_in_tree(b->target, target)) {
+		now = uv_hrtime();
+
+		if ((int64_t) (now - b->last_click) < RTB_DBLCICK_WINDOW_NSEC)
+			b->click_count++;
+		else
+			b->click_count = 0;
+
+		b->last_click = now;
 		dispatch_click_event(window, target, button, x, y);
-	else if (b->state == RTB_MOUSE_BUTTON_STATE_DRAG)
+	} else if (b->state == RTB_MOUSE_BUTTON_STATE_DRAG)
 		dispatch_drag_event(window, RTB_DRAG_DROP, target, button, x, y);
 
 	b->state  = RTB_MOUSE_BUTTON_STATE_UP;
