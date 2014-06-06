@@ -93,9 +93,9 @@ struct rtb_mouse {
 		struct rtb_element *target;
 
 		enum {
-			UP,
-			DOWN,
-			DRAG
+			RTB_MOUSE_BUTTON_STATE_UP,
+			RTB_MOUSE_BUTTON_STATE_DOWN,
+			RTB_MOUSE_BUTTON_STATE_DRAG
 		} state;
 	} button[RTB_MOUSE_BUTTON_MAX + 1];
 	rtb_mouse_button_mask_t buttons_down;

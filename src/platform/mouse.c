@@ -94,7 +94,7 @@ dispatch_drag_enter(struct rtb_window *window,
 	for (i = 0; i < RTB_MOUSE_BUTTON_MAX + 1; i++) {
 		b = &window->mouse.button[i];
 
-		if (b->state != DRAG)
+		if (b->state != RTB_MOUSE_BUTTON_STATE_DRAG)
 			continue;
 
 		ev.button = i;
@@ -128,7 +128,7 @@ dispatch_drag_leave(struct rtb_window *window,
 	for (i = 0; i < RTB_MOUSE_BUTTON_MAX + 1; i++) {
 		b = &window->mouse.button[i];
 
-		if (b->state != DRAG)
+		if (b->state != RTB_MOUSE_BUTTON_STATE_DRAG)
 			continue;
 
 		ev.button = i;
@@ -190,7 +190,7 @@ mouse_down(struct rtb_window *window, struct rtb_element *target,
 	struct rtb_mouse *mouse = &window->mouse;
 	struct rtb_mouse_button *b = &mouse->button[button];
 
-	b->state  = DOWN;
+	b->state  = RTB_MOUSE_BUTTON_STATE_DOWN;
 	b->target = target;
 	b->drag_last.x = x;
 	b->drag_last.y = y;
@@ -206,10 +206,10 @@ mouse_up(struct rtb_window *window, struct rtb_element *target,
 
 	if (rtb_elem_is_in_tree(b->target, target))
 		dispatch_click_event(window, target, button, x, y);
-	else if (b->state == DRAG)
+	else if (b->state == RTB_MOUSE_BUTTON_STATE_DRAG)
 		dispatch_drag_event(window, RTB_DRAG_DROP, target, button, x, y);
 
-	b->state  = UP;
+	b->state  = RTB_MOUSE_BUTTON_STATE_UP;
 	b->target = NULL;
 	mouse->buttons_down &= ~(1 << button);
 }
@@ -224,11 +224,11 @@ drag(struct rtb_window *win, int x, int y)
 		b = &win->mouse.button[i];
 
 		switch (b->state) {
-		case UP:
+		case RTB_MOUSE_BUTTON_STATE_UP:
 			continue;
 
-		case DOWN:
-			b->state = DRAG;
+		case RTB_MOUSE_BUTTON_STATE_DOWN:
+			b->state = RTB_MOUSE_BUTTON_STATE_DRAG;
 			b->drag_start.x = x;
 			b->drag_start.y = y;
 
@@ -236,7 +236,7 @@ drag(struct rtb_window *win, int x, int y)
 					RTB_DRAG_START, NULL, i, x, y);
 			break;
 
-		case DRAG:
+		case RTB_MOUSE_BUTTON_STATE_DRAG:
 			dispatch_drag_event(win, RTB_DRAGGING, NULL, i, x, y);
 			break;
 		}
