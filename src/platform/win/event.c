@@ -174,6 +174,16 @@ handle_mouse_up(struct win_rtb_window *self, int button, LPARAM lparam)
 	}
 }
 
+static void
+handle_mouse_wheel(struct win_rtb_window *self, WPARAM wparam, LPARAM lparam)
+{
+	LOCK(self);
+	rtb_platform_mouse_wheel(RTB_WINDOW(self),
+			GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam),
+			GET_WHEEL_DELTA_WPARAM(wparam) / 120.f);
+	UNLOCK(self);
+}
+
 /**
  * message handling
  */
@@ -207,6 +217,10 @@ win_rtb_handle_message(struct win_rtb_window *self,
 
 	case WM_MOUSELEAVE:
 		handle_mouse_leave(self);
+		return 0;
+
+	case WM_MOUSEWHEEL:
+		handle_mouse_wheel(self, wparam, lparam);
 		return 0;
 
 	case WM_LBUTTONDOWN:
@@ -356,4 +370,10 @@ rtb_get_modkeys(struct rtb_window *rwin)
 		| MOD_ACTIVE(VK_RWIN,    RTB_KEY_MOD_SUPER);
 
 #undef MOD_ACTIVE
+}
+
+int64_t
+rtb__mouse_double_click_interval(struct rtb_window *rwin)
+{
+	return GetDoubleClickTime() * 1000000;
 }
