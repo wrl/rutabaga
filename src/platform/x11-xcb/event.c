@@ -532,9 +532,7 @@ frame_cb(uv_timer_t *_handle)
 
 	rtb_window_lock(win);
 
-	if (win->visibility != RTB_FULLY_OBSCURED && win->dirty) {
-		rtb_window_draw(win);
-
+	if (rtb_window_draw(win, 0)) {
 		if (sync->functions_valid) {
 			sync->msc++;
 			sync->swap_buffers_msc(xwin->xrtb->dpy, xwin->gl_draw,

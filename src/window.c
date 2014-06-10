@@ -281,21 +281,25 @@ rtb_window_focus_element(struct rtb_window *self, struct rtb_element *focused)
 	self->focus = focused;
 }
 
-void
-rtb_window_draw(struct rtb_window *self)
+int
+rtb_window_draw(struct rtb_window *self, int force_redraw)
 {
 	const struct rtb_style_property_definition *prop;
 	struct rtb_window_event ev;
 
-	if (self->state == RTB_STATE_UNATTACHED)
-		return;
-
-	glViewport(0, 0, self->w, self->h);
+	if (self->state == RTB_STATE_UNATTACHED
+			|| self->visibility == RTB_FULLY_OBSCURED)
+		return 0;
 
 	ev.type = RTB_FRAME_START;
 	ev.source = RTB_EVENT_GENUINE;
 	ev.window = self;
 	rtb_dispatch_raw(RTB_ELEMENT(self), RTB_EVENT(&ev));
+
+	if (!self->dirty || force_redraw)
+		return 0;
+
+	glViewport(0, 0, self->w, self->h);
 
 	prop = rtb_style_query_prop(RTB_ELEMENT(self),
 			"background-color", RTB_STYLE_PROP_COLOR, 1);
@@ -319,6 +323,8 @@ rtb_window_draw(struct rtb_window *self)
 
 	ev.type = RTB_FRAME_END;
 	rtb_dispatch_raw(RTB_ELEMENT(self), RTB_EVENT(&ev));
+
+	return 1;
 }
 
 void

@@ -94,14 +94,22 @@ struct rtb_window {
 	struct rtb_element *focus;
 };
 
-void rtb_window_lock(struct rtb_window *);
-void rtb_window_unlock(struct rtb_window *);
-
-void rtb_window_draw(struct rtb_window *);
-void rtb_window_reinit(struct rtb_window *);
+/**
+ * return value indicates whether anything was actually drawn.
+ * returning 0 means that nothing was marked dirty and/or the window isn't
+ * visible. returning 1 means that drawing occurred.
+ *
+ * passing a 1 for force_redraw skips the window dirtiness check.
+ */
+int rtb_window_draw(struct rtb_window *, int force_redraw);
 
 void rtb_window_focus_element(struct rtb_window *,
 		struct rtb_element *focused);
+
+void rtb_window_lock(struct rtb_window *);
+void rtb_window_unlock(struct rtb_window *);
+
+void rtb_window_reinit(struct rtb_window *);
 
 struct rtb_window *rtb_window_open_under(struct rutabaga *,
 		intptr_t parent, int width, int height, const char *title);

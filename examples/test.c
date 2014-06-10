@@ -358,13 +358,6 @@ frame_start(struct rtb_element *elem, const struct rtb_event *e, void *ctx)
 	return 1;
 }
 
-static int
-frame_end(struct rtb_element *elem, const struct rtb_event *e, void *ctx)
-{
-	rtb_elem_mark_dirty(RTB_ELEMENT(&time_label));
-	return 1;
-}
-
 static void
 init_timer(void)
 {
@@ -404,8 +397,6 @@ int main(int argc, char **argv)
 
 	rtb_register_handler(RTB_ELEMENT(win),
 			RTB_FRAME_START, frame_start, NULL);
-	rtb_register_handler(RTB_ELEMENT(win),
-			RTB_FRAME_END, frame_end, NULL);
 
 	distribute_demo(RTB_ELEMENT(delicious->win));
 	setup_ui(RTB_ELEMENT(delicious->win));

@@ -503,17 +503,13 @@ rtb_cocoa_draw_frame(struct cocoa_rtb_window *self, int force)
 	NSRect r;
 
 	@autoreleasepool {
+		if ([self->gl_ctx view] != self->view)
+			[self->gl_ctx setView:self->view];
+
 		rtb_window_lock(win);
 
-		if (win->visibility != RTB_FULLY_OBSCURED
-				&& (self->dirty || force)) {
-			if ([self->gl_ctx view] != self->view)
-				[self->gl_ctx setView:self->view];
-
-			r = [self->view visibleRect];
-			rtb_window_draw(win);
+		if (rtb_window_draw(win, force))
 			[self->gl_ctx flushBuffer];
-		}
 
 		rtb_window_unlock(win);
 	}

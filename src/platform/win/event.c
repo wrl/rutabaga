@@ -55,8 +55,8 @@ draw_frame(struct win_rtb_window *self)
 {
 	LOCK(self);
 
-	rtb_window_draw(RTB_WINDOW(self));
-	SwapBuffers(self->dc);
+	if (rtb_window_draw(RTB_WINDOW(self), 0))
+		SwapBuffers(self->dc);
 
 	UNLOCK(self);
 }
