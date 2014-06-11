@@ -185,6 +185,21 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 	[[NSCursor arrowCursor] set];
 }
 
+- (void) scrollWheel: (NSEvent *) e
+{
+	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
+	float delta = [e scrollingDeltaY];
+
+	if ([e isDirectionInvertedFromDevice])
+		delta *= -1.f;
+
+	delta /= ([e hasPreciseScrollingDeltas]) ? 9.f : 3.f;
+
+	LOCK;
+	rtb_platform_mouse_wheel(RTB_WINDOW(rtb_win), pt.x, pt.y, delta);
+	UNLOCK;
+}
+
 - (void) mouseEntered: (NSEvent *) e
 {
 	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
