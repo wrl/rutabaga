@@ -500,7 +500,6 @@ void
 rtb_cocoa_draw_frame(struct cocoa_rtb_window *self, int force)
 {
 	struct rtb_window *win = RTB_WINDOW(self);
-	NSRect r;
 
 	@autoreleasepool {
 		if ([self->gl_ctx view] != self->view)
@@ -556,4 +555,10 @@ rtb_get_modkeys(struct rtb_window *win)
 		| MOD_ACTIVE(NSCommandKeyMask, RTB_KEY_MOD_SUPER);
 
 #undef MOD_ACTIVE
+}
+
+int64_t
+rtb__mouse_double_click_interval(struct rtb_window *win)
+{
+	return [NSEvent doubleClickInterval] * 1e+09;
 }
