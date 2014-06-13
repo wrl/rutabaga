@@ -302,9 +302,6 @@ rtb_knob_init(struct rtb_knob *self)
 	self->min = 0.f;
 	self->max = 1.f;
 
-	self->w = 30;
-	self->h = 30;
-
 	self->draw     = draw;
 	self->on_event = on_event;
 	self->attached = attached;
