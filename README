@@ -18,9 +18,11 @@
   type information, FreeType font rendering, and indirect
   rendering for performance.
 
-  there is full support for X11 systems (tested on Linux and
-  FreeBSD), and a Cocoa backend is in progress. win32 support
-  is also planned in short order.
+  there is support for X11 (tested on Linux and FreeBSD),
+  OSX via Cocoa, and win32/win64. the windows support is
+  currently unable to deploy stand-alone apps due to some
+  event loop shenanigans, but plug-in UIs (i.e. VST) work
+  just fine.
 
   build with:
 
