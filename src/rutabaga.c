@@ -47,6 +47,9 @@ rtb_new(void)
 {
 	struct rutabaga *self = window_impl_rtb_alloc();
 
+	if (!self)
+		return NULL;
+
 	RTB_DICT_INIT(&self->atoms.type);
 
 	memcpy(&self->allocator, &stdlib_allocator,

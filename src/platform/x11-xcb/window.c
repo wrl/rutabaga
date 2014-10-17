@@ -169,8 +169,10 @@ window_impl_rtb_alloc(void)
 		goto err_get_conn;
 	}
 
-	if (xrtb_keyboard_init(self))
+	if (xrtb_keyboard_init(self)) {
+		ERR("can't initialize keyboard\n");
 		goto err_keyboard_init;
+	}
 
 	XSetEventQueueOwner(dpy, XCBOwnsEventQueue);
 
