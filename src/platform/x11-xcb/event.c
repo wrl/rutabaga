@@ -488,6 +488,9 @@ video_sync_init(struct video_sync *p)
 {
 	p->functions_valid = 0;
 
+	if (getenv("WAYLAND_DISPLAY"))
+		return -1;
+
 #define GET_PROC(dst, name) p->dst = (void *) glXGetProcAddress((GLubyte *) name);
 	GET_PROC(swap_buffers_msc, "glXSwapBuffersMscOML");
 	GET_PROC(get_values, "glXGetSyncValuesOML");
