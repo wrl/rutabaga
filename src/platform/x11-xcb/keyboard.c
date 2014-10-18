@@ -34,7 +34,9 @@
 
 #include <X11/XKBlib.h>
 #include <X11/extensions/XKBfile.h>
+
 #include <xkbcommon/xkbcommon.h>
+#include <xkbcommon/xkbcommon-x11.h>
 
 #include "xrtb.h"
 
@@ -122,33 +124,18 @@ xrtb_keyboard_translate_keysym(xcb_keysym_t xsym, rtb_utf32_t *chr)
 int
 xrtb_keyboard_reload(struct xcb_rutabaga *xrtb)
 {
-	FILE *tmp;
-	XkbFileInfo xkbfile;
 	struct xkb_keymap *new_keymap;
-
-	/* large portions here lifted from i3lock.
-	 * thx. */
+	int32_t device_id;
 
 	assert(xrtb->xkb_ctx);
 
-	if (!(tmp = tmpfile()))
-		goto err_tmpfile;
+	device_id = xkb_x11_get_core_keyboard_device_id(xrtb->xcb_conn);
+	if (device_id == -1)
+		goto err_get_kbd_device;
 
-	if (!(xkbfile.xkb = XkbGetKeyboard(xrtb->dpy,
-					XkbAllMapComponentsMask, XkbUseCoreKbd)))
-		goto err_get_keyboard;
-
-	if (!XkbWriteXKBKeymap(tmp, &xkbfile, 0, 0, NULL, NULL))
-		goto err_write_keymap;
-
-	rewind(tmp);
-
-	if (!(new_keymap = xkb_keymap_new_from_file(xrtb->xkb_ctx, tmp,
-					XKB_KEYMAP_FORMAT_TEXT_V1, 0)))
+	if (!(new_keymap = xkb_x11_keymap_new_from_device(xrtb->xkb_ctx,
+					xrtb->xcb_conn, device_id, XKB_KEYMAP_COMPILE_NO_FLAGS)))
 		goto err_new_keymap;
-
-	XkbFreeKeyboard(xkbfile.xkb, XkbAllMapComponentsMask, 1);
-	fclose(tmp);
 
 	if (xrtb->xkb_keymap)
 		xkb_keymap_unref(xrtb->xkb_keymap);
@@ -157,7 +144,8 @@ xrtb_keyboard_reload(struct xcb_rutabaga *xrtb)
 	if (xrtb->xkb_state)
 		xkb_state_unref(xrtb->xkb_state);
 
-	if (!(xrtb->xkb_state = xkb_state_new(new_keymap)))
+	if (!(xrtb->xkb_state = xkb_x11_state_new_from_device(new_keymap,
+					xrtb->xcb_conn, device_id)))
 		goto err_new_state;
 
 #define CACHE_MOD_INDEX(name, constant) \
@@ -172,12 +160,10 @@ xrtb_keyboard_reload(struct xcb_rutabaga *xrtb)
 	return 0;
 
 err_new_state:
+	xkb_keymap_unref(xrtb->xkb_keymap);
+	xrtb->xkb_keymap = NULL;
 err_new_keymap:
-err_write_keymap:
-	XkbFreeKeyboard(xkbfile.xkb, XkbAllMapComponentsMask, 1);
-err_get_keyboard:
-	fclose(tmp);
-err_tmpfile:
+err_get_kbd_device:
 	return -1;
 }
 

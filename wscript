@@ -94,6 +94,7 @@ def check_x11(conf):
     check("xcb-icccm")
     check("xkbfile")
     check("xkbcommon")
+    check("xkbcommon-x11")
 
 def check_jack(conf):
     if conf.env.DEST_OS in ['darwin', 'win32']:

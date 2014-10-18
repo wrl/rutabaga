@@ -129,8 +129,9 @@ def build(bld):
             'XCB-KEYSYMS',
             'XCB-ICCCM',
             'XKBFILE',
-            'XKBCOMMON', 
-            
+            'XKBCOMMON',
+            'XKBCOMMON-X11',
+
             'COCOA'],
 
         cflags=bld.env['CFLAGS_cshlib'],
