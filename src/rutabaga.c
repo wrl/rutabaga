@@ -54,12 +54,15 @@ rtb_new(void)
 
 	memcpy(&self->allocator, &stdlib_allocator,
 			sizeof(self->allocator));
+
+	uv_loop_init(&self->event_loop);
 	return self;
 }
 
 void
 rtb_free(struct rutabaga *self)
 {
+	uv_loop_close(&self->event_loop);
 	window_impl_rtb_free(self);
 }
 

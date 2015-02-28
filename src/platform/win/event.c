@@ -98,7 +98,7 @@ handle_timer(struct win_rtb_window *self, int timer_id)
 {
 	switch (timer_id) {
 	case WIN_RTB_FRAME_TIMER:
-		uv_run(self->rtb->event_loop, UV_RUN_NOWAIT);
+		uv_run(&self->rtb->event_loop, UV_RUN_NOWAIT);
 		draw_frame(self);
 		break;
 
@@ -285,8 +285,7 @@ win_rtb_handle_message(struct win_rtb_window *self,
 void
 rtb_event_loop_init(struct rutabaga *r)
 {
-	r->event_loop = uv_loop_new();
-	uv_run(r->event_loop, UV_RUN_NOWAIT);
+	uv_run(&r->event_loop, UV_RUN_NOWAIT);
 }
 
 void
@@ -343,17 +342,10 @@ rtb_event_loop_stop(struct rutabaga *r)
 void
 rtb_event_loop_fini(struct rutabaga *r)
 {
-	uv_loop_t *rtb_loop;
-
-	rtb_loop = r->event_loop;
-	r->event_loop = NULL;
-
 	/* once to run the event handlers for the last time, and once more
 	 * to run the endgames for all of them. */
-	uv_run(rtb_loop, UV_RUN_NOWAIT);
-	uv_run(rtb_loop, UV_RUN_NOWAIT);
-
-	uv_loop_delete(rtb_loop);
+	uv_run(&r->event_loop, UV_RUN_NOWAIT);
+	uv_run(&r->event_loop, UV_RUN_NOWAIT);
 }
 
 rtb_modkey_t

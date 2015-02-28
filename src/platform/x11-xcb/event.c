@@ -585,22 +585,17 @@ rtb_event_loop_init(struct rutabaga *r)
 {
 	struct xcb_rutabaga *xrtb = (void *) r;
 	struct xrtb_window *xwin = (void *) r->win;
-	uv_loop_t *rtb_loop;
-
-	rtb_loop = uv_loop_new();
-	r->event_loop = rtb_loop;
 
 	xrtb->xcb_poll.xrtb = xrtb;
-
-	uv_poll_init(rtb_loop, RTB_UPCAST(&xrtb->xcb_poll, uv_poll_s),
+	uv_poll_init(&r->event_loop, RTB_UPCAST(&xrtb->xcb_poll, uv_poll_s),
 			xcb_get_file_descriptor(xrtb->xcb_conn));
-	uv_poll_start(RTB_UPCAST(&xrtb->xcb_poll, uv_poll_s), UV_READABLE,
-			xcb_poll_cb);
 
 	xrtb->frame_timer.xwin = xwin;
 	frame_timer_init(&xrtb->frame_timer);
+	uv_timer_init(&r->event_loop, RTB_UPCAST(&xrtb->frame_timer, uv_timer_s));
 
-	uv_timer_init(rtb_loop, RTB_UPCAST(&xrtb->frame_timer, uv_timer_s));
+	uv_poll_start(RTB_UPCAST(&xrtb->xcb_poll, uv_poll_s), UV_READABLE,
+			xcb_poll_cb);
 	uv_timer_start(RTB_UPCAST(&xrtb->frame_timer, uv_timer_s),
 			frame_cb, 0, xrtb->frame_timer.wait_msec);
 }
@@ -608,27 +603,22 @@ rtb_event_loop_init(struct rutabaga *r)
 void
 rtb_event_loop_run(struct rutabaga *r)
 {
-	uv_run(r->event_loop, UV_RUN_DEFAULT);
+	uv_run(&r->event_loop, UV_RUN_DEFAULT);
 }
 
 void
 rtb_event_loop_stop(struct rutabaga *r)
 {
-	if (r->event_loop)
-		uv_stop(r->event_loop);
+	uv_stop(&r->event_loop);
 }
 
 void
 rtb_event_loop_fini(struct rutabaga *r)
 {
 	struct xcb_rutabaga *xrtb = (void *) r;
-	uv_loop_t *rtb_loop = r->event_loop;
-
-	r->event_loop = NULL;
 
 	uv_close((void *) RTB_UPCAST(&xrtb->frame_timer, uv_timer_s), NULL);
 	uv_close((void *) RTB_UPCAST(&xrtb->xcb_poll, uv_poll_s), NULL);
 
-	uv_run(rtb_loop, UV_RUN_NOWAIT);
-	uv_loop_delete(rtb_loop);
+	uv_run(&r->event_loop, UV_RUN_NOWAIT);
 }

@@ -51,7 +51,7 @@ struct rutabaga {
 	} atoms;
 
 	struct wwrl_allocator allocator;
-	uv_loop_t *event_loop;
+	uv_loop_t event_loop;
 };
 
 struct rutabaga *rtb_new(void);

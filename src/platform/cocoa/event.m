@@ -81,8 +81,7 @@ rtb_event_loop_init(struct rutabaga *r)
 	cwin   = RTB_WINDOW_AS(win, cocoa_rtb_window);
 	gl_ctx = cwin->gl_ctx;
 
-	r->event_loop = uv_loop_new();
-	obs_ctx.info = r->event_loop;
+	obs_ctx.info = &r->event_loop;
 
 	cwin->run_uv_observer = CFRunLoopObserverCreate(
 			kCFAllocatorDefault, kCFRunLoopBeforeSources, 1, 0,
@@ -109,7 +108,6 @@ rtb_event_loop_run(struct rutabaga *r)
 	cwin->event_loop_running = 1;
 
 	timer_ctx.info = cwin;
-
 
 	cwin->frame_timer = CFRunLoopTimerCreate(
 			kCFAllocatorDefault, CFAbsoluteTimeGetCurrent(),
@@ -154,7 +152,6 @@ rtb_event_loop_stop(struct rutabaga *r)
 void
 rtb_event_loop_fini(struct rutabaga *r)
 {
-	uv_loop_t *rtb_loop;
 	struct rtb_window *win;
 	struct cocoa_rtb_window *cwin;
 
@@ -167,13 +164,8 @@ rtb_event_loop_fini(struct rutabaga *r)
 	CFRunLoopObserverInvalidate(cwin->run_uv_observer);
 	CFRelease(cwin->run_uv_observer);
 
-	rtb_loop = r->event_loop;
-	r->event_loop = NULL;
-
 	/* once to run the event handlers for the last time, and once more
 	 * to run the endgames for all of them. */
-	uv_run(rtb_loop, UV_RUN_NOWAIT);
-	uv_run(rtb_loop, UV_RUN_NOWAIT);
-
-	uv_loop_delete(rtb_loop);
+	uv_run(&r->event_loop, UV_RUN_NOWAIT);
+	uv_run(&r->event_loop, UV_RUN_NOWAIT);
 }
