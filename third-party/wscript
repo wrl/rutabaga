@@ -142,6 +142,7 @@ def build(bld):
             '-Wno-maybe-uninitialized',
             '-Wno-unused-but-set-variable',
             '-Wno-unused-variable',
+            '-Wno-attributes',
 
             '-fno-strict-aliasing']
 
