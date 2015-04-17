@@ -250,7 +250,6 @@ find_reasonable_fb_config(Display *dpy, xcb_connection_t *xcb_conn,
 			int red;
 			int green;
 			int blue;
-			int alpha;
 		} sizes;
 
 		int double_buffer;
@@ -273,7 +272,6 @@ find_reasonable_fb_config(Display *dpy, xcb_connection_t *xcb_conn,
 		GET_ATTRIB(GLX_RED_SIZE,      sizes.red);
 		GET_ATTRIB(GLX_GREEN_SIZE,    sizes.green);
 		GET_ATTRIB(GLX_BLUE_SIZE,     sizes.blue);
-		GET_ATTRIB(GLX_ALPHA_SIZE,    sizes.alpha);
 		GET_ATTRIB(GLX_DOUBLEBUFFER,  double_buffer);
 		GET_ATTRIB(GLX_CONFIG_CAVEAT, caveat);
 		GET_ATTRIB(GLX_DRAWABLE_TYPE, drawable_type);
@@ -282,8 +280,7 @@ find_reasonable_fb_config(Display *dpy, xcb_connection_t *xcb_conn,
 
 		if (cfg_info.sizes.red   < MIN_COLOR_CHANNEL_BITS ||
 			cfg_info.sizes.green < MIN_COLOR_CHANNEL_BITS ||
-			cfg_info.sizes.blue  < MIN_COLOR_CHANNEL_BITS ||
-			cfg_info.sizes.alpha < MIN_COLOR_CHANNEL_BITS)
+			cfg_info.sizes.blue  < MIN_COLOR_CHANNEL_BITS)
 			continue;
 
 		if (cfg_info.double_buffer != True) {
