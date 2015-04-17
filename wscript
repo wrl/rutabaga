@@ -95,6 +95,7 @@ def check_x11(conf):
     check("xkbfile")
     check("xkbcommon")
     check("xkbcommon-x11")
+    check('xrender')
 
 def check_jack(conf):
     if conf.env.DEST_OS in ['darwin', 'win32']:

@@ -32,6 +32,7 @@
 #include <uv.h>
 
 #include <X11/Xlib.h>
+#include <X11/extensions/Xrender.h>
 #include <X11/Xlib-xcb.h>
 
 #include <xcb/xcb.h>
@@ -222,14 +223,34 @@ find_xcb_screen(xcb_connection_t *c, int default_screen)
 	return screen_iter.data;
 }
 
+static int
+fbconfig_supports_alpha(Display *dpy, GLXFBConfig cfg)
+{
+	XRenderPictFormat *pict_format;
+	XVisualInfo *visual_info;
+
+	int well_does_it = 1;
+
+	visual_info = glXGetVisualFromFBConfig(dpy, cfg);
+	pict_format = XRenderFindVisualFormat(dpy, visual_info->visual);
+
+	if (!pict_format || !pict_format->direct.alphaMask)
+		well_does_it = 0;
+
+	free(visual_info);
+	return well_does_it;
+}
+
 static GLXFBConfig
-find_reasonable_fb_config(Display *dpy, GLXFBConfig *cfgs, int ncfgs)
+find_reasonable_fb_config(Display *dpy, xcb_connection_t *xcb_conn,
+		GLXFBConfig *cfgs, int ncfgs, int want_transparent)
 {
 	struct {
 		struct {
 			int red;
 			int green;
 			int blue;
+			int alpha;
 		} sizes;
 
 		int double_buffer;
@@ -252,6 +273,7 @@ find_reasonable_fb_config(Display *dpy, GLXFBConfig *cfgs, int ncfgs)
 		GET_ATTRIB(GLX_RED_SIZE,      sizes.red);
 		GET_ATTRIB(GLX_GREEN_SIZE,    sizes.green);
 		GET_ATTRIB(GLX_BLUE_SIZE,     sizes.blue);
+		GET_ATTRIB(GLX_ALPHA_SIZE,    sizes.alpha);
 		GET_ATTRIB(GLX_DOUBLEBUFFER,  double_buffer);
 		GET_ATTRIB(GLX_CONFIG_CAVEAT, caveat);
 		GET_ATTRIB(GLX_DRAWABLE_TYPE, drawable_type);
@@ -260,7 +282,8 @@ find_reasonable_fb_config(Display *dpy, GLXFBConfig *cfgs, int ncfgs)
 
 		if (cfg_info.sizes.red   < MIN_COLOR_CHANNEL_BITS ||
 			cfg_info.sizes.green < MIN_COLOR_CHANNEL_BITS ||
-			cfg_info.sizes.blue  < MIN_COLOR_CHANNEL_BITS)
+			cfg_info.sizes.blue  < MIN_COLOR_CHANNEL_BITS ||
+			cfg_info.sizes.alpha < MIN_COLOR_CHANNEL_BITS)
 			continue;
 
 		if (cfg_info.double_buffer != True) {
@@ -277,6 +300,9 @@ find_reasonable_fb_config(Display *dpy, GLXFBConfig *cfgs, int ncfgs)
 			found_slow = 1;
 			continue;
 		}
+
+		if (want_transparent && !fbconfig_supports_alpha(dpy, cfgs[i]))
+			continue;
 
 		return cfgs[i];
 	}
@@ -386,8 +412,8 @@ window_impl_open(struct rutabaga *rtb,
 	int default_screen;
 
 	GLXFBConfig *fb_configs, fb_config;
+	XVisualInfo *visual;
 	int nfb_configs;
-	int visual_id;
 
 	uint32_t event_mask =
 		XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_EXPOSURE |
@@ -397,7 +423,7 @@ window_impl_open(struct rutabaga *rtb,
 		XCB_EVENT_MASK_KEY_PRESS | XCB_EVENT_MASK_KEY_RELEASE |
 		XCB_EVENT_MASK_KEYMAP_STATE;
 	uint32_t value_mask =
-		XCB_CW_BORDER_PIXEL | XCB_CW_BACK_PIXEL |
+		XCB_CW_BORDER_PIXEL | XCB_CW_BACK_PIXMAP |
 		XCB_CW_BIT_GRAVITY |
 		XCB_CW_EVENT_MASK | XCB_CW_COLORMAP;
 	uint32_t value_list[6];
@@ -436,13 +462,15 @@ window_impl_open(struct rutabaga *rtb,
 		goto err_gl_config;
 	}
 
-	fb_config = find_reasonable_fb_config(dpy, fb_configs, nfb_configs);
+	fb_config = find_reasonable_fb_config(dpy, xcb_conn, fb_configs,
+			nfb_configs, 0);
+
 	if (!fb_config) {
 		ERR("no reasonable GL configurations, bailing out\n");
 		goto err_gl_config;
 	}
 
-	glXGetFBConfigAttrib(dpy, fb_config, GLX_VISUAL_ID, &visual_id);
+	visual = glXGetVisualFromFBConfig(dpy, fb_config);
 
 	self->gl_ctx = new_gl_context(dpy, fb_config);
 	if (!self->gl_ctx) {
@@ -459,7 +487,7 @@ window_impl_open(struct rutabaga *rtb,
 
 	xcb_create_colormap(
 			xcb_conn, XCB_COLORMAP_ALLOC_NONE, colormap,
-			self->screen->root, visual_id);
+			self->screen->root, visual->visualid);
 
 	value_list[0] = 0;
 	value_list[1] = 0;
@@ -469,13 +497,15 @@ window_impl_open(struct rutabaga *rtb,
 	value_list[5] = 0;
 
 	ck_window = xcb_create_window_checked(
-			xcb_conn, XCB_COPY_FROM_PARENT, self->xcb_win,
+			xcb_conn, visual->depth, self->xcb_win,
 			parent ? (xcb_window_t) parent : self->screen->root,
 			0, 0,
 			w, h,
 			0,
 			XCB_WINDOW_CLASS_INPUT_OUTPUT,
-			visual_id, value_mask, value_list);
+			visual->visualid, value_mask, value_list);
+
+	free(visual);
 
 	if ((err = xcb_request_check(xcb_conn, ck_window))) {
 		ERR("can't create XCB window: %d\n", err->error_code);
