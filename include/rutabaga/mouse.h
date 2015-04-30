@@ -96,11 +96,11 @@ struct rtb_drag_event {
 
 struct rtb_mouse {
 	RTB_INHERIT(rtb_point);
+	struct rtb_point previous;
 
 	struct rtb_element *element_underneath;
 
 	struct rtb_mouse_button {
-		struct rtb_point drag_last;
 		struct rtb_point drag_start;
 
 		struct rtb_element *target;
