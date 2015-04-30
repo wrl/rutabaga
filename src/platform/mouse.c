@@ -360,14 +360,18 @@ rtb_platform_mouse_motion(struct rtb_window *win, int x, int y)
 	}
 
 	retarget(win, x, y);
-	win->mouse.previous = *RTB_UPCAST(&win->mouse, rtb_point);
 
 	if (win->mouse.buttons_down) {
 		delta.w = x - win->mouse.previous.x;
 		delta.h = y - win->mouse.previous.y;
 
+		/* the positioning of this line is VERY important. see
+		 * platform/x11-xcb/window.c function rtb__mouse_pointer_warp() */
+		win->mouse.previous = *RTB_UPCAST(&win->mouse, rtb_point);
+
 		drag(win, x, y, delta);
-	}
+	} else
+		win->mouse.previous = *RTB_UPCAST(&win->mouse, rtb_point);
 
 	win->mouse.x = x;
 	win->mouse.y = y;

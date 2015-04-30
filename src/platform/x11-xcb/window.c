@@ -46,8 +46,10 @@
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/window.h"
+#include <rutabaga/mouse.h>
 
 #include "rtb_private/window_impl.h"
+#include "rtb_private/util.h"
 
 #include "xrtb.h"
 
@@ -298,6 +300,7 @@ find_reasonable_fb_config(Display *dpy, xcb_connection_t *xcb_conn,
 			continue;
 		}
 
+		/* XXX: fallback to best non-transparent config if this fails? */
 		if (want_transparent && !fbconfig_supports_alpha(dpy, cfgs[i]))
 			continue;
 
@@ -608,4 +611,19 @@ rtb__mouse_double_click_interval(struct rtb_window *win)
 {
 	/* XXX: should get this from the desktop environment or Xdefaults */
 	return FALLBACK_DOUBLE_CLICK_MS * 1000000;
+}
+
+void
+rtb__mouse_pointer_warp(struct rtb_window *rwin, int x, int y)
+{
+	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
+	struct rtb_mouse *m = &rwin->mouse;
+
+	xcb_warp_pointer(self->xrtb->xcb_conn, XCB_NONE, self->xcb_win,
+			0, 0, 0, 0, x, y);
+
+	/* since xorg sends us a motion notify, we have to fix the previous
+	 * cursor position so that dragging still works as expected. */
+	m->previous.x += x - m->x;
+	m->previous.y += y - m->y;
 }

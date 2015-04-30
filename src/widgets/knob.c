@@ -36,6 +36,7 @@
 #include "rutabaga/event.h"
 #include "rutabaga/style.h"
 #include "rutabaga/keyboard.h"
+#include "rutabaga/platform.h"
 
 #include "rutabaga/widgets/knob.h"
 
@@ -142,6 +143,8 @@ handle_drag(struct rtb_knob *self, const struct rtb_drag_event *e)
 	new_value += -e->delta.y * mult;
 
 	set_value_internal(self, new_value, 0);
+
+	rtb__mouse_pointer_warp(self->window, e->start.x, e->start.y);
 	return 1;
 }
 
