@@ -38,7 +38,8 @@
 
 static struct rtb_element *
 dispatch_drag_event(struct rtb_window *window, rtb_ev_type_t type,
-		struct rtb_element *also_dispatch_to, int button, int x, int y)
+		struct rtb_element *also_dispatch_to, int button, int x, int y,
+		struct rtb_size delta)
 {
 	struct rtb_mouse_button *b = &window->mouse.button[button];
 	struct rtb_drag_event ev = {
@@ -57,8 +58,8 @@ dispatch_drag_event(struct rtb_window *window, rtb_ev_type_t type,
 			.x = b->drag_start.x,
 			.y = b->drag_start.y},
 		.delta = {
-			.x = x - b->drag_last.x,
-			.y = y - b->drag_last.y}
+			.x = delta.w,
+			.y = delta.h}
 	};
 
 	if (also_dispatch_to && also_dispatch_to != b->target)
@@ -205,6 +206,7 @@ mouse_up(struct rtb_window *window, struct rtb_element *target,
 {
 	struct rtb_mouse *mouse = &window->mouse;
 	struct rtb_mouse_button *b = &mouse->button[button];
+	struct rtb_size drag_delta;
 	uint64_t now;
 	int64_t delta;
 
@@ -219,8 +221,13 @@ mouse_up(struct rtb_window *window, struct rtb_element *target,
 
 		b->last_click = now;
 		dispatch_click_event(window, target, button, x, y);
-	} else if (b->state == RTB_MOUSE_BUTTON_STATE_DRAG)
-		dispatch_drag_event(window, RTB_DRAG_DROP, target, button, x, y);
+	} else if (b->state == RTB_MOUSE_BUTTON_STATE_DRAG) {
+		drag_delta.w = x - b->drag_last.x;
+		drag_delta.h = y - b->drag_last.y;
+
+		dispatch_drag_event(window, RTB_DRAG_DROP, target, button, x, y,
+				drag_delta);
+	}
 
 	b->state  = RTB_MOUSE_BUTTON_STATE_UP;
 	b->target = NULL;
@@ -231,10 +238,17 @@ static void
 drag(struct rtb_window *win, int x, int y)
 {
 	struct rtb_mouse_button *b;
+	struct rtb_size delta;
 	int i;
 
 	for (i = 0; i < RTB_MOUSE_BUTTON_MAX + 1; i++) {
 		b = &win->mouse.button[i];
+
+		delta.w = x - b->drag_last.x;
+		delta.h = y - b->drag_last.y;
+
+		b->drag_last.x = x;
+		b->drag_last.y = y;
 
 		switch (b->state) {
 		case RTB_MOUSE_BUTTON_STATE_UP:
@@ -246,16 +260,13 @@ drag(struct rtb_window *win, int x, int y)
 			b->drag_start.y = y;
 
 			b->target = dispatch_drag_event(win,
-					RTB_DRAG_START, NULL, i, x, y);
+					RTB_DRAG_START, NULL, i, x, y, delta);
 			break;
 
 		case RTB_MOUSE_BUTTON_STATE_DRAG:
-			dispatch_drag_event(win, RTB_DRAG_MOTION, NULL, i, x, y);
+			dispatch_drag_event(win, RTB_DRAG_MOTION, NULL, i, x, y, delta);
 			break;
 		}
-
-		b->drag_last.x = x;
-		b->drag_last.y = y;
 	}
 }
 
