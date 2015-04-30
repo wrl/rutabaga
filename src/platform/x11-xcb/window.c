@@ -153,6 +153,29 @@ get_core_kbd_id(xcb_connection_t *c)
 	return device_id;
 }
 
+static xcb_cursor_t
+create_empty_cursor(struct xcb_rutabaga *self)
+{
+	xcb_cursor_t cursor;
+	Pixmap pixmap;
+	XColor color;
+	char data;
+
+	data = 0;
+	color.red = color.green = color.blue = 0;
+
+	pixmap = XCreateBitmapFromData(self->dpy,
+			DefaultRootWindow(self->dpy), &data, 1, 1);
+
+	if (!pixmap)
+		return 0;
+
+	cursor = XCreatePixmapCursor(self->dpy, pixmap, pixmap, &color, &color, 0, 0);
+	XFreePixmap(self->dpy, pixmap);
+
+	return cursor;
+}
+
 struct rutabaga *
 window_impl_rtb_alloc(void)
 {
@@ -191,6 +214,8 @@ window_impl_rtb_alloc(void)
 	INTERN_ATOM(wm_delete_window, "WM_DELETE_WINDOW");
 #undef INTERN_ATOM
 
+	self->empty_cursor = create_empty_cursor(self);
+
 	return (struct rutabaga *) self;
 
 err_keyboard_init:
@@ -208,6 +233,8 @@ window_impl_rtb_free(struct rutabaga *rtb)
 	struct xcb_rutabaga *self = (void *) rtb;
 
 	xrtb_keyboard_fini(self);
+	XFreeCursor(self->dpy, self->empty_cursor);
+
 	XCloseDisplay(self->dpy);
 	free(self);
 }
@@ -626,4 +653,31 @@ rtb__mouse_pointer_warp(struct rtb_window *rwin, int x, int y)
 	 * cursor position so that dragging still works as expected. */
 	m->previous.x += x - m->x;
 	m->previous.y += y - m->y;
+}
+
+void
+rtb_set_cursor(struct rtb_window *rwin, rtb_mouse_cursor_t cursor)
+{
+	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
+	struct xcb_rutabaga *xrtb = self->xrtb;
+	uint32_t val_mask, val_list;
+
+	switch (cursor) {
+	case RTB_MOUSE_CURSOR_DEFAULT:
+		val_list = 0;
+		break;
+
+	case RTB_MOUSE_CURSOR_HIDDEN:
+		val_list = xrtb->empty_cursor;
+		break;
+
+	default:
+		return;
+	}
+
+	val_mask = XCB_CW_CURSOR;
+	xcb_change_window_attributes(xrtb->xcb_conn, self->xcb_win,
+			val_mask, &val_list);
+
+	xcb_flush(xrtb->xcb_conn);
 }

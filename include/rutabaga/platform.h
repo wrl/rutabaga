@@ -62,3 +62,4 @@ void rtb_platform_mouse_leave_window(struct rtb_window *, int x, int y);
 int64_t rtb__mouse_double_click_interval(struct rtb_window *);
 
 void rtb__mouse_pointer_warp(struct rtb_window *, int x, int y);
+void rtb_set_cursor(struct rtb_window *, rtb_mouse_cursor_t cursor);

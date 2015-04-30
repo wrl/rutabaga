@@ -154,6 +154,7 @@ handle_mouse_down(struct rtb_knob *self, const struct rtb_mouse_event *e)
 	switch (e->button) {
 	case RTB_MOUSE_BUTTON1:
 	case RTB_MOUSE_BUTTON3:
+		rtb_set_cursor(self->window, RTB_MOUSE_CURSOR_HIDDEN);
 		return 1;
 
 	default:
@@ -236,6 +237,11 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 
 	case RTB_KEY_PRESS:
 		return handle_key(self, RTB_EVENT_AS(e, rtb_key_event));
+
+	case RTB_MOUSE_UP:
+	case RTB_DRAG_DROP:
+		rtb_set_cursor(self->window, RTB_MOUSE_CURSOR_DEFAULT);
+		return 1;
 
 	default:
 		return super.on_event(elem, e);

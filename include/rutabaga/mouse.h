@@ -51,6 +51,11 @@ typedef enum {
 	RTB_MOUSE_BUTTON3_MASK = 1 << RTB_MOUSE_BUTTON3
 } rtb_mouse_button_mask_t;
 
+typedef enum {
+	RTB_MOUSE_CURSOR_DEFAULT,
+	RTB_MOUSE_CURSOR_HIDDEN
+} rtb_mouse_cursor_t;
+
 /**
  * events
  */
