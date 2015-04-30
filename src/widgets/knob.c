@@ -153,7 +153,7 @@ handle_mouse_down(struct rtb_knob *self, const struct rtb_mouse_event *e)
 {
 	switch (e->button) {
 	case RTB_MOUSE_BUTTON1:
-	case RTB_MOUSE_BUTTON3:
+	case RTB_MOUSE_BUTTON2:
 		rtb_set_cursor(self->window, RTB_MOUSE_CURSOR_HIDDEN);
 		return 1;
 
