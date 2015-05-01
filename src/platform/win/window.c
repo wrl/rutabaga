@@ -448,3 +448,23 @@ window_impl_rtb_free(struct rutabaga *rtb)
 {
 	free(rtb);
 }
+
+void
+rtb__mouse_pointer_warp(struct rtb_window *rwin, int x, int y)
+{
+	/* XXX: uh */
+}
+
+void
+rtb_set_cursor(struct rtb_window *rwin, rtb_mouse_cursor_t cursor)
+{
+	switch (cursor) {
+	case RTB_MOUSE_CURSOR_DEFAULT:
+		SetCursor(LoadCursor(NULL, IDC_ARROW));
+		break;
+
+	case RTB_MOUSE_CURSOR_HIDDEN:
+		SetCursor(NULL);
+		break;
+	}
+}
