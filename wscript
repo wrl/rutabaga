@@ -38,14 +38,14 @@ def check_alloca(conf):
 
     if conf.check_cc(
         mandatory=False,
-        execute=True,
+        execute=False,
         fragment=code,
         msg="Checking for alloca() in stdlib.h"):
         return
 
     if conf.check_cc(
         mandatory=True,
-        execute=True,
+        execute=False,
         fragment=code,
         msg="Checking for alloca() in alloca.h",
         cflags=["-DNEED_ALLOCA_H=1"]):
