@@ -134,6 +134,7 @@ def configure(conf):
     conf.load("gnu_dirs")
 
     tooldir = conf.path.find_dir('waftools').abspath()
+    conf.load('gyp_wrapper', tooldir=tooldir)
     conf.load('objc', tooldir=tooldir)
     conf.load('rtb_style', tooldir=tooldir)
     conf.load('shader_header', tooldir=tooldir)

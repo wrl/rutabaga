@@ -1,168 +1,54 @@
 #!/usr/bin/env python
 
-#
-# this file is basically a super-basic gyp runtime
-# i.e. it reads gyp build rules and converts them to waf rules
-#
-# released as cc0/public domain code, do whatever with it.
-#
-# hold on to your butts.
-#
-
-from __future__ import print_function
-import os
-
 top = '..'
 
-def parse_gyp_file(path):
-    parsed = None
-    with open(path) as f:
-        # just going to assume that libuv's gyp is well-formed
-        parsed = eval(f.read())
+def build_uv(ctx):
+	from_gyp = ctx.target_from_gyp('libuv/uv.gyp', 'libuv')
 
-    return parsed
+	extra_cflags = ['-Wno-cast-align']
 
-def find_target(tgts, name):
-    r = [t for t in tgts if t['target_name'] == name]
+	if ctx.env.DEST_OS == 'win32':
+		import re
 
-    if len(r) == 1:
-        return r[0]
-    elif not r:
-        return None
-    else:
-        return r
+		from_gyp['defines'].remove('_GNU_SOURCE')
 
-def unpack_defs(into, defs):
-    for d in defs:
-        if d not in into:
-            into[d] = []
+		extra_cflags += [
+			'-std=gnu89',
 
-        if isinstance(defs[d], list):
-            into[d].extend(defs[d])
-        elif isinstance(defs[d], dict):
-            unpack_defs(into, defs[d])
+			'-Wno-attributes',
+			'-Wno-sign-compare',
+			'-Wno-unused-function',
+			'-Wno-pointer-sign',
+			'-Wno-maybe-uninitialized',
+			'-Wno-unused-but-set-variable',
+			'-Wno-unused-variable',
 
-def eval_condition_list(clist, **kwargs):
-    ret = {}
+			'-fno-strict-aliasing']
 
-    for c in clist:
-        cond = None
+		from_gyp['libraries'] = [re.sub('\.lib$', '', x)
+				for x in from_gyp['libraries']]
+	elif ctx.env.DEST_OS == 'darwin':
+		# some bullshit about converting between void pointer and function pointer
+		from_gyp['cflags'].remove('-pedantic')
+		from_gyp['ldflags'].remove('-pthread')
 
-        try:
-            cond = eval(c[0], kwargs)
-        except NameError:
-            cond = False
+	ctx.env.append_unique('LINKFLAGS_UV_FLAGS', from_gyp['ldflags'])
+	ctx.env.append_unique('LIB_UV_FLAGS', from_gyp['libraries'])
 
-        if cond is True:
-            defs = c[1]
-        else:
-            try:
-                defs = c[2]
-            except IndexError:
-                continue
+	ctx.stlib(
+		source=from_gyp['sources'],
+		includes=['libuv/include', 'libuv/src'],
+		export_includes='libuv/include',
+		defines=from_gyp['defines'],
 
-        unpack_defs(ret, defs)
+		cflags=from_gyp['cflags'] + ctx.env['CFLAGS_cshlib'] + extra_cflags,
+		linkflags=from_gyp['ldflags'],
+		lib=from_gyp['libraries'],
 
-    return ret
+		use='UV_FLAGS',
 
-def eval_condition_list_recursively(clist, **kwargs):
-    ret = {}
+		target='uv',
+		name='LIBUV')
 
-    while True:
-        defs = eval_condition_list(clist, **kwargs)
-
-        for d in defs:
-            if d not in ret:
-                ret[d] = []
-
-            ret[d].extend(defs[d])
-
-        if 'conditions' in defs:
-            clist = defs['conditions']
-        else:
-            break
-
-    return ret
-
-def gimme_da_gyp_shit(ctx):
-    n = ctx.path.get_src().find_resource('libuv/uv.gyp')
-    gyp = parse_gyp_file(n.abspath())
-
-    t = find_target(gyp['targets'], 'libuv')
-
-    from_gyp = {
-        'sources':   t['sources'],
-        'defines':   [],
-        'cflags':    [],
-        'ldflags':   [],
-        'libraries': []}
-
-    os_map = {
-        'linux':  'linux',
-        'win32':  'win',
-        'darwin': 'mac'
-    }
-
-    for clist in (gyp['target_defaults']['conditions'], t['conditions'],
-            t['direct_dependent_settings']['conditions']):
-        r = eval_condition_list_recursively(clist,
-                OS=os_map[ctx.env.DEST_OS],
-                library='static_library')
-
-        [from_gyp[x].extend(r.get(x, [])) for x in from_gyp.keys()]
-
-    from_gyp['sources'] = ['libuv/' + s for s in from_gyp['sources']
-            if os.path.splitext(s)[1] in ('.c', '.cc', '.cpp')]
-
-    # libraries from gyp all start with -l
-    from_gyp['libraries'] = [l[2:] for l in from_gyp['libraries']]
-
-    if ctx.env.DEST_OS == 'darwin':
-        # some bullshit about converting between void pointer and function pointer
-        from_gyp['cflags'].remove('-pedantic')
-
-    return from_gyp
-
-def build(bld):
-    from_gyp = gimme_da_gyp_shit(bld)
-
-    extra_cflags = ['-Wno-cast-align']
-
-    if bld.env.DEST_OS == 'win32':
-        import re
-
-        from_gyp['defines'].remove('_GNU_SOURCE')
-
-        extra_cflags += [
-            '-std=gnu89',
-
-            '-Wno-sign-compare',
-            '-Wno-unused-function',
-            '-Wno-pointer-sign',
-            '-Wno-maybe-uninitialized',
-            '-Wno-unused-but-set-variable',
-            '-Wno-unused-variable',
-            '-Wno-attributes',
-
-            '-fno-strict-aliasing']
-
-        from_gyp['libraries'] = [re.sub('\.lib$', '', x)
-                for x in from_gyp['libraries']]
-    elif bld.env.DEST_OS == 'darwin':
-        from_gyp['ldflags'].remove('-pthread')
-
-    bld.stlib(
-        source=from_gyp['sources'],
-        includes=['libuv/include', 'libuv/src'],
-        export_includes='libuv/include',
-        defines=from_gyp['defines'],
-
-        cflags=from_gyp['cflags'] + bld.env['CFLAGS_cshlib'] + extra_cflags,
-        linkflags=from_gyp['ldflags'],
-        lib=from_gyp['libraries'],
-
-        target='uv',
-        name='LIBUV')
-
-    bld.env.append_unique('LINKFLAGS_LIBUV', from_gyp['ldflags'])
-    bld.env.append_unique('LIB_LIBUV', from_gyp['libraries'])
+def build(ctx):
+	build_uv(ctx)
