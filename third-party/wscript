@@ -148,6 +148,8 @@ def build(bld):
 
         from_gyp['libraries'] = [re.sub('\.lib$', '', x)
                 for x in from_gyp['libraries']]
+    elif ctx.env.DEST_OS == 'darwin':
+        from_gyp['ldflags'].remove('-pthread')
 
     bld.stlib(
         source=from_gyp['sources'],
