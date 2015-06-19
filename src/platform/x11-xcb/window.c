@@ -652,7 +652,7 @@ rtb__mouse_pointer_warp(struct rtb_window *rwin, int x, int y)
 	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
 	struct rtb_mouse *m = &rwin->mouse;
 
-	if (self->xrtb->running_in_xwayland)
+	if (self->xrtb->running_in_xwayland || (x == m->x && y == m->y))
 		return;
 
 	xcb_warp_pointer(self->xrtb->xcb_conn, XCB_NONE, self->xcb_win,
