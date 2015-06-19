@@ -56,7 +56,7 @@
 #define MIN_COLOR_CHANNEL_BITS 8
 
 static xcb_atom_t
-intern_atom(xcb_connection_t *c, const char *atom_name)
+intern_atom(xcb_connection_t *c, const char *atom_name, int only_if_exists)
 {
 	xcb_intern_atom_cookie_t req;
 	xcb_intern_atom_reply_t *rep;
@@ -65,7 +65,7 @@ intern_atom(xcb_connection_t *c, const char *atom_name)
 	if (!atom_name)
 		return XCB_NONE;
 
-	req = xcb_intern_atom(c, 0, strlen(atom_name), atom_name);
+	req = xcb_intern_atom(c, only_if_exists, strlen(atom_name), atom_name);
 	rep = xcb_intern_atom_reply(c, req, NULL);
 
 	if (!rep)
@@ -209,9 +209,15 @@ window_impl_rtb_alloc(void)
 			&& !receive_xkb_events(self->xcb_conn))
 		self->xkb_supported = 1;
 
-#define INTERN_ATOM(atom, name) self->atoms.atom = intern_atom(self->xcb_conn, name);
+	self->running_in_xwayland =
+		intern_atom(self->xcb_conn, "WL_SURFACE_ID", 1) != XCB_NONE;
+
+#define INTERN_ATOM(atom, name)												\
+	self->atoms.atom = intern_atom(self->xcb_conn, name, 0);
+
 	INTERN_ATOM(wm_protocols, "WM_PROTOCOLS");
 	INTERN_ATOM(wm_delete_window, "WM_DELETE_WINDOW");
+
 #undef INTERN_ATOM
 
 	self->empty_cursor = create_empty_cursor(self);
@@ -645,6 +651,9 @@ rtb__mouse_pointer_warp(struct rtb_window *rwin, int x, int y)
 {
 	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
 	struct rtb_mouse *m = &rwin->mouse;
+
+	if (self->xrtb->running_in_xwayland)
+		return;
 
 	xcb_warp_pointer(self->xrtb->xcb_conn, XCB_NONE, self->xcb_win,
 			0, 0, 0, 0, x, y);

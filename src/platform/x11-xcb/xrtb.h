@@ -105,6 +105,8 @@ struct xcb_rutabaga {
 	int xkb_core_kbd_id;
 	int xkb_event;
 
+	int running_in_xwayland;
+
 	xcb_cursor_t empty_cursor;
 
 	struct xrtb_uv_poll xcb_poll;
