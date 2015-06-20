@@ -44,8 +44,8 @@
 #include <GL/glx.h>
 #include <GL/glxext.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/window.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/window.h>
 #include <rutabaga/mouse.h>
 
 #include "rtb_private/window_impl.h"
@@ -635,58 +635,4 @@ rtb_window_unlock(struct rtb_window *rwin)
 	glXMakeContextCurrent(self->xrtb->dpy, None, None, NULL);
 	XUnlockDisplay(self->xrtb->dpy);
 	uv_mutex_unlock(&self->lock);
-}
-
-#define FALLBACK_DOUBLE_CLICK_MS 300
-
-int64_t
-rtb__mouse_double_click_interval(struct rtb_window *win)
-{
-	/* XXX: should get this from the desktop environment or Xdefaults */
-	return FALLBACK_DOUBLE_CLICK_MS * 1000000;
-}
-
-void
-rtb__mouse_pointer_warp(struct rtb_window *rwin, int x, int y)
-{
-	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
-	struct rtb_mouse *m = &rwin->mouse;
-
-	if (self->xrtb->running_in_xwayland || (x == m->x && y == m->y))
-		return;
-
-	xcb_warp_pointer(self->xrtb->xcb_conn, XCB_NONE, self->xcb_win,
-			0, 0, 0, 0, x, y);
-
-	/* since xorg sends us a motion notify, we have to fix the previous
-	 * cursor position so that dragging still works as expected. */
-	m->previous.x += x - m->x;
-	m->previous.y += y - m->y;
-}
-
-void
-rtb_set_cursor(struct rtb_window *rwin, rtb_mouse_cursor_t cursor)
-{
-	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
-	struct xcb_rutabaga *xrtb = self->xrtb;
-	uint32_t val_mask, val_list;
-
-	switch (cursor) {
-	case RTB_MOUSE_CURSOR_DEFAULT:
-		val_list = 0;
-		break;
-
-	case RTB_MOUSE_CURSOR_HIDDEN:
-		val_list = xrtb->empty_cursor;
-		break;
-
-	default:
-		return;
-	}
-
-	val_mask = XCB_CW_CURSOR;
-	xcb_change_window_attributes(xrtb->xcb_conn, self->xcb_win,
-			val_mask, &val_list);
-
-	xcb_flush(xrtb->xcb_conn);
 }

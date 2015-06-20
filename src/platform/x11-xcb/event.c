@@ -42,11 +42,11 @@
 
 #include <uv.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/window.h"
-#include "rutabaga/event.h"
-#include "rutabaga/platform.h"
-#include "rutabaga/keyboard.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/window.h>
+#include <rutabaga/event.h>
+#include <rutabaga/platform.h>
+#include <rutabaga/keyboard.h>
 
 #include "rtb_private/util.h"
 
