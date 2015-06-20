@@ -45,6 +45,7 @@ def build(bld):
     elif bld.env.PLATFORM == 'win':
         obj('platform/win/window.c')
         obj('platform/win/event.c')
+        obj('platform/win/cursor.c')
 
     # common
 

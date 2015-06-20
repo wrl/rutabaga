@@ -29,10 +29,10 @@
 #include <windowsx.h>
 #include <winsock2.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/window.h"
-#include "rutabaga/event.h"
-#include "rutabaga/platform.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/window.h>
+#include <rutabaga/event.h>
+#include <rutabaga/platform.h>
 
 #include "rtb_private/window_impl.h"
 
@@ -362,10 +362,4 @@ rtb_get_modkeys(struct rtb_window *rwin)
 		| MOD_ACTIVE(VK_RWIN,    RTB_KEY_MOD_SUPER);
 
 #undef MOD_ACTIVE
-}
-
-int64_t
-rtb__mouse_double_click_interval(struct rtb_window *rwin)
-{
-	return GetDoubleClickTime() * 1000000;
 }
