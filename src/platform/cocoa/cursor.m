@@ -68,7 +68,7 @@ rtb_mouse_pointer_warp(struct rtb_window *win, int x, int y)
 	rect.origin.x += screen_frame.origin.x;
 	rect.origin.y += screen_frame.origin.y;
 
-	CGWarpMouseCursorPosition(rect.origin);
+	CGWarpMouseCursorPosition(NSPointToCGPoint(rect.origin));
 	CGAssociateMouseAndMouseCursorPosition(true);
 
 	m->previous.x += x - m->x;
