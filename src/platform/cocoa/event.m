@@ -27,9 +27,9 @@
 #include <unistd.h>
 #include <uv.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/window.h"
-#include "rutabaga/platform.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/window.h>
+#include <rutabaga/platform.h>
 
 #import <Cocoa/Cocoa.h>
 #include <CoreFoundation/CFRunLoop.h>

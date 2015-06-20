@@ -28,9 +28,9 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/window.h"
-#include "rutabaga/platform.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/window.h>
+#include <rutabaga/platform.h>
 
 #include "rtb_private/window_impl.h"
 #include "cocoa_rtb.h"
@@ -570,25 +570,4 @@ rtb_get_modkeys(struct rtb_window *win)
 		| MOD_ACTIVE(NSCommandKeyMask, RTB_KEY_MOD_SUPER);
 
 #undef MOD_ACTIVE
-}
-
-int64_t
-rtb__mouse_double_click_interval(struct rtb_window *win)
-{
-	return [NSEvent doubleClickInterval] * 1e+09;
-}
-
-void
-rtb__mouse_pointer_warp(struct rtb_window *rwin, int x, int y)
-{
-	/**
-	 * CGPoint warpPoint = CGPointMake(42, 42);
-	 * CGWarpMouseCursorPosition(warpPoint);
-	 * CGAssociateMouseAndMouseCursorPosition(true);
-	 */
-}
-
-void
-rtb_set_cursor(struct rtb_window *rwin, rtb_mouse_cursor_t cursor)
-{
 }
