@@ -131,7 +131,7 @@ handle_mouse_motion(struct win_rtb_window *self, int x, int y)
 		setup_mouse_tracking(self);
 
 	LOCK(self);
-	rtb_platform_mouse_motion(RTB_WINDOW(self), x, y);
+	rtb__platform_mouse_motion(RTB_WINDOW(self), x, y);
 	UNLOCK(self);
 }
 
@@ -144,7 +144,7 @@ handle_mouse_leave(struct win_rtb_window *self)
 	ScreenToClient(self->hwnd, &p);
 
 	LOCK(self);
-	rtb_platform_mouse_leave_window(RTB_WINDOW(self), p.x, p.y);
+	rtb__platform_mouse_leave_window(RTB_WINDOW(self), p.x, p.y);
 	UNLOCK(self);
 }
 
@@ -152,7 +152,7 @@ static void
 handle_mouse_down(struct win_rtb_window *self, int button, LPARAM lparam)
 {
 	LOCK(self);
-	rtb_platform_mouse_press(RTB_WINDOW(self), button,
+	rtb__platform_mouse_press(RTB_WINDOW(self), button,
 			GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
 	UNLOCK(self);
 
@@ -164,7 +164,7 @@ static void
 handle_mouse_up(struct win_rtb_window *self, int button, LPARAM lparam)
 {
 	LOCK(self);
-	rtb_platform_mouse_release(RTB_WINDOW(self), button,
+	rtb__platform_mouse_release(RTB_WINDOW(self), button,
 			GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
 	UNLOCK(self);
 
@@ -178,7 +178,7 @@ static void
 handle_mouse_wheel(struct win_rtb_window *self, WPARAM wparam, LPARAM lparam)
 {
 	LOCK(self);
-	rtb_platform_mouse_wheel(RTB_WINDOW(self),
+	rtb__platform_mouse_wheel(RTB_WINDOW(self),
 			GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam),
 			GET_WHEEL_DELTA_WPARAM(wparam) / 120.f);
 	UNLOCK(self);

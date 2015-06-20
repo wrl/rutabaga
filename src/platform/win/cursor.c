@@ -30,13 +30,13 @@
 #include <rutabaga/platform.h>
 
 int64_t
-rtb__mouse_double_click_interval(struct rtb_window *rwin)
+rtb_mouse_double_click_interval(struct rtb_window *rwin)
 {
 	return GetDoubleClickTime() * 1000000;
 }
 
 void
-rtb__mouse_pointer_warp(struct rtb_window *rwin, int x, int y)
+rtb_mouse_pointer_warp(struct rtb_window *rwin, int x, int y)
 {
 	/* XXX: uh */
 }

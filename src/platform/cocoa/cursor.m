@@ -30,13 +30,13 @@
 #import <Cocoa/Cocoa.h>
 
 int64_t
-rtb__mouse_double_click_interval(struct rtb_window *win)
+rtb_mouse_double_click_interval(struct rtb_window *win)
 {
 	return [NSEvent doubleClickInterval] * 1e+09;
 }
 
 void
-rtb__mouse_pointer_warp(struct rtb_window *rwin, int x, int y)
+rtb_mouse_pointer_warp(struct rtb_window *rwin, int x, int y)
 {
 	/**
 	 * CGPoint warpPoint = CGPointMake(42, 42);

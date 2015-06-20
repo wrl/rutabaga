@@ -34,14 +34,14 @@
 #define FALLBACK_DOUBLE_CLICK_MS 300
 
 int64_t
-rtb__mouse_double_click_interval(struct rtb_window *win)
+rtb_mouse_double_click_interval(struct rtb_window *win)
 {
 	/* XXX: should get this from the desktop environment or Xdefaults */
 	return FALLBACK_DOUBLE_CLICK_MS * 1000000;
 }
 
 void
-rtb__mouse_pointer_warp(struct rtb_window *rwin, int x, int y)
+rtb_mouse_pointer_warp(struct rtb_window *rwin, int x, int y)
 {
 	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
 	struct rtb_mouse *m = &rwin->mouse;

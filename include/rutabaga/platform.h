@@ -38,16 +38,16 @@
  * mouse
  */
 
-void rtb_platform_mouse_press(struct rtb_window *,
+void rtb__platform_mouse_press(struct rtb_window *,
 		int buttons, int x, int y);
-void rtb_platform_mouse_release(struct rtb_window *,
+void rtb__platform_mouse_release(struct rtb_window *,
 		int buttons, int x, int y);
-void rtb_platform_mouse_motion(struct rtb_window *, int x, int y);
+void rtb__platform_mouse_motion(struct rtb_window *, int x, int y);
 
-void rtb_platform_mouse_wheel(struct rtb_window *, int x, int y, float delta);
+void rtb__platform_mouse_wheel(struct rtb_window *, int x, int y, float delta);
 
-void rtb_platform_mouse_enter_window(struct rtb_window *, int x, int y);
-void rtb_platform_mouse_leave_window(struct rtb_window *, int x, int y);
+void rtb__platform_mouse_enter_window(struct rtb_window *, int x, int y);
+void rtb__platform_mouse_leave_window(struct rtb_window *, int x, int y);
 
 /******************************
  * from rutabaga, to platform
@@ -59,7 +59,7 @@ void rtb_platform_mouse_leave_window(struct rtb_window *, int x, int y);
  *
  * will be called on every mouse click, so should be reasonably efficient.
  */
-int64_t rtb__mouse_double_click_interval(struct rtb_window *);
+int64_t rtb_mouse_double_click_interval(struct rtb_window *);
 
-void rtb__mouse_pointer_warp(struct rtb_window *, int x, int y);
+void rtb_mouse_pointer_warp(struct rtb_window *, int x, int y);
 void rtb_set_cursor(struct rtb_window *, rtb_mouse_cursor_t cursor);

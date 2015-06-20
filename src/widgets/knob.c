@@ -144,7 +144,7 @@ handle_drag(struct rtb_knob *self, const struct rtb_drag_event *e)
 
 	set_value_internal(self, new_value, 0);
 
-	rtb__mouse_pointer_warp(self->window, e->start.x, e->start.y);
+	rtb_mouse_pointer_warp(self->window, e->start.x, e->start.y);
 	return 1;
 }
 

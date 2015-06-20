@@ -196,7 +196,7 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 	delta /= ([e hasPreciseScrollingDeltas]) ? 9.f : 3.f;
 
 	LOCK;
-	rtb_platform_mouse_wheel(RTB_WINDOW(rtb_win), pt.x, pt.y, delta);
+	rtb__platform_mouse_wheel(RTB_WINDOW(rtb_win), pt.x, pt.y, delta);
 	UNLOCK;
 }
 
@@ -205,7 +205,7 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
 
 	LOCK;
-	rtb_platform_mouse_enter_window(RTB_WINDOW(rtb_win), pt.x, pt.y);
+	rtb__platform_mouse_enter_window(RTB_WINDOW(rtb_win), pt.x, pt.y);
 	UNLOCK;
 }
 
@@ -214,7 +214,7 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
 
 	LOCK;
-	rtb_platform_mouse_leave_window(RTB_WINDOW(rtb_win), pt.x, pt.y);
+	rtb__platform_mouse_leave_window(RTB_WINDOW(rtb_win), pt.x, pt.y);
 	UNLOCK;
 }
 
@@ -223,7 +223,7 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
 
 	LOCK;
-	rtb_platform_mouse_motion(RTB_WINDOW(rtb_win), pt.x, pt.y);
+	rtb__platform_mouse_motion(RTB_WINDOW(rtb_win), pt.x, pt.y);
 	UNLOCK;
 }
 
@@ -258,7 +258,7 @@ app_kit_button_to_rtb_button(NSInteger app_kit_button)
 	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
 
 	LOCK;
-	rtb_platform_mouse_press(RTB_WINDOW(rtb_win),
+	rtb__platform_mouse_press(RTB_WINDOW(rtb_win),
 			app_kit_button_to_rtb_button([e buttonNumber]), pt.x, pt.y);
 	UNLOCK;
 }
@@ -278,7 +278,7 @@ app_kit_button_to_rtb_button(NSInteger app_kit_button)
 	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
 
 	LOCK;
-	rtb_platform_mouse_release(RTB_WINDOW(rtb_win),
+	rtb__platform_mouse_release(RTB_WINDOW(rtb_win),
 			app_kit_button_to_rtb_button([e buttonNumber]), pt.x, pt.y);
 	UNLOCK;
 }
