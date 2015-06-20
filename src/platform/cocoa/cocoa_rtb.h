@@ -27,8 +27,8 @@
 #import <Cocoa/Cocoa.h>
 #include <CoreFoundation/CFRunLoop.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/window.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/window.h>
 
 struct cocoa_rtb_window;
 
