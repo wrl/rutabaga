@@ -51,11 +51,11 @@
  */
 
 static void
-draw_frame(struct win_rtb_window *self)
+draw_frame(struct win_rtb_window *self, int force)
 {
 	LOCK(self);
 
-	if (rtb_window_draw(RTB_WINDOW(self), 0))
+	if (rtb_window_draw(RTB_WINDOW(self), force))
 		SwapBuffers(self->dc);
 
 	UNLOCK(self);
@@ -99,7 +99,7 @@ handle_timer(struct win_rtb_window *self, int timer_id)
 	switch (timer_id) {
 	case WIN_RTB_FRAME_TIMER:
 		uv_run(&self->rtb->event_loop, UV_RUN_NOWAIT);
-		draw_frame(self);
+		draw_frame(self, 0);
 		break;
 
 	default:
@@ -253,7 +253,10 @@ win_rtb_handle_message(struct win_rtb_window *self,
 
 	case WM_PAINT:
 		if (self->in_size_move)
-			draw_frame(self);
+			draw_frame(self, 1);
+		else
+			self->dirty = 1;
+
 		ValidateRect(self->hwnd, NULL);
 		return 0;
 
