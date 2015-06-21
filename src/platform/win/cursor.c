@@ -29,20 +29,41 @@
 #include <rutabaga/rutabaga.h>
 #include <rutabaga/platform.h>
 
+#include "win_rtb.h"
+
 int64_t
-rtb_mouse_double_click_interval(struct rtb_window *rwin)
+rtb_mouse_double_click_interval(struct rtb_window *win)
 {
 	return GetDoubleClickTime() * 1000000;
 }
 
 void
-rtb_mouse_pointer_warp(struct rtb_window *rwin, int x, int y)
+rtb_mouse_pointer_warp(struct rtb_window *win, int x, int y)
 {
-	/* XXX: uh */
+	struct win_rtb_window *self = RTB_WINDOW_AS(win, win_rtb_window);
+	struct rtb_mouse *m = &win->mouse;
+	POINT pt;
+
+	/* we'll get recursively called from the rtb__platform_mouse_motion() at
+	 * the bottom of this function, so this is the termination condition to
+	 * prevent infinite recursion. */
+	if (x == m->x && y == m->y)
+		return;
+
+	pt.x = x;
+	pt.y = y;
+
+	ClientToScreen(self->hwnd, &pt);
+	SetCursorPos(pt.x, pt.y);
+
+	m->previous.x += x - m->x;
+	m->previous.y += y - m->y;
+
+	rtb__platform_mouse_motion(win, x, y);
 }
 
 void
-rtb_set_cursor(struct rtb_window *rwin, rtb_mouse_cursor_t cursor)
+rtb_set_cursor(struct rtb_window *win, rtb_mouse_cursor_t cursor)
 {
 	switch (cursor) {
 	case RTB_MOUSE_CURSOR_DEFAULT:
