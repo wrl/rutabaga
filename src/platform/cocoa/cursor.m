@@ -78,6 +78,21 @@ rtb_mouse_pointer_warp(struct rtb_window *win, int x, int y)
 }
 
 void
-rtb_set_cursor(struct rtb_window *rwin, rtb_mouse_cursor_t cursor)
+rtb_set_cursor(struct rtb_window *win, rtb_mouse_cursor_t cursor)
 {
+	struct cocoa_rtb_window *self = RTB_WINDOW_AS(win, cocoa_rtb_window);
+	struct cocoa_rtb *rtb = (void *) self->rtb;
+
+	switch (cursor) {
+	case RTB_MOUSE_CURSOR_DEFAULT:
+		[[NSCursor arrowCursor] set];
+		break;
+
+	case RTB_MOUSE_CURSOR_HIDDEN:
+		[rtb->invisible_cursor set];
+		break;
+
+	default:
+		return;
+	}
 }

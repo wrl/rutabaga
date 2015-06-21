@@ -304,10 +304,21 @@ app_kit_button_to_rtb_button(NSInteger app_kit_button)
  * rutabaga interface
  */
 
+static NSCursor *
+create_invisible_cursor(void)
+{
+	NSImage *image = [[NSImage alloc] initWithSize:NSMakeSize(1, 1)];
+	NSCursor *cursor = [[NSCursor alloc] initWithImage:image
+											   hotSpot:NSZeroPoint];
+	[image release];
+
+	return cursor;
+}
+
 struct rutabaga *
 window_impl_rtb_alloc(void)
 {
-	struct rutabaga *rtb = calloc(1, sizeof(*rtb));
+	struct cocoa_rtb *rtb = calloc(1, sizeof(*rtb));
 
 	if (!NSApp) {
 		[NSApplication sharedApplication];
@@ -315,12 +326,19 @@ window_impl_rtb_alloc(void)
 		[NSApp finishLaunching];
 	}
 
-	return rtb;
+
+	rtb->invisible_cursor = create_invisible_cursor();
+
+	return (void *) rtb;
 }
 
 void
-window_impl_rtb_free(struct rutabaga *rtb)
+window_impl_rtb_free(struct rutabaga *_rtb)
 {
+	struct cocoa_rtb *rtb = (void *) _rtb;
+
+	[rtb->invisible_cursor release];
+
 	free(rtb);
 }
 

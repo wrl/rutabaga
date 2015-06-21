@@ -30,6 +30,12 @@
 #include <rutabaga/rutabaga.h>
 #include <rutabaga/window.h>
 
+struct cocoa_rtb {
+	struct rutabaga rtb;
+
+	NSCursor *invisible_cursor;
+};
+
 struct cocoa_rtb_window;
 
 @interface RutabagaOpenGLContext : NSOpenGLContext
