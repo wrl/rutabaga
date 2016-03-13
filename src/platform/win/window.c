@@ -97,7 +97,7 @@ messageboxf(const wchar_t *title, const wchar_t *fmt, ...)
 static LRESULT CALLBACK
 win_rtb_wndproc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
-	struct win_rtb_window *self = GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	struct win_rtb_window *self = (void *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	LRESULT ret;
 
 	switch (message) {
