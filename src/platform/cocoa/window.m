@@ -149,19 +149,21 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 	reinit_tracking_area(self, tracking_area);
 }
 
-- (void) setFrame: (NSRect) frame
+- (void) setFrameSize: (NSSize) size
 {
-	NSRect backing;
-
-	[super setFrame:frame];
+	[super setFrameSize:size];
 
 	if (!rtb_win)
 		return;
 
-	backing = [self convertRectToBacking:frame];
+	/* XXX: only need this with setWantsBestResolutionOpenGLSurface,
+	 *      breaks without it specified. thanks, el cap.
 
-	rtb_win->w = backing.size.width;
-	rtb_win->h = backing.size.height;
+	size = [self convertSizeToBacking:size];
+	*/
+
+	rtb_win->w = size.width;
+	rtb_win->h = size.height;
 
 	LOCK;
 	[rtb_win->gl_ctx update];
