@@ -59,7 +59,8 @@ rtb_mouse_pointer_warp(struct rtb_window *rwin, int x, int y)
 }
 
 void
-rtb_set_cursor(struct rtb_window *rwin, rtb_mouse_cursor_t cursor)
+rtb__platform_set_cursor(struct rtb_window *rwin, struct rtb_mouse *mouse,
+		rtb_mouse_cursor_t cursor)
 {
 	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
 	struct xcb_rutabaga *xrtb = self->xrtb;

@@ -59,7 +59,8 @@ void rtb__platform_mouse_leave_window(struct rtb_window *, int x, int y);
  *
  * will be called on every mouse click, so should be reasonably efficient.
  */
-int64_t rtb_mouse_double_click_interval(struct rtb_window *);
+void rtb__platform_set_cursor(struct rtb_window *, struct rtb_mouse *,
+		rtb_mouse_cursor_t cursor);
 
+int64_t rtb_mouse_double_click_interval(struct rtb_window *);
 void rtb_mouse_pointer_warp(struct rtb_window *, int x, int y);
-void rtb_set_cursor(struct rtb_window *, rtb_mouse_cursor_t cursor);

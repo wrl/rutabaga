@@ -63,7 +63,8 @@ rtb_mouse_pointer_warp(struct rtb_window *win, int x, int y)
 }
 
 void
-rtb_set_cursor(struct rtb_window *win, rtb_mouse_cursor_t cursor)
+rtb__platform_set_cursor(struct rtb_window *win, struct rtb_mouse *mouse,
+		rtb_mouse_cursor_t cursor)
 {
 	switch (cursor) {
 	case RTB_MOUSE_CURSOR_DEFAULT:

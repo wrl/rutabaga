@@ -32,6 +32,7 @@
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/element.h"
 #include "rutabaga/window.h"
+#include "rutabaga/mouse.h"
 #include "rutabaga/render.h"
 #include "rutabaga/event.h"
 #include "rutabaga/style.h"
@@ -154,7 +155,8 @@ handle_mouse_down(struct rtb_knob *self, const struct rtb_mouse_event *e)
 	switch (e->button) {
 	case RTB_MOUSE_BUTTON1:
 	case RTB_MOUSE_BUTTON2:
-		rtb_set_cursor(self->window, RTB_MOUSE_CURSOR_HIDDEN);
+		rtb_mouse_set_cursor(self->window, &self->window->mouse,
+				RTB_MOUSE_CURSOR_HIDDEN);
 		return 1;
 
 	default:
@@ -240,7 +242,7 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 
 	case RTB_MOUSE_UP:
 	case RTB_DRAG_DROP:
-		rtb_set_cursor(self->window, RTB_MOUSE_CURSOR_DEFAULT);
+		rtb_mouse_unset_cursor(self->window, &self->window->mouse);
 		return 1;
 
 	default:

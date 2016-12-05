@@ -410,6 +410,8 @@ rtb_window_open_under(struct rutabaga *r, intptr_t parent,
 	self->rtb = r;
 	r->win = self;
 
+	self->mouse.current_cursor = RTB_MOUSE_CURSOR_DEFAULT;
+
 	return self;
 
 err_font:

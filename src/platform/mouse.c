@@ -432,3 +432,21 @@ rtb__platform_mouse_leave_window(struct rtb_window *win, int x, int y)
 	win->mouse.element_underneath = NULL;
 	win->mouse_in = 0;
 }
+
+/**
+ * public API
+ */
+
+void
+rtb_mouse_set_cursor(struct rtb_window *win, struct rtb_mouse *mouse,
+		rtb_mouse_cursor_t cursor)
+{
+	mouse->current_cursor = cursor;
+	rtb__platform_set_cursor(win, mouse, cursor);
+}
+
+void
+rtb_mouse_unset_cursor(struct rtb_window *win, struct rtb_mouse *mouse)
+{
+	rtb_mouse_set_cursor(win, mouse, RTB_MOUSE_CURSOR_DEFAULT);
+}

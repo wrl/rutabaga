@@ -119,5 +119,18 @@ struct rtb_mouse {
 		uint64_t last_click;
 		int click_count;
 	} button[RTB_MOUSE_BUTTON_MAX + 1];
+
 	rtb_mouse_button_mask_t buttons_down;
+	rtb_mouse_cursor_t current_cursor;
 };
+
+/**
+ * public API
+ */
+
+void
+rtb_mouse_set_cursor(struct rtb_window *, struct rtb_mouse *,
+		rtb_mouse_cursor_t cursor);
+
+void
+rtb_mouse_unset_cursor(struct rtb_window *, struct rtb_mouse *);

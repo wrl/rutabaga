@@ -78,7 +78,8 @@ rtb_mouse_pointer_warp(struct rtb_window *win, int x, int y)
 }
 
 void
-rtb_set_cursor(struct rtb_window *win, rtb_mouse_cursor_t cursor)
+rtb__platform_set_cursor(struct rtb_window *win, struct rtb_mouse *mouse,
+		rtb_mouse_cursor_t cursor)
 {
 	struct cocoa_rtb_window *self = RTB_WINDOW_AS(win, cocoa_rtb_window);
 	struct cocoa_rtb *rtb = (void *) self->rtb;
