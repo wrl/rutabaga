@@ -80,6 +80,8 @@ def build(bld):
 
     obj('container.c')
 
+    obj('widgets/value.c')
+
     obj('widgets/label.c')
     obj('widgets/button.c')
     obj('widgets/knob.c')

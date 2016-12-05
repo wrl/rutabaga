@@ -70,48 +70,20 @@ draw(struct rtb_element *elem)
 }
 
 /**
- * event dispatching
+ * event handling
  */
 
-static int
-dispatch_value_change_event(struct rtb_knob *self, int synthetic)
-{
-	struct rtb_knob_event event = {
-		.type   = KNOB_VALUE_CHANGE,
-		.source = synthetic ? RTB_EVENT_SYNTHETIC : RTB_EVENT_GENUINE,
-		.value  =
-			(self->value * (self->max - self->min)) + self->min,
-	};
-
-	return rtb_elem_deliver_event(RTB_ELEMENT(self), RTB_EVENT(&event));
-}
-
 static void
-set_value_internal(struct rtb_knob *self, float new_value, int synthetic)
+set_value_hook(struct rtb_element *elem)
 {
-	self->value = fmin(fmax(new_value, 0.f), 1.f);
+	SELF_FROM(elem);
 
 	mat4_set_rotation(&self->modelview,
 			MIN_DEGREES + (self->value * DEGREE_RANGE),
 			0.f, 0.f, 1.f);
 
 	rtb_elem_mark_dirty(RTB_ELEMENT(self));
-
-	if (self->state != RTB_STATE_UNATTACHED)
-		dispatch_value_change_event(self, synthetic);
 }
-
-static void
-set_value_internal_uncooked(struct rtb_knob *self, float new_value,
-		int synthetic)
-{
-	float range = self->max - self->min;
-	set_value_internal(self, (new_value - self->min) / range, synthetic);
-}
-
-/**
- * event handling
- */
 
 static int
 handle_drag(struct rtb_knob *self, const struct rtb_drag_event *e)
@@ -143,7 +115,8 @@ handle_drag(struct rtb_knob *self, const struct rtb_drag_event *e)
 
 	new_value += -e->delta.y * mult;
 
-	set_value_internal(self, new_value, 0);
+	rtb__value_element_set_value(RTB_VALUE_ELEMENT(self),
+			new_value, 0);
 
 	rtb_mouse_pointer_warp(self->window, e->start.x, e->start.y);
 	return 1;
@@ -168,7 +141,8 @@ static int
 handle_mouse_click(struct rtb_knob *self, const struct rtb_mouse_event *e)
 {
 	if (e->button == RTB_MOUSE_BUTTON1 && (e->click_number & 1)) {
-		set_value_internal_uncooked(self, self->origin, 0);
+		rtb__value_element_set_value_uncooked(RTB_VALUE_ELEMENT(self),
+				self->origin, 0);
 		return 1;
 	}
 
@@ -186,7 +160,8 @@ handle_mouse_wheel(struct rtb_knob *self, const struct rtb_mouse_event *e)
 		mult = DELTA_VALUE_STEP_COARSE;
 
 	new_value = self->value + (e->wheel.delta * mult);
-	set_value_internal(self, new_value, 0);
+	rtb__value_element_set_value(RTB_VALUE_ELEMENT(self),
+			new_value, 0);
 	return 1;
 }
 
@@ -205,12 +180,14 @@ handle_key(struct rtb_knob *self, const struct rtb_key_event *e)
 	switch (e->keysym) {
 	case RTB_KEY_UP:
 	case RTB_KEY_NUMPAD_UP:
-		set_value_internal(self, self->value + step, 0);
+		rtb__value_element_set_value(RTB_VALUE_ELEMENT(self),
+				self->value + step, 0);
 		return 1;
 
 	case RTB_KEY_DOWN:
 	case RTB_KEY_NUMPAD_DOWN:
-		set_value_internal(self, self->value - step, 0);
+		rtb__value_element_set_value(RTB_VALUE_ELEMENT(self),
+				self->value - step, 0);
 		return 1;
 
 	default:
@@ -262,7 +239,7 @@ attached(struct rtb_element *elem,
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.knob");
 
-	set_value_internal(self, self->value, 1);
+	set_value_hook(elem);
 }
 
 static void
@@ -300,13 +277,14 @@ reflow(struct rtb_element *elem,
 void
 rtb_knob_set_value(struct rtb_knob *self, float new_value)
 {
-	set_value_internal_uncooked(self, new_value, 1);
+	rtb__value_element_set_value_uncooked(RTB_VALUE_ELEMENT(self),
+			new_value, 1);
 }
 
 int
 rtb_knob_init(struct rtb_knob *self)
 {
-	if (RTB_SUBCLASS(RTB_ELEMENT(self), rtb_elem_init, &super))
+	if (RTB_SUBCLASS(RTB_VALUE_ELEMENT(self), rtb_value_element_init, &super))
 		return -1;
 
 	self->origin = self->value = 0.f;
@@ -318,6 +296,8 @@ rtb_knob_init(struct rtb_knob *self)
 	self->attached = attached;
 	self->restyle  = restyle;
 	self->reflow   = reflow;
+
+	self->set_value_hook = set_value_hook;
 
 	rtb_stylequad_init(&self->rotor);
 

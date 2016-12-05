@@ -28,34 +28,50 @@
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/element.h"
-#include "rutabaga/stylequad.h"
-#include "rutabaga/event.h"
-#include "rutabaga/mat4.h"
 
-#include "rutabaga/widgets/value.h"
-
-#define RTB_KNOB(x) RTB_UPCAST(x, rtb_knob)
+#define RTB_VALUE_ELEMENT(x) RTB_UPCAST(x, rtb_value_element)
+#define RTB_VALUE_ELEMENT_AS(x, type) RTB_DOWNCAST(x, type, rtb_value_element)
 
 typedef enum {
-	KNOB_VALUE_CHANGE = 1
-} rtb_knob_event_type_t;
+	RTB_VALUE_CHANGE = 1
+} rtb_value_event_type_t;
 
-struct rtb_knob_event {
+struct rtb_value_event {
 	RTB_INHERIT(rtb_event);
 	float value;
 };
 
-struct rtb_knob {
-	RTB_INHERIT(rtb_value_element);
+struct rtb_value_element {
+	RTB_INHERIT(rtb_element);
+
+	/* public *********************************/
+	float origin;
+	float min;
+	float max;
 
 	/* private ********************************/
-	struct rtb_stylequad rotor;
-	mat4 modelview;
+	float value;
+
+	void (*set_value_hook)(struct rtb_element *);
 };
 
-void rtb_knob_set_value(struct rtb_knob *, float new_value);
+/**
+ * protected
+ */
 
-int rtb_knob_init(struct rtb_knob *);
-void rtb_knob_fini(struct rtb_knob *);
-struct rtb_knob *rtb_knob_new(void);
-void rtb_knob_free(struct rtb_knob *);
+void
+rtb__value_element_set_value(struct rtb_value_element *,
+		float new_value, int synthetic);
+
+void
+rtb__value_element_set_value_uncooked(struct rtb_value_element *self,
+		float new_value, int synthetic);
+
+/**
+ * public
+ */
+void rtb_value_element_set_value(struct rtb_value_element *,
+		float new_value);
+
+int rtb_value_element_init(struct rtb_value_element *);
+void rtb_value_element_fini(struct rtb_value_element *);
