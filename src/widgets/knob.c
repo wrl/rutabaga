@@ -274,13 +274,6 @@ reflow(struct rtb_element *elem,
  * public API
  */
 
-void
-rtb_knob_set_value(struct rtb_knob *self, float new_value)
-{
-	rtb__value_element_set_value_uncooked(RTB_VALUE_ELEMENT(self),
-			new_value, 1);
-}
-
 int
 rtb_knob_init(struct rtb_knob *self)
 {

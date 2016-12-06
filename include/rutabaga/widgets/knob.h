@@ -53,8 +53,6 @@ struct rtb_knob {
 	mat4 modelview;
 };
 
-void rtb_knob_set_value(struct rtb_knob *, float new_value);
-
 int rtb_knob_init(struct rtb_knob *);
 void rtb_knob_fini(struct rtb_knob *);
 struct rtb_knob *rtb_knob_new(void);
