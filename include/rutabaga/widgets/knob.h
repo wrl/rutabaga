@@ -36,15 +36,6 @@
 
 #define RTB_KNOB(x) RTB_UPCAST(x, rtb_knob)
 
-typedef enum {
-	KNOB_VALUE_CHANGE = 1
-} rtb_knob_event_type_t;
-
-struct rtb_knob_event {
-	RTB_INHERIT(rtb_event);
-	float value;
-};
-
 struct rtb_knob {
 	RTB_INHERIT(rtb_value_element);
 
