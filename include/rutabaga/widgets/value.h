@@ -74,6 +74,10 @@ rtb__value_element_set_value_uncooked(struct rtb_value_element *self,
 /**
  * public
  */
+
+void rtb_value_element_set_normalised_value(struct rtb_value_element *,
+		float new_value);
+
 void rtb_value_element_set_value(struct rtb_value_element *,
 		float new_value);
 

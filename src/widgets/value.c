@@ -126,6 +126,13 @@ rtb__value_element_set_value_uncooked(struct rtb_value_element *self,
  */
 
 void
+rtb_value_element_set_normalised_value(struct rtb_value_element *self,
+		float new_value)
+{
+	rtb__value_element_set_normalised_value(self, new_value, 1);
+}
+
+void
 rtb_value_element_set_value(struct rtb_value_element *self, float new_value)
 {
 	rtb__value_element_set_value_uncooked(self, new_value, 1);
