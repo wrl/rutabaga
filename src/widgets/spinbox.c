@@ -207,7 +207,7 @@ set_value_hook(struct rtb_element *elem)
 	SELF_FROM(elem);
 	char buf[32];
 
-	snprintf(buf, sizeof(buf), "%.2f", self->value);
+	snprintf(buf, sizeof(buf), self->format_string, self->value);
 	rtb_label_set_text(&self->value_label, buf);
 }
 
@@ -241,6 +241,8 @@ rtb_spinbox_init(struct rtb_spinbox *self)
 	self->layout_cb = rtb_layout_hpack_center;
 
 	self->set_value_hook = set_value_hook;
+
+	self->format_string = "%.2f";
 
 	rtb_label_init(&self->value_label);
 	rtb_elem_add_child(RTB_ELEMENT(self), RTB_ELEMENT(&self->value_label),

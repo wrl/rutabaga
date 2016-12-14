@@ -69,7 +69,7 @@ static rtb_utf8_t *rlabels[] = {
 
 static struct rtb_button *last_button = NULL;
 static struct rtb_text_input *input;
-static struct rtb_spinbox *spinbox;
+static struct rtb_spinbox *spinboxes[2];
 static struct rtb_label time_label;
 static float speed = 1.f;
 
@@ -284,14 +284,29 @@ add_input(struct rutabaga *rtb, rtb_container_t *root)
 void
 add_spinbox(struct rutabaga *rtb, rtb_container_t *root)
 {
-	spinbox = rtb_spinbox_new();
+	rtb_container_t *container = rtb_container_new();
 
-	spinbox->min    = -12.f;
-	spinbox->max    = 12.f;
-	spinbox->origin = 0.f;
-	spinbox->granularity = 1.f;
+	container->size_cb = rtb_size_hfit_children;
+	container->layout_cb = rtb_layout_hpack_left;
 
-	rtb_elem_add_child(root, RTB_ELEMENT(spinbox), RTB_ADD_TAIL);
+	spinboxes[0] = rtb_spinbox_new();
+	spinboxes[1] = rtb_spinbox_new();
+
+	spinboxes[0]->min    = -12.f;
+	spinboxes[0]->max    = 12.f;
+	spinboxes[0]->origin = 0.f;
+	spinboxes[0]->granularity = .05f;
+
+	spinboxes[1]->min    = -12.f;
+	spinboxes[1]->max    = 12.f;
+	spinboxes[1]->origin = 0.f;
+	spinboxes[1]->granularity = 1.f;
+	spinboxes[1]->format_string = "%+.0f";
+
+	rtb_elem_add_child(container, RTB_ELEMENT(spinboxes[0]), RTB_ADD_TAIL);
+	rtb_elem_add_child(container, RTB_ELEMENT(spinboxes[1]), RTB_ADD_TAIL);
+
+	rtb_elem_add_child(root, container, RTB_ADD_TAIL);
 }
 
 static int

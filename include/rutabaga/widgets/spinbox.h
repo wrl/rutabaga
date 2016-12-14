@@ -38,6 +38,9 @@
 struct rtb_spinbox {
 	RTB_INHERIT(rtb_value_element);
 
+	/* public *********************************/
+	const char *format_string;
+
 	/* private ********************************/
 	struct rtb_label value_label;
 };
