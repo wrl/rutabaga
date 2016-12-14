@@ -69,7 +69,14 @@ attached(struct rtb_element *elem,
 	SELF_FROM(elem);
 
 	super.attached(elem, parent, window);
-	rtb__value_element_set_value_uncooked(self, self->origin, 1);
+
+	rtb__value_element_set_value_uncooked(self,
+		(self->normalised_value == -1.f) ? self->origin : self->value, 1);
+
+	if (self->normalised_value == -1.f)
+		rtb__value_element_set_value_uncooked(self, self->origin, 1);
+	else
+		rtb__value_element_set_value_uncooked(self, self->value, 1);
 }
 
 /**
@@ -132,10 +139,14 @@ rtb_value_element_init(struct rtb_value_element *self)
 
 	self->attached = attached;
 
-	self->normalised_value =
-		self->value        =
-		self->origin       =
-		self->granularity  = 0.f;
+	self->granularity  =
+		self->value    =
+		self->origin   = 0.f;
+
+	/* -1.f is a special value indicating that no user/client code has
+	 * not modified the value in-between creating the element and window
+	 * initialisation. */
+	self->normalised_value = -1.f;
 
 	self->min = 0.f;
 	self->max = 1.f;
