@@ -40,6 +40,7 @@
 #include "rutabaga/widgets/button.h"
 #include "rutabaga/widgets/text-input.h"
 #include "rutabaga/widgets/knob.h"
+#include "rutabaga/widgets/spinbox.h"
 
 #define ARRAY_LENGTH(a) (sizeof(a) / sizeof(*a))
 
@@ -68,6 +69,7 @@ static rtb_utf8_t *rlabels[] = {
 
 static struct rtb_button *last_button = NULL;
 static struct rtb_text_input *input;
+static struct rtb_spinbox *spinbox;
 static struct rtb_label time_label;
 static float speed = 1.f;
 
@@ -279,6 +281,19 @@ add_input(struct rutabaga *rtb, rtb_container_t *root)
 	rtb_elem_add_child(root, RTB_ELEMENT(input), RTB_ADD_TAIL);
 }
 
+void
+add_spinbox(struct rutabaga *rtb, rtb_container_t *root)
+{
+	spinbox = rtb_spinbox_new();
+
+	spinbox->min    = -12.f;
+	spinbox->max    = 12.f;
+	spinbox->origin = 0.f;
+	spinbox->granularity = 1.f;
+
+	rtb_elem_add_child(root, RTB_ELEMENT(spinbox), RTB_ADD_TAIL);
+}
+
 static int
 handle_key_press(struct rtb_element *victim,
 		const struct rtb_event *e, void *ctx)
@@ -401,6 +416,7 @@ int main(int argc, char **argv)
 	distribute_demo(RTB_ELEMENT(delicious->win));
 	setup_ui(RTB_ELEMENT(delicious->win));
 	add_input(delicious, RTB_ELEMENT(delicious->win));
+	add_spinbox(delicious, RTB_ELEMENT(delicious->win));
 
 	init_timer();
 	rtb_event_loop(delicious);

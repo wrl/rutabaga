@@ -31,67 +31,34 @@
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/element.h"
-#include "rutabaga/window.h"
-#include "rutabaga/mouse.h"
-#include "rutabaga/render.h"
+#include "rutabaga/layout.h"
 #include "rutabaga/event.h"
-#include "rutabaga/style.h"
-#include "rutabaga/keyboard.h"
+#include "rutabaga/mouse.h"
 #include "rutabaga/platform.h"
 
-#include "rutabaga/widgets/knob.h"
+#include "rutabaga/widgets/spinbox.h"
 
 #include "rtb_private/util.h"
 
 #define SELF_FROM(elem) \
-	struct rtb_knob *self = RTB_ELEMENT_AS(elem, rtb_knob)
-
-#define MIN_DEGREES 35.f
-#define MAX_DEGREES (360.f - MIN_DEGREES)
-#define DEGREE_RANGE (MAX_DEGREES - MIN_DEGREES)
-
-/* would be cool to have this be like a smoothed equation or smth */
-#define DELTA_VALUE_STEP_COARSE	.005f
-#define DELTA_VALUE_STEP_FINE	.0005f
+	struct rtb_spinbox *self = RTB_ELEMENT_AS(elem, rtb_spinbox)
 
 static struct rtb_element_implementation super;
 
-/**
- * drawing
- */
-
-static void
-draw(struct rtb_element *elem)
-{
-	SELF_FROM(elem);
-
-	super.draw(elem);
-	rtb_stylequad_draw_with_modelview(&self->rotor, elem, &self->modelview);
-}
+#define DELTA_VALUE_STEP_COARSE	.005f
+#define DELTA_VALUE_STEP_FINE	.0005f
 
 /**
  * event handling
  */
 
-static void
-set_value_hook(struct rtb_element *elem)
-{
-	SELF_FROM(elem);
-
-	mat4_set_rotation(&self->modelview,
-			MIN_DEGREES + (self->normalised_value * DEGREE_RANGE),
-			0.f, 0.f, 1.f);
-
-	rtb_elem_mark_dirty(RTB_ELEMENT(self));
-}
-
 static int
-handle_drag(struct rtb_knob *self, const struct rtb_drag_event *e)
+handle_drag(struct rtb_spinbox *self, const struct rtb_drag_event *e)
 {
 	float new_value;
 	float mult;
 
-	if (e->target != RTB_ELEMENT(self))
+	if (!rtb_elem_is_in_tree(RTB_ELEMENT(self), e->target))
 		return 0;
 
 	new_value = self->normalised_value;
@@ -123,7 +90,7 @@ handle_drag(struct rtb_knob *self, const struct rtb_drag_event *e)
 }
 
 static int
-handle_mouse_down(struct rtb_knob *self, const struct rtb_mouse_event *e)
+handle_mouse_down(struct rtb_spinbox *self, const struct rtb_mouse_event *e)
 {
 	switch (e->button) {
 	case RTB_MOUSE_BUTTON1:
@@ -138,7 +105,7 @@ handle_mouse_down(struct rtb_knob *self, const struct rtb_mouse_event *e)
 }
 
 static int
-handle_mouse_click(struct rtb_knob *self, const struct rtb_mouse_event *e)
+handle_mouse_click(struct rtb_spinbox *self, const struct rtb_mouse_event *e)
 {
 	if (e->button == RTB_MOUSE_BUTTON1 && (e->click_number & 1)) {
 		rtb__value_element_set_value_uncooked(RTB_VALUE_ELEMENT(self),
@@ -150,7 +117,7 @@ handle_mouse_click(struct rtb_knob *self, const struct rtb_mouse_event *e)
 }
 
 static int
-handle_mouse_wheel(struct rtb_knob *self, const struct rtb_mouse_event *e)
+handle_mouse_wheel(struct rtb_spinbox *self, const struct rtb_mouse_event *e)
 {
 	float new_value, mult;
 
@@ -166,7 +133,7 @@ handle_mouse_wheel(struct rtb_knob *self, const struct rtb_mouse_event *e)
 }
 
 static int
-handle_key(struct rtb_knob *self, const struct rtb_key_event *e)
+handle_key(struct rtb_spinbox *self, const struct rtb_key_event *e)
 {
 	float step;
 
@@ -229,6 +196,21 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 	return 0;
 }
 
+
+/**
+ * internal API hooks
+ */
+
+static void
+set_value_hook(struct rtb_element *elem)
+{
+	SELF_FROM(elem);
+	char buf[32];
+
+	snprintf(buf, sizeof(buf), "%.2f", self->value);
+	rtb_label_set_text(&self->value_label, buf);
+}
+
 static void
 attached(struct rtb_element *elem,
 		struct rtb_element *parent, struct rtb_window *window)
@@ -237,37 +219,9 @@ attached(struct rtb_element *elem,
 
 	super.attached(elem, parent, window);
 	self->type = rtb_type_ref(window, self->type,
-			"net.illest.rutabaga.widgets.knob");
+			"net.illest.rutabaga.widgets.spinbox");
 
 	set_value_hook(elem);
-}
-
-static void
-restyle(struct rtb_element *elem)
-{
-	SELF_FROM(elem);
-
-	const struct rtb_style_property_definition *prop;
-	super.restyle(elem);
-
-	prop = rtb_style_query_prop(elem,
-			"-rtb-knob-rotor", RTB_STYLE_PROP_TEXTURE, 0);
-	if (prop &&
-			!rtb_stylequad_set_background_image(&self->rotor, &prop->texture))
-		rtb_elem_mark_dirty(elem);
-}
-
-static int
-reflow(struct rtb_element *elem,
-		struct rtb_element *instigator, rtb_ev_direction_t direction)
-{
-	SELF_FROM(elem);
-
-	if (!super.reflow(elem, instigator, direction))
-		return 0;
-
-	rtb_stylequad_update_geometry(&self->rotor, &self->rect);
-	return 1;
 }
 
 /**
@@ -275,42 +229,45 @@ reflow(struct rtb_element *elem,
  */
 
 int
-rtb_knob_init(struct rtb_knob *self)
+rtb_spinbox_init(struct rtb_spinbox *self)
 {
 	if (RTB_SUBCLASS(RTB_VALUE_ELEMENT(self), rtb_value_element_init, &super))
 		return -1;
 
-	self->draw     = draw;
-	self->on_event = on_event;
 	self->attached = attached;
-	self->restyle  = restyle;
-	self->reflow   = reflow;
+	self->on_event = on_event;
+
+	self->size_cb   = rtb_size_hfit_children;
+	self->layout_cb = rtb_layout_hpack_center;
 
 	self->set_value_hook = set_value_hook;
 
-	rtb_stylequad_init(&self->rotor);
+	rtb_label_init(&self->value_label);
+	rtb_elem_add_child(RTB_ELEMENT(self), RTB_ELEMENT(&self->value_label),
+			RTB_ADD_TAIL);
 
+	self->value_label.align = RTB_ALIGN_CENTER | RTB_ALIGN_MIDDLE;
 	return 0;
 }
 
 void
-rtb_knob_fini(struct rtb_knob *self)
+rtb_spinbox_fini(struct rtb_spinbox *self)
 {
-	rtb_stylequad_fini(&self->rotor);
+	rtb_label_fini(&self->value_label);
 	rtb_elem_fini(RTB_ELEMENT(self));
 }
 
-struct rtb_knob *
-rtb_knob_new()
+struct rtb_spinbox *
+rtb_spinbox_new()
 {
-	struct rtb_knob *self = calloc(1, sizeof(struct rtb_knob));
-	rtb_knob_init(self);
+	struct rtb_spinbox *self = calloc(1, sizeof(struct rtb_spinbox));
+	rtb_spinbox_init(self);
 	return self;
 }
 
 void
-rtb_knob_free(struct rtb_knob *self)
+rtb_spinbox_free(struct rtb_spinbox *self)
 {
-	rtb_knob_fini(self);
+	rtb_spinbox_fini(self);
 	free(self);
 }

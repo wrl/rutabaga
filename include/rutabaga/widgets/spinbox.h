@@ -28,54 +28,21 @@
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/element.h"
+#include "rutabaga/event.h"
 
-#define RTB_VALUE_ELEMENT(x) RTB_UPCAST(x, rtb_value_element)
-#define RTB_VALUE_ELEMENT_AS(x, type) RTB_DOWNCAST(x, type, rtb_value_element)
+#include "rutabaga/widgets/value.h"
+#include "rutabaga/widgets/label.h"
 
-typedef enum {
-	RTB_VALUE_CHANGE = 1
-} rtb_value_event_type_t;
+#define RTB_SPINBOX(x) RTB_UPCAST(x, rtb_spinbox)
 
-struct rtb_value_event {
-	RTB_INHERIT(rtb_event);
-	float value;
-};
-
-struct rtb_value_element {
-	RTB_INHERIT(rtb_element);
-
-	/* public *********************************/
-	float origin;
-	float min;
-	float max;
-	float granularity;
-
-	/* read-only ******************************/
-	float value;
+struct rtb_spinbox {
+	RTB_INHERIT(rtb_value_element);
 
 	/* private ********************************/
-	float normalised_value;
-
-	void (*set_value_hook)(struct rtb_element *);
+	struct rtb_label value_label;
 };
 
-/**
- * protected
- */
-
-void
-rtb__value_element_set_normalised_value(struct rtb_value_element *,
-		float new_normalised_value, int synthetic);
-
-void
-rtb__value_element_set_value_uncooked(struct rtb_value_element *self,
-		float new_value, int synthetic);
-
-/**
- * public
- */
-void rtb_value_element_set_value(struct rtb_value_element *,
-		float new_value);
-
-int rtb_value_element_init(struct rtb_value_element *);
-void rtb_value_element_fini(struct rtb_value_element *);
+int rtb_spinbox_init(struct rtb_spinbox *);
+void rtb_spinbox_fini(struct rtb_spinbox *);
+struct rtb_spinbox *rtb_spinbox_new(void);
+void rtb_spinbox_free(struct rtb_spinbox *);

@@ -40,7 +40,7 @@
 #define SELF_FROM(elem) \
 	struct rtb_value_element *self = RTB_ELEMENT_AS(elem, rtb_value_element)
 
-struct rtb_element_implementation super;
+static struct rtb_element_implementation super;
 
 /**
  * event dispatching
@@ -52,11 +52,24 @@ dispatch_value_change_event(struct rtb_value_element *self, int synthetic)
 	struct rtb_value_event event = {
 		.type   = RTB_VALUE_CHANGE,
 		.source = synthetic ? RTB_EVENT_SYNTHETIC : RTB_EVENT_GENUINE,
-		.value  =
-			(self->value * (self->max - self->min)) + self->min,
+		.value  = self->value
 	};
 
 	return rtb_elem_deliver_event(RTB_ELEMENT(self), RTB_EVENT(&event));
+}
+
+/**
+ * element impl
+ */
+
+static void
+attached(struct rtb_element *elem,
+		struct rtb_element *parent, struct rtb_window *window)
+{
+	SELF_FROM(elem);
+
+	super.attached(elem, parent, window);
+	rtb__value_element_set_value_uncooked(self, self->origin, 1);
 }
 
 /**
@@ -64,10 +77,25 @@ dispatch_value_change_event(struct rtb_value_element *self, int synthetic)
  */
 
 void
-rtb__value_element_set_value(struct rtb_value_element *self,
-		float new_value, int synthetic)
+rtb__value_element_set_normalised_value(struct rtb_value_element *self,
+		float new_normalised_value, int synthetic)
 {
-	self->value = fmin(fmax(new_value, 0.f), 1.f);
+	float new_value;
+
+	new_normalised_value = fmin(fmax(new_normalised_value, 0.f), 1.f);
+	self->normalised_value = new_normalised_value;
+
+	new_value = self->min +
+		(new_normalised_value * (self->max - self->min));
+
+	if (self->granularity != 0.f) {
+		new_value = floorf(new_value / self->granularity) * self->granularity;
+
+		if (new_value == self->value)
+			return;
+	}
+
+	self->value = new_value;
 
 	if (self->set_value_hook)
 		self->set_value_hook(RTB_ELEMENT(self));
@@ -81,7 +109,7 @@ rtb__value_element_set_value_uncooked(struct rtb_value_element *self,
 		float new_value, int synthetic)
 {
 	float range = self->max - self->min;
-	rtb__value_element_set_value(self,
+	rtb__value_element_set_normalised_value(self,
 			(new_value - self->min) / range, synthetic);
 }
 
@@ -102,7 +130,13 @@ rtb_value_element_init(struct rtb_value_element *self)
 	if (RTB_SUBCLASS(RTB_ELEMENT(self), rtb_elem_init, &super))
 		return -1;
 
-	self->origin = self->value = 0.f;
+	self->attached = attached;
+
+	self->normalised_value =
+		self->value        =
+		self->origin       =
+		self->granularity  = 0.f;
+
 	self->min = 0.f;
 	self->max = 1.f;
 

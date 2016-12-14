@@ -28,8 +28,6 @@
 
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/element.h"
-#include "rutabaga/stylequad.h"
-#include "rutabaga/event.h"
 #include "rutabaga/mat4.h"
 
 #include "rutabaga/widgets/value.h"

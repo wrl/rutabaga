@@ -59,6 +59,17 @@ button:focus {
 }
 
 /**
+ * spinbox
+ */
+
+spinbox {
+	min-width:  30px;
+	min-height: 30px;
+
+	border-image: url('assets/text_input_normal.tga') 4px;
+}
+
+/**
  * knob
  */
 

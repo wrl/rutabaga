@@ -5,7 +5,10 @@ top = '..'
 def build_uv(ctx):
 	from_gyp = ctx.target_from_gyp('libuv/uv.gyp', 'libuv')
 
-	extra_cflags = ['-Wno-cast-align']
+	extra_cflags = [
+        '-Wno-cast-align',
+        '-Wno-varargs'
+    ]
 
 	if ctx.env.DEST_OS == 'win32':
 		import re
