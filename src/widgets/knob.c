@@ -118,7 +118,10 @@ handle_drag(struct rtb_knob *self, const struct rtb_drag_event *e)
 	rtb__value_element_set_normalised_value(RTB_VALUE_ELEMENT(self),
 			new_value, 0);
 
-	rtb_mouse_pointer_warp(self->window, e->start.x, e->start.y);
+	if (fabsf(e->cursor.x - e->start.x) > 1.f ||
+			fabsf(e->cursor.y - e->start.y) > 1.f)
+		rtb_mouse_pointer_warp(self->window, e->start.x, e->start.y);
+
 	return 1;
 }
 
@@ -198,12 +201,13 @@ handle_key(struct rtb_knob *self, const struct rtb_key_event *e)
 static int
 on_event(struct rtb_element *elem, const struct rtb_event *e)
 {
+	const struct rtb_drag_event *drag_event = RTB_EVENT_AS(e, rtb_drag_event);
 	SELF_FROM(elem);
 
 	switch (e->type) {
 	case RTB_DRAG_START:
 	case RTB_DRAG_MOTION:
-		return handle_drag(self, RTB_EVENT_AS(e, rtb_drag_event));
+		return handle_drag(self, drag_event);
 
 	case RTB_MOUSE_DOWN:
 		return handle_mouse_down(self, RTB_EVENT_AS(e, rtb_mouse_event));
@@ -217,8 +221,12 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 	case RTB_KEY_PRESS:
 		return handle_key(self, RTB_EVENT_AS(e, rtb_key_event));
 
-	case RTB_MOUSE_UP:
 	case RTB_DRAG_DROP:
+		rtb_mouse_pointer_warp(self->window,
+				drag_event->start.x, drag_event->start.y);
+		/* fall-through */
+
+	case RTB_MOUSE_UP:
 		rtb_mouse_unset_cursor(self->window, &self->window->mouse);
 		return 1;
 
