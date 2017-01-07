@@ -58,15 +58,9 @@ rtb_mouse_pointer_warp(struct rtb_window *win, int x, int y)
 	rect = [self->view.window
 		convertRectToScreen:NSMakeRect(point.x, point.y, 0.0, 0.0)];
 
-	/* we've got a screen-space coord. let's convert to global space. */
-
-	screen_frame = self->view.window.screen.frame;
-
 	/* global space is top-left origin, so we need to flip y. */
-	rect.origin.y = screen_frame.size.height - rect.origin.y;
-
-	rect.origin.x += screen_frame.origin.x;
-	rect.origin.y += screen_frame.origin.y;
+	screen_frame = [[[NSScreen screens] objectAtIndex:0] frame];
+	rect.origin.y = NSMaxY(screen_frame) - NSMaxY(rect);
 
 	CGWarpMouseCursorPosition(NSPointToCGPoint(rect.origin));
 	CGAssociateMouseAndMouseCursorPosition(true);
