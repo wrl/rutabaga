@@ -52,6 +52,12 @@ typedef enum {
 } rtb_mouse_button_mask_t;
 
 typedef enum {
+	RTB_MOUSE_BUTTON_STATE_UP,
+	RTB_MOUSE_BUTTON_STATE_DOWN,
+	RTB_MOUSE_BUTTON_STATE_DRAG
+} rtb_mouse_button_state_t;
+
+typedef enum {
 	RTB_MOUSE_CURSOR_DEFAULT,
 	RTB_MOUSE_CURSOR_HIDDEN
 } rtb_mouse_cursor_t;
@@ -70,7 +76,8 @@ struct rtb_mouse_event {
 	union {
 		struct {
 			rtb_mouse_buttons_t button;
-			
+			rtb_mouse_button_state_t button_state;
+
 			/* counts from 0, so 0 is the first click, 1 is a double
 			 * click, etc. */
 			int click_number;
@@ -106,15 +113,9 @@ struct rtb_mouse {
 	struct rtb_element *element_underneath;
 
 	struct rtb_mouse_button {
+		rtb_mouse_button_state_t state;
 		struct rtb_point drag_start;
-
 		struct rtb_element *target;
-
-		enum {
-			RTB_MOUSE_BUTTON_STATE_UP,
-			RTB_MOUSE_BUTTON_STATE_DOWN,
-			RTB_MOUSE_BUTTON_STATE_DRAG
-		} state;
 
 		uint64_t last_click;
 		int click_count;

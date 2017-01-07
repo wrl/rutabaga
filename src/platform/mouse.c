@@ -141,7 +141,8 @@ dispatch_drag_leave(struct rtb_window *window,
 
 static struct rtb_element *
 dispatch_click_event(struct rtb_window *window,
-		struct rtb_element *target, int button, int x, int y)
+		struct rtb_element *target, int button,
+		rtb_mouse_button_state_t button_state, int x, int y)
 {
 	struct rtb_mouse_event ev = {
 		.type = RTB_MOUSE_CLICK,
@@ -151,6 +152,8 @@ dispatch_click_event(struct rtb_window *window,
 		.mod_keys = rtb_get_modkeys(window),
 
 		.button = button,
+		.button_state = button_state,
+
 		.click_number = window->mouse.button[button].click_count,
 
 		.cursor = {
@@ -218,7 +221,7 @@ mouse_up(struct rtb_window *window, struct rtb_element *target,
 			b->click_count = 0;
 
 		b->last_click = now;
-		dispatch_click_event(window, target, button, x, y);
+		dispatch_click_event(window, target, button, b->state, x, y);
 	} else if (b->state == RTB_MOUSE_BUTTON_STATE_DRAG) {
 		drag_delta.w = x - mouse->previous.x;
 		drag_delta.h = y - mouse->previous.y;
