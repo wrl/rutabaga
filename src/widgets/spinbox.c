@@ -107,7 +107,8 @@ handle_mouse_down(struct rtb_spinbox *self, const struct rtb_mouse_event *e)
 static int
 handle_mouse_click(struct rtb_spinbox *self, const struct rtb_mouse_event *e)
 {
-	if (e->button == RTB_MOUSE_BUTTON1 && (e->click_number & 1)) {
+	if (e->button == RTB_MOUSE_BUTTON1 && e->click_number > 0
+			&& e->button_state != RTB_MOUSE_BUTTON_STATE_DRAG) {
 		rtb__value_element_set_value_uncooked(RTB_VALUE_ELEMENT(self),
 				self->origin, 0);
 		return 1;
