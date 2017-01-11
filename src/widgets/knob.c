@@ -223,12 +223,14 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 		return handle_key(self, RTB_EVENT_AS(e, rtb_key_event));
 
 	case RTB_DRAG_DROP:
-		rtb_mouse_pointer_warp(self->window,
-				drag_event->start.x, drag_event->start.y);
+		if (drag_event->target == RTB_ELEMENT(self))
+			rtb_mouse_pointer_warp(self->window,
+					drag_event->start.x, drag_event->start.y);
 		/* fall-through */
 
 	case RTB_MOUSE_UP:
-		rtb_mouse_unset_cursor(self->window, &self->window->mouse);
+		if (drag_event->target == RTB_ELEMENT(self))
+			rtb_mouse_unset_cursor(self->window, &self->window->mouse);
 		return 1;
 
 	default:
