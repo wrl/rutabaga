@@ -32,6 +32,8 @@
 #include "rutabaga/rutabaga.h"
 #include "rutabaga/element.h"
 #include "rutabaga/event.h"
+#include "rutabaga/mouse.h"
+#include "rutabaga/platform.h"
 
 #include "rutabaga/widgets/value.h"
 
@@ -41,6 +43,10 @@
 	struct rtb_value_element *self = RTB_ELEMENT_AS(elem, rtb_value_element)
 
 static struct rtb_element_implementation super;
+
+/* would be cool to have this be like a smoothed equation or smth */
+#define DELTA_VALUE_STEP_COARSE	.005f
+#define DELTA_VALUE_STEP_FINE	.0005f
 
 /**
  * event dispatching
@@ -57,6 +63,167 @@ dispatch_value_change_event(struct rtb_value_element *self, int synthetic)
 
 	return rtb_elem_deliver_event(RTB_ELEMENT(self), RTB_EVENT(&event));
 }
+
+/**
+ * event handling
+ */
+
+static int
+handle_drag(struct rtb_value_element *self, const struct rtb_drag_event *e)
+{
+	float new_value;
+	float mult;
+
+	if (!rtb_elem_is_in_tree(RTB_ELEMENT(self), e->target))
+		return 0;
+
+	new_value = self->normalised_value;
+
+	switch (e->button) {
+	case RTB_MOUSE_BUTTON1:
+		if (e->mod_keys & RTB_KEY_MOD_SHIFT)
+			mult = DELTA_VALUE_STEP_FINE;
+		else
+			mult = DELTA_VALUE_STEP_COARSE;
+
+		break;
+
+	case RTB_MOUSE_BUTTON2:
+		mult = DELTA_VALUE_STEP_FINE;
+		break;
+
+	default:
+		return 1;
+	}
+
+	new_value += -e->delta.y * mult;
+
+	rtb__value_element_set_normalised_value(self, new_value, 0);
+
+	if (fabsf(e->cursor.x - e->start.x) > 1.f ||
+			fabsf(e->cursor.y - e->start.y) > 1.f)
+		rtb_mouse_pointer_warp(self->window, e->start.x, e->start.y);
+
+	return 1;
+}
+
+static int
+handle_mouse_down(struct rtb_value_element *self,
+		const struct rtb_mouse_event *e)
+{
+	switch (e->button) {
+	case RTB_MOUSE_BUTTON1:
+	case RTB_MOUSE_BUTTON2:
+		rtb_mouse_set_cursor(self->window, &self->window->mouse,
+				RTB_MOUSE_CURSOR_HIDDEN);
+		return 1;
+
+	default:
+		return 0;
+	}
+}
+
+static int
+handle_mouse_click(struct rtb_value_element *self,
+		const struct rtb_mouse_event *e)
+{
+	if (e->button == RTB_MOUSE_BUTTON1 && e->click_number > 0
+			&& e->button_state != RTB_MOUSE_BUTTON_STATE_DRAG) {
+		rtb__value_element_set_value_uncooked(self,
+				self->origin, 0);
+		return 1;
+	}
+
+	return 0;
+}
+
+static int
+handle_mouse_wheel(struct rtb_value_element *self,
+		const struct rtb_mouse_event *e)
+{
+	float new_value, mult;
+
+	if (e->mod_keys & RTB_KEY_MOD_SHIFT)
+		mult = DELTA_VALUE_STEP_FINE;
+	else
+		mult = DELTA_VALUE_STEP_COARSE;
+
+	new_value = self->normalised_value + (e->wheel.delta * mult);
+	rtb__value_element_set_normalised_value(self, new_value, 0);
+	return 1;
+}
+
+static int
+handle_key(struct rtb_value_element *self, const struct rtb_key_event *e)
+{
+	float step;
+
+	if (e->mod_keys & RTB_KEY_MOD_SHIFT)
+		step = DELTA_VALUE_STEP_FINE;
+	else if (e->mod_keys & RTB_KEY_MOD_CTRL)
+		step = DELTA_VALUE_STEP_COARSE * 2;
+	else
+		step = DELTA_VALUE_STEP_COARSE;
+
+	switch (e->keysym) {
+	case RTB_KEY_UP:
+	case RTB_KEY_NUMPAD_UP:
+		rtb__value_element_set_normalised_value(self,
+				self->normalised_value + step, 0);
+		return 1;
+
+	case RTB_KEY_DOWN:
+	case RTB_KEY_NUMPAD_DOWN:
+		rtb__value_element_set_normalised_value(self,
+				self->normalised_value - step, 0);
+		return 1;
+
+	default:
+		return 0;
+	}
+}
+
+static int
+on_event(struct rtb_element *elem, const struct rtb_event *e)
+{
+	const struct rtb_drag_event *drag_event = RTB_EVENT_AS(e, rtb_drag_event);
+	SELF_FROM(elem);
+
+	switch (e->type) {
+	case RTB_DRAG_START:
+	case RTB_DRAG_MOTION:
+		return handle_drag(self, drag_event);
+
+	case RTB_MOUSE_DOWN:
+		return handle_mouse_down(self, RTB_EVENT_AS(e, rtb_mouse_event));
+
+	case RTB_MOUSE_CLICK:
+		return handle_mouse_click(self, RTB_EVENT_AS(e, rtb_mouse_event));
+
+	case RTB_MOUSE_WHEEL:
+		return handle_mouse_wheel(self, RTB_EVENT_AS(e, rtb_mouse_event));
+
+	case RTB_KEY_PRESS:
+		return handle_key(self, RTB_EVENT_AS(e, rtb_key_event));
+
+	case RTB_DRAG_DROP:
+		if (rtb_elem_is_in_tree(RTB_ELEMENT(self), drag_event->target))
+			rtb_mouse_pointer_warp(self->window,
+					drag_event->start.x, drag_event->start.y);
+		/* fall-through */
+
+	case RTB_MOUSE_UP:
+		if (rtb_elem_is_in_tree(RTB_ELEMENT(self), drag_event->target))
+			rtb_mouse_unset_cursor(self->window, &self->window->mouse);
+		return 1;
+
+	default:
+		return super.on_event(elem, e);
+	}
+
+	return 0;
+}
+
 
 /**
  * element impl
@@ -145,6 +312,7 @@ rtb_value_element_init(struct rtb_value_element *self)
 		return -1;
 
 	self->attached = attached;
+	self->on_event = on_event;
 
 	self->granularity  =
 		self->value    =
