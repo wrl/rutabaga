@@ -486,8 +486,6 @@ drain_xcb_event_queue(xcb_connection_t *conn, struct rtb_window *win)
 static int
 video_sync_init(struct video_sync *p)
 {
-	p->functions_valid = 0;
-
 	if (getenv("WAYLAND_DISPLAY"))
 		return -1;
 
@@ -500,7 +498,6 @@ video_sync_init(struct video_sync *p)
 	if (!p->swap_buffers_msc || !p->get_values || !p->get_msc_rate)
 		return -1;
 
-	p->functions_valid = 1;
 	return 0;
 }
 
@@ -561,11 +558,10 @@ frame_timer_init(struct xrtb_frame_timer *timer)
 	xrtb = xwin->xrtb;
 	sync = &timer->sync;
 
-	if (video_sync_init(&timer->sync)) {
-		/* oh well. */
-		timer->wait_msec = 16;
-		return -1;
-	}
+	sync->functions_valid = 0;
+
+	if (video_sync_init(&timer->sync))
+		goto err_vsync_init;
 
 	rtb_window_lock(RTB_WINDOW(xwin));
 	sync->get_values(xrtb->dpy, xwin->gl_draw,
@@ -574,10 +570,19 @@ frame_timer_init(struct xrtb_frame_timer *timer)
 	sync->get_msc_rate(xrtb->dpy, xwin->gl_draw, &fps_num, &fps_denom);
 	rtb_window_unlock(RTB_WINDOW(xwin));
 
+	if (!fps_num)
+		goto err_vsync_init;
+
 	timer->wait_msec =
 		((1000 * (int64_t) fps_denom) / (int64_t) fps_num) - 1;
 
+	sync->functions_valid = 1;
 	return 0;
+
+err_vsync_init:
+	/* oh well. */
+	timer->wait_msec = 16;
+	return -1;
 }
 
 void
