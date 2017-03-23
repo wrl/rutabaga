@@ -317,7 +317,7 @@ restyle(struct rtb_element *self)
 static void
 draw(struct rtb_element *self)
 {
-	rtb_stylequad_draw(&self->stylequad, self);
+	rtb_stylequad_draw_on_element(&self->stylequad, self);
 	rtb_elem_draw_children(self);
 }
 

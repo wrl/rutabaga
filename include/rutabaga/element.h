@@ -26,6 +26,8 @@
 
 #pragma once
 
+struct rtb_element;
+
 #include "rutabaga/types.h"
 #include "rutabaga/atom.h"
 #include "rutabaga/event.h"

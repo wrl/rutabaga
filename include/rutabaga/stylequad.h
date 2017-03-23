@@ -27,6 +27,8 @@
 #pragma once
 
 #include "rutabaga/geometry.h"
+#include "rutabaga/render.h"
+#include "rutabaga/shader.h"
 #include "rutabaga/quad.h"
 #include "rutabaga/mat4.h"
 
@@ -47,9 +49,13 @@ struct rtb_stylequad {
 	} border_image, background_image;
 };
 
-void rtb_stylequad_draw(struct rtb_stylequad *, struct rtb_element *);
+void rtb_stylequad_draw(const struct rtb_stylequad *,
+		struct rtb_render_context *, const struct rtb_shader *,
+		const struct rtb_point *center);
+void rtb_stylequad_draw_on_element(struct rtb_stylequad *,
+		struct rtb_element *);
 void rtb_stylequad_draw_with_modelview(struct rtb_stylequad *,
-		struct rtb_element *, mat4 *modelview);
+		struct rtb_element *, const mat4 *modelview);
 
 int rtb_stylequad_set_border_image(struct rtb_stylequad *,
 		const struct rtb_style_texture_definition *);
