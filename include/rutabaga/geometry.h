@@ -28,6 +28,8 @@
 
 #include "rutabaga/types.h"
 
+#define RTB_POINT(x) RTB_UPCAST(x, rtb_point)
+
 #define RTB_POINT_IN_RECT(pt, rect) \
 	((pt).x >= (rect).x && (pt).x <= (rect).x2 \
 	 && (pt).y >= (rect).y && (pt).y <= (rect).y2)

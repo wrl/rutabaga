@@ -88,8 +88,10 @@ draw_textured(struct rtb_render_context *ctx,
 
 static void
 draw(struct rtb_render_context *ctx, const struct rtb_stylequad *self,
-		const struct rtb_shader *shader, const struct rtb_point *center)
+		const struct rtb_point *center)
 {
+	struct rtb_shader *shader = ctx->shader;
+
 	rtb_render_set_position(ctx, center->x, center->y);
 	glUniform2f(shader->texture_size, 0.f, 0.f);
 
@@ -126,10 +128,9 @@ draw(struct rtb_render_context *ctx, const struct rtb_stylequad *self,
 
 void
 rtb_stylequad_draw(const struct rtb_stylequad *self,
-		struct rtb_render_context *ctx, const struct rtb_shader *shader,
-		const struct rtb_point *center)
+		struct rtb_render_context *ctx, const struct rtb_point *center)
 {
-	draw(ctx, self, shader, center);
+	draw(ctx, self, center);
 }
 
 void
@@ -142,7 +143,7 @@ rtb_stylequad_draw_on_element(struct rtb_stylequad *self,
 	rtb_render_reset(on);
 	rtb_render_use_shader(ctx, shader);
 
-	draw(ctx, self, shader, &self->offset);
+	draw(ctx, self, &self->offset);
 }
 
 void
@@ -156,7 +157,7 @@ rtb_stylequad_draw_with_modelview(struct rtb_stylequad *self, struct rtb_element
 	rtb_render_use_shader(ctx, shader);
 	rtb_render_set_modelview(ctx, modelview->data);
 
-	draw(ctx, self, shader, &self->offset);
+	draw(ctx, self, &self->offset);
 }
 
 /**
