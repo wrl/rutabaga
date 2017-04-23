@@ -6,6 +6,7 @@ def build_uv(ctx):
 	from_gyp = ctx.target_from_gyp('libuv/uv.gyp', 'libuv')
 
 	extra_cflags = [
+        '-Wno-gnu-statement-expression',
         '-Wno-cast-align',
         '-Wno-varargs'
     ]
