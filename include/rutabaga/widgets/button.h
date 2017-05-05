@@ -30,6 +30,7 @@
 #include "rutabaga/element.h"
 #include "rutabaga/event.h"
 #include "rutabaga/stylequad.h"
+#include "rutabaga/mouse.h"
 
 #include "rutabaga/widgets/label.h"
 
