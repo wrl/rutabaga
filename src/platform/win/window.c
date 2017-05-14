@@ -53,10 +53,10 @@
 static wchar_t *
 utf8_to_utf16_alloc(const rtb_utf8_t *utf8)
 {
-	wchar_t *buf;
+	WCHAR *buf;
 	size_t need;
 
-	need = uv_utf8_to_utf16(utf8, NULL, 0);
+	need = MultiByteToWideChar(CP_UTF8, 0, utf8, -1, NULL, 0);
 	if (!need)
 		return NULL;
 
@@ -64,7 +64,7 @@ utf8_to_utf16_alloc(const rtb_utf8_t *utf8)
 	if (!buf)
 		return NULL;
 
-	uv_utf8_to_utf16(utf8, buf, need);
+	MultiByteToWideChar(CP_UTF8, 0, utf8, -1, buf, need);
 	return buf;
 }
 

@@ -15,6 +15,7 @@ def build_uv(ctx):
 		import re
 
 		from_gyp['defines'].remove('_GNU_SOURCE')
+		from_gyp['cflags'].remove('-pedantic')
 
 		extra_cflags += [
 			'-std=gnu89',
@@ -26,6 +27,7 @@ def build_uv(ctx):
 			'-Wno-maybe-uninitialized',
 			'-Wno-unused-but-set-variable',
 			'-Wno-unused-variable',
+			'-Wno-missing-braces',
 
 			'-fno-strict-aliasing']
 
