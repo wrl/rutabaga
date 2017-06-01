@@ -46,7 +46,7 @@ void main()
 {
 	// LCD Off
 	if (atlas_pixel.z == 1.0) {
-		float a = texture(tx_sampler, uv).a;
+		float a = texture(tx_sampler, uv).r;
 		frag_color = front_color * pow(a, 1.0 / gamma);
 		return;
 	}

@@ -381,6 +381,8 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 		if (handle_drag(self, RTB_EVENT_AS(e, rtb_drag_event)))
 			return 1;
 
+		/* fall through */
+
 	default:
 		return super.on_event(elem, e);
 	}
