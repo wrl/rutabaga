@@ -66,6 +66,12 @@ prop_mapping = {
     '-rtb-knob-rotor': RutabagaTextureProperty,
 }
 
+prop_suffix_mapping = {
+    'color': RutabagaRGBAProperty,
+    'image': RutabagaTextureProperty,
+    'img': RutabagaTextureProperty
+}
+
 class RutabagaStyleState(object):
     def __init__(self, stylesheet):
         self.stylesheet = stylesheet
@@ -96,8 +102,12 @@ class RutabagaStyleState(object):
             self.props[prop] = \
                     prop_mapping[prop](self.stylesheet, prop, tokens)
         except KeyError:
-            raise ParseError(tokens[0],
-                        'unknown property \'{0}\''.format(prop))
+            try:
+                self.props[prop] = [v for (k, v) in prop_suffix_mapping.items()
+                        if prop.endswith(k)][0](self.stylesheet, prop, tokens)
+            except IndexError:
+                raise ParseError(tokens[0],
+                        'couldn\'t deduce type of property \'{0}\''.format(prop))
 
     c_state_repr = '''\
 \t\t\t[{state}] = (struct rtb_style_property_definition []) {{
