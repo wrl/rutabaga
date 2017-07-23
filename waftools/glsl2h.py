@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # rutabaga: an OpenGL widget toolkit
-# Copyright (c) 2013 William Light.
+# Copyright (c) 2013-2017 William Light.
 # All rights reserved.
 # 
 # This is free and unencumbered software released into the public domain.

@@ -200,7 +200,7 @@ def rtb_style(bld, style_name, **kwargs):
 copyright = """\
 /**
  * rutabaga: an OpenGL widget toolkit
- * Copyright (c) 2013 William Light.
+ * Copyright (c) 2013-2017 William Light.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
