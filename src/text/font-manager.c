@@ -27,10 +27,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/font-manager.h"
-#include "rutabaga/window.h"
-#include "rutabaga/shader.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/font-manager.h>
+#include <rutabaga/window.h>
+#include <rutabaga/shader.h>
 
 #include "shaders/text.glsl.h"
 

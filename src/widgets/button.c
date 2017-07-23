@@ -29,15 +29,15 @@
 #include <assert.h>
 #include <string.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/element.h"
-#include "rutabaga/window.h"
-#include "rutabaga/render.h"
-#include "rutabaga/layout.h"
-#include "rutabaga/keyboard.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/element.h>
+#include <rutabaga/window.h>
+#include <rutabaga/render.h>
+#include <rutabaga/layout.h>
+#include <rutabaga/keyboard.h>
 
 #include "rtb_private/util.h"
-#include "rutabaga/widgets/button.h"
+#include <rutabaga/widgets/button.h>
 
 #define SELF_FROM(elem) \
 	struct rtb_button *self = RTB_ELEMENT_AS(elem, rtb_button)

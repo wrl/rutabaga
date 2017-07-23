@@ -26,8 +26,8 @@
 
 #pragma once
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/types.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/types.h>
 
 #define RTB_EVENT_SYS_MASK (1 << ((sizeof(rtb_ev_type_t) * 8) - 1))
 #define RTB_IS_SYS_EVENT(x) (!!(x & RTB_EVENT_SYS_MASK))

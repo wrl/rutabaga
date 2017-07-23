@@ -27,13 +27,13 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/element.h"
-#include "rutabaga/surface.h"
-#include "rutabaga/shader.h"
-#include "rutabaga/render.h"
-#include "rutabaga/window.h"
-#include "rutabaga/quad.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/element.h>
+#include <rutabaga/surface.h>
+#include <rutabaga/shader.h>
+#include <rutabaga/render.h>
+#include <rutabaga/window.h>
+#include <rutabaga/quad.h>
 
 #include "rtb_private/util.h"
 #include "rtb_private/layout-debug.h"

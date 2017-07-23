@@ -26,11 +26,11 @@
 
 #pragma once
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/element.h"
-#include "rutabaga/mat4.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/element.h>
+#include <rutabaga/mat4.h>
 
-#include "rutabaga/widgets/value.h"
+#include <rutabaga/widgets/value.h>
 
 #define RTB_KNOB(x) RTB_UPCAST(x, rtb_knob)
 

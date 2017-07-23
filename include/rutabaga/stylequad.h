@@ -26,11 +26,11 @@
 
 #pragma once
 
-#include "rutabaga/geometry.h"
-#include "rutabaga/render.h"
-#include "rutabaga/shader.h"
-#include "rutabaga/quad.h"
-#include "rutabaga/mat4.h"
+#include <rutabaga/geometry.h>
+#include <rutabaga/render.h>
+#include <rutabaga/shader.h>
+#include <rutabaga/quad.h>
+#include <rutabaga/mat4.h>
 
 struct rtb_stylequad {
 	struct rtb_point offset;

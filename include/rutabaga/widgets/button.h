@@ -26,13 +26,13 @@
 
 #pragma once
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/element.h"
-#include "rutabaga/event.h"
-#include "rutabaga/stylequad.h"
-#include "rutabaga/mouse.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/element.h>
+#include <rutabaga/event.h>
+#include <rutabaga/stylequad.h>
+#include <rutabaga/mouse.h>
 
-#include "rutabaga/widgets/label.h"
+#include <rutabaga/widgets/label.h>
 
 #define RTB_BUTTON(x) RTB_UPCAST(x, rtb_button)
 

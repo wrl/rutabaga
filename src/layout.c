@@ -27,12 +27,12 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/geometry.h"
-#include "rutabaga/element.h"
-#include "rutabaga/container.h"
-#include "rutabaga/layout.h"
-#include "rutabaga/layout-helpers.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/geometry.h>
+#include <rutabaga/element.h>
+#include <rutabaga/container.h>
+#include <rutabaga/layout.h>
+#include <rutabaga/layout-helpers.h>
 
 /**
  * size

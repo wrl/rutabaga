@@ -28,17 +28,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/event.h"
-#include "rutabaga/element.h"
-#include "rutabaga/layout.h"
-#include "rutabaga/container.h"
-#include "rutabaga/window.h"
-#include "rutabaga/font-manager.h"
-#include "rutabaga/shader.h"
-#include "rutabaga/surface.h"
-#include "rutabaga/style.h"
-#include "rutabaga/mat4.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/event.h>
+#include <rutabaga/element.h>
+#include <rutabaga/layout.h>
+#include <rutabaga/container.h>
+#include <rutabaga/window.h>
+#include <rutabaga/font-manager.h>
+#include <rutabaga/shader.h>
+#include <rutabaga/surface.h>
+#include <rutabaga/style.h>
+#include <rutabaga/mat4.h>
 
 #include "rtb_private/util.h"
 #include "rtb_private/window_impl.h"

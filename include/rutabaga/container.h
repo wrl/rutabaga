@@ -26,8 +26,8 @@
 
 #pragma once
 
-#include "rutabaga/types.h"
-#include "rutabaga/element.h"
+#include <rutabaga/types.h>
+#include <rutabaga/element.h>
 
 typedef struct rtb_element rtb_container_t;
 

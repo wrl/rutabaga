@@ -28,11 +28,11 @@
 
 struct rtb_element;
 
-#include "rutabaga/types.h"
-#include "rutabaga/atom.h"
-#include "rutabaga/event.h"
-#include "rutabaga/geometry.h"
-#include "rutabaga/stylequad.h"
+#include <rutabaga/types.h>
+#include <rutabaga/atom.h>
+#include <rutabaga/event.h>
+#include <rutabaga/geometry.h>
+#include <rutabaga/stylequad.h>
 
 #include "bsd/queue.h"
 #include "wwrl/vector.h"

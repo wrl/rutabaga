@@ -26,10 +26,10 @@
 
 #include <stdlib.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/container.h"
-#include "rutabaga/element.h"
-#include "rutabaga/window.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/container.h>
+#include <rutabaga/element.h>
+#include <rutabaga/window.h>
 
 static struct rtb_element_implementation super;
 

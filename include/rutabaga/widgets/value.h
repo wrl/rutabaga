@@ -26,8 +26,8 @@
 
 #pragma once
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/element.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/element.h>
 
 #define RTB_VALUE_ELEMENT(x) RTB_UPCAST(x, rtb_value_element)
 #define RTB_VALUE_ELEMENT_AS(x, type) RTB_DOWNCAST(x, type, rtb_value_element)

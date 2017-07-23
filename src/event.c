@@ -28,9 +28,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/event.h"
-#include "rutabaga/element.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/event.h>
+#include <rutabaga/element.h>
 
 static const struct rtb_event_handler *
 find_handler_for(struct rtb_element *elem, rtb_ev_type_t type)

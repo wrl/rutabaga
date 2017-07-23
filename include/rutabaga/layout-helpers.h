@@ -24,7 +24,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rutabaga/types.h"
+#include <rutabaga/types.h>
 
 static inline float halign(float havail, float w, rtb_alignment_t align)
 {

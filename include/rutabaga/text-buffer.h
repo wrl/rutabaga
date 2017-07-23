@@ -26,7 +26,7 @@
 
 #pragma once
 
-#include "rutabaga/types.h"
+#include <rutabaga/types.h>
 
 #include "wwrl/vector.h"
 

@@ -28,10 +28,10 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/window.h"
-#include "rutabaga/dict.h"
-#include "rutabaga/atom.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/window.h>
+#include <rutabaga/dict.h>
+#include <rutabaga/atom.h>
 
 typedef unsigned int uint_t;
 

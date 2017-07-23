@@ -26,9 +26,9 @@
 
 #pragma once
 
-#include "rutabaga/types.h"
-#include "rutabaga/event.h"
-#include "rutabaga/keyboard.h"
+#include <rutabaga/types.h>
+#include <rutabaga/event.h>
+#include <rutabaga/keyboard.h>
 
 #define RTB_EVENT_MOUSE(x) RTB_UPCAST(x, rtb_event_mouse)
 #define RTB_EVENT_DRAG(x) RTB_UPCAST(x, rtb_event_drag)

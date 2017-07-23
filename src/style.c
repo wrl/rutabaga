@@ -24,11 +24,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/element.h"
-#include "rutabaga/window.h"
-#include "rutabaga/style.h"
-#include "rutabaga/asset.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/element.h>
+#include <rutabaga/window.h>
+#include <rutabaga/style.h>
+#include <rutabaga/asset.h>
 
 #include "rtb_private/util.h"
 

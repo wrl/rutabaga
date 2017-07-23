@@ -31,16 +31,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/container.h"
-#include "rutabaga/window.h"
-#include "rutabaga/layout.h"
-#include "rutabaga/keyboard.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/container.h>
+#include <rutabaga/window.h>
+#include <rutabaga/layout.h>
+#include <rutabaga/keyboard.h>
 
-#include "rutabaga/widgets/button.h"
-#include "rutabaga/widgets/text-input.h"
-#include "rutabaga/widgets/knob.h"
-#include "rutabaga/widgets/spinbox.h"
+#include <rutabaga/widgets/button.h>
+#include <rutabaga/widgets/text-input.h>
+#include <rutabaga/widgets/knob.h>
+#include <rutabaga/widgets/spinbox.h>
 
 #define ARRAY_LENGTH(a) (sizeof(a) / sizeof(*a))
 

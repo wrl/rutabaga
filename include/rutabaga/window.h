@@ -28,13 +28,13 @@
 
 #include <uv.h>
 
-#include "rutabaga/types.h"
-#include "rutabaga/element.h"
-#include "rutabaga/shader.h"
-#include "rutabaga/surface.h"
-#include "rutabaga/mouse.h"
-#include "rutabaga/event.h"
-#include "rutabaga/font-manager.h"
+#include <rutabaga/types.h>
+#include <rutabaga/element.h>
+#include <rutabaga/shader.h>
+#include <rutabaga/surface.h>
+#include <rutabaga/mouse.h>
+#include <rutabaga/event.h>
+#include <rutabaga/font-manager.h>
 
 #define RTB_WINDOW(x) RTB_UPCAST(x, rtb_window)
 #define RTB_WINDOW_AS(x, type) RTB_DOWNCAST(x, type, rtb_window)

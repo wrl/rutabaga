@@ -28,9 +28,9 @@
 #include <string.h>
 #include <uv.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/window.h"
-#include "rutabaga/dict.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/window.h>
+#include <rutabaga/dict.h>
 
 #include "rtb_private/stdlib-allocator.h"
 #include "rtb_private/window_impl.h"

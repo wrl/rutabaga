@@ -29,14 +29,14 @@
 #include <assert.h>
 #include <math.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/element.h"
-#include "rutabaga/layout.h"
-#include "rutabaga/event.h"
-#include "rutabaga/mouse.h"
-#include "rutabaga/platform.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/element.h>
+#include <rutabaga/layout.h>
+#include <rutabaga/event.h>
+#include <rutabaga/mouse.h>
+#include <rutabaga/platform.h>
 
-#include "rutabaga/widgets/spinbox.h"
+#include <rutabaga/widgets/spinbox.h>
 
 #include "rtb_private/util.h"
 

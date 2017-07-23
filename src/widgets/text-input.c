@@ -26,15 +26,15 @@
 
 #include <string.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/render.h"
-#include "rutabaga/window.h"
-#include "rutabaga/keyboard.h"
-#include "rutabaga/layout.h"
-#include "rutabaga/layout-helpers.h"
-#include "rutabaga/geometry.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/render.h>
+#include <rutabaga/window.h>
+#include <rutabaga/keyboard.h>
+#include <rutabaga/layout.h>
+#include <rutabaga/layout-helpers.h>
+#include <rutabaga/geometry.h>
 
-#include "rutabaga/widgets/text-input.h"
+#include <rutabaga/widgets/text-input.h>
 
 #include "rtb_private/stdlib-allocator.h"
 #include "rtb_private/util.h"

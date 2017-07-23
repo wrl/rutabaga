@@ -30,18 +30,18 @@
 
 #include "bsd/queue.h"
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/surface.h"
-#include "rutabaga/window.h"
-#include "rutabaga/render.h"
-#include "rutabaga/shader.h"
-#include "rutabaga/layout.h"
-#include "rutabaga/event.h"
-#include "rutabaga/mouse.h"
-#include "rutabaga/style.h"
-#include "rutabaga/asset.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/surface.h>
+#include <rutabaga/window.h>
+#include <rutabaga/render.h>
+#include <rutabaga/shader.h>
+#include <rutabaga/layout.h>
+#include <rutabaga/event.h>
+#include <rutabaga/mouse.h>
+#include <rutabaga/style.h>
+#include <rutabaga/asset.h>
 
-#include "rutabaga/widgets/patchbay.h"
+#include <rutabaga/widgets/patchbay.h>
 
 #include "rtb_private/util.h"
 

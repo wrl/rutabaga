@@ -26,8 +26,8 @@
 
 #include <uv.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/window.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/window.h>
 
 struct win_rtb_window {
 	RTB_INHERIT(rtb_window);

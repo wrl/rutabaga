@@ -31,11 +31,11 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/window.h"
-#include "rutabaga/layout.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/window.h>
+#include <rutabaga/layout.h>
 
-#include "rutabaga/widgets/button.h"
+#include <rutabaga/widgets/button.h>
 
 #define ARRAY_LENGTH(a) (sizeof(a) / sizeof(*a))
 

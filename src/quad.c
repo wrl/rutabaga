@@ -24,8 +24,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/quad.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/quad.h>
 
 void
 rtb_quad_set_vertices(struct rtb_quad *self, struct rtb_rect *from)

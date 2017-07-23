@@ -232,9 +232,9 @@ css2c_prelude = """\
  * you probably don't want to edit this.
  */
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/element.h"
-#include "rutabaga/style.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/element.h>
+#include <rutabaga/style.h>
 
 """
 

@@ -26,11 +26,11 @@
 
 #pragma once
 
-#include "rutabaga/types.h"
-#include "rutabaga/geometry.h"
-#include "rutabaga/font-manager.h"
-#include "rutabaga/style.h"
-#include "rutabaga/render.h"
+#include <rutabaga/types.h>
+#include <rutabaga/geometry.h>
+#include <rutabaga/font-manager.h>
+#include <rutabaga/style.h>
+#include <rutabaga/render.h>
 
 #include "freetype-gl/vertex-buffer.h"
 

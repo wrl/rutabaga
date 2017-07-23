@@ -30,15 +30,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/container.h"
-#include "rutabaga/window.h"
-#include "rutabaga/layout.h"
-#include "rutabaga/keyboard.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/container.h>
+#include <rutabaga/window.h>
+#include <rutabaga/layout.h>
+#include <rutabaga/keyboard.h>
 
-#include "rutabaga/widgets/button.h"
-#include "rutabaga/widgets/text-input.h"
-#include "rutabaga/widgets/knob.h"
+#include <rutabaga/widgets/button.h>
+#include <rutabaga/widgets/text-input.h>
+#include <rutabaga/widgets/knob.h>
 
 struct fuck {
 	GLuint vbo, vao, ibo;

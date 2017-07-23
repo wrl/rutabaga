@@ -28,8 +28,8 @@
 
 #include "wwrl/vector.h"
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/text-buffer.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/text-buffer.h>
 
 #include "rtb_private/utf8.h"
 

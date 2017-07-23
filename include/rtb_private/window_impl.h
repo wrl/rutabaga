@@ -24,8 +24,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/window.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/window.h>
 
 void window_impl_rtb_free(struct rutabaga *rtb);
 struct rutabaga *window_impl_rtb_alloc(void);

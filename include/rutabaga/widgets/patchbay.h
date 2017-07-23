@@ -26,13 +26,13 @@
 
 #pragma once
 
-#include "rutabaga/types.h"
-#include "rutabaga/element.h"
-#include "rutabaga/surface.h"
-#include "rutabaga/event.h"
-#include "rutabaga/quad.h"
+#include <rutabaga/types.h>
+#include <rutabaga/element.h>
+#include <rutabaga/surface.h>
+#include <rutabaga/event.h>
+#include <rutabaga/quad.h>
 
-#include "rutabaga/widgets/label.h"
+#include <rutabaga/widgets/label.h>
 
 #define RTB_PATCHBAY(x) RTB_UPCAST(x, rtb_patchbay)
 #define RTB_PATCHBAY_NODE(x) RTB_UPCAST(x, rtb_patchbay_node)

@@ -26,7 +26,7 @@
 
 #pragma once
 
-#include "rutabaga/geometry.h"
+#include <rutabaga/geometry.h>
 
 #define RTB_QUAD(x) RTB_UPCAST(x, rtb_quad)
 #define RTB_QUAD_AS(x, type) RTB_DOWNCAST(x, type, rtb_quad)

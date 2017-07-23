@@ -31,8 +31,8 @@
 #include <alloca.h>
 #endif
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/shader.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/shader.h>
 
 static void
 print_shader_error(GLuint shader)

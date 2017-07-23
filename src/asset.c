@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "rutabaga/asset.h"
+#include <rutabaga/asset.h>
 #include "rtb_private/util.h"
 
 /**

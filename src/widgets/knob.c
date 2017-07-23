@@ -29,16 +29,16 @@
 #include <assert.h>
 #include <math.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/element.h"
-#include "rutabaga/window.h"
-#include "rutabaga/mouse.h"
-#include "rutabaga/render.h"
-#include "rutabaga/style.h"
-#include "rutabaga/keyboard.h"
-#include "rutabaga/platform.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/element.h>
+#include <rutabaga/window.h>
+#include <rutabaga/mouse.h>
+#include <rutabaga/render.h>
+#include <rutabaga/style.h>
+#include <rutabaga/keyboard.h>
+#include <rutabaga/platform.h>
 
-#include "rutabaga/widgets/knob.h"
+#include <rutabaga/widgets/knob.h>
 
 #include "rtb_private/util.h"
 

@@ -37,7 +37,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "rutabaga/mat4.h"
+#include <rutabaga/mat4.h>
 
 void
 mat4_set_zero( mat4 *self )

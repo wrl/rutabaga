@@ -24,8 +24,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/event.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/event.h>
 #include "rtb_private/window_impl.h"
 
 void

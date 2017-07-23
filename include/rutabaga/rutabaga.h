@@ -27,12 +27,12 @@
 #pragma once
 
 #include <uv.h>
-#include "rutabaga/opengl.h"
+#include <rutabaga/opengl.h>
 
-#include "rutabaga/defaults.h"
-#include "rutabaga/types.h"
-#include "rutabaga/atom.h"
-#include "rutabaga/dict.h"
+#include <rutabaga/defaults.h>
+#include <rutabaga/types.h>
+#include <rutabaga/atom.h>
+#include <rutabaga/dict.h>
 
 #include "wwrl/allocator.h"
 

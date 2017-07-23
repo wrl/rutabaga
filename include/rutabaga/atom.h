@@ -26,9 +26,9 @@
 
 #pragma once
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/types.h"
-#include "rutabaga/dict.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/types.h>
+#include <rutabaga/dict.h>
 
 #define RTB_ATOM(x) RTB_UPCAST(x, rtb_atom)
 #define RTB_TYPE_ATOM(x) RTB_UPCAST(x, rtb_type_atom)

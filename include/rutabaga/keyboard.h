@@ -27,7 +27,7 @@
 #pragma once
 
 #include <stdint.h>
-#include "rutabaga/types.h"
+#include <rutabaga/types.h>
 
 /**
  * types

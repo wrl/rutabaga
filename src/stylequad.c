@@ -24,13 +24,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/element.h"
-#include "rutabaga/render.h"
-#include "rutabaga/style.h"
-#include "rutabaga/quad.h"
-#include "rutabaga/stylequad.h"
-#include "rutabaga/window.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/element.h>
+#include <rutabaga/render.h>
+#include <rutabaga/style.h>
+#include <rutabaga/quad.h>
+#include <rutabaga/stylequad.h>
+#include <rutabaga/window.h>
 
 #include "rtb_private/util.h"
 

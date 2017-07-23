@@ -26,15 +26,15 @@
 
 #include <stdlib.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/element.h"
-#include "rutabaga/window.h"
-#include "rutabaga/render.h"
-#include "rutabaga/shader.h"
-#include "rutabaga/style.h"
-#include "rutabaga/geometry.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/element.h>
+#include <rutabaga/window.h>
+#include <rutabaga/render.h>
+#include <rutabaga/shader.h>
+#include <rutabaga/style.h>
+#include <rutabaga/geometry.h>
 
-#include "rutabaga/text-object.h"
+#include <rutabaga/text-object.h>
 
 #include "freetype-gl/freetype-gl.h"
 #include "freetype-gl/vertex-buffer.h"

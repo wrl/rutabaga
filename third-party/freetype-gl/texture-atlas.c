@@ -37,7 +37,7 @@
 #include <assert.h>
 #include <limits.h>
 
-#include "rutabaga/rutabaga.h"
+#include <rutabaga/rutabaga.h>
 #include "texture-atlas.h"
 
 

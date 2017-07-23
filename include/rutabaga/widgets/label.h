@@ -26,9 +26,9 @@
 
 #pragma once
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/element.h"
-#include "rutabaga/text-object.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/element.h>
+#include <rutabaga/text-object.h>
 
 #define RTB_LABEL(x) RTB_UPCAST(x, rtb_label)
 

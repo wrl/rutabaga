@@ -28,13 +28,13 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/element.h"
-#include "rutabaga/window.h"
-#include "rutabaga/render.h"
-#include "rutabaga/style.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/element.h>
+#include <rutabaga/window.h>
+#include <rutabaga/render.h>
+#include <rutabaga/style.h>
 
-#include "rutabaga/widgets/label.h"
+#include <rutabaga/widgets/label.h>
 
 #define SELF_FROM(elem) \
 	struct rtb_label *self = RTB_ELEMENT_AS(elem, rtb_label)

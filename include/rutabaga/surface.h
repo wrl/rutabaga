@@ -26,11 +26,11 @@
 
 #pragma once
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/types.h"
-#include "rutabaga/element.h"
-#include "rutabaga/render.h"
-#include "rutabaga/mat4.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/types.h>
+#include <rutabaga/element.h>
+#include <rutabaga/render.h>
+#include <rutabaga/mat4.h>
 
 #define RTB_SURFACE(x) RTB_UPCAST(x, rtb_surface)
 

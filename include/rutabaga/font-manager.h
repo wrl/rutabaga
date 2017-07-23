@@ -26,7 +26,7 @@
 
 #pragma once
 
-#include "rutabaga/shader.h"
+#include <rutabaga/shader.h>
 
 #include "freetype-gl/freetype-gl.h"
 #include "freetype-gl/vertex-buffer.h"

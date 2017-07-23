@@ -33,13 +33,13 @@
 
 #include <jack/jack.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/container.h"
-#include "rutabaga/window.h"
-#include "rutabaga/event.h"
-#include "rutabaga/layout.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/container.h>
+#include <rutabaga/window.h>
+#include <rutabaga/event.h>
+#include <rutabaga/layout.h>
 
-#include "rutabaga/widgets/patchbay.h"
+#include <rutabaga/widgets/patchbay.h>
 
 #define NO_ALLOC 0
 #define ALLOCATE 1

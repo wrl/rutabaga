@@ -28,11 +28,11 @@
 
 struct rtb_render_context;
 
-#include "rutabaga/types.h"
-#include "rutabaga/element.h"
-#include "rutabaga/shader.h"
-#include "rutabaga/quad.h"
-#include "rutabaga/mat4.h"
+#include <rutabaga/types.h>
+#include <rutabaga/element.h>
+#include <rutabaga/shader.h>
+#include <rutabaga/quad.h>
+#include <rutabaga/mat4.h>
 
 #include "bsd/queue.h"
 

@@ -28,13 +28,13 @@
 
 #include <unistd.h>
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/text-buffer.h"
-#include "rutabaga/element.h"
-#include "rutabaga/event.h"
-#include "rutabaga/quad.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/text-buffer.h>
+#include <rutabaga/element.h>
+#include <rutabaga/event.h>
+#include <rutabaga/quad.h>
 
-#include "rutabaga/widgets/label.h"
+#include <rutabaga/widgets/label.h>
 
 #define RTB_TEXT_INPUT(x) RTB_UPCAST(x, rtb_text_input)
 

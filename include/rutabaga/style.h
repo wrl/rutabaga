@@ -26,12 +26,12 @@
 
 #pragma once
 
-#include "rutabaga/types.h"
-#include "rutabaga/font-manager.h"
-#include "rutabaga/geometry.h"
-#include "rutabaga/element.h"
-#include "rutabaga/asset.h"
-#include "rutabaga/atom.h"
+#include <rutabaga/types.h>
+#include <rutabaga/font-manager.h>
+#include <rutabaga/geometry.h>
+#include <rutabaga/element.h>
+#include <rutabaga/asset.h>
+#include <rutabaga/atom.h>
 
 typedef enum {
 	RTB_STYLE_PROP_COLOR = 0,

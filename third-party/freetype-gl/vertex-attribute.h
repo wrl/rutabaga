@@ -38,7 +38,7 @@
 extern "C" {
 #endif
 
-#include "rutabaga/rutabaga.h"
+#include <rutabaga/rutabaga.h>
 #include "vector.h"
 
 

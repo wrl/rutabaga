@@ -24,9 +24,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rutabaga/rutabaga.h"
-#include "rutabaga/render.h"
-#include "rutabaga/quad.h"
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/render.h>
+#include <rutabaga/quad.h>
 
 #include "rtb_private/layout-debug.h"
 #include "rtb_private/util.h"

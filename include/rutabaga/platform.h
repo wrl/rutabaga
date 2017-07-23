@@ -26,9 +26,9 @@
 
 #pragma once
 
-#include "rutabaga/types.h"
-#include "rutabaga/window.h"
-#include "rutabaga/mouse.h"
+#include <rutabaga/types.h>
+#include <rutabaga/window.h>
+#include <rutabaga/mouse.h>
 
 /******************************
  * from platform, to rutabaga
