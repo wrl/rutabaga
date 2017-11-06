@@ -144,7 +144,7 @@ rtb_font_manager_init(struct rtb_font_manager *fm, int dpi_x, int dpi_y)
 
 #undef CACHE_UNIFORM
 
-#ifdef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
+#if defined(FT_CONFIG_OPTION_SUBPIXEL_RENDERING) || (FREETYPE_MAJOR > 2 || (FREETYPE_MAJOR == 2 && (FREETYPE_MINOR > 8 || (FREETYPE_MINOR == 8 && FREETYPE_PATCH >= 1))))
 	fm->atlas = texture_atlas_new(512, 512, 3, dpi_x, dpi_y);
 #else
 	fm->atlas = texture_atlas_new(512, 512, 1, dpi_x, dpi_y);
