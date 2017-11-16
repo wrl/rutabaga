@@ -132,14 +132,14 @@ print_modkeys(rtb_modkey_t mod_keys)
 
 static int
 print_streeng(struct rtb_element *victim,
-		const struct rtb_event *e, void *ctx)
+		const struct rtb_event *_e, void *ctx)
 {
-	const struct rtb_button_event *bv = (void *) e;
+	const struct rtb_button_event *e = RTB_EVENT_AS(_e, rtb_button_event);
 	int i;
 
 	printf("(%f, %f) click (%d)!",
-			bv->cursor.x, bv->cursor.y, bv->click_number);
-	print_modkeys(bv->mod_keys);
+			e->cursor.x, e->cursor.y, e->click_number);
+	print_modkeys(e->mod_keys);
 	printf("\n");
 
 	i = rand() % (ARRAY_LENGTH(rlabels));
