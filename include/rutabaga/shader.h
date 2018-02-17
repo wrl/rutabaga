@@ -30,6 +30,19 @@
 
 #define RTB_SHADER(x) RTB_UPCAST(x, rtb_shader)
 
+struct rtb_shader_locations {
+	const char *modelview;
+	const char *projection;
+
+	const char *offset;
+	const char *color;
+	const char *texture;
+	const char *texture_size;
+
+	const char *vertex;
+	const char *tex_coord;
+};
+
 struct rtb_shader {
 	GLuint program;
 
@@ -55,6 +68,10 @@ struct rtb_shader {
 };
 
 void rtb_shader_free(struct rtb_shader *);
+int rtb_shader_create_with_locations(struct rtb_shader *shader,
+		const char *vertex_src, const char *geometry_src,
+		const char *fragment_src,
+		const struct rtb_shader_locations *);
 int rtb_shader_create(struct rtb_shader *shader,
 		const char *vertex_src, const char *geometry_src,
 		const char *fragment_src);

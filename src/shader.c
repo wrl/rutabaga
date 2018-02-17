@@ -125,9 +125,10 @@ glsl_compile(GLenum type, const char *source)
  */
 
 int
-rtb_shader_create(struct rtb_shader *shader,
+rtb_shader_create_with_locations(struct rtb_shader *shader,
 		const char *vertex_src, const char *geometry_src,
-		const char *fragment_src)
+		const char *fragment_src,
+		const struct rtb_shader_locations *loc)
 {
 	GLuint program;
 	int status;
@@ -151,11 +152,11 @@ rtb_shader_create(struct rtb_shader *shader,
 	program = shader->program;
 
 #define CACHE_ATTRIBUTE(NAME) \
-	shader->NAME = glGetAttribLocation(program, #NAME)
+	shader->NAME = glGetAttribLocation(program, loc->NAME ? loc->NAME : #NAME)
 #define CACHE_UNIFORM(TO, NAME) \
-	shader->TO = glGetUniformLocation(program, NAME)
-#define CACHE_SIMPLE_UNIFORM(NAME) CACHE_UNIFORM(NAME, #NAME)
-#define CACHE_MATRIX_UNIFORM(NAME) CACHE_UNIFORM(matrices.NAME, #NAME)
+	shader->TO = glGetUniformLocation(program, loc->NAME ? loc->NAME : #NAME)
+#define CACHE_SIMPLE_UNIFORM(NAME) CACHE_UNIFORM(NAME, NAME)
+#define CACHE_MATRIX_UNIFORM(NAME) CACHE_UNIFORM(matrices.NAME, NAME)
 
 	CACHE_MATRIX_UNIFORM(modelview);
 	CACHE_MATRIX_UNIFORM(projection);
@@ -169,6 +170,17 @@ rtb_shader_create(struct rtb_shader *shader,
 	CACHE_ATTRIBUTE(tex_coord);
 
 	return status;
+}
+
+int
+rtb_shader_create(struct rtb_shader *shader,
+		const char *vertex_src, const char *geometry_src,
+		const char *fragment_src)
+{
+	struct rtb_shader_locations loc = {0};
+
+	return rtb_shader_create_with_locations(shader, vertex_src,
+			geometry_src, fragment_src, &loc);
 }
 
 void
