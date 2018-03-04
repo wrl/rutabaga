@@ -38,7 +38,7 @@ struct rtb_render_context;
 
 struct rtb_render_context {
 	struct rtb_window *window;
-	struct rtb_shader *shader;
+	const struct rtb_shader *shader;
 
 	mat4 projection;
 };
@@ -58,7 +58,7 @@ void rtb_render_quad_outline(struct rtb_render_context *, struct rtb_quad *);
 void rtb_render_quad(struct rtb_render_context *, struct rtb_quad *);
 void rtb_render_clear(struct rtb_element *);
 
-void rtb_render_use_shader(struct rtb_render_context *, struct rtb_shader *);
+void rtb_render_use_shader(struct rtb_render_context *, const struct rtb_shader *);
 void rtb_render_reset(struct rtb_element *);
 void rtb_render_push(struct rtb_element *);
 void rtb_render_pop(struct rtb_element *);

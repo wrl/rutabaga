@@ -90,7 +90,7 @@ static void
 draw(struct rtb_render_context *ctx, const struct rtb_stylequad *self,
 		const struct rtb_point *center)
 {
-	struct rtb_shader *shader = ctx->shader;
+	const struct rtb_shader *shader = ctx->shader;
 
 	rtb_render_set_position(ctx, center->x, center->y);
 	glUniform2f(shader->texture_size, 0.f, 0.f);

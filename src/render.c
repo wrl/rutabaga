@@ -96,7 +96,7 @@ static void
 render_quad(struct rtb_render_context *ctx, struct rtb_quad *quad,
 		GLenum mode, GLuint ibo)
 {
-	struct rtb_shader *shader = ctx->shader;
+	const struct rtb_shader *shader = ctx->shader;
 
 	if (!quad->vertices)
 		return;
@@ -158,7 +158,7 @@ static const GLfloat identity_matrix[] = {
 
 void
 rtb_render_use_shader(struct rtb_render_context *ctx,
-		struct rtb_shader *shader)
+		const struct rtb_shader *shader)
 {
 	GLuint program;
 	program = shader->program;
