@@ -89,6 +89,8 @@ class RutabagaStyleState(object):
         elif prop == 'font-size':
             # XXX: disregarding unit
             self.font_descriptor['size'] = tokens[0].value
+        elif prop == 'font-weight':
+            self.font_descriptor['weight'] = tokens[0].value
         elif prop == '-rtb-font-lcd-gamma':
             self.font_descriptor['gamma'] = tokens[0].value
 
