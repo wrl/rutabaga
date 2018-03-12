@@ -410,9 +410,9 @@ alloc_nswindow(int w, int h, const char *title, int resizable)
 	unsigned style_mask;
 
 	style_mask =
-		NSTitledWindowMask
-		| NSClosableWindowMask
-		| NSMiniaturizableWindowMask;
+		NSWindowStyleMaskTitled
+		| NSWindowStyleMaskClosable
+		| NSWindowStyleMaskMiniaturizable;
 
 	nstitle = [[NSString alloc]
 		initWithBytes:title
@@ -420,7 +420,7 @@ alloc_nswindow(int w, int h, const char *title, int resizable)
 			 encoding:NSUTF8StringEncoding];
 
 	if (resizable)
-		style_mask |= NSResizableWindowMask;
+		style_mask |= NSWindowStyleMaskResizable;
 
 	@try {
 		win = [[RutabagaWindow alloc]
@@ -584,10 +584,10 @@ rtb_get_modkeys(struct rtb_window *win)
 	NSUInteger cocoa_modkeys = [NSEvent modifierFlags];
 
 	return
-		MOD_ACTIVE(NSAlternateKeyMask, RTB_KEY_MOD_ALT)
-		| MOD_ACTIVE(NSShiftKeyMask,   RTB_KEY_MOD_SHIFT)
-		| MOD_ACTIVE(NSControlKeyMask, RTB_KEY_MOD_CTRL)
-		| MOD_ACTIVE(NSCommandKeyMask, RTB_KEY_MOD_SUPER);
+		MOD_ACTIVE(NSEventModifierFlagCommand, RTB_KEY_MOD_ALT)
+		| MOD_ACTIVE(NSEventModifierFlagShift,   RTB_KEY_MOD_SHIFT)
+		| MOD_ACTIVE(NSEventModifierFlagControl, RTB_KEY_MOD_CTRL)
+		| MOD_ACTIVE(NSEventModifierFlagCommand, RTB_KEY_MOD_SUPER);
 
 #undef MOD_ACTIVE
 }
