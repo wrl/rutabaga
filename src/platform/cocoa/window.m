@@ -35,6 +35,22 @@
 #include "rtb_private/window_impl.h"
 #include "cocoa_rtb.h"
 
+#if __MAC_OS_X_VERSION_MAX_ALLOWED < 101200
+/* apple renamed all these constants in the 10.12 SDK, so, when compiling on
+ * earlier SDKs, we'll define them to their previous constant value. */
+
+#define NSWindowStyleMaskTitled         NSTitledWindowMask
+#define NSWindowStyleMaskClosable       NSClosableWindowMask
+#define NSWindowStyleMaskMiniaturizable NSMiniaturizableWindowMask
+
+#define NSWindowStyleMaskResizable      NSResizableWindowMask
+
+#define NSEventModifierFlagOption       NSAlternateKeyMask
+#define NSEventModifierFlagShift        NSShiftKeyMask
+#define NSEventModifierFlagControl      NSControlKeyMask
+#define NSEventModifierFlagCommand      NSCommandKeyMask
+#endif
+
 #define LOCK (rtb_window_lock(RTB_WINDOW(rtb_win)))
 #define UNLOCK (rtb_window_unlock(RTB_WINDOW(rtb_win)))
 
@@ -584,7 +600,7 @@ rtb_get_modkeys(struct rtb_window *win)
 	NSUInteger cocoa_modkeys = [NSEvent modifierFlags];
 
 	return
-		MOD_ACTIVE(NSEventModifierFlagCommand, RTB_KEY_MOD_ALT)
+		MOD_ACTIVE(NSEventModifierFlagOption,    RTB_KEY_MOD_ALT)
 		| MOD_ACTIVE(NSEventModifierFlagShift,   RTB_KEY_MOD_SHIFT)
 		| MOD_ACTIVE(NSEventModifierFlagControl, RTB_KEY_MOD_CTRL)
 		| MOD_ACTIVE(NSEventModifierFlagCommand, RTB_KEY_MOD_SUPER);
