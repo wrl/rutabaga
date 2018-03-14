@@ -88,14 +88,14 @@ draw_textured(struct rtb_render_context *ctx,
 
 static void
 draw(struct rtb_render_context *ctx, const struct rtb_stylequad *self,
-		const struct rtb_point *center)
+		const struct rtb_point *center, rtb_stylequad_draw_mode_t mode)
 {
 	const struct rtb_shader *shader = ctx->shader;
 
 	rtb_render_set_position(ctx, center->x, center->y);
 	glUniform2f(shader->texture_size, 0.f, 0.f);
 
-	if (self->properties.bg_color) {
+	if (self->properties.bg_color && mode & RTB_STYLEQUAD_DRAW_BG_COLOR) {
 		rtb_render_set_color(ctx,
 				self->properties.bg_color->r,
 				self->properties.bg_color->g,
@@ -106,13 +106,16 @@ draw(struct rtb_render_context *ctx, const struct rtb_stylequad *self,
 				ctx->window->local_storage.ibo.stylequad.solid, 4);
 	}
 
-	if (self->background_image.definition)
+	if (self->background_image.definition
+			&& mode & RTB_STYLEQUAD_DRAW_BG_IMAGE)
 		draw_textured(ctx, self, &self->background_image, 0);
 
-	if (self->border_image.definition)
+	if (self->border_image.definition
+			&& mode & RTB_STYLEQUAD_DRAW_BORDER_IMAGE)
 		draw_textured(ctx, self, &self->border_image, 1);
 
-	if (self->properties.border_color) {
+	if (self->properties.border_color
+			&& mode & RTB_STYLEQUAD_DRAW_BORDER_COLOR) {
 		rtb_render_set_color(ctx,
 				self->properties.border_color->r,
 				self->properties.border_color->g,
@@ -128,14 +131,15 @@ draw(struct rtb_render_context *ctx, const struct rtb_stylequad *self,
 
 void
 rtb_stylequad_draw(const struct rtb_stylequad *self,
-		struct rtb_render_context *ctx, const struct rtb_point *center)
+		struct rtb_render_context *ctx, const struct rtb_point *center,
+		rtb_stylequad_draw_mode_t mode)
 {
-	draw(ctx, self, center);
+	draw(ctx, self, center, mode);
 }
 
 void
 rtb_stylequad_draw_on_element(struct rtb_stylequad *self,
-		struct rtb_element *on)
+		struct rtb_element *on, rtb_stylequad_draw_mode_t mode)
 {
 	struct rtb_shader *shader = &on->window->local_storage.shader.stylequad;
 	struct rtb_render_context *ctx = rtb_render_get_context(on);
@@ -143,12 +147,12 @@ rtb_stylequad_draw_on_element(struct rtb_stylequad *self,
 	rtb_render_reset(on);
 	rtb_render_use_shader(ctx, shader);
 
-	draw(ctx, self, &self->offset);
+	draw(ctx, self, &self->offset, mode);
 }
 
 void
 rtb_stylequad_draw_with_modelview(struct rtb_stylequad *self, struct rtb_element *on,
-		const mat4 *modelview)
+		const mat4 *modelview, rtb_stylequad_draw_mode_t mode)
 {
 	struct rtb_shader *shader = &on->window->local_storage.shader.stylequad;
 	struct rtb_render_context *ctx = rtb_render_get_context(on);
@@ -157,7 +161,7 @@ rtb_stylequad_draw_with_modelview(struct rtb_stylequad *self, struct rtb_element
 	rtb_render_use_shader(ctx, shader);
 	rtb_render_set_modelview(ctx, modelview->data);
 
-	draw(ctx, self, &self->offset);
+	draw(ctx, self, &self->offset, mode);
 }
 
 /**

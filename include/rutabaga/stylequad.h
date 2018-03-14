@@ -32,6 +32,19 @@
 #include <rutabaga/quad.h>
 #include <rutabaga/mat4.h>
 
+typedef enum {
+	RTB_STYLEQUAD_DRAW_BG_COLOR     = 0x01,
+	RTB_STYLEQUAD_DRAW_BG_IMAGE     = 0x02,
+	RTB_STYLEQUAD_DRAW_BORDER_IMAGE = 0x04,
+	RTB_STYLEQUAD_DRAW_BORDER_COLOR = 0x08,
+
+	RTB_STYLEQUAD_DRAW_ALL =
+		RTB_STYLEQUAD_DRAW_BG_COLOR
+		| RTB_STYLEQUAD_DRAW_BG_IMAGE
+		| RTB_STYLEQUAD_DRAW_BORDER_IMAGE
+		| RTB_STYLEQUAD_DRAW_BORDER_COLOR,
+} rtb_stylequad_draw_mode_t;
+
 struct rtb_stylequad {
 	struct rtb_point offset;
 
@@ -50,11 +63,13 @@ struct rtb_stylequad {
 };
 
 void rtb_stylequad_draw(const struct rtb_stylequad *,
-		struct rtb_render_context *, const struct rtb_point *center);
+		struct rtb_render_context *, const struct rtb_point *center,
+		rtb_stylequad_draw_mode_t);
 void rtb_stylequad_draw_on_element(struct rtb_stylequad *,
-		struct rtb_element *);
+		struct rtb_element *, rtb_stylequad_draw_mode_t);
 void rtb_stylequad_draw_with_modelview(struct rtb_stylequad *,
-		struct rtb_element *, const mat4 *modelview);
+		struct rtb_element *, const mat4 *modelview,
+		rtb_stylequad_draw_mode_t);
 
 int rtb_stylequad_set_border_image(struct rtb_stylequad *,
 		const struct rtb_style_texture_definition *);

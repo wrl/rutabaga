@@ -61,7 +61,8 @@ draw(struct rtb_element *elem)
 	SELF_FROM(elem);
 
 	super.draw(elem);
-	rtb_stylequad_draw_with_modelview(&self->rotor, elem, &self->modelview);
+	rtb_stylequad_draw_with_modelview(&self->rotor, elem, &self->modelview,
+			RTB_STYLEQUAD_DRAW_ALL);
 }
 
 /**
