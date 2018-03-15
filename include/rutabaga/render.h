@@ -43,13 +43,17 @@ struct rtb_render_context {
 	mat4 projection;
 };
 
+struct rtb_style_property_definition;
+
 void rtb_render_use_style_bg(struct rtb_render_context *ctx,
 		struct rtb_element *);
 void rtb_render_use_style_fg(struct rtb_render_context *ctx,
 		struct rtb_element *);
-
+void rtb_render_use_style_color(struct rtb_render_context *ctx,
+		const struct rtb_style_property_definition *);
 void rtb_render_set_color(struct rtb_render_context *,
 		GLfloat r, GLfloat g, GLfloat b, GLfloat a);
+
 void rtb_render_set_position(struct rtb_render_context *, float x, float y);
 void rtb_render_set_modelview(struct rtb_render_context *,
 		const GLfloat *matrix);

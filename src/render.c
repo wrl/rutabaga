@@ -69,6 +69,17 @@ rtb_render_use_style_bg(struct rtb_render_context *ctx,
 }
 
 void
+rtb_render_use_style_color(struct rtb_render_context *ctx,
+		const struct rtb_style_property_definition *prop)
+{
+	rtb_render_set_color(ctx,
+			prop->color.r,
+			prop->color.g,
+			prop->color.b,
+			prop->color.a);
+}
+
+void
 rtb_render_set_color(struct rtb_render_context *ctx,
 		GLfloat r, GLfloat g, GLfloat b, GLfloat a)
 {
