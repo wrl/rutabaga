@@ -272,7 +272,7 @@ rtb__value_element_set_normalised_value(struct rtb_value_element *self,
 	self->value = new_value;
 
 	if (self->set_value_hook)
-		self->set_value_hook(RTB_ELEMENT(self));
+		self->set_value_hook(RTB_ELEMENT(self), synthetic);
 
 	if (self->state != RTB_STATE_UNATTACHED)
 		dispatch_value_change_event(self, synthetic);

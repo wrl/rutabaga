@@ -70,7 +70,7 @@ draw(struct rtb_element *elem)
  */
 
 static void
-set_value_hook(struct rtb_element *elem)
+set_value_hook(struct rtb_element *elem, int synthetic)
 {
 	SELF_FROM(elem);
 
@@ -91,7 +91,7 @@ attached(struct rtb_element *elem,
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.knob");
 
-	set_value_hook(elem);
+	set_value_hook(elem, 1);
 }
 
 static void

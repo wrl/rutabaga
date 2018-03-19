@@ -56,7 +56,7 @@ struct rtb_value_element {
 	/* private ********************************/
 	float normalised_value;
 
-	void (*set_value_hook)(struct rtb_element *);
+	void (*set_value_hook)(struct rtb_element *, int synthetic);
 };
 
 /**
