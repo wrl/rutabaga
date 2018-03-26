@@ -26,6 +26,8 @@
 
 #pragma once
 
+#include <bsd/queue.h>
+
 #include <rutabaga/shader.h>
 
 #include "freetype-gl/freetype-gl.h"
@@ -40,6 +42,8 @@ struct rtb_font {
 
 	texture_font_t *txfont;
 	struct rtb_font_manager *fm;
+
+	TAILQ_ENTRY(rtb_font) manager_entry;
 };
 
 struct rtb_external_font {
@@ -56,6 +60,8 @@ struct rtb_font_manager {
 	} shader;
 
 	texture_atlas_t *atlas;
+
+	TAILQ_HEAD(managed_fonts, rtb_font) managed_fonts;
 };
 
 int rtb_font_manager_load_embedded_font(struct rtb_font_manager *fm,

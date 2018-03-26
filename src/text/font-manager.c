@@ -87,13 +87,18 @@ rtb_font_manager_load_embedded_font(struct rtb_font_manager *fm,
 	font->fm   = fm;
 
 	init_font(font);
+	TAILQ_INSERT_TAIL(&fm->managed_fonts, font, manager_entry);
 	return 0;
 }
 
 void
 rtb_font_manager_free_embedded_font(struct rtb_font *font)
 {
+	TAILQ_REMOVE(&font->fm->managed_fonts, font, manager_entry);
 	texture_font_delete(font->txfont);
+
+	font->manager_entry.tqe_next = NULL;
+	font->manager_entry.tqe_prev = NULL;
 }
 
 /**
@@ -150,6 +155,7 @@ rtb_font_manager_init(struct rtb_font_manager *fm, int dpi_x, int dpi_y)
 	fm->atlas = texture_atlas_new(512, 512, 1, dpi_x, dpi_y);
 #endif
 
+	TAILQ_INIT(&fm->managed_fonts);
 	return 0;
 
 err_shader:
@@ -159,6 +165,13 @@ err_shader:
 void
 rtb_font_manager_fini(struct rtb_font_manager *fm)
 {
+	struct rtb_font *font;
+
+	TAILQ_FOREACH(font, &fm->managed_fonts, manager_entry) {
+		/* FIXME: free path of external font? */
+		texture_font_delete(font->txfont);
+	}
+
 	texture_atlas_delete(fm->atlas);
 	rtb_shader_free(RTB_SHADER(&fm->shader));
 }
