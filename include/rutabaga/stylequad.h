@@ -65,6 +65,8 @@ struct rtb_stylequad {
 void rtb_stylequad_draw(const struct rtb_stylequad *,
 		struct rtb_render_context *, const struct rtb_point *center,
 		rtb_stylequad_draw_mode_t);
+void rtb_stylequad_draw_solid(const struct rtb_stylequad *self,
+		struct rtb_render_context *ctx, const struct rtb_point *center);
 void rtb_stylequad_draw_on_element(struct rtb_stylequad *,
 		struct rtb_element *, rtb_stylequad_draw_mode_t);
 void rtb_stylequad_draw_with_modelview(struct rtb_stylequad *,

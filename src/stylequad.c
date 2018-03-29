@@ -138,6 +138,18 @@ rtb_stylequad_draw(const struct rtb_stylequad *self,
 }
 
 void
+rtb_stylequad_draw_solid(const struct rtb_stylequad *self,
+		struct rtb_render_context *ctx, const struct rtb_point *center)
+{
+	const struct rtb_shader *shader = ctx->shader;
+
+	rtb_render_set_position(ctx, center->x, center->y);
+
+	draw_solid(self, shader, GL_TRIANGLE_STRIP,
+			ctx->window->local_storage.ibo.stylequad.solid, 4);
+}
+
+void
 rtb_stylequad_draw_on_element(struct rtb_stylequad *self,
 		struct rtb_element *on, rtb_stylequad_draw_mode_t mode)
 {
