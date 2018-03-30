@@ -293,7 +293,8 @@ retarget(struct rtb_window *win, int x, int y)
 
 descend:
 	TAILQ_FOREACH_REVERSE(iter, &ret->children, children, child) {
-		if (RTB_POINT_IN_RECT(cursor, *iter)) {
+		if (RTB_POINT_IN_RECT(cursor, *iter)
+				&& iter->visibility != RTB_FULLY_OBSCURED) {
 			ret = iter;
 			ret->mouse_in = 1;
 
