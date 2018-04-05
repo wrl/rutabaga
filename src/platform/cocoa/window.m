@@ -193,14 +193,14 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 		return;
 
 	if ([self inLiveResize])
-		rtb_cocoa_draw_frame(rtb_win, 1);
+		rtb__cocoa_draw_frame(rtb_win, 1);
 	else
 		rtb_win->dirty = 1;
 }
 
 - (void) cursorUpdate: (NSEvent *) e
 {
-	[[NSCursor arrowCursor] set];
+	rtb__cocoa_sync_cursor(self->rtb_win);
 }
 
 - (void) scrollWheel: (NSEvent *) e
@@ -242,6 +242,7 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 
 	LOCK;
 	rtb__platform_mouse_motion(RTB_WINDOW(rtb_win), pt.x, pt.y);
+	rtb__cocoa_sync_cursor(self->rtb_win);
 	UNLOCK;
 }
 
@@ -548,7 +549,7 @@ window_impl_close(struct rtb_window *rwin)
 }
 
 void
-rtb_cocoa_draw_frame(struct cocoa_rtb_window *self, int force)
+rtb__cocoa_draw_frame(struct cocoa_rtb_window *self, int force)
 {
 	struct rtb_window *win = RTB_WINDOW(self);
 

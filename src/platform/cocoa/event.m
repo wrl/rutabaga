@@ -50,7 +50,7 @@ static void
 frame_timer_callback(CFRunLoopTimerRef timer, void *info)
 {
 	struct cocoa_rtb_window *cwin = info;
-	rtb_cocoa_draw_frame(cwin, 0);
+	rtb__cocoa_draw_frame(cwin, 0);
 }
 
 /**

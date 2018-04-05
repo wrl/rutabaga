@@ -79,6 +79,7 @@ struct cocoa_rtb_window {
 	int we_are_running_nsapp;
 };
 
-void rtb_cocoa_draw_frame(struct cocoa_rtb_window *, int force);
+void rtb__cocoa_sync_cursor(struct cocoa_rtb_window *);
+void rtb__cocoa_draw_frame(struct cocoa_rtb_window *, int force);
 
 /* vim: set ft=objc :*/
