@@ -349,10 +349,11 @@ window_impl_open(struct rutabaga *r,
 		| WS_CLIPSIBLINGS;
 
 	wrect = (RECT) {0, 0, width, height};
-	AdjustWindowRectEx(&wrect, flags, FALSE, 0);
 
 	if (parent)
 		flags = WS_CHILD | WS_VISIBLE;
+	else
+		AdjustWindowRectEx(&wrect, flags, FALSE, 0);
 
 	self->hwnd = CreateWindowExW((DWORD) 0,
 			(void *) MAKEINTATOM(self->window_class), wtitle, flags,
