@@ -79,7 +79,7 @@ handle_drag(struct rtb_value_element *self, const struct rtb_drag_event *e)
 
 	new_value = self->normalised_value;
 
-	if ((e->start_mod_keys & RTB_KEY_MOD_CTRL))
+	if ((e->start_mod_keys & (RTB_KEY_MOD_CTRL | RTB_KEY_MOD_ALT)))
 		return 1;
 
 	switch (e->button) {
@@ -117,7 +117,7 @@ handle_mouse_down(struct rtb_value_element *self,
 	switch (e->button) {
 	case RTB_MOUSE_BUTTON1:
 	case RTB_MOUSE_BUTTON2:
-		if (!(e->mod_keys & RTB_KEY_MOD_CTRL))
+		if (!(e->mod_keys & (RTB_KEY_MOD_CTRL | RTB_KEY_MOD_ALT)))
 			rtb_mouse_set_cursor(self->window, &self->window->mouse,
 					RTB_MOUSE_CURSOR_HIDDEN);
 		return 1;
@@ -212,9 +212,11 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 
 	case RTB_DRAG_DROP:
 		if (rtb_elem_is_in_tree(RTB_ELEMENT(self), drag_event->target)
-				&& !(drag_event->start_mod_keys & RTB_KEY_MOD_CTRL))
+				&& !(drag_event->start_mod_keys &
+						(RTB_KEY_MOD_CTRL | RTB_KEY_MOD_ALT))) {
 			rtb_mouse_pointer_warp(self->window,
 					drag_event->start.x, drag_event->start.y);
+		}
 		/* fall-through */
 
 	case RTB_MOUSE_UP:
