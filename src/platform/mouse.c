@@ -57,6 +57,7 @@ dispatch_drag_event(struct rtb_window *window, rtb_ev_type_t type,
 		.start = {
 			.x = b->drag_start.x,
 			.y = b->drag_start.y},
+		.start_mod_keys = b->drag_start_mod_keys,
 		.delta = {
 			.x = delta.w,
 			.y = delta.h}
@@ -252,6 +253,8 @@ drag(struct rtb_window *win, int x, int y, struct rtb_size delta)
 			b->state = RTB_MOUSE_BUTTON_STATE_DRAG;
 			b->drag_start.x = x;
 			b->drag_start.y = y;
+
+			b->drag_start_mod_keys = rtb_get_modkeys(win);
 
 			b->target = dispatch_drag_event(win,
 					RTB_DRAG_START, NULL, i, x, y, delta);

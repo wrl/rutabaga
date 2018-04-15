@@ -95,6 +95,7 @@ struct rtb_drag_event {
 	RTB_INHERIT(rtb_mouse_event);
 
 	struct rtb_point start;
+	rtb_modkey_t start_mod_keys;
 
 	struct {
 		int x;
@@ -114,8 +115,10 @@ struct rtb_mouse {
 
 	struct rtb_mouse_button {
 		rtb_mouse_button_state_t state;
-		struct rtb_point drag_start;
 		struct rtb_element *target;
+
+		rtb_modkey_t drag_start_mod_keys;
+		struct rtb_point drag_start;
 
 		uint64_t last_click;
 		int click_count;
