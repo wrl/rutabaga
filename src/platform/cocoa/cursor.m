@@ -85,6 +85,10 @@ rtb__cocoa_sync_cursor(struct cocoa_rtb_window *self)
 		[rtb->invisible_cursor set];
 		break;
 
+	case RTB_MOUSE_CURSOR_COPY:
+		[[NSCursor dragCopyCursor] set];
+		break;
+
 	default:
 		return;
 	}
