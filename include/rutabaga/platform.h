@@ -67,3 +67,4 @@ void rtb_mouse_pointer_warp(struct rtb_window *, int x, int y);
 
 void rtb_copy_to_clipboard(struct rtb_window *, const rtb_utf8_t *buf,
 		size_t nbytes);
+ssize_t rtb_paste_from_clipboard(struct rtb_window *, rtb_utf8_t **buf);

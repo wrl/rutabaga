@@ -176,6 +176,60 @@ create_empty_cursor(struct xcb_rutabaga *self)
 	return cursor;
 }
 
+static xcb_screen_t *
+find_xcb_screen(xcb_connection_t *c, int default_screen)
+{
+	xcb_screen_iterator_t screen_iter;
+	int screen_num;
+
+	screen_iter = xcb_setup_roots_iterator(xcb_get_setup(c));
+	for (screen_num = default_screen; screen_iter.rem && screen_num > 0;
+			--screen_num, xcb_screen_next(&screen_iter));
+
+	return screen_iter.data;
+}
+
+static int
+setup_clipboard(struct xcb_rutabaga *self)
+{
+	xcb_void_cookie_t ck_window;
+	xcb_generic_error_t *err;
+	int screen_idx, conn_err;
+	xcb_screen_t *screen;
+
+	self->clipboard.conn = xcb_connect(NULL, &screen_idx);
+	if ((conn_err = xcb_connection_has_error(self->clipboard.conn))) {
+		ERR("error establishing clipboard XCB connection: %d\n",
+				conn_err);
+		goto err_connection;
+	}
+
+	screen = find_xcb_screen(self->clipboard.conn, screen_idx);
+
+	self->clipboard.window = xcb_generate_id(self->clipboard.conn);
+	ck_window = xcb_create_window_checked(
+			self->clipboard.conn, 0, self->clipboard.window,
+			screen->root,
+			-10, -10, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY,
+			XCB_COPY_FROM_PARENT, 0, NULL);
+
+	if ((err = xcb_request_check(self->xcb_conn, ck_window))) {
+		ERR("can't create XCB window: %d\n", err->error_code);
+		free(err);
+		goto err_create_window;
+	}
+
+	self->clipboard.buffer = NULL;
+	self->clipboard.nbytes = 0;
+
+	return 0;
+
+err_create_window:
+	xcb_disconnect(self->clipboard.conn);
+err_connection:
+	return -1;
+}
+
 struct rutabaga *
 window_impl_rtb_alloc(void)
 {
@@ -199,6 +253,9 @@ window_impl_rtb_alloc(void)
 		ERR("can't initialize keyboard\n");
 		goto err_keyboard_init;
 	}
+
+	if (setup_clipboard(self))
+		goto err_clipboard_window;
 
 	XSetEventQueueOwner(dpy, XCBOwnsEventQueue);
 
@@ -227,11 +284,10 @@ window_impl_rtb_alloc(void)
 
 	self->empty_cursor = create_empty_cursor(self);
 
-	self->clipboard.buffer = NULL;
-	self->clipboard.nbytes = 0;
-
 	return (struct rutabaga *) self;
 
+err_clipboard_window:
+	xrtb_keyboard_fini(self);
 err_keyboard_init:
 err_get_conn:
 	XCloseDisplay(self->dpy);
@@ -246,25 +302,15 @@ window_impl_rtb_free(struct rutabaga *rtb)
 {
 	struct xcb_rutabaga *self = (void *) rtb;
 
+	xcb_destroy_window(self->clipboard.conn, self->clipboard.window);
+	xcb_disconnect(self->clipboard.conn);
+
 	xrtb_keyboard_fini(self);
 	XFreeCursor(self->dpy, self->empty_cursor);
 
 	XCloseDisplay(self->dpy);
 	free(self->clipboard.buffer);
 	free(self);
-}
-
-static xcb_screen_t *
-find_xcb_screen(xcb_connection_t *c, int default_screen)
-{
-	xcb_screen_iterator_t screen_iter;
-	int screen_num;
-
-	screen_iter = xcb_setup_roots_iterator(xcb_get_setup(c));
-	for (screen_num = default_screen; screen_iter.rem && screen_num > 0;
-			--screen_num, xcb_screen_next(&screen_iter));
-
-	return screen_iter.data;
 }
 
 static int

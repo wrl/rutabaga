@@ -119,6 +119,8 @@ struct xcb_rutabaga {
 	struct xrtb_frame_timer frame_timer;
 
 	struct {
+		xcb_connection_t *conn;
+		xcb_window_t window;
 		rtb_utf8_t *buffer;
 		size_t nbytes;
 	} clipboard;

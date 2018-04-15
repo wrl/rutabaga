@@ -538,26 +538,24 @@ drain_xcb_event_queue(xcb_connection_t *conn, struct rtb_window *win)
 	xcb_generic_event_t *ev;
 	int ret;
 
+	rtb_window_lock(win);
 	while ((ev = xcb_poll_for_event(conn))) {
-		rtb_window_lock(win);
 		ret = handle_generic_event(RTB_WINDOW_AS(win, xrtb_window), ev);
-		rtb_window_unlock(win);
 
 		free(ev);
 
-		if (ret)
+		if (ret) {
 			return -1;
+			rtb_window_unlock(win);
+		}
 	}
 
 	if (win->need_reconfigure) {
-		rtb_window_lock(win);
-
 		rtb_window_reinit(win);
 		win->need_reconfigure = 0;
-
-		rtb_window_unlock(win);
 	}
 
+	rtb_window_unlock(win);
 	return 0;
 }
 
