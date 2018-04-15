@@ -59,7 +59,9 @@ typedef enum {
 
 typedef enum {
 	RTB_MOUSE_CURSOR_DEFAULT,
-	RTB_MOUSE_CURSOR_HIDDEN
+	RTB_MOUSE_CURSOR_HIDDEN,
+
+	RTB_MOUSE_CURSOR_COPY
 } rtb_mouse_cursor_t;
 
 /**

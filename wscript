@@ -92,6 +92,7 @@ def check_x11(conf):
     check("xcb")
     check("xcb-xkb")
     check("xcb-icccm")
+    check("xcb-cursor")
     check("xkbfile")
     check("xkbcommon")
     check("xkbcommon-x11")

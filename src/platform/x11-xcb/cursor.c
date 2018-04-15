@@ -25,6 +25,7 @@
  */
 
 #include <xcb/xcb.h>
+#include <xcb/xcb_cursor.h>
 
 #include <rutabaga/rutabaga.h>
 #include <rutabaga/window.h>
@@ -64,24 +65,27 @@ rtb__platform_set_cursor(struct rtb_window *rwin, struct rtb_mouse *mouse,
 {
 	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
 	struct xcb_rutabaga *xrtb = self->xrtb;
-	uint32_t val_mask, val_list;
+	xcb_cursor_t xc;
 
 	switch (cursor) {
 	case RTB_MOUSE_CURSOR_DEFAULT:
-		val_list = 0;
+		xc = 0;
 		break;
 
 	case RTB_MOUSE_CURSOR_HIDDEN:
-		val_list = xrtb->empty_cursor;
+		xc = xrtb->empty_cursor;
+		break;
+
+	case RTB_MOUSE_CURSOR_COPY:
+		xc = xcb_cursor_load_cursor(self->cursor_ctx, "copy");
 		break;
 
 	default:
 		return;
 	}
 
-	val_mask = XCB_CW_CURSOR;
 	xcb_change_window_attributes(xrtb->xcb_conn, self->xcb_win,
-			val_mask, &val_list);
+			XCB_CW_CURSOR, &xc);
 
 	xcb_flush(xrtb->xcb_conn);
 }

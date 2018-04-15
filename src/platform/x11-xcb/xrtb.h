@@ -31,6 +31,7 @@
 #include <uv.h>
 
 #include <xcb/xcb.h>
+#include <xcb/xcb_cursor.h>
 #include <xkbcommon/xkbcommon.h>
 
 #include <GL/glx.h>
@@ -120,6 +121,8 @@ struct xrtb_window {
 
 	xcb_screen_t *screen;
 	xcb_window_t xcb_win;
+
+	xcb_cursor_context_t *cursor_ctx;
 
 	GLXDrawable gl_draw;
 	GLXContext gl_ctx;

@@ -485,6 +485,12 @@ window_impl_open(struct rutabaga *rtb,
 		goto err_screen;
 	}
 
+	if (xcb_cursor_context_new(xrtb->xcb_conn, self->screen,
+				&self->cursor_ctx)) {
+		ERR("couldn't initialise xcb_cursor context\n");
+		goto err_cursor_ctx;
+	}
+
 	/**
 	 * gl configuration
 	 */
@@ -593,6 +599,7 @@ err_xcb_win:
 err_gl_ctx:
 err_gl_config:
 	free(fb_configs);
+err_cursor_ctx:
 err_screen:
 	free(self);
 
@@ -612,6 +619,8 @@ window_impl_close(struct rtb_window *rwin)
 
 	uv_mutex_unlock(&self->lock);
 	uv_mutex_destroy(&self->lock);
+
+	xcb_cursor_context_free(self->cursor_ctx);
 
 	free(self);
 }

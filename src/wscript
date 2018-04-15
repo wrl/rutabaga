@@ -134,6 +134,7 @@ def build(bld):
             'XCB-XKB',
             'XCB-KEYSYMS',
             'XCB-ICCCM',
+            'XCB-CURSOR',
             'XRENDER',
             'XKBFILE',
             'XKBCOMMON',
