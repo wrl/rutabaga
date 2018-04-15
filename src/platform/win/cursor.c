@@ -68,6 +68,7 @@ rtb__platform_set_cursor(struct rtb_window *win, struct rtb_mouse *mouse,
 {
 	switch (cursor) {
 	case RTB_MOUSE_CURSOR_DEFAULT:
+	case RTB_MOUSE_CURSOR_COPY: /* FIXME: windows doesn't have one of these */
 		SetCursor(LoadCursor(NULL, IDC_ARROW));
 		break;
 
