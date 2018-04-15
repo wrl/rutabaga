@@ -24,46 +24,26 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
-
-#include <rutabaga/types.h>
 #include <rutabaga/window.h>
-#include <rutabaga/mouse.h>
+#include <rutabaga/platform.h>
 
-/******************************
- * from platform, to rutabaga
- ******************************/
+#include "xrtb.h"
 
-/**
- * mouse
- */
+void
+rtb_copy_to_clipboard(struct rtb_window *rwin, const rtb_utf8_t *buf,
+		size_t nbytes)
+{
+	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
+	struct xcb_rutabaga *xrtb = self->xrtb;
 
-void rtb__platform_mouse_press(struct rtb_window *,
-		int buttons, int x, int y);
-void rtb__platform_mouse_release(struct rtb_window *,
-		int buttons, int x, int y);
-void rtb__platform_mouse_motion(struct rtb_window *, int x, int y);
+	free(xrtb->clipboard.buffer);
+	xrtb->clipboard.buffer = strndup(buf, nbytes);
+	xrtb->clipboard.nbytes = nbytes;
 
-void rtb__platform_mouse_wheel(struct rtb_window *, int x, int y, float delta);
+	if (!xrtb->clipboard.buffer)
+		return;
 
-void rtb__platform_mouse_enter_window(struct rtb_window *, int x, int y);
-void rtb__platform_mouse_leave_window(struct rtb_window *, int x, int y);
-
-/******************************
- * from rutabaga, to platform
- ******************************/
-
-/**
- * should return the number of nanoseconds inside of which two clicks
- * will be considered a double-click.
- *
- * will be called on every mouse click, so should be reasonably efficient.
- */
-int64_t rtb_mouse_double_click_interval(struct rtb_window *);
-
-void rtb__platform_set_cursor(struct rtb_window *, struct rtb_mouse *,
-		rtb_mouse_cursor_t cursor);
-void rtb_mouse_pointer_warp(struct rtb_window *, int x, int y);
-
-void rtb_copy_to_clipboard(struct rtb_window *, const rtb_utf8_t *buf,
-		size_t nbytes);
+	xcb_set_selection_owner(xrtb->xcb_conn, self->xcb_win,
+			xrtb->atoms.clipboard, XCB_CURRENT_TIME);
+	xcb_flush(xrtb->xcb_conn);
+}

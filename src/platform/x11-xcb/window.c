@@ -218,9 +218,17 @@ window_impl_rtb_alloc(void)
 	INTERN_ATOM(wm_protocols, "WM_PROTOCOLS");
 	INTERN_ATOM(wm_delete_window, "WM_DELETE_WINDOW");
 
+	INTERN_ATOM(targets,     "TARGETS");
+	INTERN_ATOM(timestamp,   "TIMESTAMP");
+	INTERN_ATOM(utf8_string, "UTF8_STRING");
+	INTERN_ATOM(clipboard,   "CLIPBOARD");
+
 #undef INTERN_ATOM
 
 	self->empty_cursor = create_empty_cursor(self);
+
+	self->clipboard.buffer = NULL;
+	self->clipboard.nbytes = 0;
 
 	return (struct rutabaga *) self;
 
@@ -242,6 +250,7 @@ window_impl_rtb_free(struct rutabaga *rtb)
 	XFreeCursor(self->dpy, self->empty_cursor);
 
 	XCloseDisplay(self->dpy);
+	free(self->clipboard.buffer);
 	free(self);
 }
 

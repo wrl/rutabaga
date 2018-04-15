@@ -330,6 +330,76 @@ handle_xkb_event(struct xrtb_window *win, xcb_generic_event_t *_ev)
 }
 
 /**
+ * selection events
+ */
+
+static int
+handle_selection_clear(struct xrtb_window *win, xcb_generic_event_t *_ev)
+{
+	struct xcb_rutabaga *xrtb = win->xrtb;
+
+	free(xrtb->clipboard.buffer);
+
+	xrtb->clipboard.buffer = NULL;
+	xrtb->clipboard.nbytes = 0;
+
+	return 0;
+}
+
+/* code heavily borrowed from
+ * https://github.com/jtanx/libclipboard/blob/master/src/clipboard_x11.c#L290
+ * thanks */
+static int
+handle_selection_request(struct xrtb_window *win, xcb_generic_event_t *_ev)
+{
+	xcb_selection_request_event_t *ev = (void *) _ev;
+	struct xcb_rutabaga *xrtb = win->xrtb;
+	xcb_timestamp_t now;
+
+	xcb_selection_notify_event_t notify = {
+		.response_type = XCB_SELECTION_NOTIFY,
+		.time          = XCB_CURRENT_TIME,
+		.requestor     = ev->requestor,
+		.selection     = ev->selection,
+		.target        = ev->target,
+		.property      = ev->property
+	};
+
+	xcb_atom_t targets[] = {
+		xrtb->atoms.targets,
+		xrtb->atoms.timestamp,
+		xrtb->atoms.utf8_string
+	};
+
+	if (ev->property == XCB_NONE)
+		ev->property = ev->target;
+
+	if (ev->target == xrtb->atoms.targets) {
+		xcb_change_property(xrtb->xcb_conn, XCB_PROP_MODE_REPLACE,
+				ev->requestor, ev->property, XCB_ATOM_ATOM,
+				sizeof(xcb_atom_t) << 3, ARRAY_LENGTH(targets), targets);
+	} else if (ev->target == xrtb->atoms.timestamp) {
+		now = XCB_CURRENT_TIME;
+
+		xcb_change_property(xrtb->xcb_conn, XCB_PROP_MODE_REPLACE,
+				ev->requestor, ev->property, XCB_ATOM_INTEGER,
+				sizeof(xcb_timestamp_t) << 3, 1, &now);
+	} else if (ev->target == xrtb->atoms.utf8_string
+			&& xrtb->clipboard.buffer) {
+		xcb_change_property(xrtb->xcb_conn, XCB_PROP_MODE_REPLACE,
+				ev->requestor, ev->property, ev->target,
+				8, xrtb->clipboard.nbytes, xrtb->clipboard.buffer);
+	} else
+		notify.property = XCB_NONE;
+
+	xcb_send_event(xrtb->xcb_conn, 0, ev->requestor,
+			XCB_EVENT_MASK_PROPERTY_CHANGE, (void *) &notify);
+
+	xcb_flush(xrtb->xcb_conn);
+	return 0;
+}
+
+/**
  * ~mystery~ events
  */
 
@@ -433,6 +503,18 @@ handle_generic_event(struct xrtb_window *win, xcb_generic_event_t *ev)
 
 	case XCB_CLIENT_MESSAGE:
 		handle_client_message(win, ev);
+		break;
+
+	/**
+	 * selection events
+	 */
+
+	case XCB_SELECTION_CLEAR:
+		handle_selection_clear(win, ev);
+		break;
+
+	case XCB_SELECTION_REQUEST:
+		handle_selection_request(win, ev);
 		break;
 
 	/**

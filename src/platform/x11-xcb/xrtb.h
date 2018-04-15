@@ -87,8 +87,13 @@ struct xcb_rutabaga {
 	xcb_connection_t *xcb_conn;
 
 	struct {
-		xcb_atom_t wm_protocols;
-		xcb_atom_t wm_delete_window;
+		xcb_atom_t
+			wm_protocols,
+			wm_delete_window,
+			targets,
+			timestamp,
+			utf8_string,
+			clipboard;
 	} atoms;
 
 	struct {
@@ -112,6 +117,11 @@ struct xcb_rutabaga {
 
 	struct xrtb_uv_poll xcb_poll;
 	struct xrtb_frame_timer frame_timer;
+
+	struct {
+		rtb_utf8_t *buffer;
+		size_t nbytes;
+	} clipboard;
 };
 
 struct xrtb_window {
