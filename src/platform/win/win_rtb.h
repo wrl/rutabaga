@@ -24,10 +24,19 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <windows.h>
+
 #include <uv.h>
 
 #include <rutabaga/rutabaga.h>
 #include <rutabaga/window.h>
+
+struct win_rtb {
+	struct rutabaga rtb;
+
+	HMODULE ole32;
+	HCURSOR copy_cursor;
+};
 
 struct win_rtb_window {
 	RTB_INHERIT(rtb_window);

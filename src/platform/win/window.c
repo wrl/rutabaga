@@ -440,12 +440,22 @@ rtb_window_unlock(struct rtb_window *rwin)
 struct rutabaga *
 window_impl_rtb_alloc(void)
 {
-	struct rutabaga *rtb = calloc(1, sizeof(*rtb));
-	return rtb;
+	struct win_rtb *wrtb = calloc(1, sizeof(*wrtb));
+	HMODULE ole;
+
+	ole = LoadLibrary("ole32.dll");
+	wrtb->ole32 = ole;
+	wrtb->copy_cursor = LoadCursor(ole, MAKEINTRESOURCE(3));
+
+	return (void *) wrtb;
 }
 
 void
 window_impl_rtb_free(struct rutabaga *rtb)
 {
+	struct win_rtb *wrtb = (void *) rtb;
+
+	FreeLibrary(wrtb->ole32);
+
 	free(rtb);
 }
