@@ -313,7 +313,7 @@ rtb_event_loop_run(struct rutabaga *r)
 	 * plug-in, we obviously can't do that.
 	 */
 
-#if 0
+#if 1
 	int status;
 	MSG msg;
 
