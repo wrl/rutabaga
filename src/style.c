@@ -71,25 +71,23 @@ draw_state_for_elem_state(unsigned int state)
  */
 
 static int
-load_texture(struct rtb_style_texture_definition *def)
+load_texture(const struct rtb_style_texture_definition *def)
 {
-	struct rtb_asset *asset = RTB_ASSET(def);
+	const struct rtb_asset *asset = RTB_ASSET(def);
 
 	if (!RTB_ASSET_IS_LOADED(asset))
-		if (rtb_asset_load(asset))
-			return -1;
+		return -1;
 
 	return 0;
 }
 
 static int
-load_font_face(struct rtb_style_font_face *face)
+load_font_face(const struct rtb_style_font_face *face)
 {
-	struct rtb_asset *asset = RTB_ASSET(face);
+	const struct rtb_asset *asset = RTB_ASSET(face);
 
 	if (!RTB_ASSET_IS_LOADED(asset))
-		if (rtb_asset_load(asset))
-			return -1;
+		return -1;
 
 	return 0;
 }
@@ -115,8 +113,8 @@ load_assets(struct rtb_window *window,
 
 			if (rtb_font_manager_load_embedded_font(&window->font_manager,
 						&property->font.font_internal, property->font.size,
-						property->font.face->embedded.base,
-						property->font.face->embedded.size))
+						property->font.face->buffer.data,
+						property->font.face->buffer.size))
 				return -1;
 
 			assets_loaded++;
@@ -323,5 +321,8 @@ rtb_style_for_element(struct rtb_element *elem, struct rtb_style *style_list)
 struct rtb_style *
 rtb_style_get_defaults(void)
 {
-	return default_style;
+	struct rtb_style *stlist = calloc(1, default_style_size);
+	memcpy(stlist, default_style, default_style_size);
+
+	return stlist;
 }

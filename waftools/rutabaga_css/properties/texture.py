@@ -76,10 +76,12 @@ class RutabagaEmbeddedTexture(RutabagaTexture):
     c_repr_tpl = """\
 \t\t\t\t\t.type = RTB_STYLE_PROP_TEXTURE,
 \t\t\t\t\t.texture = {{
+\t\t\t\t\t\t.loaded = 1,
 \t\t\t\t\t\t.location = RTB_ASSET_EMBEDDED,
 \t\t\t\t\t\t.compression = RTB_ASSET_UNCOMPRESSED,
-\t\t\t\t\t\t.embedded.base = {var},
-\t\t\t\t\t\t.embedded.size = sizeof({var}),
+\t\t\t\t\t\t.buffer.allocated = 0,
+\t\t\t\t\t\t.buffer.data = {var},
+\t\t\t\t\t\t.buffer.size = sizeof({var}),
 \t\t\t\t\t\t.w = {width},
 \t\t\t\t\t\t.h = {height},
 {extra}}}"""

@@ -33,10 +33,10 @@ all = [
     "RutabagaAsset",
     "RutabagaExternalAsset",
     "RutabagaEmbeddedAsset",
-    
+
     "RutabagaEmbeddedTextureAsset",
     "RutabagaEmbeddedFontAsset",
-    
+
     "sanitize_c_variable"]
 
 sanitize_cvar = re.compile(r"[^A-Za-z0-9_]+")

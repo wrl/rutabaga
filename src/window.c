@@ -445,6 +445,8 @@ rtb_window_close(struct rtb_window *self)
 	ibos_fini(self);
 	shaders_fini(self);
 
+	free(self->style_list);
+
 	rtb_surface_fini(RTB_SURFACE(self));
 	window_impl_close(self);
 }

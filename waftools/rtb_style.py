@@ -23,13 +23,15 @@ def do_css2c(task):
 
     output_file(".h").write(
         copyright + css2c_prelude
-        + "extern struct rtb_style {var_name}[];".format(var_name=var_name))
+        + ("extern const struct rtb_style {var_name}[];\n"
+           "extern const size_t {var_name}_size;\n").format(var_name=var_name))
 
     output_file(".c").write(
         copyright + css2c_prelude
         + stylesheet.c_prelude() + "\n\n"
-        + "struct rtb_style {var_name}[] = ".format(var_name=var_name)
-        + stylesheet.c_repr(var_name))
+        + "const struct rtb_style {var_name}[] = ".format(var_name=var_name)
+        + stylesheet.c_repr(var_name)
+        + "\n\nconst size_t {var_name}_size = sizeof({var_name});".format(var_name=var_name))
 
 ####
 # bin2c

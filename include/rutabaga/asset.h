@@ -52,16 +52,9 @@ struct rtb_asset {
 	/**
 	 * location
 	 */
-	union {
-		struct {
-			char *path;
-		} external;
-
-		struct {
-			size_t size;
-			const void *base;
-		} embedded;
-	};
+	struct {
+		char *path;
+	} external;
 
 	/**
 	 * compression

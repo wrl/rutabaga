@@ -59,13 +59,15 @@ class RutabagaFontFace(object):
         return w
 
     c_weight_repr = """\
-static struct rtb_style_font_face {def_var} = {{
+static const struct rtb_style_font_face {def_var} = {{
 \t.family = "{family}",
 \t.weight = "{weight}",
+\t.loaded = 1,
 \t.location = RTB_ASSET_EMBEDDED,
 \t.compression = RTB_ASSET_UNCOMPRESSED,
-\t.embedded.base = {asset_var},
-\t.embedded.size = sizeof({asset_var})
+\t.buffer.allocated = 0,
+\t.buffer.data = {asset_var},
+\t.buffer.size = sizeof({asset_var})
 }};"""
 
     def c_repr(self):

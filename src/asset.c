@@ -73,9 +73,6 @@ err_fopen:
 static int
 load_emb(struct rtb_asset *asset)
 {
-	asset->buffer.data = asset->embedded.base;
-	asset->buffer.size = asset->embedded.size;
-
 	return 0;
 }
 

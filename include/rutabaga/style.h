@@ -65,7 +65,7 @@ struct rtb_style_font_face {
 };
 
 struct rtb_style_font_definition {
-	struct rtb_style_font_face *face;
+	const struct rtb_style_font_face *face;
 	int size;
 
 	/* private ********************************/
@@ -93,7 +93,7 @@ struct rtb_rgb_color {
 
 struct rtb_style_property_definition {
 	/* public *********************************/
-	char *property_name;
+	const char *property_name;
 	rtb_style_prop_type_t type;
 
 	union {
@@ -107,7 +107,7 @@ struct rtb_style_property_definition {
 
 struct rtb_style {
 	/* public *********************************/
-	char *for_type;
+	const char *for_type;
 	struct rtb_style_property_definition *properties[RTB_DRAW_STATE_COUNT];
 
 	/* private ********************************/

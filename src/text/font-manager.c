@@ -83,6 +83,8 @@ rtb_font_manager_load_embedded_font(struct rtb_font_manager *fm,
 	if (!font->txfont)
 		return -1;
 
+	printf(" >> loading font at %zx\n", (intptr_t) font);
+
 	font->size = pt_size;
 	font->fm   = fm;
 
@@ -170,8 +172,10 @@ rtb_font_manager_fini(struct rtb_font_manager *fm)
 	TAILQ_FOREACH(font, &fm->managed_fonts, manager_entry) {
 		/* FIXME: free path of external font? */
 		texture_font_delete(font->txfont);
+		printf(" << freeing font at %zx\n", (intptr_t) font);
 	}
 
 	texture_atlas_delete(fm->atlas);
+
 	rtb_shader_free(RTB_SHADER(&fm->shader));
 }
