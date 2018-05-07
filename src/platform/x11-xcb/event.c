@@ -536,18 +536,18 @@ static int
 drain_xcb_event_queue(xcb_connection_t *conn, struct rtb_window *win)
 {
 	xcb_generic_event_t *ev;
-	int ret;
+	int ret, nevents;
 
-	rtb_window_lock(win);
+	nevents = 0;
+
 	while ((ev = xcb_poll_for_event(conn))) {
 		ret = handle_generic_event(RTB_WINDOW_AS(win, xrtb_window), ev);
+		nevents++;
 
 		free(ev);
 
-		if (ret) {
+		if (ret)
 			return -1;
-			rtb_window_unlock(win);
-		}
 	}
 
 	if (win->need_reconfigure) {
@@ -555,8 +555,7 @@ drain_xcb_event_queue(xcb_connection_t *conn, struct rtb_window *win)
 		win->need_reconfigure = 0;
 	}
 
-	rtb_window_unlock(win);
-	return 0;
+	return nevents;
 }
 
 /**
@@ -592,7 +591,9 @@ xcb_poll_cb(uv_poll_t *_handle, int status, int events)
 	xrtb = handle->xrtb;
 	win = ((struct rutabaga *) xrtb)->win;
 
+	rtb_window_lock(win);
 	drain_xcb_event_queue(xrtb->xcb_conn, win);
+	rtb_window_unlock(win);
 }
 
 static void
@@ -608,9 +609,8 @@ frame_cb(uv_timer_t *_handle)
 	win = RTB_WINDOW(xwin);
 	sync = &timer->sync;
 
-	drain_xcb_event_queue(xwin->xrtb->xcb_conn, win);
-
 	rtb_window_lock(win);
+	drain_xcb_event_queue(xwin->xrtb->xcb_conn, win);
 
 	if (rtb_window_draw(win, 0)) {
 		if (sync->functions_valid) {
@@ -623,6 +623,7 @@ frame_cb(uv_timer_t *_handle)
 			glXSwapBuffers(xwin->xrtb->dpy, xwin->gl_draw);
 	}
 
+	drain_xcb_event_queue(xwin->xrtb->xcb_conn, win);
 	rtb_window_unlock(win);
 }
 
