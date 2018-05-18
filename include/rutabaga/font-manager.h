@@ -61,6 +61,8 @@ struct rtb_font_manager {
 
 	texture_atlas_t *atlas;
 
+	const rtb_utf32_t *cache_glyphs;
+
 	TAILQ_HEAD(managed_fonts, rtb_font) managed_fonts;
 };
 

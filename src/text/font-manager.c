@@ -52,7 +52,7 @@ static const uint8_t lcd_weights[] = {
  * since nobody can agree on what a wchar_t is (and, by extension, wchar
  * string literals), we have to do this disgusting-ass list. thanks,
  * microsoft. whoever decided to use utf-16 in windows can get fucked. */
-static const rtb_utf32_t cache[] = {
+static const rtb_utf32_t default_cache[] = {
 	' ', ',', '.', '!', '?', ';', '[', '\\', ']', '^', '_', '@', '{', '|', '}', '~', '\"', '#', '$', '%', '&', '\'', '(', ')',
 	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
 	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
@@ -60,12 +60,12 @@ static const rtb_utf32_t cache[] = {
 };
 
 static int
-init_font(struct rtb_font *font)
+init_font(struct rtb_font *font, const rtb_utf32_t *cache)
 {
 	if (0)
 		memcpy(font->txfont->lcd_weights, lcd_weights, sizeof(lcd_weights));
 
-	texture_font_load_glyphs(font->txfont, cache);
+	texture_font_load_glyphs(font->txfont, cache ? cache : default_cache);
 	return 0;
 }
 
@@ -83,12 +83,10 @@ rtb_font_manager_load_embedded_font(struct rtb_font_manager *fm,
 	if (!font->txfont)
 		return -1;
 
-	printf(" >> loading font at %zx\n", (intptr_t) font);
-
 	font->size = pt_size;
 	font->fm   = fm;
 
-	init_font(font);
+	init_font(font, fm->cache_glyphs);
 	TAILQ_INSERT_TAIL(&fm->managed_fonts, font, manager_entry);
 	return 0;
 }
@@ -121,7 +119,7 @@ rtb_font_manager_load_external_font(struct rtb_font_manager *fm,
 	font->size = pt_size;
 	font->fm   = fm;
 
-	init_font(RTB_FONT(font));
+	init_font(RTB_FONT(font), fm->cache_glyphs);
 	return 0;
 }
 
@@ -151,6 +149,8 @@ rtb_font_manager_init(struct rtb_font_manager *fm, int dpi_x, int dpi_y)
 
 #undef CACHE_UNIFORM
 
+	fm->cache_glyphs = NULL;
+
 #if defined(FT_CONFIG_OPTION_SUBPIXEL_RENDERING) || (FREETYPE_MAJOR > 2 || (FREETYPE_MAJOR == 2 && (FREETYPE_MINOR > 8 || (FREETYPE_MINOR == 8 && FREETYPE_PATCH >= 1))))
 	fm->atlas = texture_atlas_new(512, 512, 3, dpi_x, dpi_y);
 #else
@@ -169,11 +169,9 @@ rtb_font_manager_fini(struct rtb_font_manager *fm)
 {
 	struct rtb_font *font;
 
-	TAILQ_FOREACH(font, &fm->managed_fonts, manager_entry) {
+	TAILQ_FOREACH(font, &fm->managed_fonts, manager_entry)
 		/* FIXME: free path of external font? */
 		texture_font_delete(font->txfont);
-		printf(" << freeing font at %zx\n", (intptr_t) font);
-	}
 
 	texture_atlas_delete(fm->atlas);
 
