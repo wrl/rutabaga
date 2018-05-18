@@ -62,6 +62,7 @@ class RutabagaStylesheet(object):
         self.embedded_assets = []
         self.external_assets = []
 
+        self.fonts_used = 0
         self.fonts = {}
 
         if autoparse:
@@ -98,6 +99,7 @@ class RutabagaStylesheet(object):
         self.in_namespace = None
         css = self.parser.parse_stylesheet(self.css_file.read())
 
+        font_idx = 0
         for rule in css.rules:
             if type(rule) == NamespaceRule:
                 if rule.prefix:
@@ -126,8 +128,8 @@ class RutabagaStylesheet(object):
                     else:
                         self.styles[s] = RutabagaStyle(self, s, decls)
 
-        for s in self.styles:
-            self.styles[s].done_parsing()
+        for (_, s) in self.styles.items():
+            s.done_parsing()
 
         if css.errors:
             for error in css.errors:

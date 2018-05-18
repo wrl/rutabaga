@@ -82,6 +82,8 @@ static void
 restyle(struct rtb_element *elem)
 {
 	const struct rtb_style_property_definition *prop;
+	struct rtb_font *font;
+
 	SELF_FROM(elem);
 
 	super.restyle(elem);
@@ -91,9 +93,10 @@ restyle(struct rtb_element *elem)
 
 	assert(prop);
 
-	if (&prop->font.font_internal != self->font) {
-		/* XXX: const issues */
-		self->font = (struct rtb_font *) &prop->font.font_internal;
+	font = rtb_style_get_font_for_def(self->window, &prop->font);
+
+	if (font != self->font) {
+		self->font = font;
 
 		rtb_text_object_update(self->tobj, self->font, self->text);
 		rtb_elem_trigger_reflow(self->parent, RTB_ELEMENT(self),

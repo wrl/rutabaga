@@ -46,6 +46,9 @@ class RutabagaFontProperty(RutabagaStyleProperty):
         self.size   = size or 12
         self.gamma  = gamma
 
+        self.slot = stylesheet.fonts_used
+        stylesheet.fonts_used += 1
+
         font = self.stylesheet.fonts[self.family]
         self.font_ref = font.use_weight(self.weight)
 
@@ -54,10 +57,12 @@ class RutabagaFontProperty(RutabagaStyleProperty):
 \t\t\t\t\t.font = {{
 \t\t\t\t\t\t.face = &{face_var},
 \t\t\t\t\t\t.size = {size},
-\t\t\t\t\t\t.font_internal.lcd_gamma = {gamma}}}"""
+\t\t\t\t\t\t.slot = {slot},
+\t\t\t\t\t\t.lcd_gamma = {gamma}}}"""
 
     def c_repr(self):
         return self.c_repr_tpl.format(
                 face_var=self.font_ref.descriptor_var,
                 gamma=self.gamma,
-                size=self.size)
+                size=self.size,
+                slot=self.slot)

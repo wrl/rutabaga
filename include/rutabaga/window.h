@@ -75,6 +75,7 @@ struct rtb_window {
 	struct rtb_window_local_storage local_storage;
 
 	struct rtb_style *style_list;
+	struct rtb_font *style_fonts;
 
 	/* private ********************************/
 	struct {

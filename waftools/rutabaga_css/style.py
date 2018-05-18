@@ -112,12 +112,12 @@ class RutabagaStyleState(object):
                         'couldn\'t deduce type of property \'{0}\''.format(prop))
 
     c_state_repr = '''\
-\t\t\t[{state}] = (struct rtb_style_property_definition []) {{
+\t\t\t[{state}] = (const struct rtb_style_property_definition []) {{
 {properties}
 \t\t\t}}'''
 
     c_empty_state_repr = '''\
-\t\t\t[{state}] = (struct rtb_style_property_definition []) {{{{NULL}}}}'''
+\t\t\t[{state}] = (const struct rtb_style_property_definition []) {{{{NULL}}}}'''
 
     c_prop_repr = '''\
 \t\t\t\t{{"{0}",

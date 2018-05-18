@@ -66,10 +66,11 @@ struct rtb_style_font_face {
 
 struct rtb_style_font_definition {
 	const struct rtb_style_font_face *face;
+	float lcd_gamma;
 	int size;
 
 	/* private ********************************/
-	struct rtb_font font_internal;
+	size_t slot;
 };
 
 struct rtb_style_texture_definition {
@@ -108,11 +109,16 @@ struct rtb_style_property_definition {
 struct rtb_style {
 	/* public *********************************/
 	const char *for_type;
-	struct rtb_style_property_definition *properties[RTB_DRAW_STATE_COUNT];
+	const struct rtb_style_property_definition *properties[RTB_DRAW_STATE_COUNT];
 
 	/* private ********************************/
 	struct rtb_style *inherit_from;
 	struct rtb_type_atom_descriptor *resolved_type;
+};
+
+struct rtb_style_data {
+	struct rtb_style *style;
+	size_t nfonts;
 };
 
 /**
@@ -135,4 +141,8 @@ struct rtb_style *rtb_style_for_element(struct rtb_element *elem,
 
 int rtb_style_resolve_list(struct rtb_window *,
 		struct rtb_style *style_list);
-struct rtb_style *rtb_style_get_defaults(void);
+
+struct rtb_font *rtb_style_get_font_for_def(struct rtb_window *,
+		const struct rtb_style_font_definition *);
+
+struct rtb_style_data rtb_style_get_defaults(void);

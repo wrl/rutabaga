@@ -363,6 +363,7 @@ struct rtb_window *
 rtb_window_open_under(struct rutabaga *r, intptr_t parent,
 		int w, int h, const char *title)
 {
+	struct rtb_style_data stdata;
 	struct rtb_window *self;
 
 	assert(r);
@@ -383,7 +384,10 @@ rtb_window_open_under(struct rutabaga *r, intptr_t parent,
 	self->h = h;
 
 	self->surface = RTB_SURFACE(self);
-	self->style_list = rtb_style_get_defaults();
+
+	stdata = rtb_style_get_defaults();
+	self->style_list = stdata.style;
+	self->style_fonts = calloc(stdata.nfonts, sizeof(*self->style_fonts));
 
 	if (shaders_init(self))
 		goto err_shaders;
@@ -445,6 +449,7 @@ rtb_window_close(struct rtb_window *self)
 	ibos_fini(self);
 	shaders_fini(self);
 
+	free(self->style_fonts);
 	free(self->style_list);
 
 	rtb_surface_fini(RTB_SURFACE(self));

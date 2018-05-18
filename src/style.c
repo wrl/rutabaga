@@ -94,8 +94,9 @@ load_font_face(const struct rtb_style_font_face *face)
 
 static int
 load_assets(struct rtb_window *window,
-		struct rtb_style_property_definition *property)
+		const struct rtb_style_property_definition *property)
 {
+	struct rtb_font *font;
 	int assets_loaded = 0;
 
 	for(; property->property_name; property++) {
@@ -111,8 +112,11 @@ load_assets(struct rtb_window *window,
 			if (load_font_face(property->font.face))
 				return -1;
 
+			font = rtb_style_get_font_for_def(window, &property->font);
+			font->lcd_gamma = property->font.lcd_gamma;
+
 			if (rtb_font_manager_load_embedded_font(&window->font_manager,
-						&property->font.font_internal, property->font.size,
+						font, property->font.size,
 						property->font.face->buffer.data,
 						property->font.face->buffer.size))
 				return -1;
@@ -184,7 +188,7 @@ static const struct rtb_style_property_definition *
 query_no_fallback(struct rtb_style *style_list, rtb_elem_state_t elem_state,
 		const char *property_name, rtb_style_prop_type_t type)
 {
-	struct rtb_style_property_definition *prop;
+	const struct rtb_style_property_definition *prop;
 	rtb_draw_state_t draw_state;
 
 	draw_state = draw_state_for_elem_state(elem_state);
@@ -318,11 +322,21 @@ rtb_style_for_element(struct rtb_element *elem, struct rtb_style *style_list)
 	return style_for_type(RTB_TYPE_ATOM(elem), style_list);
 }
 
-struct rtb_style *
+struct rtb_font *
+rtb_style_get_font_for_def(struct rtb_window *win,
+		const struct rtb_style_font_definition *def)
+{
+	return &win->style_fonts[def->slot];
+}
+
+struct rtb_style_data
 rtb_style_get_defaults(void)
 {
 	struct rtb_style *stlist = calloc(1, default_style_size);
 	memcpy(stlist, default_style, default_style_size);
 
-	return stlist;
+	return (struct rtb_style_data) {
+		.style = stlist,
+		.nfonts	= default_style_fonts
+	};
 }
