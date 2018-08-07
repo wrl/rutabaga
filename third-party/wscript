@@ -7,6 +7,8 @@ def build_uv(ctx):
 
 	extra_cflags = [
         '-Wno-gnu-statement-expression',
+        '-Wno-cast-function-type',
+        '-Wno-unused-but-set-variable',
         '-Wno-cast-align',
         '-Wno-varargs'
     ]
