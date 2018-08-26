@@ -382,9 +382,16 @@ mark_dirty(struct rtb_element *self)
 {
 	struct rtb_surface *surface = self->surface;
 
-	self = rtb_elem_nearest_clearable(self);
+	for (; self != RTB_ELEMENT(surface); self = self->parent) {
+		if (self->visibility == RTB_FULLY_OBSCURED)
+			return;
+
+		if (rtb_elem_is_clearable(self))
+			break;
+	}
 
 	if (!surface || surface->surface_state == RTB_SURFACE_INVALID
+			|| !rtb_elem_is_visible(self)
 			|| self->render_entry.tqe_next || self->render_entry.tqe_prev)
 		return;
 
@@ -462,6 +469,18 @@ rtb_elem_draw(struct rtb_element *self, int clear_first)
 	LAYOUT_DEBUG_DRAW_BOX(self);
 
 	rtb_render_pop(self);
+}
+
+int
+rtb_elem_is_visible(struct rtb_element *self)
+{
+	struct rtb_surface *surface = self->surface;
+
+	for (; self != RTB_ELEMENT(surface); self = self->parent)
+		if (self->visibility == RTB_FULLY_OBSCURED)
+			return 0;
+
+	return (surface->visibility != RTB_FULLY_OBSCURED);
 }
 
 int

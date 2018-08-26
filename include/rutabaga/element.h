@@ -254,6 +254,14 @@ void rtb_elem_draw_children(struct rtb_element *);
 void rtb_elem_draw(struct rtb_element *, int clear_first);
 
 /**
+ * returns 1 if this element and all of its parents are visible, 0 otherwise.
+ *
+ * in essence, checks to see if an element or any of the element's parents have
+ * visibility == RTB_FULLY_OBSCURED.
+ */
+int rtb_elem_is_visible(struct rtb_element *);
+
+/**
  * returns 0 if this element could do an rtb_render_clear() and not
  * damage any elements behind it.
  *
