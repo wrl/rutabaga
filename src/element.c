@@ -58,19 +58,16 @@
 static int
 change_state(struct rtb_element *self, rtb_elem_state_t state)
 {
-	switch (self->state) {
-	default:
-		if (self->state == state)
-			return 0;
-
+	if (self->state == RTB_STATE_UNATTACHED || state == RTB_STATE_UNATTACHED) {
 		self->state = state;
-		self->restyle(self);
-		break;
-
-	case RTB_STATE_UNATTACHED:
-		self->state = state;
-		break;
+		return 0;
 	}
+
+	if (self->state == state)
+		return 0;
+
+	self->state = state;
+	self->restyle(self);
 
 	return 0;
 }
@@ -211,6 +208,9 @@ static int
 reflow(struct rtb_element *self,
 		struct rtb_element *instigator, rtb_ev_direction_t direction)
 {
+	if (!self->window->finished_initialising)
+		return 0;
+
 	rtb_rect_update_points_from_size(&self->rect);
 
 	self->inner_rect.x  = self->x  + self->outer_pad.x;
@@ -367,6 +367,7 @@ detached(struct rtb_element *self,
 	self->window = NULL;
 
 	rtb_type_unref(self->type);
+	self->type = NULL;
 
 	TAILQ_FOREACH(iter, &self->children, child)
 		self->child_detached(self, iter);
@@ -627,7 +628,7 @@ rtb_elem_remove_child(struct rtb_element *self, struct rtb_element *child)
 
 	/* XXX: remove from renderqueue if we're marked for redraw */
 
-	if (!self->window)
+	if (self->state == RTB_STATE_UNATTACHED)
 		return;
 
 	if (child->mouse_in) {

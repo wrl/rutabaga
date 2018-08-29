@@ -291,7 +291,9 @@ reflow(struct rtb_element *elem, struct rtb_element *instigator,
 {
 	SELF_FROM(elem);
 
-	super.reflow(elem, instigator, direction);
+	if (!super.reflow(elem, instigator, direction))
+		return 0;
+
 	self->outer_pad.y = self->label.outer_pad.y;
 
 	rtb_quad_set_vertices(&self->bg_quad, &self->rect);

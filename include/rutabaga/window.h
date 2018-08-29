@@ -78,6 +78,8 @@ struct rtb_window {
 	struct rtb_font *style_fonts;
 
 	/* private ********************************/
+	int finished_initialising;
+
 	struct {
 		int x;
 		int y;

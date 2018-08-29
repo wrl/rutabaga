@@ -332,6 +332,8 @@ rtb_window_reinit(struct rtb_window *self)
 {
 	struct rtb_element *elem = RTB_ELEMENT(self);
 
+	self->finished_initialising = 0;
+
 	self->x = self->y = 0.f;
 
 	glScissor(0, 0, self->w, self->h);
@@ -339,6 +341,7 @@ rtb_window_reinit(struct rtb_window *self)
 	if (!self->window)
 		self->attached(elem, NULL, self);
 
+	self->finished_initialising = 1;
 	rtb_elem_trigger_reflow(elem, elem, RTB_DIRECTION_LEAFWARD);
 }
 
