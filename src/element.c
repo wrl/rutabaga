@@ -361,7 +361,17 @@ static void
 detached(struct rtb_element *self,
 		struct rtb_element *parent, struct rtb_window *window)
 {
-	return;
+	struct rtb_element *iter;
+
+	self->parent = NULL;
+	self->window = NULL;
+
+	rtb_type_unref(self->type);
+
+	TAILQ_FOREACH(iter, &self->children, child)
+		self->child_detached(self, iter);
+
+	change_state(self, RTB_STATE_UNATTACHED);
 }
 
 static void
@@ -600,7 +610,7 @@ rtb_elem_add_child(struct rtb_element *self, struct rtb_element *child,
 	else
 		TAILQ_INSERT_TAIL(&self->children, child, child);
 
-	if (self->window) {
+	if (self->state == RTB_STATE_NORMAL) {
 		self->child_attached(self, child);
 
 		if (self->window->state != RTB_STATE_UNATTACHED)

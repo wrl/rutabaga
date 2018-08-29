@@ -64,6 +64,16 @@ attached(struct rtb_element *elem,
 }
 
 static void
+detached(struct rtb_element *elem,
+		struct rtb_element *parent, struct rtb_window *window)
+{
+	SELF_FROM(elem);
+
+	rtb_text_object_free(self->tobj);
+	self->tobj = NULL;
+}
+
+static void
 size(struct rtb_element *elem,
 		const struct rtb_size *avail, struct rtb_size *want)
 {
@@ -146,6 +156,7 @@ rtb_label_init(struct rtb_label *self)
 	self->impl = super;
 	self->impl.draw     = draw;
 	self->impl.attached = attached;
+	self->impl.detached = detached;
 	self->impl.size_cb  = size;
 	self->impl.restyle  = restyle;
 
