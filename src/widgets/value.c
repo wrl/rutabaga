@@ -195,6 +195,12 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 
 	switch (e->type) {
 	case RTB_DRAG_START:
+		if (!(drag_event->mod_keys & (RTB_KEY_MOD_CTRL | RTB_KEY_MOD_ALT)))
+			rtb_mouse_set_cursor(self->window, &self->window->mouse,
+					RTB_MOUSE_CURSOR_HIDDEN);
+
+		/* fall-through */
+
 	case RTB_DRAG_MOTION:
 		return handle_drag(self, drag_event);
 
