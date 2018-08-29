@@ -611,7 +611,7 @@ rtb_elem_add_child(struct rtb_element *self, struct rtb_element *child,
 	else
 		TAILQ_INSERT_TAIL(&self->children, child, child);
 
-	if (self->state == RTB_STATE_NORMAL) {
+	if (self->state != RTB_STATE_UNATTACHED) {
 		self->child_attached(self, child);
 
 		if (self->window->state != RTB_STATE_UNATTACHED)
