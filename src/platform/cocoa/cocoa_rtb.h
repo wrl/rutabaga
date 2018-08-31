@@ -62,6 +62,7 @@ struct cocoa_rtb_window;
 	NSTrackingArea *tracking_area;
 	BOOL was_mouse_coalescing_enabled;
 	BOOL window_did_accept_mouse_moved_events;
+	BOOL control_chorded_left_button;
 }
 @end
 

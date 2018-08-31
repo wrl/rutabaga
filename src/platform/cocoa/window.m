@@ -84,6 +84,7 @@
 	[self setWantsBestResolutionOpenGLSurface:YES];
 	*/
 
+	control_chorded_left_button = false;
 	return self;
 }
 
@@ -262,8 +263,10 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 }
 
 static rtb_mouse_buttons_t
-app_kit_button_to_rtb_button(NSInteger app_kit_button)
+app_kit_button_to_rtb_button(const NSEvent *e)
 {
+	NSInteger app_kit_button = [e buttonNumber];
+
 	switch (app_kit_button) {
 	case 0: return RTB_MOUSE_BUTTON1;
 	case 1: return RTB_MOUSE_BUTTON3;
@@ -275,10 +278,17 @@ app_kit_button_to_rtb_button(NSInteger app_kit_button)
 - (void) mouseDown: (NSEvent *) e
 {
 	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
+	NSInteger control_key = !!(e.modifierFlags & NSControlKeyMask);
+
+	rtb_mouse_buttons_t button = app_kit_button_to_rtb_button(e);
+
+	if (button == RTB_MOUSE_BUTTON_LEFT && control_key) {
+		control_chorded_left_button = true;
+		button = RTB_MOUSE_BUTTON_RIGHT;
+	}
 
 	LOCK;
-	rtb__platform_mouse_press(RTB_WINDOW(rtb_win),
-			app_kit_button_to_rtb_button([e buttonNumber]), pt.x, pt.y);
+	rtb__platform_mouse_press(RTB_WINDOW(rtb_win), button, pt.x, pt.y);
 	UNLOCK;
 }
 
@@ -296,9 +306,15 @@ app_kit_button_to_rtb_button(NSInteger app_kit_button)
 {
 	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
 
+	rtb_mouse_buttons_t button = app_kit_button_to_rtb_button(e);
+
+	if (button == RTB_MOUSE_BUTTON_LEFT && control_chorded_left_button) {
+		control_chorded_left_button = false;
+		button = RTB_MOUSE_BUTTON_RIGHT;
+	}
+
 	LOCK;
-	rtb__platform_mouse_release(RTB_WINDOW(rtb_win),
-			app_kit_button_to_rtb_button([e buttonNumber]), pt.x, pt.y);
+	rtb__platform_mouse_release(RTB_WINDOW(rtb_win), button, pt.x, pt.y);
 	UNLOCK;
 }
 
