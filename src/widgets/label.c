@@ -108,7 +108,8 @@ restyle(struct rtb_element *elem)
 	if (font != self->font) {
 		self->font = font;
 
-		rtb_text_object_update(self->tobj, self->font, self->text);
+		rtb_text_object_update(self->tobj, self->font, self->text,
+				self->line_height_multiplier);
 		rtb_elem_trigger_reflow(self->parent, RTB_ELEMENT(self),
 				RTB_DIRECTION_ROOTWARD);
 	}
@@ -138,7 +139,8 @@ rtb_label_set_text(struct rtb_label *self, const rtb_utf8_t *text)
 	old_size.w = self->tobj->w;
 	old_size.h = self->tobj->h;
 
-	rtb_text_object_update(self->tobj, self->font, self->text);
+	rtb_text_object_update(self->tobj, self->font, self->text,
+			self->line_height_multiplier);
 
 	if (self->tobj->w != old_size.w || self->tobj->h != old_size.h)
 		rtb_elem_trigger_reflow(self->parent, RTB_ELEMENT(self),
@@ -163,6 +165,8 @@ rtb_label_init(struct rtb_label *self)
 	self->text = NULL;
 	self->tobj = NULL;
 	self->font = NULL;
+
+	self->line_height_multiplier = 1.f;
 
 	return 0;
 }

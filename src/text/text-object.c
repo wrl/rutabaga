@@ -79,13 +79,14 @@ rtb_text_object_count_glyphs(struct rtb_text_object *self)
 
 int
 rtb_text_object_update(struct rtb_text_object *self,
-		struct rtb_font *rfont, const rtb_utf8_t *text)
+		struct rtb_font *rfont, const rtb_utf8_t *text,
+		float line_height_multiplier)
 {
+	float x, y, line_height, x0, y0, x1, y1, max_w;
 	rtb_utf32_t codepoint, prev_codepoint;
 	uint32_t state, prev_state;
 	texture_font_t *font;
-	float x0, y0, x1, y1;
-	float x, y;
+	unsigned lines;
 
 	if (!rfont || !text)
 		return -1;
@@ -95,9 +96,14 @@ rtb_text_object_update(struct rtb_text_object *self,
 
 	vertex_buffer_clear(self->vertices);
 
-	x  = 0.f;
-	x1 = 0.f;
-	y  = ceilf(font->height / 2.f) - font->descender + 1.f;
+	line_height = font->height * line_height_multiplier;
+
+	x     = 0.f;
+	x1    = 0.f;
+	y     = ceilf(line_height / 2.f) - font->descender + 1.f;
+
+	max_w = 0.f;
+	lines = 1;
 
 	state = prev_state = UTF8_ACCEPT;
 	prev_codepoint = 0;
@@ -119,6 +125,17 @@ rtb_text_object_update(struct rtb_text_object *self,
 			break;
 
 		default:
+			continue;
+		}
+
+		if (codepoint == '\n') {
+			lines++;
+
+			if (x > max_w)
+				max_w = x;
+
+			y += line_height;
+			x = x1 = 0.f;
 			continue;
 		}
 
@@ -161,8 +178,8 @@ rtb_text_object_update(struct rtb_text_object *self,
 	}
 
 	vertex_buffer_upload(self->vertices);
-	self->h = font->height;
-	self->w = roundf(x);
+	self->h = line_height * lines;
+	self->w = roundf((x > max_w) ? x : max_w);
 
 	return 0;
 }
