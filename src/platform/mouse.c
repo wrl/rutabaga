@@ -282,7 +282,8 @@ retarget(struct rtb_window *win, int x, int y)
 	struct rtb_point cursor = {x, y};
 
 	while (ret != (struct rtb_element *) win) {
-		if (RTB_POINT_IN_RECT(cursor, *ret))
+		if (RTB_POINT_IN_RECT(cursor, *ret)
+				&& ret->visibility != RTB_FULLY_OBSCURED)
 			break;
 
 		ret->mouse_in = 0;
