@@ -54,17 +54,15 @@ static rtb_utf8_t *labels[] = {
 };
 
 static rtb_utf8_t *rlabels[] = {
-	"i'm",
-	"gonna",
-	"pop",
-	"some",
-	"taaaags",
-	"only got",
-	"20 dollars",
-	"in my pocket",
-	"i i i'm huntin",
-	"looking for a come-up",
-	"this is fucking awesome"
+	"the flame",
+	"is melting",
+	"the wax away",
+	"i'm locked",
+	"in a stare",
+	"24 minutes",
+	"make one day",
+	"am i here",
+	"or there"
 };
 
 static struct rtb_button *last_button = NULL;
@@ -72,41 +70,6 @@ static struct rtb_text_input *input;
 static struct rtb_spinbox *spinboxes[2];
 static struct rtb_label time_label;
 static float speed = 1.f;
-
-#ifdef __MACH__
-# include <mach/mach.h>
-# include <mach/mach_time.h>
-
-static int
-time_monotonic(struct timespec *ts)
-{
-	uint64_t t;
-
-	t = mach_absolute_time();
-	ts->tv_sec  = t / 1000000000;
-	ts->tv_nsec = t % 1000000000;
-
-	return 0;
-}
-#elif defined(_WIN32) || defined(_WIN64)
-static int
-time_monotonic(struct timespec *ts)
-{
-	uint64_t t;
-
-	t = uv_hrtime();
-	ts->tv_sec  = t / 1000000000;
-	ts->tv_nsec = t % 1000000000;
-
-	return 0;
-}
-#else
-static int
-time_monotonic(struct timespec *ts)
-{
-	return clock_gettime(CLOCK_MONOTONIC, ts);
-}
-#endif
 
 static void
 print_modkeys(rtb_modkey_t mod_keys)
@@ -372,13 +335,10 @@ static float timer, last;
 static int
 frame_start(struct rtb_element *elem, const struct rtb_event *e, void *ctx)
 {
-	struct timespec ts;
 	float now;
 	char buf[32];
 
-	time_monotonic(&ts);
-
-	now = (ts.tv_sec + (ts.tv_nsec / 1e+09));
+	now = uv_hrtime() / 1e+09;
 	timer += (now - last) * speed;
 
 	snprintf(buf, sizeof(buf), "%.2f", timer);
@@ -391,9 +351,7 @@ frame_start(struct rtb_element *elem, const struct rtb_event *e, void *ctx)
 static void
 init_timer(void)
 {
-	struct timespec ts;
-	time_monotonic(&ts);
-	last = ts.tv_sec + (ts.tv_nsec / 1e+09);
+	last = uv_hrtime() / 1e+09;
 	timer = 0.0;
 }
 
