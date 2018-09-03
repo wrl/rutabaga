@@ -202,6 +202,7 @@ rtb_surface_draw_children(struct rtb_surface *self)
 
 		glDisable(GL_SCISSOR_TEST);
 		rtb_render_clear(RTB_ELEMENT(self));
+		glEnable(GL_SCISSOR_TEST);
 
 		/* first, we clean out the renderqueue for dirty elements (since
 		 * we're going to be redrawing everything anyway.) */
