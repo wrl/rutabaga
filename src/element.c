@@ -626,10 +626,11 @@ rtb_elem_remove_child(struct rtb_element *self, struct rtb_element *child)
 {
 	TAILQ_REMOVE(&self->children, child, child);
 
-	/* XXX: remove from renderqueue if we're marked for redraw */
-
 	if (self->state == RTB_STATE_UNATTACHED)
 		return;
+
+	if (self->render_entry.tqe_next && self->render_entry.tqe_prev)
+		TAILQ_REMOVE(&self->surface->render_queue, self, render_entry);
 
 	if (child->mouse_in) {
 		if (self->window->mouse.buttons_down) {
@@ -694,6 +695,9 @@ rtb_elem_init(struct rtb_element *self)
 
 	self->visibility  = RTB_UNOBSCURED;
 	self->window      = NULL;
+
+	self->render_entry.tqe_next = NULL;
+	self->render_entry.tqe_prev = NULL;
 
 	VECTOR_INIT(&self->handlers, &stdlib_allocator, 1);
 
