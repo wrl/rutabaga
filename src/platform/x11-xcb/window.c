@@ -477,6 +477,19 @@ new_gl_context(Display *dpy, GLXFBConfig fb_config)
 }
 
 static void
+set_swap_interval(Display *dpy, GLXDrawable drawable)
+{
+	PFNGLXSWAPINTERVALEXTPROC swap_interval;
+
+	swap_interval = (void *) glXGetProcAddress((GLubyte *) "glXSwapIntervalEXT");
+
+	if (!swap_interval)
+		return;
+
+	swap_interval(dpy, drawable, 1);
+}
+
+static void
 raise_window(xcb_connection_t *xcb_conn, xcb_window_t window)
 {
 	const uint32_t values[] = {
@@ -624,6 +637,8 @@ window_impl_open(struct rutabaga *rtb,
 		ERR("couldn't activate GLX context\n");
 		goto err_gl_make_current;
 	}
+
+	set_swap_interval(dpy, self->gl_draw);
 
 	ck_map = xcb_map_window_checked(xcb_conn, self->xcb_win);
 	if ((err = xcb_request_check(xcb_conn, ck_map))) {

@@ -562,24 +562,6 @@ drain_xcb_event_queue(xcb_connection_t *conn, struct rtb_window *win)
  * event loop
  */
 
-static int
-video_sync_init(struct video_sync *p)
-{
-	if (getenv("WAYLAND_DISPLAY"))
-		return -1;
-
-#define GET_PROC(dst, name) p->dst = (void *) glXGetProcAddress((GLubyte *) name);
-	GET_PROC(swap_buffers_msc, "glXSwapBuffersMscOML");
-	GET_PROC(get_values, "glXGetSyncValuesOML");
-	GET_PROC(get_msc_rate, "glXGetMscRateOML");
-#undef GET_PROC
-
-	if (!p->swap_buffers_msc || !p->get_values || !p->get_msc_rate)
-		return -1;
-
-	return 0;
-}
-
 static void
 xcb_poll_cb(uv_poll_t *_handle, int status, int events)
 {
@@ -602,26 +584,16 @@ frame_cb(uv_timer_t *_handle)
 	struct xrtb_frame_timer *timer;
 	struct xrtb_window *xwin;
 	struct rtb_window *win;
-	struct video_sync *sync;
 
 	timer = RTB_DOWNCAST(_handle, xrtb_frame_timer, uv_timer_s);
 	xwin = timer->xwin;
 	win = RTB_WINDOW(xwin);
-	sync = &timer->sync;
 
 	rtb_window_lock(win);
 	drain_xcb_event_queue(xwin->xrtb->xcb_conn, win);
 
-	if (rtb_window_draw(win, 0)) {
-		if (sync->functions_valid) {
-			sync->msc++;
-			sync->swap_buffers_msc(xwin->xrtb->dpy, xwin->gl_draw,
-					sync->msc, 0, 0);
-			sync->get_values(xwin->xrtb->dpy, xwin->gl_draw,
-					&sync->ust, &sync->msc, &sync->sbc);
-		} else
-			glXSwapBuffers(xwin->xrtb->dpy, xwin->gl_draw);
-	}
+	if (rtb_window_draw(win, 0))
+		glXSwapBuffers(xwin->xrtb->dpy, xwin->gl_draw);
 
 	drain_xcb_event_queue(xwin->xrtb->xcb_conn, win);
 	rtb_window_unlock(win);
@@ -630,40 +602,16 @@ frame_cb(uv_timer_t *_handle)
 static int
 frame_timer_init(struct xrtb_frame_timer *timer)
 {
-	int32_t fps_num, fps_denom;
 	struct xcb_rutabaga *xrtb;
 	struct xrtb_window *xwin;
-	struct video_sync *sync;
 
 	xwin = timer->xwin;
 	xrtb = xwin->xrtb;
-	sync = &timer->sync;
 
-	sync->functions_valid = 0;
+	/* FIXME: get FPS from xrandr? or xcomposite? whatever. */
 
-	if (video_sync_init(&timer->sync))
-		goto err_vsync_init;
-
-	rtb_window_lock(RTB_WINDOW(xwin));
-	sync->get_values(xrtb->dpy, xwin->gl_draw,
-			&sync->ust, &sync->msc, &sync->sbc);
-
-	sync->get_msc_rate(xrtb->dpy, xwin->gl_draw, &fps_num, &fps_denom);
-	rtb_window_unlock(RTB_WINDOW(xwin));
-
-	if (!fps_num)
-		goto err_vsync_init;
-
-	timer->wait_msec =
-		((1000 * (int64_t) fps_denom) / (int64_t) fps_num) - 1;
-
-	sync->functions_valid = 1;
+	timer->wait_msec = 15;
 	return 0;
-
-err_vsync_init:
-	/* oh well. */
-	timer->wait_msec = 16;
-	return -1;
 }
 
 void
