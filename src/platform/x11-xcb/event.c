@@ -602,12 +602,6 @@ frame_cb(uv_timer_t *_handle)
 static int
 frame_timer_init(struct xrtb_frame_timer *timer)
 {
-	struct xcb_rutabaga *xrtb;
-	struct xrtb_window *xwin;
-
-	xwin = timer->xwin;
-	xrtb = xwin->xrtb;
-
 	/* FIXME: get FPS from xrandr? or xcomposite? whatever. */
 
 	timer->wait_msec = 15;
