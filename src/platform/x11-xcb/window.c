@@ -344,6 +344,7 @@ find_reasonable_fb_config(Display *dpy, xcb_connection_t *xcb_conn,
 
 		int double_buffer;
 		int drawable_type;
+		int visual_id;
 		int caveat;
 	} cfg_info;
 
@@ -363,8 +364,9 @@ find_reasonable_fb_config(Display *dpy, xcb_connection_t *xcb_conn,
 		GET_ATTRIB(GLX_GREEN_SIZE,    sizes.green);
 		GET_ATTRIB(GLX_BLUE_SIZE,     sizes.blue);
 		GET_ATTRIB(GLX_DOUBLEBUFFER,  double_buffer);
-		GET_ATTRIB(GLX_CONFIG_CAVEAT, caveat);
 		GET_ATTRIB(GLX_DRAWABLE_TYPE, drawable_type);
+		GET_ATTRIB(GLX_VISUAL_ID,     visual_id);
+		GET_ATTRIB(GLX_CONFIG_CAVEAT, caveat);
 
 #undef GET_ATTRIB
 
@@ -378,7 +380,8 @@ find_reasonable_fb_config(Display *dpy, xcb_connection_t *xcb_conn,
 			continue;
 		}
 
-		if (!(cfg_info.drawable_type & (GLX_WINDOW_BIT | GLX_PIXMAP_BIT))) {
+		if (!(cfg_info.drawable_type & (GLX_WINDOW_BIT | GLX_PIXMAP_BIT))
+				|| !cfg_info.visual_id) {
 			found_no_win = 1;
 			continue;
 		}
