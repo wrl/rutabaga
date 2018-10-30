@@ -45,7 +45,6 @@ draw_solid(const struct rtb_stylequad *self, const struct rtb_shader *shader,
 	glBindBuffer(GL_ARRAY_BUFFER, self->vertices);
 	glEnableVertexAttribArray(shader->vertex);
 	glVertexAttribPointer(shader->vertex, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
@@ -71,6 +70,7 @@ draw_textured(struct rtb_render_context *ctx,
 	glEnableVertexAttribArray(shader->tex_coord);
 	glVertexAttribPointer(shader->tex_coord,
 			2, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	/* XXX: hardcoded `count` value here */
 	if (border)
@@ -95,23 +95,27 @@ draw(struct rtb_render_context *ctx, const struct rtb_stylequad *self,
 	rtb_render_set_position(ctx, center->x, center->y);
 	glUniform2f(shader->texture_size, 0.f, 0.f);
 
-	if (self->properties.bg_color && mode & RTB_STYLEQUAD_DRAW_BG_COLOR) {
+	if (self->properties.bg_color && (mode & RTB_STYLEQUAD_DRAW_BG_COLOR)) {
 		rtb_render_set_color(ctx,
 				self->properties.bg_color->r,
 				self->properties.bg_color->g,
 				self->properties.bg_color->b,
 				self->properties.bg_color->a);
 
+		glEnableVertexAttribArray(shader->tex_coord);
+
 		draw_solid(self, shader, GL_TRIANGLE_STRIP,
 				ctx->window->local_storage.ibo.stylequad.solid, 4);
+
+		glDisableVertexAttribArray(shader->tex_coord);
 	}
 
 	if (self->background_image.definition
-			&& mode & RTB_STYLEQUAD_DRAW_BG_IMAGE)
+			&& (mode & RTB_STYLEQUAD_DRAW_BG_IMAGE))
 		draw_textured(ctx, self, &self->background_image, 0);
 
 	if (self->border_image.definition
-			&& mode & RTB_STYLEQUAD_DRAW_BORDER_IMAGE)
+			&& (mode & RTB_STYLEQUAD_DRAW_BORDER_IMAGE))
 		draw_textured(ctx, self, &self->border_image, 1);
 
 	if (self->properties.border_color
@@ -144,9 +148,14 @@ rtb_stylequad_draw_solid(const struct rtb_stylequad *self,
 	const struct rtb_shader *shader = ctx->shader;
 
 	rtb_render_set_position(ctx, center->x, center->y);
+	glUniform2f(shader->texture_size, 0.f, 0.f);
+
+	glEnableVertexAttribArray(shader->tex_coord);
 
 	draw_solid(self, shader, GL_TRIANGLE_STRIP,
 			ctx->window->local_storage.ibo.stylequad.solid, 4);
+
+	glDisableVertexAttribArray(shader->tex_coord);
 }
 
 void
