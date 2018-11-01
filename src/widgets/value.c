@@ -72,6 +72,7 @@ static int
 change_state(struct rtb_value_element *self,
 		rtb_value_element_state_t new_state, int active)
 {
+	rtb_value_element_state_t old_state;
 	struct rtb_value_state_event event = {
 		.type   = RTB_VALUE_STATE_CHANGE,
 		.source = RTB_EVENT_GENUINE,
@@ -81,6 +82,8 @@ change_state(struct rtb_value_element *self,
 	if (new_state == RTB_VALUE_STATE_AT_REST)
 		/* invalid value, use active = 0 */
 		return -1;
+
+	old_state = self->ve_state;
 
 	if (active) {
 		switch (self->ve_state) {
@@ -104,7 +107,8 @@ change_state(struct rtb_value_element *self,
 			/* nothing to do */
 			return 0;
 
-		if (!!self->ve_state & !!(self->ve_state = new_state))
+		self->ve_state = new_state;
+		if (new_state && old_state)
 			return 0;
 	} else if (new_state == self->ve_state) {
 		/* we can only transition out of a state from itself. this prevents
