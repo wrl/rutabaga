@@ -33,13 +33,26 @@
 #define RTB_VALUE_ELEMENT_AS(x, type) RTB_DOWNCAST(x, type, rtb_value_element)
 
 typedef enum {
-	RTB_VALUE_CHANGE = 1
+	RTB_VALUE_CHANGE = 1,
+	RTB_VALUE_STATE_CHANGE
 } rtb_value_event_type_t;
 
-struct rtb_value_event {
+struct rtb_value_change_event {
 	RTB_INHERIT(rtb_event);
 	float value;
 };
+
+struct rtb_value_state_event {
+	RTB_INHERIT(rtb_event);
+	int being_edited;
+};
+
+typedef enum {
+	RTB_VALUE_STATE_AT_REST       = 0,
+	RTB_VALUE_STATE_DRAG_EDIT     = 1,
+	RTB_VALUE_STATE_WHEEL_EDIT    = 2,
+	RTB_VALUE_STATE_DISCRETE_EDIT = 3
+} rtb_value_element_state_t;
 
 struct rtb_value_element {
 	RTB_INHERIT(rtb_element);
@@ -54,6 +67,7 @@ struct rtb_value_element {
 	float value;
 
 	/* private ********************************/
+	rtb_value_element_state_t ve_state;
 	float normalised_value;
 
 	void (*set_value_hook)(struct rtb_element *, int synthetic);

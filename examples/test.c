@@ -118,10 +118,26 @@ static int
 knob_value(struct rtb_element *victim,
 		const struct rtb_event *_e, void *unused)
 {
-	const struct rtb_value_event *e = RTB_EVENT_AS(_e, rtb_value_event);
+	const struct rtb_value_change_event *e =
+		RTB_EVENT_AS(_e, rtb_value_change_event);
 
 	speed = e->value;
-	printf(" :: speed: %f\n", e->value);
+	printf("   :: speed: %f\n", e->value);
+	return 0;
+}
+
+static int
+knob_state(struct rtb_element *victim,
+		const struct rtb_event *_e, void *unused)
+{
+	const struct rtb_value_state_event *e =
+		RTB_EVENT_AS(_e, rtb_value_state_event);
+
+	if (e->being_edited)
+		puts("edit {");
+	else
+		puts("}");
+
 	return 0;
 }
 
@@ -150,6 +166,8 @@ distribute_demo(rtb_container_t *root)
 
 				rtb_register_handler(RTB_ELEMENT(knob),
 						RTB_VALUE_CHANGE, knob_value, NULL);
+				rtb_register_handler(RTB_ELEMENT(knob),
+						RTB_VALUE_STATE_CHANGE, knob_state, NULL);
 			} else {
 				knob->origin = 0.5f;
 				knob->min = -1.f;

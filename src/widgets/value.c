@@ -55,11 +55,66 @@ static struct rtb_element_implementation super;
 static int
 dispatch_value_change_event(struct rtb_value_element *self, int synthetic)
 {
-	struct rtb_value_event event = {
+	struct rtb_value_change_event event = {
 		.type   = RTB_VALUE_CHANGE,
 		.source = synthetic ? RTB_EVENT_SYNTHETIC : RTB_EVENT_GENUINE,
 		.value  = self->value
 	};
+
+	return rtb_elem_deliver_event(RTB_ELEMENT(self), RTB_EVENT(&event));
+}
+
+/**
+ * lightweight state machine
+ */
+
+static int
+change_state(struct rtb_value_element *self,
+		rtb_value_element_state_t new_state, int active)
+{
+	struct rtb_value_state_event event = {
+		.type   = RTB_VALUE_STATE_CHANGE,
+		.source = RTB_EVENT_GENUINE,
+		.being_edited = active
+	};
+
+	if (new_state == RTB_VALUE_STATE_AT_REST)
+		/* invalid value, use active = 0 */
+		return -1;
+
+	if (active) {
+		switch (self->ve_state) {
+		case RTB_VALUE_STATE_DRAG_EDIT:
+			/* can't transition from drag edit to any other active states */
+			return 0;
+
+		case RTB_VALUE_STATE_WHEEL_EDIT:
+			if (new_state != RTB_VALUE_STATE_DRAG_EDIT)
+				/* for example, mousewheel -> key or click should stay on the
+				 * mousewheel state until the mouse exits the element. */
+				return 0;
+			break;
+
+		case RTB_VALUE_STATE_AT_REST:
+		case RTB_VALUE_STATE_DISCRETE_EDIT:
+			break;
+		}
+
+		if (self->ve_state == new_state)
+			/* nothing to do */
+			return 0;
+
+		if (!!self->ve_state & !!(self->ve_state = new_state))
+			return 0;
+	} else if (new_state == self->ve_state) {
+		/* we can only transition out of a state from itself. this prevents
+		 * issues like mousewheel during drag prematurely exiting from an
+		 * active state. */
+
+		self->ve_state = RTB_VALUE_STATE_AT_REST;
+	} else {
+		return 0;
+	}
 
 	return rtb_elem_deliver_event(RTB_ELEMENT(self), RTB_EVENT(&event));
 }
@@ -117,9 +172,12 @@ handle_mouse_down(struct rtb_value_element *self,
 	switch (e->button) {
 	case RTB_MOUSE_BUTTON1:
 	case RTB_MOUSE_BUTTON2:
-		if (!(e->mod_keys & (RTB_KEY_MOD_CTRL | RTB_KEY_MOD_ALT)))
+		if (!(e->mod_keys & (RTB_KEY_MOD_CTRL | RTB_KEY_MOD_ALT))) {
 			rtb_mouse_set_cursor(self->window, &self->window->mouse,
 					RTB_MOUSE_CURSOR_HIDDEN);
+
+			change_state(self, RTB_VALUE_STATE_DRAG_EDIT, 1);
+		}
 		return 1;
 
 	default:
@@ -133,8 +191,10 @@ handle_mouse_click(struct rtb_value_element *self,
 {
 	if (e->button == RTB_MOUSE_BUTTON1 && e->click_number > 0
 			&& e->button_state != RTB_MOUSE_BUTTON_STATE_DRAG) {
+		change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 1);
 		rtb__value_element_set_value_uncooked(self,
 				self->origin, 0);
+		change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 0);
 		return 1;
 	}
 
@@ -153,6 +213,11 @@ handle_mouse_wheel(struct rtb_value_element *self,
 		mult = DELTA_VALUE_STEP_COARSE;
 
 	new_value = self->normalised_value + (e->wheel.delta * mult);
+
+	/* FIXME: how should mousewheel input during an active mouse drag edit be
+	 * handled? currently it is allowed, but should we discard it? */
+
+	change_state(self, RTB_VALUE_STATE_WHEEL_EDIT, 1);
 	rtb__value_element_set_normalised_value(self, new_value, 0);
 	return 1;
 }
@@ -172,19 +237,23 @@ handle_key(struct rtb_value_element *self, const struct rtb_key_event *e)
 	switch (e->keysym) {
 	case RTB_KEY_UP:
 	case RTB_KEY_NUMPAD_UP:
-		rtb__value_element_set_normalised_value(self,
-				self->normalised_value + step, 0);
-		return 1;
+		break;
 
 	case RTB_KEY_DOWN:
 	case RTB_KEY_NUMPAD_DOWN:
-		rtb__value_element_set_normalised_value(self,
-				self->normalised_value - step, 0);
-		return 1;
+		step = -step;
+		break;
 
 	default:
 		return 0;
 	}
+
+	change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 1);
+	rtb__value_element_set_normalised_value(self,
+			self->normalised_value + step, 0);
+	change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 0);
+
+	return 1;
 }
 
 static int
@@ -226,8 +295,15 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 		/* fall-through */
 
 	case RTB_MOUSE_UP:
-		if (rtb_elem_is_in_tree(RTB_ELEMENT(self), drag_event->target))
+		if (rtb_elem_is_in_tree(RTB_ELEMENT(self), drag_event->target)) {
 			rtb_mouse_unset_cursor(self->window, &self->window->mouse);
+			change_state(self, RTB_VALUE_STATE_DRAG_EDIT, 0);
+		}
+		return 1;
+
+	case RTB_MOUSE_LEAVE:
+		if (self->ve_state == RTB_VALUE_STATE_WHEEL_EDIT)
+			change_state(self, RTB_VALUE_STATE_WHEEL_EDIT, 0);
 		return 1;
 
 	default:
@@ -335,6 +411,8 @@ rtb_value_element_init(struct rtb_value_element *self)
 	 * not modified the value in-between creating the element and window
 	 * initialisation. */
 	self->normalised_value = -1.f;
+
+	self->ve_state = RTB_VALUE_STATE_AT_REST;
 
 	self->min = 0.f;
 	self->max = 1.f;
