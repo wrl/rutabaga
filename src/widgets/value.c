@@ -189,7 +189,7 @@ handle_mouse_click(struct rtb_value_element *self,
 		const struct rtb_mouse_event *e)
 {
 	if (e->button != RTB_MOUSE_BUTTON1 || !e->click_number
-			|| e->button_state != RTB_MOUSE_BUTTON_STATE_DRAG)
+			|| e->button_state == RTB_MOUSE_BUTTON_STATE_DRAG)
 		return 0;
 
 	change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 1);
