@@ -90,10 +90,10 @@ rtb__value_element_set_value_uncooked(struct rtb_value_element *self,
  */
 
 void rtb_value_element_set_normalised_value(struct rtb_value_element *,
-		float new_value);
+		float new_value, rtb_ev_source_t source);
 
 void rtb_value_element_set_value(struct rtb_value_element *,
-		float new_value);
+		float new_value, rtb_ev_source_t source);
 
 int rtb_value_element_init(struct rtb_value_element *);
 void rtb_value_element_fini(struct rtb_value_element *);

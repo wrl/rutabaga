@@ -68,7 +68,7 @@ dispatch_value_change_event(struct rtb_value_element *self, int synthetic)
  * lightweight state machine
  */
 
-static int
+int
 change_state(struct rtb_value_element *self,
 		rtb_value_element_state_t new_state, int active)
 {
@@ -173,36 +173,31 @@ static int
 handle_mouse_down(struct rtb_value_element *self,
 		const struct rtb_mouse_event *e)
 {
-	switch (e->button) {
-	case RTB_MOUSE_BUTTON1:
-	case RTB_MOUSE_BUTTON2:
-		if (!(e->mod_keys & (RTB_KEY_MOD_CTRL | RTB_KEY_MOD_ALT))) {
-			rtb_mouse_set_cursor(self->window, &self->window->mouse,
-					RTB_MOUSE_CURSOR_HIDDEN);
-
-			change_state(self, RTB_VALUE_STATE_DRAG_EDIT, 1);
-		}
-		return 1;
-
-	default:
+	if (e->button != RTB_MOUSE_BUTTON1 ||
+			(e->mod_keys & (RTB_KEY_MOD_CTRL | RTB_KEY_MOD_ALT)))
 		return 0;
-	}
+
+	rtb_mouse_set_cursor(self->window, &self->window->mouse,
+			RTB_MOUSE_CURSOR_HIDDEN);
+
+	change_state(self, RTB_VALUE_STATE_DRAG_EDIT, 1);
+	return 1;
 }
 
 static int
 handle_mouse_click(struct rtb_value_element *self,
 		const struct rtb_mouse_event *e)
 {
-	if (e->button == RTB_MOUSE_BUTTON1 && e->click_number > 0
-			&& e->button_state != RTB_MOUSE_BUTTON_STATE_DRAG) {
-		change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 1);
-		rtb__value_element_set_value_uncooked(self,
-				self->origin, 0);
-		change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 0);
-		return 1;
-	}
+	if (e->button != RTB_MOUSE_BUTTON1 || !e->click_number
+			|| e->button_state != RTB_MOUSE_BUTTON_STATE_DRAG)
+		return 0;
 
-	return 0;
+	change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 1);
+	rtb__value_element_set_value_uncooked(self,
+			self->origin, 0);
+	change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 0);
+
+	return 1;
 }
 
 static int
@@ -268,9 +263,12 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 
 	switch (e->type) {
 	case RTB_DRAG_START:
-		if (!(drag_event->mod_keys & (RTB_KEY_MOD_CTRL | RTB_KEY_MOD_ALT)))
-			rtb_mouse_set_cursor(self->window, &self->window->mouse,
-					RTB_MOUSE_CURSOR_HIDDEN);
+		if ((drag_event->mod_keys & (RTB_KEY_MOD_CTRL | RTB_KEY_MOD_ALT))
+				|| drag_event->button != RTB_MOUSE_BUTTON1)
+			return 0;
+
+		rtb_mouse_set_cursor(self->window, &self->window->mouse,
+				RTB_MOUSE_CURSOR_HIDDEN);
 
 		/* fall-through */
 
@@ -296,13 +294,18 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 			rtb_mouse_pointer_warp(self->window,
 					drag_event->start.x, drag_event->start.y);
 		}
+
 		/* fall-through */
 
 	case RTB_MOUSE_UP:
+		if (drag_event->button != RTB_MOUSE_BUTTON1)
+			return 0;
+
 		if (rtb_elem_is_in_tree(RTB_ELEMENT(self), drag_event->target)) {
 			rtb_mouse_unset_cursor(self->window, &self->window->mouse);
 			change_state(self, RTB_VALUE_STATE_DRAG_EDIT, 0);
 		}
+
 		return 1;
 
 	case RTB_MOUSE_LEAVE:
@@ -387,15 +390,32 @@ rtb__value_element_set_value_uncooked(struct rtb_value_element *self,
 
 void
 rtb_value_element_set_normalised_value(struct rtb_value_element *self,
-		float new_value)
+		float new_value, rtb_ev_source_t source)
 {
-	rtb__value_element_set_normalised_value(self, new_value, 1);
+	int synthetic = (source == RTB_EVENT_SYNTHETIC) ? 1 : 0;
+
+	if (synthetic) {
+		rtb__value_element_set_normalised_value(self, new_value, synthetic);
+	} else {
+		change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 1);
+		rtb__value_element_set_normalised_value(self, new_value, synthetic);
+		change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 0);
+	}
 }
 
 void
-rtb_value_element_set_value(struct rtb_value_element *self, float new_value)
+rtb_value_element_set_value(struct rtb_value_element *self, float new_value,
+		rtb_ev_source_t source)
 {
-	rtb__value_element_set_value_uncooked(self, new_value, 1);
+	int synthetic = (source == RTB_EVENT_SYNTHETIC) ? 1 : 0;
+
+	if (synthetic) {
+		rtb__value_element_set_value_uncooked(self, new_value, synthetic);
+	} else {
+		change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 1);
+		rtb__value_element_set_value_uncooked(self, new_value, synthetic);
+		change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 0);
+	}
 }
 
 int
