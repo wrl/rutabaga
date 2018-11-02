@@ -264,8 +264,11 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 	switch (e->type) {
 	case RTB_DRAG_START:
 		if ((drag_event->mod_keys & (RTB_KEY_MOD_CTRL | RTB_KEY_MOD_ALT))
-				|| drag_event->button != RTB_MOUSE_BUTTON1)
+				|| drag_event->button != RTB_MOUSE_BUTTON1) {
+			rtb_mouse_unset_cursor(self->window, &self->window->mouse);
+			change_state(self, RTB_VALUE_STATE_DRAG_EDIT, 0);
 			return 0;
+		}
 
 		rtb_mouse_set_cursor(self->window, &self->window->mouse,
 				RTB_MOUSE_CURSOR_HIDDEN);
