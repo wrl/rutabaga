@@ -126,7 +126,7 @@ struct rtb_mouse {
 		rtb_modkey_t drag_start_mod_keys;
 		struct rtb_point drag_start;
 
-		uint64_t last_click;
+		uint64_t last_mouse_down, last_click;
 		int click_count;
 	} button[RTB_MOUSE_BUTTON_MAX + 1];
 
