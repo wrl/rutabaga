@@ -162,7 +162,8 @@ distribute_demo(rtb_container_t *root)
 				knob->origin = 1.f;
 				knob->min = 0.f;
 				knob->max = 2.f;
-				rtb_value_element_set_value(RTB_VALUE_ELEMENT(knob), 1.f);
+				rtb_value_element_set_value(RTB_VALUE_ELEMENT(knob), 1.f,
+						RTB_EVENT_SYNTHETIC);
 
 				rtb_register_handler(RTB_ELEMENT(knob),
 						RTB_VALUE_CHANGE, knob_value, NULL);
