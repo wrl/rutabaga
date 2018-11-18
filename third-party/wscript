@@ -34,9 +34,18 @@ def build_uv(ctx):
 
 		from_gyp['libraries'] = [re.sub('\.lib$', '', x)
 				for x in from_gyp['libraries']]
+
 	elif ctx.env.DEST_OS == 'darwin':
 		# some bullshit about converting between void pointer and function pointer
 		from_gyp['ldflags'].remove('-pthread')
+
+	elif ctx.env.DEST_OS == 'linux':
+		if ctx.env['CC'][0].find('clang') < 0:
+			# gcc keeps adding warnings (which are good for code quality) that
+			# clang doesn't know about, so they have to be special-cased here.
+
+			extra_cflags += [
+				'-Wno-cast-function-type']
 
 	ctx.env.append_unique('LINKFLAGS_UV_FLAGS', from_gyp['ldflags'])
 	ctx.env.append_unique('LIB_UV_FLAGS', from_gyp['libraries'])
