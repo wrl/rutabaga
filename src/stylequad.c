@@ -102,12 +102,8 @@ draw(struct rtb_render_context *ctx, const struct rtb_stylequad *self,
 				self->properties.bg_color->b,
 				self->properties.bg_color->a);
 
-		glEnableVertexAttribArray(shader->tex_coord);
-
 		draw_solid(self, shader, GL_TRIANGLE_STRIP,
 				ctx->window->local_storage.ibo.stylequad.solid, 4);
-
-		glDisableVertexAttribArray(shader->tex_coord);
 	}
 
 	if (self->background_image.definition
@@ -150,12 +146,8 @@ rtb_stylequad_draw_solid(const struct rtb_stylequad *self,
 	rtb_render_set_position(ctx, center->x, center->y);
 	glUniform2f(shader->texture_size, 0.f, 0.f);
 
-	glEnableVertexAttribArray(shader->tex_coord);
-
 	draw_solid(self, shader, GL_TRIANGLE_STRIP,
 			ctx->window->local_storage.ibo.stylequad.solid, 4);
-
-	glDisableVertexAttribArray(shader->tex_coord);
 }
 
 void
