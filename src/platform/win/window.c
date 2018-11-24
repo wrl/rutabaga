@@ -270,33 +270,31 @@ init_gl_ctx(struct win_rtb_window *self, const wchar_t *title)
 		goto err_ctx_version;
 	}
 
-	if ((maj == 3 && min >= 2) || maj > 3) {
-		self->gl_ctx = trampoline_ctx;
-	} else if (ext.create_context_attribs) {
-		create_context_attribs = (PFNWGLCREATECONTEXTATTRIBSARBPROC)
-			wglGetProcAddress("wglCreateContextAttribsARB");
-
-		if (!create_context_attribs)
-			goto err_create_ctx;
-
-		gl_ctx = create_context_attribs(self->dc, NULL, ctx_attribs);
-
-		if (!gl_ctx)
-			goto err_ctx_version;
-
-		wglMakeCurrent(self->dc, NULL);
-		wglDeleteContext(trampoline_ctx);
-
-		self->gl_ctx = gl_ctx;
-		wglMakeCurrent(self->dc, gl_ctx);
-	} else {
+	if (!ext.create_context_attribs) {
 		messageboxf(title,
-				L"openGL context version %d.%d is too old, "
-				L"and wglCreateContextAttribsARB is not present",
+				L"wglCreateContextAttribsARB is unsupported – "
+				L"can't create the necessary openGL context.",
 				min, maj);
 
 		goto err_ctx_version;
 	}
+
+	create_context_attribs = (PFNWGLCREATECONTEXTATTRIBSARBPROC)
+		wglGetProcAddress("wglCreateContextAttribsARB");
+
+	if (!create_context_attribs)
+		goto err_create_ctx;
+
+	gl_ctx = create_context_attribs(self->dc, NULL, ctx_attribs);
+
+	if (!gl_ctx)
+		goto err_ctx_version;
+
+	wglMakeCurrent(self->dc, NULL);
+	wglDeleteContext(trampoline_ctx);
+
+	self->gl_ctx = gl_ctx;
+	wglMakeCurrent(self->dc, gl_ctx);
 
 	if (ext.swap_control) {
 		swap_interval = (PFNWGLSWAPINTERVALEXTPROC)
