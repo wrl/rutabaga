@@ -101,8 +101,7 @@ size(struct rtb_element *elem,
 
 	rtb_size_vfit_children(elem, avail, want);
 
-	self->name_label.size_cb(RTB_ELEMENT(&self->name_label),
-			avail, &label_size);
+	rtb_elem_request_size(RTB_ELEMENT(&self->name_label), avail, &label_size);
 	want->w = fmax(want->w, label_size.w + (LABEL_PADDING * 2.f));
 }
 

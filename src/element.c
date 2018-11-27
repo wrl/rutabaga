@@ -574,6 +574,13 @@ rtb_elem_set_position(struct rtb_element *self, float x, float y)
 }
 
 void
+rtb_elem_request_size(struct rtb_element *self,
+		const struct rtb_size *avail, struct rtb_size *want)
+{
+	self->size_cb(self, avail, want);
+}
+
+void
 rtb_elem_set_size(struct rtb_element *self, struct rtb_size *sz)
 {
 	self->w = sz->w;

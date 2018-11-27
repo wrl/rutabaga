@@ -340,7 +340,7 @@ layout(struct rtb_element *elem)
 	ystart = elem->y + elem->outer_pad.y;
 
 	TAILQ_FOREACH(iter, &elem->children, child) {
-		iter->size_cb(iter, &avail, &child);
+		rtb_elem_request_size(iter, &avail, &child);
 		position.y = ystart + valign(avail.h, child.h, iter->align);
 
 		rtb_elem_set_position_from_point(iter, &position);

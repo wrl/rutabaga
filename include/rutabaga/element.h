@@ -282,6 +282,8 @@ void rtb_elem_trigger_reflow(struct rtb_element *,
 void rtb_elem_reflow_leafward(struct rtb_element *);
 void rtb_elem_reflow_rootward(struct rtb_element *);
 
+void rtb_elem_request_size(struct rtb_element *,
+		const struct rtb_size *avail, struct rtb_size *want);
 void rtb_elem_set_size_cb(struct rtb_element *, rtb_elem_cb_size_t size_cb);
 void rtb_elem_set_layout(struct rtb_element *, rtb_elem_cb_t layout_cb);
 void rtb_elem_set_position_from_point(struct rtb_element *, struct rtb_point *);

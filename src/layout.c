@@ -54,7 +54,7 @@ rtb_size_hfit_children(struct rtb_element *elem,
 	struct rtb_size child, need = {-elem->inner_pad.x, 0.f}, zero = {0.f, 0.f};
 
 	TAILQ_FOREACH(iter, &elem->children, child) {
-		iter->size_cb(iter, &zero, &child);
+		rtb_elem_request_size(iter, &zero, &child);
 
 		need.w += child.w + elem->inner_pad.x;
 		need.h  = fmax(need.h, child.h);
@@ -75,7 +75,7 @@ rtb_size_vfit_children(struct rtb_element *elem,
 	struct rtb_size child, need = {0.f, -elem->inner_pad.y}, zero = {0.f, 0.f};
 
 	TAILQ_FOREACH(iter, &elem->children, child) {
-		iter->size_cb(iter, &zero, &child);
+		rtb_elem_request_size(iter, &zero, &child);
 
 		need.w  = fmax(need.w, child.w);
 		need.h += child.h + elem->inner_pad.y;
@@ -125,7 +125,7 @@ rtb_layout_unmanaged(struct rtb_element *elem)
 	avail = elem->inner_rect.size;
 
 	TAILQ_FOREACH(iter, &elem->children, child) {
-		iter->size_cb(iter, &avail, &child);
+		rtb_elem_request_size(iter, &avail, &child);
 		rtb_elem_set_size(iter, &child);
 	}
 }
@@ -147,7 +147,7 @@ rtb_layout_vpack_top(struct rtb_element *elem)
 	position.y = elem->inner_rect.y;
 
 	TAILQ_FOREACH(iter, &elem->children, child) {
-		iter->size_cb(iter, &avail, &child);
+		rtb_elem_request_size(iter, &avail, &child);
 		position.x = xstart + halign(avail.w, child.w, iter->align);
 
 		rtb_elem_set_position_from_point(iter, &position);
@@ -174,7 +174,7 @@ rtb_layout_vpack_middle(struct rtb_element *elem)
 
 	children_height = -elem->inner_pad.y;
 	TAILQ_FOREACH(iter, &elem->children, child) {
-		iter->size_cb(iter, &avail, &child);
+		rtb_elem_request_size(iter, &avail, &child);
 		children_height += child.h + elem->inner_pad.y;
 	}
 
@@ -184,7 +184,7 @@ rtb_layout_vpack_middle(struct rtb_element *elem)
 		return rtb_layout_vpack_top(elem);
 
 	TAILQ_FOREACH(iter, &elem->children, child) {
-		iter->size_cb(iter, &avail, &child);
+		rtb_elem_request_size(iter, &avail, &child);
 		position.x = xstart + halign(avail.w, child.w, iter->align);
 
 		rtb_elem_set_position_from_point(iter, &position);
@@ -209,7 +209,7 @@ rtb_layout_vpack_bottom(struct rtb_element *elem)
 	position.y = elem->inner_rect.y2 + elem->inner_pad.y;
 
 	TAILQ_FOREACH_REVERSE(iter, &elem->children, children, child) {
-		iter->size_cb(iter, &avail, &child);
+		rtb_elem_request_size(iter, &avail, &child);
 		position.x = xstart + halign(avail.w, child.w, iter->align);
 		position.y -= child.h + elem->inner_pad.y;
 
@@ -240,7 +240,7 @@ rtb_layout_hpack_left(struct rtb_element *elem)
 	ystart = elem->inner_rect.y;
 
 	TAILQ_FOREACH(iter, &elem->children, child) {
-		iter->size_cb(iter, &avail, &child);
+		rtb_elem_request_size(iter, &avail, &child);
 		position.y = ystart + valign(avail.h, child.h, iter->align);
 
 		rtb_elem_set_position_from_point(iter, &position);
@@ -265,7 +265,7 @@ rtb_layout_hpack_center(struct rtb_element *elem)
 
 	children_width = -elem->inner_pad.x;
 	TAILQ_FOREACH(iter, &elem->children, child) {
-		iter->size_cb(iter, &avail, &child);
+		rtb_elem_request_size(iter, &avail, &child);
 		children_width += child.w + elem->inner_pad.x;
 	}
 
@@ -275,7 +275,7 @@ rtb_layout_hpack_center(struct rtb_element *elem)
 		return rtb_layout_hpack_left(elem);
 
 	TAILQ_FOREACH(iter, &elem->children, child) {
-		iter->size_cb(iter, &avail, &child);
+		rtb_elem_request_size(iter, &avail, &child);
 		position.y = ystart + valign(avail.h, child.h, iter->align);
 
 		rtb_elem_set_position_from_point(iter, &position);
@@ -299,7 +299,7 @@ rtb_layout_hpack_right(struct rtb_element *elem)
 	ystart = elem->inner_rect.y;
 
 	TAILQ_FOREACH_REVERSE(iter, &elem->children, children, child) {
-		iter->size_cb(iter, &avail, &child);
+		rtb_elem_request_size(iter, &avail, &child);
 		position.x -= child.w + elem->inner_pad.x;
 		position.y = ystart + valign(avail.h, child.h, iter->align);
 
@@ -381,7 +381,7 @@ rtb_layout_hdistribute(struct rtb_element *elem)
 	avail = elem->inner_rect.size;
 
 	TAILQ_FOREACH(iter, &elem->children, child) {
-		iter->size_cb(iter, &avail, &child);
+		rtb_elem_request_size(iter, &avail, &child);
 		rtb_elem_set_size(iter, &child);
 
 		if (!child0_width)
