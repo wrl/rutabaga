@@ -68,14 +68,16 @@ static void
 handle_mouse_enter(struct xrtb_window *win, const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_enter_notify_event_t);
-	rtb__platform_mouse_enter_window(RTB_WINDOW(win), ev->event_x, ev->event_y);
+	rtb__platform_mouse_enter_window(RTB_WINDOW(win),
+			RTB_MAKE_PHY_POINT(ev->event_x, ev->event_y));
 }
 
 static void
 handle_mouse_leave(struct xrtb_window *win, const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_leave_notify_event_t);
-	rtb__platform_mouse_leave_window(RTB_WINDOW(win), ev->event_x, ev->event_y);
+	rtb__platform_mouse_leave_window(RTB_WINDOW(win),
+			RTB_MAKE_PHY_POINT(ev->event_x, ev->event_y));
 }
 
 static void
@@ -85,7 +87,7 @@ handle_mouse_wheel(struct xrtb_window *window,
 	float delta = (ev->detail == 4) ? 1.f : -1.f;
 
 	rtb__platform_mouse_wheel(RTB_WINDOW(window),
-			ev->event_x, ev->event_y, delta);
+			RTB_MAKE_PHY_POINT(ev->event_x, ev->event_y), delta);
 }
 
 static void
@@ -113,7 +115,7 @@ handle_mouse_button_press(struct xrtb_window *win,
 	}
 
 	rtb__platform_mouse_press(RTB_WINDOW(win),
-			button, ev->event_x, ev->event_y);
+			button, RTB_MAKE_PHY_POINT(ev->event_x, ev->event_y));
 
 dont_handle:
 	cookie = xcb_grab_pointer(
@@ -154,7 +156,7 @@ handle_mouse_button_release(struct xrtb_window *xwin,
 	}
 
 	rtb__platform_mouse_release(RTB_WINDOW(xwin),
-			button, ev->event_x, ev->event_y);
+			button, RTB_MAKE_PHY_POINT(ev->event_x, ev->event_y));
 }
 
 static void
@@ -162,7 +164,8 @@ handle_mouse_motion(struct xrtb_window *win, const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_motion_notify_event_t);
 
-	rtb__platform_mouse_motion(RTB_WINDOW(win), ev->event_x, ev->event_y);
+	rtb__platform_mouse_motion(RTB_WINDOW(win),
+			RTB_MAKE_PHY_POINT(ev->event_x, ev->event_y));
 }
 
 /**

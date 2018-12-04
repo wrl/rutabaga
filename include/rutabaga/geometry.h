@@ -27,18 +27,19 @@
 #pragma once
 
 #include <rutabaga/types.h>
+#include <rutabaga/rutabaga.h>
 
 #define RTB_POINT(x) RTB_UPCAST(x, rtb_point)
 #define RTB_POINT_IN_RECT(pt, rect) \
 	((pt).x >= (rect).x && (pt).x <= (rect).x2 \
 	 && (pt).y >= (rect).y && (pt).y <= (rect).y2)
 
-#define RTB_MAKE_PHY_POINT(x, y) ((struct rtb_phy_point) {.x = x, .y = y})
-#define RTB_MAKE_POINT(x, y) ((struct rtb_point) {.x = x, .y = y})
+#define RTB_MAKE_PHY_POINT(X, Y) ((struct rtb_phy_point) {.x = (X), .y = (Y)})
+#define RTB_MAKE_POINT(X, Y) ((struct rtb_point) {.x = (X), .y = (Y)})
 
 struct rtb_phy_point {
-	GLfloat x;
-	GLfloat y;
+	int x;
+	int y;
 };
 
 struct rtb_point {
@@ -100,6 +101,8 @@ rtb_rect_update_points_from_size(struct rtb_rect *rect)
 	rect->x2 = rect->x + rect->w;
 	rect->y2 = rect->y + rect->h;
 }
+
+struct rtb_window;
 
 struct rtb_phy_point rtb_point_to_phy(struct rtb_window *,
 		struct rtb_point pt);
