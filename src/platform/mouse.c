@@ -205,7 +205,7 @@ mouse_down(struct rtb_window *window, struct rtb_element *target,
 
 static void
 mouse_up(struct rtb_window *window, struct rtb_element *target,
-		int button, int x, int y)
+		int button, float x, float y)
 {
 	int64_t double_click_interval, time_between_clicks, time_in_click;
 	struct rtb_mouse *mouse = &window->mouse;
@@ -382,8 +382,6 @@ rtb__platform_mouse_motion(struct rtb_window *win, int x, int y)
 {
 	struct rtb_size delta;
 
-	RESCALE_COORDS();
-
 	if (!win->mouse_in) {
 		if ((0 < x && x < win->w) && (0 < y && y < win->h)) {
 			rtb__platform_mouse_enter_window(win, x, y);
@@ -391,6 +389,8 @@ rtb__platform_mouse_motion(struct rtb_window *win, int x, int y)
 		} else if (!win->mouse.buttons_down)
 			return;
 	}
+
+	RESCALE_COORDS();
 
 	retarget(win, x, y);
 
@@ -436,10 +436,10 @@ rtb__platform_mouse_wheel(struct rtb_window *win, int x, int y, float delta)
 void
 rtb__platform_mouse_enter_window(struct rtb_window *win, int x, int y)
 {
-	RESCALE_COORDS();
-
 	if (win->mouse_in)
 		rtb__platform_mouse_leave_window(win, x, y);
+
+	RESCALE_COORDS();
 
 	win->mouse_in = 1;
 	win->mouse.element_underneath = RTB_ELEMENT(win);

@@ -104,8 +104,8 @@ struct rtb_drag_event {
 	rtb_modkey_t start_mod_keys;
 
 	struct {
-		int x;
-		int y;
+		float x;
+		float y;
 	} delta;
 };
 

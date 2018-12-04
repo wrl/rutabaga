@@ -46,15 +46,15 @@ rtb_mouse_pointer_warp(struct rtb_window *rwin, int x, int y)
 {
 	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
 	struct rtb_mouse *m = &rwin->mouse;
+	struct rtb_phy_point phy;
 
-	x = roundf(x * rwin->scale_recip.x);
-	y = roundf(y * rwin->scale_recip.y);
+	phy = rtb_point_to_phy(rwin, RTB_MAKE_POINT(x, y));
 
 	if (self->xrtb->running_in_xwayland || (x == m->x && y == m->y))
 		return;
 
 	xcb_warp_pointer(self->xrtb->xcb_conn, XCB_NONE, self->xcb_win,
-			0, 0, 0, 0, x, y);
+			0, 0, 0, 0, phy.x, phy.y);
 
 	/* since xorg sends us a motion notify, we have to fix the previous
 	 * cursor position so that dragging still works as expected. */
