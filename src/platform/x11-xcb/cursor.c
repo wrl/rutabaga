@@ -47,6 +47,9 @@ rtb_mouse_pointer_warp(struct rtb_window *rwin, int x, int y)
 	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
 	struct rtb_mouse *m = &rwin->mouse;
 
+	x = roundf(x * rwin->scale_recip.x);
+	y = roundf(y * rwin->scale_recip.y);
+
 	if (self->xrtb->running_in_xwayland || (x == m->x && y == m->y))
 		return;
 

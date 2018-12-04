@@ -332,6 +332,11 @@ descend:
  * platform API
  */
 
+#define RESCALE_COORDS() do {												\
+		x *= win->scale.x;													\
+		y *= win->scale.y;													\
+	} while (0)
+
 void
 rtb__platform_mouse_press(struct rtb_window *win,
 		int button, int x, int y)
@@ -340,6 +345,8 @@ rtb__platform_mouse_press(struct rtb_window *win,
 
 	if (button > RTB_MOUSE_BUTTON_MAX)
 		return;
+
+	RESCALE_COORDS();
 
 	target = element_underneath_mouse(win);
 
@@ -362,6 +369,8 @@ rtb__platform_mouse_release(struct rtb_window *win,
 	if (button > RTB_MOUSE_BUTTON_MAX)
 		return;
 
+	RESCALE_COORDS();
+
 	target = element_underneath_mouse(win);
 
 	mouse_up(win, target, button, x, y);
@@ -372,6 +381,8 @@ void
 rtb__platform_mouse_motion(struct rtb_window *win, int x, int y)
 {
 	struct rtb_size delta;
+
+	RESCALE_COORDS();
 
 	if (!win->mouse_in) {
 		if ((0 < x && x < win->w) && (0 < y && y < win->h)) {
@@ -400,15 +411,18 @@ rtb__platform_mouse_motion(struct rtb_window *win, int x, int y)
 }
 
 void
-rtb__platform_mouse_wheel(struct rtb_window *window, int x, int y, float delta)
+rtb__platform_mouse_wheel(struct rtb_window *win, int x, int y, float delta)
 {
-	struct rtb_element *target = element_underneath_mouse(window);
+	struct rtb_element *target = element_underneath_mouse(win);
+
+	RESCALE_COORDS();
+
 	struct rtb_mouse_event ev = {
 		.type = RTB_MOUSE_WHEEL,
-		.window = window,
+		.window = win,
 		.target = target,
 
-		.mod_keys = rtb_get_modkeys(window),
+		.mod_keys = rtb_get_modkeys(win),
 
 		.wheel.delta = delta,
 		.cursor = {
@@ -422,6 +436,8 @@ rtb__platform_mouse_wheel(struct rtb_window *window, int x, int y, float delta)
 void
 rtb__platform_mouse_enter_window(struct rtb_window *win, int x, int y)
 {
+	RESCALE_COORDS();
+
 	if (win->mouse_in)
 		rtb__platform_mouse_leave_window(win, x, y);
 
@@ -439,6 +455,8 @@ void
 rtb__platform_mouse_leave_window(struct rtb_window *win, int x, int y)
 {
 	struct rtb_element *underneath = element_underneath_mouse(win);
+
+	RESCALE_COORDS();
 
 	while (underneath) {
 		underneath->mouse_in = 0;

@@ -85,6 +85,9 @@ struct rtb_window {
 		int y;
 	} dpi;
 
+	struct rtb_point scale;
+	struct rtb_point scale_recip;
+
 	struct rutabaga *rtb;
 
 	GLuint vao;

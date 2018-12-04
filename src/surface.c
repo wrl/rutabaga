@@ -79,8 +79,17 @@ reflow(struct rtb_element *elem, struct rtb_element *instigator,
 		return -1;
 
 	mat4_set_orthographic(&self->render_ctx.projection,
-			self->x, self->x + self->w,
-			self->y + self->h, self->y,
+			self->x,
+			self->x + (self->w * self->window->scale.x),
+			self->y + (self->h * self->window->scale.y),
+			self->y,
+			-1.f, 1.f);
+
+	mat4_set_orthographic(&self->phy_projection,
+			self->x,
+			self->x + self->w,
+			self->y + self->h,
+			self->y,
 			-1.f, 1.f);
 
 	glBindTexture(GL_TEXTURE_2D, self->texture);
@@ -160,6 +169,9 @@ rtb_surface_blit(struct rtb_surface *self)
 	rtb_render_reset(elem);
 	rtb_render_use_shader(ctx, shader);
 	rtb_render_set_position(ctx, 0, 0);
+
+	glUniformMatrix4fv(shader->matrices.projection,
+		1, GL_FALSE, self->phy_projection.data);
 
 	glBindTexture(GL_TEXTURE_2D, self->texture);
 	glUniform1i(shader->texture, 0);

@@ -53,6 +53,8 @@ struct rtb_surface {
 
 	struct rtb_render_tailq render_queue;
 	struct rtb_render_context render_ctx;
+
+	mat4 phy_projection;
 };
 
 int rtb_surface_is_dirty(struct rtb_surface *);
