@@ -77,12 +77,23 @@ rtb_text_object_count_glyphs(struct rtb_text_object *self)
 	return vector_size(self->vertices->vertices) / 4;
 }
 
+static float
+quantize(float x, float modulo, float modulo_recip, float *remainder)
+{
+	float ret = x * modulo_recip;
+	float floored = floorf(ret);
+
+	*remainder = (ret - floored) * modulo;
+
+	return floored * modulo;
+}
+
 int
 rtb_text_object_update(struct rtb_text_object *self,
 		struct rtb_font *rfont, struct rtb_window *win,
 		const rtb_utf8_t *text, float line_height_multiplier)
 {
-	float x, y, line_height, x0, y0, x1, y1, max_w;
+	float x, y, line_height, x0, y0, x1, y1, max_w, scale_x_recip;
 	struct rtb_point scale = win->scale_recip;
 	rtb_utf32_t codepoint, prev_codepoint;
 	uint32_t state, prev_state;
@@ -94,6 +105,7 @@ rtb_text_object_update(struct rtb_text_object *self,
 
 	font = rfont->txfont;
 	self->font = rfont;
+	scale_x_recip = win->scale.x;
 
 	vertex_buffer_clear(self->vertices);
 
@@ -149,29 +161,19 @@ rtb_text_object_update(struct rtb_text_object *self,
 		if (prev_codepoint)
 			x += (texture_glyph_get_kerning(glyph, prev_codepoint) * scale.x);
 
-		x0 = x  + (glyph->offset_x * scale.x);
-		y0 = y  - (glyph->offset_y * scale.y);
-		x1 = x0 + (glyph->width * scale.x);
-		y1 = y0 + (glyph->height * scale.y);
-
 		s0 = glyph->s0;
 		s1 = glyph->s1;
 
 		t0 = glyph->t0;
 		t1 = glyph->t1;
 
-#if 0
-		/* FIXME: subpixel shift */
+		x0 = x  + (glyph->offset_x * scale.x);
+		x1 = x0 + (glyph->width * scale.x);
+		y0 = y  - (glyph->offset_y * scale.y);
+		y1 = y0 + (glyph->height * scale.y);
 
-		x0_shift = x0 - floorf(x0);
-		x1_shift = x1 - floorf(x1);
-
-		x0 = floorf(x0);
-		x1 = floorf(x1);
-#else
-		x0_shift = 0.f;
-		x1_shift = 0.f;
-#endif
+		x0 = quantize(x0, scale.x, win->scale.x, &x0_shift);
+		x1 = quantize(x1, scale.x, win->scale.x, &x1_shift);
 
 		GLuint indices[6] = {0, 1, 2, 0, 2, 3};
 		struct text_vertex vertices[4] = {
