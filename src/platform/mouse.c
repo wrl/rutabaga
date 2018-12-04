@@ -333,8 +333,8 @@ descend:
  */
 
 #define RESCALE_COORDS() do {												\
-		x *= win->scale.x;													\
-		y *= win->scale.y;													\
+		x *= win->scale_recip.x;											\
+		y *= win->scale_recip.y;											\
 	} while (0)
 
 void

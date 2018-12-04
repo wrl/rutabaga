@@ -80,8 +80,8 @@ reflow(struct rtb_element *elem, struct rtb_element *instigator,
 
 	mat4_set_orthographic(&self->render_ctx.projection,
 			self->x,
-			self->x + (self->w * self->window->scale.x),
-			self->y + (self->h * self->window->scale.y),
+			self->x + (self->w * self->window->scale_recip.x),
+			self->y + (self->h * self->window->scale_recip.y),
 			self->y,
 			-1.f, 1.f);
 

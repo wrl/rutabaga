@@ -188,7 +188,7 @@ rtb_render_reset(struct rtb_element *elem)
 {
 	struct rtb_render_context *ctx = rtb_render_get_context(elem);
 	rtb_render_use_shader(ctx, &elem->window->local_storage.shader.dfault);
-	struct rtb_point scale = elem->window->scale_recip;
+	struct rtb_point scale = elem->window->scale;
 
 	glScissor(
 			scale.x * (elem->x - elem->surface->x),

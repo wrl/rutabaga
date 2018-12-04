@@ -626,9 +626,11 @@ window_impl_open(struct rutabaga *rtb,
 
 	self->scale.x = 1.f;
 	self->scale.y = 1.f;
-
 	self->scale_recip.x = 1.f / self->scale.x;
 	self->scale_recip.y = 1.f / self->scale.y;
+
+	self->dpi.x *= self->scale.x;
+	self->dpi.y *= self->scale.y;
 
 	self->gl_win = glXCreateWindow(dpy, fb_config, self->xcb_win, 0);
 	if (!self->gl_win) {

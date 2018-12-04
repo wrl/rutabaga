@@ -79,10 +79,11 @@ rtb_text_object_count_glyphs(struct rtb_text_object *self)
 
 int
 rtb_text_object_update(struct rtb_text_object *self,
-		struct rtb_font *rfont, const rtb_utf8_t *text,
-		float line_height_multiplier)
+		struct rtb_font *rfont, struct rtb_window *win,
+		const rtb_utf8_t *text, float line_height_multiplier)
 {
 	float x, y, line_height, x0, y0, x1, y1, max_w;
+	struct rtb_point scale = win->scale_recip;
 	rtb_utf32_t codepoint, prev_codepoint;
 	uint32_t state, prev_state;
 	texture_font_t *font;
@@ -96,11 +97,11 @@ rtb_text_object_update(struct rtb_text_object *self,
 
 	vertex_buffer_clear(self->vertices);
 
-	line_height = font->height * line_height_multiplier;
+	line_height = (font->height * line_height_multiplier) * scale.y;
 
 	x     = 0.f;
 	x1    = 0.f;
-	y     = ceilf(line_height / 2.f) - font->descender + 1.f;
+	y     = ceilf(line_height / 2.f) - (font->descender * scale.y) + 1.f;
 
 	max_w = 0.f;
 	lines = 1;
@@ -144,12 +145,12 @@ rtb_text_object_update(struct rtb_text_object *self,
 			continue;
 
 		if (prev_codepoint)
-			x += texture_glyph_get_kerning(glyph, prev_codepoint);
+			x += (texture_glyph_get_kerning(glyph, prev_codepoint) * scale.x);
 
-		x0 = x  + glyph->offset_x;
-		y0 = y  - glyph->offset_y;
-		x1 = x0 + glyph->width;
-		y1 = y0 + glyph->height;
+		x0 = x  + (glyph->offset_x * scale.x);
+		y0 = y  - (glyph->offset_y * scale.y);
+		x1 = x0 + (glyph->width * scale.x);
+		y1 = y0 + (glyph->height * scale.y);
 
 		s0 = glyph->s0;
 		s1 = glyph->s1;
@@ -157,11 +158,18 @@ rtb_text_object_update(struct rtb_text_object *self,
 		t0 = glyph->t0;
 		t1 = glyph->t1;
 
+#if 0
+		/* FIXME: subpixel shift */
+
 		x0_shift = x0 - floorf(x0);
 		x1_shift = x1 - floorf(x1);
 
 		x0 = floorf(x0);
 		x1 = floorf(x1);
+#else
+		x0_shift = 0.f;
+		x1_shift = 0.f;
+#endif
 
 		GLuint indices[6] = {0, 1, 2, 0, 2, 3};
 		struct text_vertex vertices[4] = {
@@ -173,7 +181,7 @@ rtb_text_object_update(struct rtb_text_object *self,
 
 		vertex_buffer_push_back(self->vertices, vertices, 4, indices, 6);
 
-		x += glyph->advance_x;
+		x += glyph->advance_x * scale.x;
 		prev_codepoint = codepoint;
 	}
 

@@ -27,6 +27,7 @@
 #pragma once
 
 #include <rutabaga/types.h>
+#include <rutabaga/window.h>
 #include <rutabaga/geometry.h>
 #include <rutabaga/font-manager.h>
 #include <rutabaga/style.h>
@@ -47,8 +48,8 @@ int rtb_text_object_get_glyph_rect(struct rtb_text_object *, int idx,
 int rtb_text_object_count_glyphs(struct rtb_text_object *);
 
 int rtb_text_object_update(struct rtb_text_object *,
-		struct rtb_font *rfont, const rtb_utf8_t *text,
-		float line_height_multiplier);
+		struct rtb_font *rfont, struct rtb_window *,
+		const rtb_utf8_t *text, float line_height_multiplier);
 void rtb_text_object_render(struct rtb_text_object *,
 		struct rtb_render_context *ctx, float x, float y,
 		const struct rtb_rgb_color *color);
