@@ -172,8 +172,8 @@ rtb_text_object_update(struct rtb_text_object *self,
 		y0 = y  - (glyph->offset_y * scale.y);
 		y1 = y0 + (glyph->height * scale.y);
 
-		x0 = quantize(x0, scale.x, win->scale.x, &x0_shift);
-		x1 = quantize(x1, scale.x, win->scale.x, &x1_shift);
+		x0 = quantize(x0, scale.x, scale_x_recip, &x0_shift);
+		x1 = quantize(x1, scale.x, scale_x_recip, &x1_shift);
 
 		GLuint indices[6] = {0, 1, 2, 0, 2, 3};
 		struct text_vertex vertices[4] = {
