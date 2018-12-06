@@ -192,7 +192,7 @@ rtb_render_reset(struct rtb_element *elem)
 
 	glScissor(
 			scale.x * (elem->x - elem->surface->x),
-			(elem->surface->y + elem->surface->h)
+			(elem->surface->y + elem->surface->phy_size.h)
 			            - (scale.y * (elem->h + elem->y)),
 			scale.x * elem->w,
 			scale.y * elem->h);

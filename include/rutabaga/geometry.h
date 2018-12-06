@@ -35,12 +35,18 @@
 	 && (pt).y >= (rect).y && (pt).y <= (rect).y2)
 
 #define RTB_MAKE_PHY_POINT(X, Y) ((struct rtb_phy_point) {.x = (X), .y = (Y)})
-#define RTB_MAKE_POINT(X, Y) ((struct rtb_point) {.x = (X), .y = (Y)})
 
 struct rtb_phy_point {
 	int x;
 	int y;
 };
+
+struct rtb_phy_size {
+	int w;
+	int h;
+};
+
+#define RTB_MAKE_POINT(X, Y) ((struct rtb_point) {.x = (X), .y = (Y)})
 
 struct rtb_point {
 	GLfloat x;
@@ -104,6 +110,10 @@ rtb_rect_update_points_from_size(struct rtb_rect *rect)
 
 struct rtb_window;
 
+struct rtb_phy_size rtb_size_to_phy(struct rtb_window *,
+		struct rtb_size sz);
+struct rtb_size rtb_phy_to_size(struct rtb_window *,
+		struct rtb_phy_size phy);
 struct rtb_phy_point rtb_point_to_phy(struct rtb_window *,
 		struct rtb_point pt);
 struct rtb_point rtb_phy_to_point(struct rtb_window *,

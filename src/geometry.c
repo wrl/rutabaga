@@ -45,3 +45,21 @@ rtb_phy_to_point(struct rtb_window *win, struct rtb_phy_point phy)
 		.y = phy.y * win->scale_recip.y
 	};
 }
+
+struct rtb_phy_size
+rtb_size_to_phy(struct rtb_window *win, struct rtb_size sz)
+{
+	return (struct rtb_phy_size) {
+		.w = sz.w * win->scale.x,
+		.h = sz.h * win->scale.y
+	};
+}
+
+struct rtb_size
+rtb_phy_to_size(struct rtb_window *win, struct rtb_phy_size phy)
+{
+	return (struct rtb_size) {
+		.w = phy.w * win->scale_recip.x,
+		.h = phy.h * win->scale_recip.y
+	};
+}

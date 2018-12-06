@@ -179,8 +179,8 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 	size = [self convertSizeToBacking:size];
 	*/
 
-	rtb_win->w = size.width;
-	rtb_win->h = size.height;
+	rtb_win->phy_size.w = size.width;
+	rtb_win->phy_size.h = size.height;
 
 	LOCK;
 	[rtb_win->gl_ctx update];

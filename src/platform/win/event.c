@@ -72,8 +72,8 @@ handle_resize(struct win_rtb_window *self)
 
 	GetClientRect(self->hwnd, &wrect);
 
-	self->w = wrect.right;
-	self->h = wrect.bottom;
+	self->phy_size.w = wrect.right;
+	self->phy_size.h = wrect.bottom;
 
 	LOCK(self);
 	rtb_window_reinit(RTB_WINDOW(self));

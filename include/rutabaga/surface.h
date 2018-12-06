@@ -54,6 +54,7 @@ struct rtb_surface {
 	struct rtb_render_tailq render_queue;
 	struct rtb_render_context render_ctx;
 
+	struct rtb_phy_size phy_size;
 	mat4 phy_projection;
 };
 

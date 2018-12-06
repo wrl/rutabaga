@@ -254,11 +254,11 @@ handle_configure_notify(struct xrtb_window *win, xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_configure_notify_event_t);
 
-	if (ev->width == win->w && ev->height == win->h)
+	if (ev->width == win->phy_size.w && ev->height == win->phy_size.h)
 		return;
 
-	win->w = ev->width;
-	win->h = ev->height;
+	win->phy_size.w = ev->width;
+	win->phy_size.h = ev->height;
 
 	win->need_reconfigure = 1;
 }
