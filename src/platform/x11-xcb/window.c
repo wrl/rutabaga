@@ -457,6 +457,26 @@ get_dpi(Display *dpy, int screen, int *x, int *y)
 	*y = (int) (yres + 0.5);
 }
 
+static struct rtb_point
+get_scaling(void)
+{
+	const char *env_factor;
+	float factor;
+	char *end;
+
+	if (!(env_factor = getenv("RTB_SCALE")))
+		goto unscaled;
+
+	factor = strtod(env_factor, &end);
+	if (*end != '\0')
+		goto unscaled;
+
+	return RTB_MAKE_POINT(factor, factor);
+
+unscaled:
+	return RTB_MAKE_POINT(1.f, 1.f);
+}
+
 static GLXContext
 new_gl_context(Display *dpy, GLXFBConfig fb_config)
 {
@@ -624,8 +644,8 @@ window_impl_open(struct rutabaga *rtb,
 
 	get_dpi(dpy, default_screen, &self->dpi.x, &self->dpi.y);
 
-	self->scale.x = 1.f;
-	self->scale.y = 1.f;
+	self->scale = get_scaling();
+
 	self->scale_recip.x = 1.f / self->scale.x;
 	self->scale_recip.y = 1.f / self->scale.y;
 
