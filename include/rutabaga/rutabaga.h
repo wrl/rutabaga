@@ -54,5 +54,7 @@ struct rutabaga {
 	uv_loop_t event_loop;
 };
 
+struct rtb_point rtb_get_scaling(intptr_t parent_window);
+
 struct rutabaga *rtb_new(void);
 void rtb_free(struct rutabaga *);

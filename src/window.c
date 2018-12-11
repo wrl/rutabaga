@@ -386,9 +386,6 @@ rtb_window_open_under(struct rutabaga *r, intptr_t parent,
 	if (RTB_SUBCLASS(RTB_SURFACE(self), rtb_surface_init, &super))
 		goto err_surface_init;
 
-	self->phy_size.w = w;
-	self->phy_size.h = h;
-
 	self->w = w * self->scale_recip.x;
 	self->h = h * self->scale_recip.y;
 
