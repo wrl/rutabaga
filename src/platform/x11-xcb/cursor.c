@@ -28,6 +28,7 @@
 #include <xcb/xcb_cursor.h>
 
 #include <rutabaga/rutabaga.h>
+#include <rutabaga/platform.h>
 #include <rutabaga/window.h>
 
 #include "xrtb.h"
@@ -42,15 +43,15 @@ rtb_mouse_double_click_interval(struct rtb_window *win)
 }
 
 void
-rtb_mouse_pointer_warp(struct rtb_window *rwin, int x, int y)
+rtb_mouse_pointer_warp(struct rtb_window *rwin, struct rtb_point pt)
 {
 	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
 	struct rtb_mouse *m = &rwin->mouse;
 	struct rtb_phy_point phy;
 
-	phy = rtb_point_to_phy(rwin, RTB_MAKE_POINT(x, y));
+	phy = rtb_point_to_phy(rwin, pt);
 
-	if (self->xrtb->running_in_xwayland || (x == m->x && y == m->y))
+	if (self->xrtb->running_in_xwayland || (pt.x == m->x && pt.y == m->y))
 		return;
 
 	xcb_warp_pointer(self->xrtb->xcb_conn, XCB_NONE, self->xcb_win,
@@ -58,8 +59,8 @@ rtb_mouse_pointer_warp(struct rtb_window *rwin, int x, int y)
 
 	/* since xorg sends us a motion notify, we have to fix the previous
 	 * cursor position so that dragging still works as expected. */
-	m->previous.x += x - m->x;
-	m->previous.y += y - m->y;
+	m->previous.x += pt.x - m->x;
+	m->previous.y += pt.y - m->y;
 }
 
 void
