@@ -46,7 +46,7 @@ rtb_debug_draw_bounding_box(struct rtb_element *self)
 
 	rtb_quad_set_vertices(&quad, &rect);
 
-	rtb_render_reset(self);
+	rtb_render_reset(self, NULL);
 	ctx = rtb_render_get_context(self);
 
 	rtb_render_set_position(ctx, 0.f, 0.f);

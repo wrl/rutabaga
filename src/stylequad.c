@@ -62,8 +62,8 @@ draw_textured(struct rtb_render_context *ctx,
 	const struct rtb_shader *shader = ctx->shader;
 
 	glBindTexture(GL_TEXTURE_2D, tx->gl_handle);
-	glUniform1i(shader->texture, 0);
-	glUniform2f(shader->texture_size,
+	glUniform1i(shader->tex, 0);
+	glUniform2f(shader->tex_size,
 			tx->definition->w, tx->definition->h);
 
 	glBindBuffer(GL_ARRAY_BUFFER, tx->coords);
@@ -83,7 +83,7 @@ draw_textured(struct rtb_render_context *ctx,
 
 	glDisableVertexAttribArray(shader->tex_coord);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glUniform2f(shader->texture_size, 0.f, 0.f);
+	glUniform2f(shader->tex_size, 0.f, 0.f);
 }
 
 static void
@@ -93,7 +93,7 @@ draw(struct rtb_render_context *ctx, const struct rtb_stylequad *self,
 	const struct rtb_shader *shader = ctx->shader;
 
 	rtb_render_set_position(ctx, center->x, center->y);
-	glUniform2f(shader->texture_size, 0.f, 0.f);
+	glUniform2f(shader->tex_size, 0.f, 0.f);
 
 	if (self->properties.bg_color && (mode & RTB_STYLEQUAD_DRAW_BG_COLOR)) {
 		rtb_render_set_color(ctx,
@@ -144,7 +144,7 @@ rtb_stylequad_draw_solid(const struct rtb_stylequad *self,
 	const struct rtb_shader *shader = ctx->shader;
 
 	rtb_render_set_position(ctx, center->x, center->y);
-	glUniform2f(shader->texture_size, 0.f, 0.f);
+	glUniform2f(shader->tex_size, 0.f, 0.f);
 
 	draw_solid(self, shader, GL_TRIANGLE_STRIP,
 			ctx->window->local_storage.ibo.stylequad.solid, 4);
@@ -157,9 +157,7 @@ rtb_stylequad_draw_on_element(struct rtb_stylequad *self,
 	struct rtb_shader *shader = &on->window->local_storage.shader.stylequad;
 	struct rtb_render_context *ctx = rtb_render_get_context(on);
 
-	rtb_render_reset(on);
-	rtb_render_use_shader(ctx, shader);
-
+	rtb_render_reset(on, shader);
 	draw(ctx, self, &self->offset, mode);
 }
 
@@ -170,8 +168,7 @@ rtb_stylequad_draw_with_modelview(struct rtb_stylequad *self, struct rtb_element
 	struct rtb_shader *shader = &on->window->local_storage.shader.stylequad;
 	struct rtb_render_context *ctx = rtb_render_get_context(on);
 
-	rtb_render_reset(on);
-	rtb_render_use_shader(ctx, shader);
+	rtb_render_reset(on, shader);
 	rtb_render_set_modelview(ctx, modelview->data);
 
 	draw(ctx, self, &self->offset, mode);

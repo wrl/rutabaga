@@ -36,8 +36,8 @@ struct rtb_shader_locations {
 
 	const char *offset;
 	const char *color;
-	const char *texture;
-	const char *texture_size;
+	const char *tex;
+	const char *tex_size;
 
 	const char *vertex;
 	const char *tex_coord;
@@ -59,8 +59,8 @@ struct rtb_shader {
 	/* uniforms */
 	GLint offset;
 	GLint color;
-	GLint texture;
-	GLint texture_size;
+	GLint tex;
+	GLint tex_size;
 
 	/* attributes */
 	GLint vertex;

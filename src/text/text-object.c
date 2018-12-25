@@ -215,7 +215,7 @@ rtb_text_object_render(struct rtb_text_object *self,
 	rtb_render_use_shader(ctx, RTB_SHADER(shader));
 	glBindTexture(GL_TEXTURE_2D, atlas->id);
 
-	glUniform1i(shader->texture, 0);
+	glUniform1i(shader->tex, 0);
 	glUniform1f(shader->gamma, self->font->lcd_gamma);
 
 	glUniform3f(shader->atlas_pixel,

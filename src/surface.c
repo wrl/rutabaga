@@ -180,15 +180,14 @@ rtb_surface_blit(struct rtb_surface *self)
 
 	ctx = rtb_render_get_context(elem);
 
-	rtb_render_reset(elem);
-	rtb_render_use_shader(ctx, shader);
+	rtb_render_reset(elem, shader);
 	rtb_render_set_position(ctx, 0, 0);
 
 	glUniformMatrix4fv(shader->matrices.projection,
 		1, GL_FALSE, self->phy_projection.data);
 
 	glBindTexture(GL_TEXTURE_2D, self->texture);
-	glUniform1i(shader->texture, 0);
+	glUniform1i(shader->tex, 0);
 
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 

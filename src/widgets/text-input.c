@@ -121,7 +121,7 @@ draw_cursor(struct rtb_text_input *self)
 {
 	struct rtb_render_context *ctx;
 
-	rtb_render_reset(RTB_ELEMENT(self));
+	rtb_render_reset(RTB_ELEMENT(self), NULL);
 	ctx = rtb_render_get_context(RTB_ELEMENT(self));
 	rtb_render_set_position(ctx, 0, 0);
 

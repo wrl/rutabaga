@@ -163,8 +163,8 @@ rtb_shader_create_with_locations(struct rtb_shader *shader,
 
 	CACHE_SIMPLE_UNIFORM(offset);
 	CACHE_SIMPLE_UNIFORM(color);
-	CACHE_SIMPLE_UNIFORM(texture);
-	CACHE_SIMPLE_UNIFORM(texture_size);
+	CACHE_SIMPLE_UNIFORM(tex);
+	CACHE_SIMPLE_UNIFORM(tex_size);
 
 	CACHE_ATTRIBUTE(vertex);
 	CACHE_ATTRIBUTE(tex_coord);

@@ -143,7 +143,7 @@ rtb_font_manager_init(struct rtb_font_manager *fm, int dpi_x, int dpi_y)
 	fm->shader.UNIFORM = glGetUniformLocation(fm->shader.program, #UNIFORM)
 
 	CACHE_UNIFORM(offset);
-	CACHE_UNIFORM(texture);
+	CACHE_UNIFORM(tex);
 	CACHE_UNIFORM(atlas_pixel);
 	CACHE_UNIFORM(gamma);
 
