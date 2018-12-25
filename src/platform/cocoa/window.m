@@ -51,6 +51,12 @@
 #define NSEventModifierFlagCommand      NSCommandKeyMask
 #endif
 
+static NSPoint
+event_location_to_view(NSView *view, NSEvent *e)
+{
+	return [view convertPoint:[e locationInWindow] fromView:nil];
+}
+
 #define LOCK (rtb_window_lock(RTB_WINDOW(rtb_win)))
 #define UNLOCK (rtb_window_unlock(RTB_WINDOW(rtb_win)))
 
@@ -80,9 +86,7 @@
 	if (!self)
 		return nil;
 
-	/*
 	[self setWantsBestResolutionOpenGLSurface:YES];
-	*/
 
 	control_chorded_left_button = false;
 	return self;
@@ -173,11 +177,7 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 	if (!rtb_win)
 		return;
 
-	/* XXX: only need this with setWantsBestResolutionOpenGLSurface,
-	 *      breaks without it specified. thanks, el cap.
-
 	size = [self convertSizeToBacking:size];
-	*/
 
 	rtb_win->phy_size.w = size.width;
 	rtb_win->phy_size.h = size.height;
@@ -206,7 +206,7 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 
 - (void) scrollWheel: (NSEvent *) e
 {
-	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
+	NSPoint pt = event_location_to_view(self, e);
 	float delta = [e scrollingDeltaY];
 
 	if ([e isDirectionInvertedFromDevice])
@@ -215,34 +215,39 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 	delta /= ([e hasPreciseScrollingDeltas]) ? 9.f : 3.f;
 
 	LOCK;
-	rtb__platform_mouse_wheel(RTB_WINDOW(rtb_win), pt.x, pt.y, delta);
+	rtb__platform_mouse_wheel(RTB_WINDOW(rtb_win),
+			RTB_MAKE_POINT(pt.x, pt.y),
+			delta);
 	UNLOCK;
 }
 
 - (void) mouseEntered: (NSEvent *) e
 {
-	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
+	NSPoint pt = event_location_to_view(self, e);
 
 	LOCK;
-	rtb__platform_mouse_enter_window(RTB_WINDOW(rtb_win), pt.x, pt.y);
+	rtb__platform_mouse_enter_window(RTB_WINDOW(rtb_win),
+			RTB_MAKE_POINT(pt.x, pt.y));
 	UNLOCK;
 }
 
 - (void) mouseExited: (NSEvent *) e
 {
-	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
+	NSPoint pt = event_location_to_view(self, e);
 
 	LOCK;
-	rtb__platform_mouse_leave_window(RTB_WINDOW(rtb_win), pt.x, pt.y);
+	rtb__platform_mouse_leave_window(RTB_WINDOW(rtb_win),
+			RTB_MAKE_POINT(pt.x, pt.y));
 	UNLOCK;
 }
 
 - (void) mouseMoved: (NSEvent *) e
 {
-	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
+	NSPoint pt = event_location_to_view(self, e);
 
 	LOCK;
-	rtb__platform_mouse_motion(RTB_WINDOW(rtb_win), pt.x, pt.y);
+	rtb__platform_mouse_motion(RTB_WINDOW(rtb_win),
+			RTB_MAKE_POINT(pt.x, pt.y));
 	rtb__cocoa_sync_cursor(self->rtb_win);
 	UNLOCK;
 }
@@ -277,7 +282,7 @@ app_kit_button_to_rtb_button(const NSEvent *e)
 
 - (void) mouseDown: (NSEvent *) e
 {
-	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
+	NSPoint pt = event_location_to_view(self, e);
 	NSInteger control_key = !!(e.modifierFlags & NSControlKeyMask);
 
 	rtb_mouse_buttons_t button = app_kit_button_to_rtb_button(e);
@@ -288,7 +293,8 @@ app_kit_button_to_rtb_button(const NSEvent *e)
 	}
 
 	LOCK;
-	rtb__platform_mouse_press(RTB_WINDOW(rtb_win), button, pt.x, pt.y);
+	rtb__platform_mouse_press(RTB_WINDOW(rtb_win), button,
+			RTB_MAKE_POINT(pt.x, pt.y));
 	UNLOCK;
 }
 
@@ -304,7 +310,7 @@ app_kit_button_to_rtb_button(const NSEvent *e)
 
 - (void) mouseUp: (NSEvent *) e
 {
-	NSPoint pt = [self convertPoint:[e locationInWindow] fromView:nil];
+	NSPoint pt = event_location_to_view(self, e);
 
 	rtb_mouse_buttons_t button = app_kit_button_to_rtb_button(e);
 
@@ -314,7 +320,8 @@ app_kit_button_to_rtb_button(const NSEvent *e)
 	}
 
 	LOCK;
-	rtb__platform_mouse_release(RTB_WINDOW(rtb_win), button, pt.x, pt.y);
+	rtb__platform_mouse_release(RTB_WINDOW(rtb_win), button,
+			RTB_MAKE_POINT(pt.x, pt.y));
 	UNLOCK;
 }
 
@@ -380,27 +387,6 @@ window_impl_rtb_free(struct rutabaga *_rtb)
 /**
  * window things
  */
-
-static void
-get_dpi(int *x, int *y)
-{
-#if 0
-	NSScreen *screen = [NSScreen mainScreen];
-	NSDictionary *desc = [screen deviceDescription];
-	NSSize pixel_size = [[desc objectForKey:NSDeviceSize] sizeValue];
-	CGSize phy_size = CGDisplayScreenSize(
-		[[desc objectForKey:@"NSScreenNumber"] unsignedIntValue]);
-
-	*x = lrintf(ceilf((pixel_size.width / phy_size.width) * 25.4f));
-	*y = lrintf(ceilf((pixel_size.height / phy_size.height) * 25.4f));
-#else
-	/* XXX: need some mechanism for scaling based on EMs. using the actual
-	 *      DPI looks like shit at the moment. going to bite us in the ass
-	 *      on hidpi tho. */
-
-	*x = *y = 96;
-#endif
-}
 
 static RutabagaOpenGLContext *
 alloc_gl_ctx(void)
@@ -480,6 +466,7 @@ window_impl_open(struct rutabaga *rtb,
 	RutabagaOpenGLContext *gl_ctx;
 	RutabagaOpenGLView *view;
 	NSView *parent_view;
+	NSSize phy_size;
 
 	self = calloc(1, sizeof(*self));
 	if (!self)
@@ -495,8 +482,18 @@ window_impl_open(struct rutabaga *rtb,
 		view->gl_ctx = gl_ctx;
 		self->gl_ctx = gl_ctx;
 
-		get_dpi(&self->dpi.x, &self->dpi.y);
 		[view initWithFrame:NSMakeRect(0, 0, w, h)];
+
+		phy_size = [view convertSizeToBacking:NSMakeSize(w, h)];
+
+		self->scale = RTB_MAKE_POINT(
+				phy_size.width / (float) w,
+				phy_size.height / (float) h);
+		self->scale_recip.x = 1.f / self->scale.x;
+		self->scale_recip.y = 1.f / self->scale.y;
+
+		self->dpi.x = 96 * self->scale.x;
+		self->dpi.y = 96 * self->scale.y;
 
 		[gl_ctx makeCurrentContext];
 
