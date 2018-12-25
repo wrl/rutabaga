@@ -113,7 +113,9 @@ rtb_text_object_update(struct rtb_text_object *self,
 
 	x  = 0.f;
 	x1 = 0.f;
-	y  = ceilf(line_height / 2.f) - font->descender;
+	y  = ceilf(line_height / 2.f)
+		- (font->descender * scale.y)
+		+ 1.f;
 
 	max_w = 0.f;
 	lines = 1;
