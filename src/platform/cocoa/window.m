@@ -486,9 +486,13 @@ window_impl_open(struct rutabaga *rtb,
 
 		phy_size = [view convertSizeToBacking:NSMakeSize(w, h)];
 
+		self->phy_size.w = phy_size.width;
+		self->phy_size.h = phy_size.height;
+
 		self->scale = RTB_MAKE_POINT(
 				phy_size.width / (float) w,
 				phy_size.height / (float) h);
+
 		self->scale_recip.x = 1.f / self->scale.x;
 		self->scale_recip.y = 1.f / self->scale.y;
 
