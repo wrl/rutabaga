@@ -625,3 +625,11 @@ rtb_get_modkeys(struct rtb_window *win)
 
 #undef MOD_ACTIVE
 }
+
+struct rtb_point
+rtb_get_scaling(intptr_t parent_window)
+{
+	/* scaling is always 1x due to macOS handling this in the translation of
+	 * backing store coordinates. */
+	return RTB_MAKE_POINT(1.f, 1.f);
+}
