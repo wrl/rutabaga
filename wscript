@@ -157,6 +157,8 @@ def configure(conf):
         conf.env.PLATFORM = 'cocoa'
 
         conf.env.append_unique('FRAMEWORK_COCOA', ['Cocoa', 'QuartzCore'])
+        # NSOpenGL* became deprecated in macOS 10.14
+        conf.env.append_unique('CFLAGS', ['-Wno-deprecated'])
     else:
         check_alloca(conf)
         check_gl(conf)

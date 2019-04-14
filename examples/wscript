@@ -8,7 +8,7 @@ def build(bld):
     def example(tgt, extra_use=[]):
         bld.program(
                 source='{}.c'.format(tgt),
-                use=['rutabaga', 'rtb_style_default'] + extra_use,
+                use=['rutabaga', 'rtb_style_default', 'FREETYPE2'] + extra_use,
                 target=tgt)
 
     example('test')
