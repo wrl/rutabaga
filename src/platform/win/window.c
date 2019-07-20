@@ -457,3 +457,10 @@ window_impl_rtb_free(struct rutabaga *rtb)
 
 	free(rtb);
 }
+
+struct rtb_point
+rtb_get_scaling(intptr_t parent_window)
+{
+	// FIXME: DPI or something else? ¯\_(ツ)_/¯
+	return RTB_MAKE_POINT(1.f, 1.f);
+}
