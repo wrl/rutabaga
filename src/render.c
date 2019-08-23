@@ -184,14 +184,22 @@ rtb_render_use_shader(struct rtb_render_context *ctx,
 }
 
 void
-rtb_render_reset(struct rtb_element *elem)
+rtb_render_reset(struct rtb_element *elem, const struct rtb_shader *shader)
 {
 	struct rtb_render_context *ctx = rtb_render_get_context(elem);
-	rtb_render_use_shader(ctx, &elem->window->local_storage.shader.dfault);
+	struct rtb_point scale = elem->window->scale;
 
-	glScissor(elem->x - elem->surface->x,
-			elem->surface->y + elem->surface->h - elem->h - elem->y,
-			elem->w, elem->h);
+	if (!shader)
+		shader = &elem->window->local_storage.shader.dfault;
+
+	rtb_render_use_shader(ctx, shader);
+
+	glScissor(
+			scale.x * (elem->x - elem->surface->x),
+			(elem->surface->y + elem->surface->phy_size.h)
+			            - (scale.y * (elem->h + elem->y)),
+			scale.x * elem->w,
+			scale.y * elem->h);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
@@ -199,7 +207,7 @@ rtb_render_reset(struct rtb_element *elem)
 void
 rtb_render_push(struct rtb_element *elem)
 {
-	rtb_render_reset(elem);
+	rtb_render_reset(elem, NULL);
 }
 
 void

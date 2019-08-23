@@ -68,24 +68,32 @@ static void
 handle_mouse_enter(struct xrtb_window *win, const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_enter_notify_event_t);
-	rtb__platform_mouse_enter_window(RTB_WINDOW(win), ev->event_x, ev->event_y);
+	struct rtb_window *rwin = RTB_WINDOW(win);
+
+	rtb__platform_mouse_enter_window(rwin, rtb_phy_to_point(rwin,
+			RTB_MAKE_PHY_POINT(ev->event_x, ev->event_y)));
 }
 
 static void
 handle_mouse_leave(struct xrtb_window *win, const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_leave_notify_event_t);
-	rtb__platform_mouse_leave_window(RTB_WINDOW(win), ev->event_x, ev->event_y);
+	struct rtb_window *rwin = RTB_WINDOW(win);
+
+	rtb__platform_mouse_leave_window(rwin, rtb_phy_to_point(rwin,
+			RTB_MAKE_PHY_POINT(ev->event_x, ev->event_y)));
 }
 
 static void
-handle_mouse_wheel(struct xrtb_window *window,
+handle_mouse_wheel(struct xrtb_window *win,
 		const xcb_button_press_event_t *ev)
 {
 	float delta = (ev->detail == 4) ? 1.f : -1.f;
+	struct rtb_window *rwin = RTB_WINDOW(win);
 
-	rtb__platform_mouse_wheel(RTB_WINDOW(window),
-			ev->event_x, ev->event_y, delta);
+	rtb__platform_mouse_wheel(rwin, rtb_phy_to_point(rwin,
+			RTB_MAKE_PHY_POINT(ev->event_x, ev->event_y)),
+			delta);
 }
 
 static void
@@ -93,6 +101,7 @@ handle_mouse_button_press(struct xrtb_window *win,
 		const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_button_press_event_t);
+	struct rtb_window *rwin = RTB_WINDOW(win);
 	xcb_grab_pointer_cookie_t cookie;
 	xcb_grab_pointer_reply_t *reply;
 
@@ -112,8 +121,8 @@ handle_mouse_button_press(struct xrtb_window *win,
 		goto dont_handle;
 	}
 
-	rtb__platform_mouse_press(RTB_WINDOW(win),
-			button, ev->event_x, ev->event_y);
+	rtb__platform_mouse_press(rwin, button, rtb_phy_to_point(rwin, 
+				RTB_MAKE_PHY_POINT(ev->event_x, ev->event_y)));
 
 dont_handle:
 	cookie = xcb_grab_pointer(
@@ -128,18 +137,19 @@ dont_handle:
 }
 
 static void
-handle_mouse_button_release(struct xrtb_window *xwin,
+handle_mouse_button_release(struct xrtb_window *win,
 		const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_button_release_event_t);
+	struct rtb_window *rwin = RTB_WINDOW(win);
 	xcb_void_cookie_t cookie;
 	xcb_generic_error_t *err;
 	int button;
 
-	cookie = xcb_ungrab_pointer_checked(xwin->xrtb->xcb_conn,
+	cookie = xcb_ungrab_pointer_checked(win->xrtb->xcb_conn,
 			XCB_CURRENT_TIME);
 
-	if ((err = xcb_request_check(xwin->xrtb->xcb_conn, cookie))) {
+	if ((err = xcb_request_check(win->xrtb->xcb_conn, cookie))) {
 		ERR("can't ungrab pointer! (%d)\n", err->error_code);
 		free(err);
 	}
@@ -153,16 +163,18 @@ handle_mouse_button_release(struct xrtb_window *xwin,
 		return;
 	}
 
-	rtb__platform_mouse_release(RTB_WINDOW(xwin),
-			button, ev->event_x, ev->event_y);
+	rtb__platform_mouse_release(rwin, button, rtb_phy_to_point(rwin,
+				RTB_MAKE_PHY_POINT(ev->event_x, ev->event_y)));
 }
 
 static void
 handle_mouse_motion(struct xrtb_window *win, const xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_motion_notify_event_t);
+	struct rtb_window *rwin = RTB_WINDOW(win);
 
-	rtb__platform_mouse_motion(RTB_WINDOW(win), ev->event_x, ev->event_y);
+	rtb__platform_mouse_motion(rwin, rtb_phy_to_point(rwin,
+			RTB_MAKE_PHY_POINT(ev->event_x, ev->event_y)));
 }
 
 /**
@@ -251,11 +263,11 @@ handle_configure_notify(struct xrtb_window *win, xcb_generic_event_t *_ev)
 {
 	CAST_EVENT_TO(xcb_configure_notify_event_t);
 
-	if (ev->width == win->w && ev->height == win->h)
+	if (ev->width == win->phy_size.w && ev->height == win->phy_size.h)
 		return;
 
-	win->w = ev->width;
-	win->h = ev->height;
+	win->phy_size.w = ev->width;
+	win->phy_size.h = ev->height;
 
 	win->need_reconfigure = 1;
 }

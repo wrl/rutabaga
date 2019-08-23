@@ -230,7 +230,7 @@ draw_patches(struct rtb_patchbay *self)
 	struct rtb_element *elem = RTB_ELEMENT(self);
 	struct rtb_render_context *ctx;
 
-	rtb_render_reset(elem);
+	rtb_render_reset(elem, NULL);
 	ctx = rtb_render_get_context(elem);
 	rtb_render_set_position(ctx, 0, 0);
 

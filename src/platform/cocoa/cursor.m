@@ -38,25 +38,25 @@ rtb_mouse_double_click_interval(struct rtb_window *win)
 }
 
 void
-rtb_mouse_pointer_warp(struct rtb_window *win, int x, int y)
+rtb_mouse_pointer_warp(struct rtb_window *win, struct rtb_point pt)
 {
 	struct cocoa_rtb_window *self = RTB_WINDOW_AS(win, cocoa_rtb_window);
 	struct rtb_mouse *m = &win->mouse;
 	NSRect rect, screen_frame;
-	NSPoint point;
+	NSPoint view_pt;
 
 	/* we'll get recursively called from the rtb__platform_mouse_motion() at
 	 * the bottom of this function, so this is the termination condition to
 	 * prevent infinite recursion. */
-	if (x == m->x && y == m->y)
+	if (pt.x == m->x && pt.y == m->y)
 		return;
 
 	/* ok so...rutabaga coordinate space is top-left origin, which
 	 * convertPoint handles properly here. window space is bottom-
 	 * left origin, as is screen space. */
-	point = [self->view convertPoint:NSMakePoint(x, y) toView:nil];
+	view_pt = [self->view convertPoint:NSMakePoint(pt.x, pt.y) toView:nil];
 	rect = [self->view.window
-		convertRectToScreen:NSMakeRect(point.x, point.y, 0.0, 0.0)];
+		convertRectToScreen:NSMakeRect(view_pt.x, view_pt.y, 0.0, 0.0)];
 
 	/* global space is top-left origin, so we need to flip y. */
 	screen_frame = [[[NSScreen screens] objectAtIndex:0] frame];
@@ -65,10 +65,10 @@ rtb_mouse_pointer_warp(struct rtb_window *win, int x, int y)
 	CGWarpMouseCursorPosition(NSPointToCGPoint(rect.origin));
 	CGAssociateMouseAndMouseCursorPosition(true);
 
-	m->previous.x += x - m->x;
-	m->previous.y += y - m->y;
+	m->previous.x += pt.x - m->x;
+	m->previous.y += pt.y - m->y;
 
-	rtb__platform_mouse_motion(win, x, y);
+	rtb__platform_mouse_motion(win, pt);
 }
 
 void

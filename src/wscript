@@ -54,6 +54,7 @@ def build(bld):
     # common
 
     obj('rutabaga.c')
+    obj('geometry.c')
     obj('event.c')
     obj('atom.c')
     obj('quad.c')

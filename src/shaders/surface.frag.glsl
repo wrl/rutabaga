@@ -26,7 +26,7 @@
 
 #version 150
 
-uniform sampler2D tx_sampler;
+uniform sampler2D tex;
 
 in vec2 coord;
 in vec4 front_color;
@@ -34,5 +34,5 @@ out vec4 frag_color;
 
 void main()
 {
-	frag_color = texture(tx_sampler, coord);
+	frag_color = texture(tex, coord);
 }

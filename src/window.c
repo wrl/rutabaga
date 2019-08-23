@@ -299,7 +299,7 @@ rtb_window_draw(struct rtb_window *self, int force_redraw)
 	if (!self->dirty || force_redraw)
 		return 0;
 
-	glViewport(0, 0, self->w, self->h);
+	glViewport(0, 0, self->phy_size.w, self->phy_size.h);
 
 	prop = rtb_style_query_prop(RTB_ELEMENT(self),
 			"background-color", RTB_STYLE_PROP_COLOR, 1);
@@ -334,9 +334,12 @@ rtb_window_reinit(struct rtb_window *self)
 
 	self->finished_initialising = 0;
 
+	self->w = self->phy_size.w * self->scale_recip.x;
+	self->h = self->phy_size.h * self->scale_recip.y;
+
 	self->x = self->y = 0.f;
 
-	glScissor(0, 0, self->w, self->h);
+	glScissor(0, 0, self->phy_size.w, self->phy_size.h);
 
 	if (!self->window)
 		self->attached(elem, NULL, self);
@@ -383,8 +386,8 @@ rtb_window_open_under(struct rutabaga *r, intptr_t parent,
 	if (RTB_SUBCLASS(RTB_SURFACE(self), rtb_surface_init, &super))
 		goto err_surface_init;
 
-	self->w = w;
-	self->h = h;
+	self->w = w * self->scale_recip.x;
+	self->h = h * self->scale_recip.y;
 
 	self->surface = RTB_SURFACE(self);
 

@@ -27,6 +27,7 @@
 #pragma once
 
 #include <rutabaga/types.h>
+#include <rutabaga/geometry.h>
 #include <rutabaga/window.h>
 #include <rutabaga/mouse.h>
 
@@ -39,15 +40,16 @@
  */
 
 void rtb__platform_mouse_press(struct rtb_window *,
-		int buttons, int x, int y);
+		int buttons, struct rtb_point);
 void rtb__platform_mouse_release(struct rtb_window *,
-		int buttons, int x, int y);
-void rtb__platform_mouse_motion(struct rtb_window *, int x, int y);
+		int buttons, struct rtb_point);
+void rtb__platform_mouse_motion(struct rtb_window *, struct rtb_point);
 
-void rtb__platform_mouse_wheel(struct rtb_window *, int x, int y, float delta);
+void rtb__platform_mouse_wheel(struct rtb_window *, struct rtb_point,
+		float delta);
 
-void rtb__platform_mouse_enter_window(struct rtb_window *, int x, int y);
-void rtb__platform_mouse_leave_window(struct rtb_window *, int x, int y);
+void rtb__platform_mouse_enter_window(struct rtb_window *, struct rtb_point);
+void rtb__platform_mouse_leave_window(struct rtb_window *, struct rtb_point);
 
 /******************************
  * from rutabaga, to platform
@@ -63,7 +65,7 @@ int64_t rtb_mouse_double_click_interval(struct rtb_window *);
 
 void rtb__platform_set_cursor(struct rtb_window *, struct rtb_mouse *,
 		rtb_mouse_cursor_t cursor);
-void rtb_mouse_pointer_warp(struct rtb_window *, int x, int y);
+void rtb_mouse_pointer_warp(struct rtb_window *, struct rtb_point);
 
 void rtb_copy_to_clipboard(struct rtb_window *, const rtb_utf8_t *buf,
 		size_t nbytes);

@@ -64,6 +64,8 @@ static int
 reflow(struct rtb_element *elem, struct rtb_element *instigator,
 		rtb_ev_direction_t direction)
 {
+	struct rtb_phy_size phy_size;
+	struct rtb_rect phy_rect;
 	struct rtb_rect tex_coords = {
 		.as_float = {
 			0.f, 1.f,
@@ -78,14 +80,30 @@ reflow(struct rtb_element *elem, struct rtb_element *instigator,
 	if (self->w <= 0 || self->h <= 0)
 		return -1;
 
+	if (RTB_SURFACE(self->window) == self) {
+		phy_size = self->phy_size;
+	} else {
+		self->phy_size = phy_size =
+			rtb_size_to_phy(self->window, self->rect.size);
+	}
+
 	mat4_set_orthographic(&self->render_ctx.projection,
-			self->x, self->x + self->w,
-			self->y + self->h, self->y,
+			self->x,
+			self->x + self->w,
+			self->y + self->h,
+			self->y,
+			-1.f, 1.f);
+
+	mat4_set_orthographic(&self->phy_projection,
+			self->x,
+			self->x + phy_size.w,
+			self->y + phy_size.h,
+			self->y,
 			-1.f, 1.f);
 
 	glBindTexture(GL_TEXTURE_2D, self->texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-			lrintf(self->w), lrintf(self->h), 0,
+			phy_size.w, phy_size.h, 0,
 			GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -97,7 +115,12 @@ reflow(struct rtb_element *elem, struct rtb_element *instigator,
 			GL_TEXTURE_2D, self->texture, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	rtb_quad_set_vertices(&self->quad, &self->rect);
+	phy_rect = self->rect;
+	phy_rect.size.w *= self->window->scale.x;
+	phy_rect.size.h *= self->window->scale.y;
+	rtb_rect_update_points_from_size(&phy_rect);
+
+	rtb_quad_set_vertices(&self->quad, &phy_rect);
 	rtb_quad_set_tex_coords(&self->quad, &tex_coords);
 
 	rtb_surface_invalidate(self);
@@ -157,12 +180,14 @@ rtb_surface_blit(struct rtb_surface *self)
 
 	ctx = rtb_render_get_context(elem);
 
-	rtb_render_reset(elem);
-	rtb_render_use_shader(ctx, shader);
+	rtb_render_reset(elem, shader);
 	rtb_render_set_position(ctx, 0, 0);
 
+	glUniformMatrix4fv(shader->matrices.projection,
+		1, GL_FALSE, self->phy_projection.data);
+
 	glBindTexture(GL_TEXTURE_2D, self->texture);
-	glUniform1i(shader->texture, 0);
+	glUniform1i(shader->tex, 0);
 
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -189,7 +214,7 @@ rtb_surface_draw_children(struct rtb_surface *self)
 	glGetIntegerv(GL_VIEWPORT, viewport);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, self->fbo);
-	glViewport(0, 0, self->w, self->h);
+	glViewport(0, 0, self->phy_size.w, self->phy_size.h);
 
 	self->render_ctx.window = self->window;
 

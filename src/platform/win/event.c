@@ -72,8 +72,8 @@ handle_resize(struct win_rtb_window *self)
 
 	GetClientRect(self->hwnd, &wrect);
 
-	self->w = wrect.right;
-	self->h = wrect.bottom;
+	self->phy_size.w = wrect.right;
+	self->phy_size.h = wrect.bottom;
 
 	LOCK(self);
 	rtb_window_reinit(RTB_WINDOW(self));
@@ -127,33 +127,41 @@ setup_mouse_tracking(struct win_rtb_window *self)
 static void
 handle_mouse_motion(struct win_rtb_window *self, int x, int y)
 {
+	struct rtb_window *rwin = RTB_WINDOW(self);
+
 	if (!self->mouse_in)
 		setup_mouse_tracking(self);
 
 	LOCK(self);
-	rtb__platform_mouse_motion(RTB_WINDOW(self), x, y);
+	rtb__platform_mouse_motion(rwin, rtb_phy_to_point(rwin,
+				RTB_MAKE_PHY_POINT(x, y)));
 	UNLOCK(self);
 }
 
 static void
 handle_mouse_leave(struct win_rtb_window *self)
 {
+	struct rtb_window *rwin = RTB_WINDOW(self);
 	POINT p;
 
 	GetCursorPos(&p);
 	ScreenToClient(self->hwnd, &p);
 
 	LOCK(self);
-	rtb__platform_mouse_leave_window(RTB_WINDOW(self), p.x, p.y);
+	rtb__platform_mouse_leave_window(rwin, rtb_phy_to_point(rwin,
+				RTB_MAKE_PHY_POINT(p.x, p.y)));
 	UNLOCK(self);
 }
 
 static void
 handle_mouse_down(struct win_rtb_window *self, int button, LPARAM lparam)
 {
+	struct rtb_window *rwin = RTB_WINDOW(self);
+
 	LOCK(self);
-	rtb__platform_mouse_press(RTB_WINDOW(self), button,
-			GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
+	rtb__platform_mouse_press(rwin, button, rtb_phy_to_point(rwin,
+				RTB_MAKE_PHY_POINT(GET_X_LPARAM(lparam),
+					GET_Y_LPARAM(lparam))));
 	UNLOCK(self);
 
 	if (!self->capture_depth++)
@@ -163,9 +171,12 @@ handle_mouse_down(struct win_rtb_window *self, int button, LPARAM lparam)
 static void
 handle_mouse_up(struct win_rtb_window *self, int button, LPARAM lparam)
 {
+	struct rtb_window *rwin = RTB_WINDOW(self);
+
 	LOCK(self);
-	rtb__platform_mouse_release(RTB_WINDOW(self), button,
-			GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
+	rtb__platform_mouse_release(rwin, button, rtb_phy_to_point(rwin,
+				RTB_MAKE_PHY_POINT(GET_X_LPARAM(lparam),
+					GET_Y_LPARAM(lparam))));
 	UNLOCK(self);
 
 	if (--self->capture_depth <= 0) {
@@ -177,9 +188,11 @@ handle_mouse_up(struct win_rtb_window *self, int button, LPARAM lparam)
 static void
 handle_mouse_wheel(struct win_rtb_window *self, WPARAM wparam, LPARAM lparam)
 {
+	struct rtb_window *rwin = RTB_WINDOW(self);
+
 	LOCK(self);
-	rtb__platform_mouse_wheel(RTB_WINDOW(self),
-			GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam),
+	rtb__platform_mouse_wheel(rwin, rtb_phy_to_point(rwin,
+				RTB_MAKE_PHY_POINT(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam))),
 			GET_WHEEL_DELTA_WPARAM(wparam) / 120.f);
 	UNLOCK(self);
 }

@@ -33,7 +33,7 @@
 
 #version 150
 
-uniform sampler2D tx_sampler;
+uniform sampler2D tex;
 uniform vec3 atlas_pixel;
 uniform float gamma;
 in float shift;
@@ -46,15 +46,15 @@ void main()
 {
 	// LCD Off
 	if (atlas_pixel.z == 1.0) {
-		float a = texture(tx_sampler, uv).r;
+		float a = texture(tex, uv).r;
 		frag_color = front_color * pow(a, 1.0 / gamma);
 		return;
 	}
 
 	// LCD On
-	vec4 current  = texture(tx_sampler, uv);
-	vec4 previous = texture(tx_sampler, uv + vec2(-1.,0.) * atlas_pixel.xy);
-	vec4 next     = texture(tx_sampler, uv + vec2(+1.,0.) * atlas_pixel.xy);
+	vec4 current  = texture(tex, uv);
+	vec4 previous = texture(tex, uv + vec2(-1.,0.) * atlas_pixel.xy);
+	vec4 next     = texture(tex, uv + vec2(+1.,0.) * atlas_pixel.xy);
 
 	current = pow(current,  vec4(1.0 / gamma));
 	previous= pow(previous, vec4(1.0 / gamma));

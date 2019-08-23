@@ -143,7 +143,7 @@ rtb_font_manager_init(struct rtb_font_manager *fm, int dpi_x, int dpi_y)
 	fm->shader.UNIFORM = glGetUniformLocation(fm->shader.program, #UNIFORM)
 
 	CACHE_UNIFORM(offset);
-	CACHE_UNIFORM(texture);
+	CACHE_UNIFORM(tex);
 	CACHE_UNIFORM(atlas_pixel);
 	CACHE_UNIFORM(gamma);
 
@@ -152,9 +152,9 @@ rtb_font_manager_init(struct rtb_font_manager *fm, int dpi_x, int dpi_y)
 	fm->cache_glyphs = NULL;
 
 #if defined(FT_CONFIG_OPTION_SUBPIXEL_RENDERING) || (FREETYPE_MAJOR > 2 || (FREETYPE_MAJOR == 2 && (FREETYPE_MINOR > 8 || (FREETYPE_MINOR == 8 && FREETYPE_PATCH >= 1))))
-	fm->atlas = texture_atlas_new(512, 512, 3, dpi_x, dpi_y);
+	fm->atlas = texture_atlas_new(768, 512, 3, dpi_x, dpi_y);
 #else
-	fm->atlas = texture_atlas_new(512, 512, 1, dpi_x, dpi_y);
+	fm->atlas = texture_atlas_new(768, 512, 1, dpi_x, dpi_y);
 #endif
 
 	TAILQ_INIT(&fm->managed_fonts);

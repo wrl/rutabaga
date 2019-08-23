@@ -38,28 +38,31 @@ rtb_mouse_double_click_interval(struct rtb_window *win)
 }
 
 void
-rtb_mouse_pointer_warp(struct rtb_window *win, int x, int y)
+rtb_mouse_pointer_warp(struct rtb_window *win, struct rtb_point pt)
 {
 	struct win_rtb_window *self = RTB_WINDOW_AS(win, win_rtb_window);
 	struct rtb_mouse *m = &win->mouse;
-	POINT pt;
+	struct rtb_phy_point phy;
+	POINT wpt;
 
 	/* we'll get recursively called from the rtb__platform_mouse_motion() at
 	 * the bottom of this function, so this is the termination condition to
 	 * prevent infinite recursion. */
-	if (x == m->x && y == m->y)
+	if (pt.x == m->x && pt.y == m->y)
 		return;
 
-	pt.x = x;
-	pt.y = y;
+	phy = rtb_point_to_phy(win, pt);
 
-	ClientToScreen(self->hwnd, &pt);
+	wpt.x = phy.x;
+	wpt.y = phy.y;
+
+	ClientToScreen(self->hwnd, &wpt);
 	SetCursorPos(pt.x, pt.y);
 
-	m->previous.x += x - m->x;
-	m->previous.y += y - m->y;
+	m->previous.x += pt.x - m->x;
+	m->previous.y += pt.y - m->y;
 
-	rtb__platform_mouse_motion(win, x, y);
+	rtb__platform_mouse_motion(win, pt);
 }
 
 void

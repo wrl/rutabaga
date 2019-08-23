@@ -24,22 +24,42 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#version 150
+#include <rutabaga/rutabaga.h>
+#include <rutabaga/geometry.h>
+#include <rutabaga/window.h>
 
-uniform vec2 offset;
-uniform vec2 tx_offset;
-uniform vec2 tex_size;
-uniform sampler2D tex;
-
-uniform vec4 color;
-
-in vec2 coord;
-out vec4 frag_color;
-
-void main()
+struct rtb_phy_point
+rtb_point_to_phy(struct rtb_window *win, struct rtb_point pt)
 {
-	if (tex_size.x > 0.0 && tex_size.y > 0.0)
-		frag_color = texture(tex, coord);
-	else
-		frag_color = color;
+	return (struct rtb_phy_point) {
+		.x = pt.x * win->scale.x,
+		.y = pt.y * win->scale.y
+	};
+}
+
+struct rtb_point
+rtb_phy_to_point(struct rtb_window *win, struct rtb_phy_point phy)
+{
+	return (struct rtb_point) {
+		.x = phy.x * win->scale_recip.x,
+		.y = phy.y * win->scale_recip.y
+	};
+}
+
+struct rtb_phy_size
+rtb_size_to_phy(struct rtb_window *win, struct rtb_size sz)
+{
+	return (struct rtb_phy_size) {
+		.w = sz.w * win->scale.x,
+		.h = sz.h * win->scale.y
+	};
+}
+
+struct rtb_size
+rtb_phy_to_size(struct rtb_window *win, struct rtb_phy_size phy)
+{
+	return (struct rtb_size) {
+		.w = phy.w * win->scale_recip.x,
+		.h = phy.h * win->scale_recip.y
+	};
 }

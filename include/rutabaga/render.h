@@ -63,7 +63,7 @@ void rtb_render_quad(struct rtb_render_context *, struct rtb_quad *);
 void rtb_render_clear(struct rtb_element *);
 
 void rtb_render_use_shader(struct rtb_render_context *, const struct rtb_shader *);
-void rtb_render_reset(struct rtb_element *);
+void rtb_render_reset(struct rtb_element *, const struct rtb_shader *);
 void rtb_render_push(struct rtb_element *);
 void rtb_render_pop(struct rtb_element *);
 struct rtb_render_context *rtb_render_get_context(struct rtb_element *);
