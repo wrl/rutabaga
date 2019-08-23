@@ -3,7 +3,7 @@
 top = '..'
 
 def build_uv(ctx):
-	from_gyp = ctx.target_from_gyp('libuv/uv.gyp', 'libuv')
+	from_gyp = ctx.target_from_gyp('libuv', 'libuv/uv.gyp')
 
 	extra_cflags = [
 		'-Wno-gnu-statement-expression',
@@ -45,7 +45,9 @@ def build_uv(ctx):
 			# clang doesn't know about, so they have to be special-cased here.
 
 			extra_cflags += [
-				'-Wno-cast-function-type']
+				'-Wno-address-of-packed-member',
+				'-Wno-cast-function-type'
+            ]
 
 	ctx.env.append_unique('LINKFLAGS_UV_FLAGS', from_gyp['ldflags'])
 	ctx.env.append_unique('LIB_UV_FLAGS', from_gyp['libraries'])
