@@ -3,6 +3,7 @@
 import os
 
 from waflib.Configure import conf
+from waflib import Utils
 
 def parse_gyp_file(path):
 	parsed = None
@@ -75,9 +76,14 @@ def eval_condition_list_recursively(clist, **kwargs):
 	return ret
 
 @conf
-def target_from_gyp(ctx, path, target):
-	n = ctx.path.get_src().find_resource(path)
-	gyp = parse_gyp_file(n.abspath())
+def target_from_gyp(ctx, target, paths):
+	paths = Utils.to_list(paths)
+
+	gyp = {}
+
+	for p in paths:
+		n = ctx.path.get_src().find_resource(p)
+		gyp.update(parse_gyp_file(n.abspath()))
 
 	t = find_target(gyp['targets'], target)
 
@@ -102,7 +108,7 @@ def target_from_gyp(ctx, path, target):
 
 		[from_gyp[x].extend(r.get(x, [])) for x in from_gyp.keys()]
 
-	containing_dir = os.path.split(path)[0]
+	containing_dir = os.path.split(paths[-1])[0]
 	from_gyp['sources'] = [
 			'{}/{}'.format(containing_dir, s) for s in from_gyp['sources']
 			if os.path.splitext(s)[1] in ('.c', '.cc', '.cpp')]
