@@ -634,3 +634,10 @@ rtb_get_scaling(intptr_t parent_window)
 	 * backing store coordinates. */
 	return RTB_MAKE_POINT(1.f, 1.f);
 }
+
+intptr_t
+rtb_window_get_native_handle(struct rtb_window *win)
+{
+	struct cocoa_rtb_window *self = RTB_WINDOW_AS(rwin, cocoa_rtb_window);
+	return self->view;
+}

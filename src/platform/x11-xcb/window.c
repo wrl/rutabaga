@@ -776,3 +776,10 @@ rtb_window_unlock(struct rtb_window *rwin)
 	XUnlockDisplay(self->xrtb->dpy);
 	uv_mutex_unlock(&self->lock);
 }
+
+intptr_t
+rtb_window_get_native_handle(struct rtb_window *rwin)
+{
+	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
+	return self->xcb_win;
+}

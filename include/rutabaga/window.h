@@ -136,3 +136,5 @@ struct rtb_window_open_options {
 struct rtb_window *rtb_window_open(struct rutabaga *,
 		const struct rtb_window_open_options *);
 void rtb_window_close(struct rtb_window *);
+
+intptr_t rtb_window_get_native_handle(struct rtb_window *);
