@@ -83,7 +83,12 @@ main(int argc, char **argv)
 
 	delicious = rtb_new();
 	assert(delicious);
-	win = rtb_window_open(delicious, 600, 700, "rtb basic demo");
+	win = rtb_window_open_ez(delicious, {
+		.title = "rtb basic demo",
+
+		.width  = 600,
+		.height = 700,
+	});
 	assert(win);
 
 	rtb_elem_set_size_cb(RTB_ELEMENT(win), rtb_size_hfit_children);

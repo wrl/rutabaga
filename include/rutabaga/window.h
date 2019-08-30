@@ -117,8 +117,22 @@ void rtb_window_unlock(struct rtb_window *);
 
 void rtb_window_reinit(struct rtb_window *);
 
-struct rtb_window *rtb_window_open_under(struct rutabaga *,
-		intptr_t parent, int width, int height, const char *title);
+/**
+ * opening/closing
+ */
+
+struct rtb_window_open_options {
+	const char *title;
+
+	int width;
+	int height;
+
+	intptr_t parent;
+};
+
+#define rtb_window_open_ez(RTB, ...) \
+	rtb_window_open(RTB, &((struct rtb_window_open_options) __VA_ARGS__));
+
 struct rtb_window *rtb_window_open(struct rutabaga *,
-		int width, int height, const char *title);
+		const struct rtb_window_open_options *);
 void rtb_window_close(struct rtb_window *);

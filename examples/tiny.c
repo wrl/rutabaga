@@ -156,7 +156,12 @@ int main(int argc, char **argv)
 
 	delicious = rtb_new();
 	assert(delicious);
-	win = rtb_window_open(delicious, 450, 600, "~delicious~");
+	win = rtb_window_open_ez(delicious, {
+		.title = "~delicious~",
+
+		.width  = 600,
+		.height = 700,
+	});
 	assert(win);
 
 	win->outer_pad.x = 5.f;

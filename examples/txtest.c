@@ -47,7 +47,12 @@ int main(int argc, char **argv)
 
 	delicious = rtb_new();
 	assert(delicious);
-	win = rtb_window_open(delicious, 450, 600, "texture test");
+	win = rtb_window_open_ez(delicious, {
+		.title = "texture test",
+
+		.width  = 600,
+		.height = 700,
+	});
 	assert(win);
 
 	win->outer_pad.x = 0.f;

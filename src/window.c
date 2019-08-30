@@ -366,18 +366,18 @@ init_gl(void)
 }
 
 struct rtb_window *
-rtb_window_open_under(struct rutabaga *r, intptr_t parent,
-		int w, int h, const char *title)
+rtb_window_open(struct rutabaga *r, const struct rtb_window_open_options *opt)
 {
 	struct rtb_style_data stdata;
 	struct rtb_window *self;
 
 	assert(r);
-	assert(h > 0);
-	assert(w > 0);
+	assert(opt->width > 0);
+	assert(opt->height > 0);
 	assert(!r->win);
 
-	self = window_impl_open(r, w, h, title, parent);
+	self = window_impl_open(r, opt->width, opt->height,
+			opt->title, opt->parent);
 	if (!self)
 		goto err_window_impl;
 
@@ -386,8 +386,8 @@ rtb_window_open_under(struct rutabaga *r, intptr_t parent,
 	if (RTB_SUBCLASS(RTB_SURFACE(self), rtb_surface_init, &super))
 		goto err_surface_init;
 
-	self->w = w * self->scale_recip.x;
-	self->h = h * self->scale_recip.y;
+	self->w = opt->width  * self->scale_recip.x;
+	self->h = opt->height * self->scale_recip.y;
 
 	self->surface = RTB_SURFACE(self);
 
@@ -433,13 +433,6 @@ err_surface_init:
 	window_impl_close(self);
 err_window_impl:
 	return NULL;
-}
-
-struct rtb_window *
-rtb_window_open(struct rutabaga *r,
-		int w, int h, const char *title)
-{
-	return rtb_window_open_under(r, 0, w, h, title);
 }
 
 void

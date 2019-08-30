@@ -573,7 +573,12 @@ main(int argc, char **argv)
 
 	state.rtb = rtb_new();
 	assert(state.rtb);
-	state.win = rtb_window_open(state.rtb, 1440, 768, "cabbage patch");
+	state.win = rtb_window_open_ez(state.rtb, {
+		.title = "cabbage patch",
+
+		.width  = 1440,
+		.height = 768,
+	});
 	assert(state.win);
 
 	state.win->outer_pad.x = 0.f;

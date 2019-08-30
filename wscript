@@ -148,13 +148,17 @@ def configure(conf):
     if conf.env.DEST_OS == 'win32':
         check_freetype(conf)
 
+        conf.env.PLATFORM = 'win'
+        conf.define('RTB_PLATFORM_WINDOWS', 1)
+
         conf.env.append_unique('LIB_GL', ['opengl32', 'gdi32'])
         conf.define('WIN32_LEAN_AND_MEAN', 1)
-        conf.env.PLATFORM = 'win'
     elif conf.env.DEST_OS == 'darwin':
         check_alloca(conf)
         check_freetype(conf)
+
         conf.env.PLATFORM = 'cocoa'
+        conf.define('RTB_PLATFORM_COCOA', 1)
 
         conf.env.append_unique('FRAMEWORK_COCOA', ['Cocoa', 'QuartzCore'])
         # NSOpenGL* became deprecated in macOS 10.14
@@ -166,6 +170,8 @@ def configure(conf):
         check_x11(conf)
 
         conf.env.PLATFORM = 'x11-xcb'
+        conf.define('RTB_PLATFORM_X11', 1)
+
         separator()
 
     # if rutabaga is included as part of another project and this configure()
