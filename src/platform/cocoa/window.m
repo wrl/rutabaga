@@ -636,8 +636,8 @@ rtb_get_scaling(intptr_t parent_window)
 }
 
 intptr_t
-rtb_window_get_native_handle(struct rtb_window *win)
+rtb_window_get_native_handle(struct rtb_window *rwin)
 {
 	struct cocoa_rtb_window *self = RTB_WINDOW_AS(rwin, cocoa_rtb_window);
-	return self->view;
+	return (intptr_t) self->view;
 }

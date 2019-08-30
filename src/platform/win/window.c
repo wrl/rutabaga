@@ -474,5 +474,5 @@ intptr_t
 rtb_window_get_native_handle(struct rtb_window *rwin)
 {
 	struct win_rtb_window *self = RTB_WINDOW_AS(rwin, win_rtb_window);
-	return self->hwnd;
+	return (intptr_t) self->hwnd;
 }
