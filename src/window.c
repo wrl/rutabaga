@@ -376,8 +376,7 @@ rtb_window_open(struct rutabaga *r, const struct rtb_window_open_options *opt)
 	assert(opt->height > 0);
 	assert(!r->win);
 
-	self = window_impl_open(r, opt->width, opt->height,
-			opt->title, opt->parent);
+	self = window_impl_open(r, opt);
 	if (!self)
 		goto err_window_impl;
 

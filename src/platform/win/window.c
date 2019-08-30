@@ -321,15 +321,15 @@ err_create_ctx:
  */
 
 struct rtb_window *
-window_impl_open(struct rutabaga *r,
-		int width, int height, const char *title, intptr_t parent)
+window_impl_open(struct rutabaga *rtb,
+		const struct rtb_window_open_options *opt)
 {
 	struct win_rtb_window *self = calloc(1, sizeof(*self));
 	wchar_t *wtitle;
 	RECT wrect;
 	int flags;
 
-	wtitle = utf8_to_utf16_alloc(title);
+	wtitle = utf8_to_utf16_alloc(opt->title);
 	if (!wtitle) {
 		messageboxf(wtitle, L"couldn't allocate memory");
 		goto err_wtitle;
@@ -346,9 +346,9 @@ window_impl_open(struct rutabaga *r,
 		| WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
 		| WS_CLIPSIBLINGS;
 
-	wrect = (RECT) {0, 0, width, height};
+	wrect = (RECT) {0, 0, opt->width, opt->height};
 
-	if (parent)
+	if (opt->parent)
 		flags = WS_CHILD | WS_VISIBLE;
 	else
 		AdjustWindowRectEx(&wrect, flags, FALSE, 0);
@@ -357,7 +357,7 @@ window_impl_open(struct rutabaga *r,
 			(void *) MAKEINTATOM(self->window_class), wtitle, flags,
 			0, 0,
 			wrect.right - wrect.left, wrect.bottom - wrect.top,
-			(HWND) parent,
+			(HWND) opt->parent,
 			NULL, NULL, NULL);
 
 	if (!self->hwnd) {

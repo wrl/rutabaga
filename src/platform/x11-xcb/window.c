@@ -39,7 +39,7 @@
 #include <xcb/xkb.h>
 #include <xcb/xcb_icccm.h>
 
-#define GLX_GLXEXT_PROTOTYPES "gimme dem"
+#define GLX_GLXEXT_PROTOTYPES "yes please"
 #include <rutabaga/opengl.h>
 #include <GL/glx.h>
 #include <GL/glxext.h>
@@ -552,7 +552,7 @@ raise_window(xcb_connection_t *xcb_conn, xcb_window_t window)
 
 struct rtb_window *
 window_impl_open(struct rutabaga *rtb,
-		int w, int h, const char *title, intptr_t parent)
+		const struct rtb_window_open_options *opt)
 {
 	struct xcb_rutabaga *xrtb = (void *) rtb;
 	struct xrtb_window *self;
@@ -584,8 +584,6 @@ window_impl_open(struct rutabaga *rtb,
 	xcb_generic_error_t *err;
 
 	assert(rtb);
-	assert(h > 0);
-	assert(w > 0);
 
 	if (!(self = calloc(1, sizeof(*self))))
 		goto err_malloc;
@@ -659,12 +657,12 @@ window_impl_open(struct rutabaga *rtb,
 	value_list[4] = colormap;
 	value_list[5] = 0;
 
-	self->phy_size.w = self->scale.x * w;
-	self->phy_size.h = self->scale.y * h;
+	self->phy_size.w = self->scale.x * opt->width;
+	self->phy_size.h = self->scale.y * opt->height;
 
 	ck_window = xcb_create_window_checked(
 			xcb_conn, visual->depth, self->xcb_win,
-			parent ? (xcb_window_t) parent : self->screen->root,
+			opt->parent ? (xcb_window_t) opt->parent : self->screen->root,
 			0, 0,
 			self->phy_size.w, self->phy_size.h,
 			0,
@@ -690,8 +688,8 @@ window_impl_open(struct rutabaga *rtb,
 		goto err_gl_win;
 	}
 
-	if (set_xprop(xcb_conn, self->xcb_win, XCB_ATOM_WM_NAME, title))
-		set_xprop(xcb_conn, self->xcb_win, XCB_ATOM_WM_NAME, "oh no");
+	if (set_xprop(xcb_conn, self->xcb_win, XCB_ATOM_WM_NAME, opt->title))
+		set_xprop(xcb_conn, self->xcb_win, XCB_ATOM_WM_NAME, "");
 
 	self->gl_draw = self->gl_win;
 
@@ -709,7 +707,7 @@ window_impl_open(struct rutabaga *rtb,
 		goto err_win_map;
 	}
 
-	if (parent)
+	if (opt->parent)
 		raise_window(xcb_conn, self->xcb_win);
 	else
 		xcb_icccm_set_wm_protocols(xcb_conn,

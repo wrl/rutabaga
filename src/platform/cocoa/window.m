@@ -459,7 +459,7 @@ alloc_nswindow(int w, int h, const char *title, int resizable)
 
 struct rtb_window *
 window_impl_open(struct rutabaga *rtb,
-		int w, int h, const char *title, intptr_t parent)
+		const struct rtb_window_open_options *opt)
 {
 	struct cocoa_rtb_window *self;
 	RutabagaWindow *cwin;
@@ -482,16 +482,17 @@ window_impl_open(struct rutabaga *rtb,
 		view->gl_ctx = gl_ctx;
 		self->gl_ctx = gl_ctx;
 
-		[view initWithFrame:NSMakeRect(0, 0, w, h)];
+		[view initWithFrame:NSMakeRect(0, 0, opt->width, opt->height)];
 
-		phy_size = [view convertSizeToBacking:NSMakeSize(w, h)];
+		phy_size = [view
+			convertSizeToBacking:NSMakeSize(opt->width, opt->height)];
 
 		self->phy_size.w = phy_size.width;
 		self->phy_size.h = phy_size.height;
 
 		self->scale = RTB_MAKE_POINT(
-				phy_size.width / (float) w,
-				phy_size.height / (float) h);
+				phy_size.width / (float) opt->width,
+				phy_size.height / (float) opt->height);
 
 		self->scale_recip.x = 1.f / self->scale.x;
 		self->scale_recip.y = 1.f / self->scale.y;
@@ -501,15 +502,15 @@ window_impl_open(struct rutabaga *rtb,
 
 		[gl_ctx makeCurrentContext];
 
-		if (parent) {
+		if (opt->parent) {
 			self->cocoa_win = cwin = NULL;
 
-			parent_view = (NSView *) parent;
+			parent_view = (NSView *) opt->parent;
 			[parent_view addSubview:view];
 
 			[view setHidden:NO];
 		} else {
-			cwin = alloc_nswindow(w, h, title, 1);
+			cwin = alloc_nswindow(opt->width, opt->height, opt->title, 1);
 			if (!cwin)
 				goto err_alloc_nswindow;
 
