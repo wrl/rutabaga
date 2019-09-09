@@ -79,10 +79,9 @@ rtb_handle(struct rtb_element *target, const struct rtb_event *event)
 	const struct rtb_event_handler *h;
 
 	if (!(h = find_handler_for(target, event->type)))
-		return 0;
+		return -1;
 
-	h->callback.cb(target, event, h->callback.ctx);
-	return 1;
+	return h->callback.cb(target, event, h->callback.ctx);
 }
 
 struct rtb_element *

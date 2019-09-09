@@ -57,7 +57,7 @@ dispatch_click_event(struct rtb_button *self, const struct rtb_mouse_event *e)
 	event.cursor.x -= self->x;
 	event.cursor.y -= self->y;
 
-	return rtb_handle(RTB_ELEMENT(self), RTB_EVENT(&event));
+	return rtb_handle(RTB_ELEMENT(self), RTB_EVENT(&event)) > -1;
 }
 
 static int

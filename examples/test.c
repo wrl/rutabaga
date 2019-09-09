@@ -367,6 +367,13 @@ frame_start(struct rtb_element *elem, const struct rtb_event *e, void *ctx)
 	return 1;
 }
 
+static int
+win_will_close(struct rtb_element *elem, const struct rtb_event *e, void *ctx)
+{
+	// don't close the window when speed is 0
+	return (speed == 0.f);
+}
+
 static void
 init_timer(void)
 {
@@ -409,6 +416,9 @@ int main(int argc, char **argv)
 
 	rtb_register_handler(RTB_ELEMENT(win),
 			RTB_FRAME_START, frame_start, NULL);
+
+	rtb_register_handler(RTB_ELEMENT(win),
+			RTB_WINDOW_SHOULD_CLOSE, win_will_close, NULL);
 
 	distribute_demo(RTB_ELEMENT(delicious->win));
 	setup_ui(RTB_ELEMENT(delicious->win));

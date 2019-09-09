@@ -220,7 +220,7 @@ win_event(struct rtb_element *elem, const struct rtb_event *e)
 
 	switch (e->type) {
 	case RTB_WINDOW_SHOULD_CLOSE:
-		if (!rtb_handle(elem, e)) {
+		if (rtb_handle(elem, e) < 1) {
 			struct rtb_window_event wc_ev = {
 				.type = RTB_WINDOW_WILL_CLOSE,
 				.window = self,
@@ -232,7 +232,7 @@ win_event(struct rtb_element *elem, const struct rtb_event *e)
 		return 1;
 
 	case RTB_WINDOW_WILL_CLOSE:
-		if (!rtb_handle(elem, e))
+		if (rtb_handle(elem, e) < 1)
 			rtb_event_loop_stop(self->rtb);
 
 		return 1;
@@ -243,7 +243,7 @@ win_event(struct rtb_element *elem, const struct rtb_event *e)
 			if (rtb_elem_deliver_event(self->focus, e))
 				return 1;
 
-		if (rtb_handle(elem, e))
+		if (rtb_handle(elem, e) != -1)
 			return 1;
 	}
 

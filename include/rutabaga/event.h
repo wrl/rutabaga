@@ -131,7 +131,10 @@ struct rtb_event_handler {
  * public API
  */
 
+// returns -1 if no handler for this event. otherwise, returns the return value
+// of the handler.
 int rtb_handle(struct rtb_element *target, const struct rtb_event *event);
+
 struct rtb_element *rtb_dispatch_raw(struct rtb_element *target,
 		struct rtb_event *event);
 struct rtb_element *rtb_dispatch_simple(struct rtb_element *target,
