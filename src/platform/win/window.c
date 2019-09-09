@@ -348,7 +348,7 @@ window_impl_open(struct rutabaga *rtb,
 
 	wrect = (RECT) {0, 0, opt->width, opt->height};
 
-	if (opt->parent)
+	if (opt->parent || opt->flags & RTB_WINDOW_OPEN_AS_IF_PARENTED)
 		flags = WS_CHILD | WS_VISIBLE;
 	else
 		AdjustWindowRectEx(&wrect, flags, FALSE, 0);

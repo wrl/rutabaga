@@ -121,7 +121,13 @@ void rtb_window_reinit(struct rtb_window *);
  * opening/closing
  */
 
+typedef enum {
+	RTB_WINDOW_OPEN_AS_IF_PARENTED = 1
+} rtb_window_open_option_flags_t;
+
 struct rtb_window_open_options {
+	rtb_window_open_option_flags_t flags;
+
 	const char *title;
 
 	int width;

@@ -502,11 +502,14 @@ window_impl_open(struct rutabaga *rtb,
 
 		[gl_ctx makeCurrentContext];
 
-		if (opt->parent) {
+		if (opt->parent || opt->flags & RTB_WINDOW_OPEN_AS_IF_PARENTED) {
 			self->cocoa_win = cwin = NULL;
 
-			parent_view = (NSView *) opt->parent;
-			[parent_view addSubview:view];
+			// FIXME: move to client code?
+			if (opt->parent) {
+				parent_view = (NSView *) opt->parent;
+				[parent_view addSubview:view];
+			}
 
 			[view setHidden:NO];
 		} else {
