@@ -335,16 +335,18 @@ app_kit_button_to_rtb_button(const NSEvent *e)
 	[self mouseUp:e];
 }
 
-- (void) dealloc
+- (oneway void) release
 {
-	struct rtb_window_event ev = {
-		.type = RTB_WINDOW_WILL_CLOSE,
-		.window = RTB_WINDOW(rtb_win)
-	};
+	[super release];
 
-	rtb_dispatch_raw(RTB_ELEMENT(rtb_win), RTB_EVENT(&ev));
+	if (rtb_win && [self retainCount] == 1) {
+		struct rtb_window_event ev = {
+			.type = RTB_WINDOW_WILL_CLOSE,
+			.window = RTB_WINDOW(rtb_win)
+		};
 
-	[super dealloc];
+		rtb_win->on_event(RTB_ELEMENT(rtb_win), RTB_EVENT(&ev));
+	}
 }
 
 #undef LOCK
@@ -577,7 +579,6 @@ window_impl_close(struct rtb_window *rwin)
 	uv_mutex_destroy(&self->lock);
 
 	free(self);
-
 	return;
 }
 
@@ -586,17 +587,15 @@ rtb__cocoa_draw_frame(struct cocoa_rtb_window *self, int force)
 {
 	struct rtb_window *win = RTB_WINDOW(self);
 
-	@autoreleasepool {
-		if ([self->gl_ctx view] != self->view)
-			[self->gl_ctx setView:self->view];
+	if ([self->gl_ctx view] != self->view)
+		[self->gl_ctx setView:self->view];
 
-		rtb_window_lock(win);
+	rtb_window_lock(win);
 
-		if (rtb_window_draw(win, force))
-			[self->gl_ctx flushBuffer];
+	if (rtb_window_draw(win, force))
+		[self->gl_ctx flushBuffer];
 
-		rtb_window_unlock(win);
-	}
+	rtb_window_unlock(win);
 }
 
 /**
