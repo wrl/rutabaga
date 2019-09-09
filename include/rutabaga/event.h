@@ -44,42 +44,47 @@ typedef unsigned int rtb_ev_type_t;
 
 #define SYS(x) ((x) | RTB_EVENT_SYS_MASK)
 enum {
-	/**
-	 * dispatched when the window should close.
-	 * if the handler returns `1`, the window stays open.
-	 */
-	RTB_WINDOW_CLOSE   = SYS(0),
+	// dispatched when the window should close.
+	// if the handler returns `1`, the window stays open.
+	RTB_WINDOW_SHOULD_CLOSE = SYS(0),
+
+	// same as above, except there is no opportunity for the application to
+	// indicate that the window should stay open.
+	RTB_WINDOW_WILL_CLOSE = SYS(1),
+
+	// dispatched from rtb_window_close() as the window is tearing down.
+	RTB_WINDOW_CLOSING = SYS(2),
 
 	/**
 	 * dispatched before any drawing happens in a frame.
 	 */
-	RTB_FRAME_START    = SYS(1),
+	RTB_FRAME_START = SYS(3),
 
 	/**
 	 * dispatched after all drawing in a frame has occurred,
 	 * before the GL buffer swap.
 	 */
-	RTB_FRAME_END      = SYS(2),
+	RTB_FRAME_END   = SYS(4),
 
-	RTB_FOCUS          = SYS(3),
-	RTB_UNFOCUS        = SYS(4),
+	RTB_FOCUS       = SYS(5),
+	RTB_UNFOCUS     = SYS(6),
 
-	RTB_KEY_PRESS      = SYS(5),
-	RTB_KEY_RELEASE    = SYS(6),
+	RTB_KEY_PRESS   = SYS(7),
+	RTB_KEY_RELEASE = SYS(8),
 
-	RTB_MOUSE_ENTER    = SYS(7),
-	RTB_MOUSE_LEAVE    = SYS(8),
+	RTB_MOUSE_ENTER = SYS(9),
+	RTB_MOUSE_LEAVE = SYS(10),
 
-	RTB_MOUSE_DOWN     = SYS(9),
-	RTB_MOUSE_UP       = SYS(10),
-	RTB_MOUSE_CLICK    = SYS(11),
-	RTB_MOUSE_WHEEL    = SYS(12),
+	RTB_MOUSE_DOWN  = SYS(11),
+	RTB_MOUSE_UP    = SYS(12),
+	RTB_MOUSE_CLICK = SYS(13),
+	RTB_MOUSE_WHEEL = SYS(14),
 
-	RTB_DRAG_START     = SYS(13),
-	RTB_DRAG_MOTION    = SYS(14),
-	RTB_DRAG_ENTER     = SYS(15),
-	RTB_DRAG_LEAVE     = SYS(16),
-	RTB_DRAG_DROP      = SYS(17)
+	RTB_DRAG_START  = SYS(15),
+	RTB_DRAG_MOTION = SYS(16),
+	RTB_DRAG_ENTER  = SYS(17),
+	RTB_DRAG_LEAVE  = SYS(18),
+	RTB_DRAG_DROP   = SYS(19)
 };
 #undef SYS
 

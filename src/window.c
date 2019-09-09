@@ -219,9 +219,22 @@ win_event(struct rtb_element *elem, const struct rtb_event *e)
 	SELF_FROM(elem);
 
 	switch (e->type) {
-	case RTB_WINDOW_CLOSE:
+	case RTB_WINDOW_SHOULD_CLOSE:
+		if (!rtb_handle(elem, e)) {
+			struct rtb_window_event wc_ev = {
+				.type = RTB_WINDOW_WILL_CLOSE,
+				.window = self,
+			};
+
+			rtb_dispatch_raw(RTB_ELEMENT(self), RTB_EVENT(&wc_ev));
+		}
+
+		return 1;
+
+	case RTB_WINDOW_WILL_CLOSE:
 		if (!rtb_handle(elem, e))
 			rtb_event_loop_stop(self->rtb);
+
 		return 1;
 
 	case RTB_KEY_PRESS:

@@ -64,7 +64,7 @@ event_location_to_view(NSView *view, NSEvent *e)
 - (BOOL) windowShouldClose: (id) sender
 {
 	struct rtb_window_event ev = {
-		.type = RTB_WINDOW_CLOSE,
+		.type = RTB_WINDOW_SHOULD_CLOSE,
 		.window = RTB_WINDOW(rtb_win)
 	};
 
@@ -335,9 +335,21 @@ app_kit_button_to_rtb_button(const NSEvent *e)
 	[self mouseUp:e];
 }
 
+- (void) dealloc
+{
+	struct rtb_window_event ev = {
+		.type = RTB_WINDOW_WILL_CLOSE,
+		.window = RTB_WINDOW(rtb_win)
+	};
+
+	rtb_dispatch_raw(RTB_ELEMENT(rtb_win), RTB_EVENT(&ev));
+
+	[super dealloc];
+}
+
 #undef LOCK
 #undef UNLOCK
-@end
+@end /* @implementation RutabagaOpenGLView */
 
 @implementation RutabagaOpenGLContext
 @end
