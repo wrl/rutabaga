@@ -41,14 +41,17 @@
  */
 
 struct rutabaga {
-	/* private ********************************/
-	/* XXX: need to be able to handle several of these */
-	struct rtb_window *win;
-	int run_event_loop;
+	/* public *********************************/
+	// set this before calling rtb_event_loop_run()
+	int owns_application_event_loop;
 
+	/* private ********************************/
 	struct {
 		RTB_DICT(rtb_atom_dict, rtb_atom_descriptor) type;
 	} atoms;
+
+	/* XXX: need to be able to handle several of these */
+	struct rtb_window *win;
 
 	struct wwrl_allocator allocator;
 	uv_loop_t event_loop;

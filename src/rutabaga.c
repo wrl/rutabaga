@@ -50,6 +50,8 @@ rtb_new(void)
 	if (!self)
 		return NULL;
 
+	self->owns_application_event_loop = 1;
+
 	RTB_DICT_INIT(&self->atoms.type);
 
 	memcpy(&self->allocator, &stdlib_allocator,

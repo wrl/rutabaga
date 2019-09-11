@@ -294,6 +294,24 @@ win_rtb_handle_message(struct win_rtb_window *self,
 	}
 }
 
+static void
+run_application_event_loop(struct rutabaga *r)
+{
+	struct win_rtb_window *rwin = RTB_WINDOW_AS(r->win, win_rtb_window);
+
+	int status;
+	MSG msg;
+
+	while (rwin->event_loop_running &&
+			(status = GetMessage(&msg, rwin->hwnd, 0, 0))) {
+		if (status == -1)
+			break;
+
+		TranslateMessage(&msg);
+		win_rtb_handle_message(rwin, msg.message, msg.wParam, msg.lParam);
+	}
+}
+
 /**
  * public API
  */
@@ -314,31 +332,8 @@ rtb_event_loop_run(struct rutabaga *r)
 	SetTimer(self->hwnd, WIN_RTB_FRAME_TIMER, 13, 0);
 	self->event_loop_running = 1;
 
-	/**
-	 * so, need to figure out how the semantics of this will work.
-	 * on linux, calling rtb_event_loop_run() blocks while the loop is
-	 * running. this is fine. on osx, rtb_event_loop_run() blocks if the
-	 * NSApp event loop is not already running.
-	 *
-	 * on windows, there's no way to tell if there's already an event loop
-	 * running, so there's no good way of telling whether we should block
-	 * here. since the first shipped product based on rutabaga is an audio
-	 * plug-in, we obviously can't do that.
-	 */
-
-#if 0
-	int status;
-	MSG msg;
-
-	while (self->event_loop_running &&
-			(status = GetMessage(&msg, self->hwnd, 0, 0))) {
-		if (status == -1)
-			break;
-
-		TranslateMessage(&msg);
-		win_rtb_handle_message(self, msg.message, msg.wParam, msg.lParam);
-	}
-#endif
+	if (r->owns_application_event_loop)
+		run_application_event_loop(r);
 }
 
 void

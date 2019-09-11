@@ -122,7 +122,7 @@ rtb_event_loop_run(struct rutabaga *r)
 	if (cwin->cocoa_win)
 		[cwin->cocoa_win makeKeyAndOrderFront:cwin->cocoa_win];
 
-	if (![NSApp isRunning]) {
+	if (win->rtb->owns_application_event_loop && ![NSApp isRunning]) {
 		cwin->we_are_running_nsapp = 1;
 		[NSApp run];
 	}
