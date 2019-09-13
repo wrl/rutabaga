@@ -372,6 +372,13 @@ window_impl_open(struct rutabaga *rtb,
 
 	SetWindowLongPtr(self->hwnd, GWLP_USERDATA, (LONG_PTR) self);
 
+	self->phy_size.w = opt->width;
+	self->phy_size.h = opt->height;
+
+	self->scale = RTB_MAKE_POINT(1.f, 1.f);
+	self->scale_recip.x = 1.f / self->scale.x;
+	self->scale_recip.y = 1.f / self->scale.y;
+
 	/* XXX: hardcode this for now */
 	self->dpi.x = 96;
 	self->dpi.y = 96;
