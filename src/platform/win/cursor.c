@@ -57,7 +57,7 @@ rtb_mouse_pointer_warp(struct rtb_window *win, struct rtb_point pt)
 	wpt.y = phy.y;
 
 	ClientToScreen(self->hwnd, &wpt);
-	SetCursorPos(pt.x, pt.y);
+	SetCursorPos(wpt.x, wpt.y);
 
 	m->previous.x += pt.x - m->x;
 	m->previous.y += pt.y - m->y;
