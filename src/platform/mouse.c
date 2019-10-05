@@ -320,11 +320,6 @@ descend:
  * platform API
  */
 
-#define RESCALE_COORDS() do {												\
-		x *= win->scale_recip.x;											\
-		y *= win->scale_recip.y;											\
-	} while (0)
-
 void
 rtb__platform_mouse_press(struct rtb_window *win,
 		int button, struct rtb_point pt)
