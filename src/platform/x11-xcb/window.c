@@ -461,10 +461,11 @@ static struct rtb_point
 get_scaling(int dpi_x, int dpi_y)
 {
 	const char *env_factor;
-	float factor;
 	char *end;
 
 	if ((env_factor = getenv("RTB_SCALE"))) {
+		float factor;
+
 		factor = strtod(env_factor, &end);
 		if (*end != '\0')
 			goto unscaled;
@@ -473,7 +474,12 @@ get_scaling(int dpi_x, int dpi_y)
 	}
 
 	if (dpi_x != 96 || dpi_y != 96) {
-		return RTB_MAKE_POINT(dpi_x / 96.f, dpi_y / 96.f);
+		struct rtb_point factor;
+
+		factor.x = fmax(1.f, roundf(dpi_x / 96.f));
+		factor.y = fmax(1.f, roundf(dpi_y / 96.f));
+
+		return factor;
 	}
 
 unscaled:
@@ -644,12 +650,6 @@ window_impl_open(struct rutabaga *rtb,
 			xcb_conn, XCB_COLORMAP_ALLOC_NONE, colormap,
 			self->screen->root, visual->visualid);
 
-	get_dpi(self->screen, &self->dpi.x, &self->dpi.y);
-	self->scale = get_scaling(self->dpi.x, self->dpi.y);
-
-	self->dpi.x = 96;
-	self->dpi.y = 96;
-
 	value_list[0] = 0;
 	value_list[1] = 0;
 	value_list[2] = XCB_GRAVITY_STATIC;
@@ -657,8 +657,16 @@ window_impl_open(struct rutabaga *rtb,
 	value_list[4] = colormap;
 	value_list[5] = 0;
 
+	get_dpi(self->screen, &self->dpi.x, &self->dpi.y);
+	self->scale = get_scaling(self->dpi.x, self->dpi.y);
+	self->scale_recip.x = 1.f / self->scale.x;
+	self->scale_recip.y = 1.f / self->scale.y;
+
 	self->phy_size.w = self->scale.x * opt->width;
 	self->phy_size.h = self->scale.y * opt->height;
+
+	self->dpi.x = 96 * self->scale.x;
+	self->dpi.y = 96 * self->scale.y;
 
 	ck_window = xcb_create_window_checked(
 			xcb_conn, visual->depth, self->xcb_win,
@@ -675,12 +683,6 @@ window_impl_open(struct rutabaga *rtb,
 		ERR("can't create XCB window: %d\n", err->error_code);
 		goto err_xcb_win;
 	}
-
-	self->scale_recip.x = 1.f / self->scale.x;
-	self->scale_recip.y = 1.f / self->scale.y;
-
-	self->dpi.x *= self->scale.x;
-	self->dpi.y *= self->scale.y;
 
 	self->gl_win = glXCreateWindow(dpy, fb_config, self->xcb_win, 0);
 	if (!self->gl_win) {
