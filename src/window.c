@@ -29,6 +29,7 @@
 #include <stdio.h>
 
 #include <rutabaga/rutabaga.h>
+#include <rutabaga/platform.h>
 #include <rutabaga/event.h>
 #include <rutabaga/element.h>
 #include <rutabaga/layout.h>
@@ -245,6 +246,11 @@ win_event(struct rtb_element *elem, const struct rtb_event *e)
 
 		if (rtb_handle(elem, e) != -1)
 			return 1;
+
+	case RTB_MOUSE_ENTER:
+		rtb__platform_set_cursor(self, &self->mouse,
+				self->mouse.current_cursor);
+		break;
 	}
 
 	return super.on_event(elem, e);
@@ -433,7 +439,6 @@ rtb_window_open(struct rutabaga *r, const struct rtb_window_open_options *opt)
 	r->win = self;
 
 	self->mouse.current_cursor = RTB_MOUSE_CURSOR_DEFAULT;
-
 	return self;
 
 err_font:

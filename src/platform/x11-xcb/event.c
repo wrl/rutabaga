@@ -275,8 +275,10 @@ handle_configure_notify(struct xrtb_window *win, xcb_generic_event_t *_ev)
 static void
 handle_map_notify(struct xrtb_window *win, xcb_generic_event_t *_ev)
 {
-	if (win->state == RTB_STATE_UNATTACHED)
-		win->need_reconfigure = 1;
+	if (win->state == RTB_STATE_UNATTACHED) {
+		rtb_window_reinit(RTB_WINDOW(win));
+		win->need_reconfigure = 0;
+	}
 }
 
 static void

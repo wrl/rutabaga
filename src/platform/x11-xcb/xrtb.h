@@ -105,6 +105,11 @@ struct xrtb_window {
 
 	xcb_cursor_context_t *cursor_ctx;
 
+	struct {
+		xcb_cursor_t dfault;
+		xcb_cursor_t copy;
+	} cursor;
+
 	GLXDrawable gl_draw;
 	GLXContext gl_ctx;
 	GLXWindow gl_win;

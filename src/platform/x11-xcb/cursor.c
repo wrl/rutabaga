@@ -71,9 +71,15 @@ rtb__platform_set_cursor(struct rtb_window *rwin, struct rtb_mouse *mouse,
 	struct xcb_rutabaga *xrtb = self->xrtb;
 	xcb_cursor_t xc;
 
+#define USE_CURSOR(C, NAME) do {											\
+	if (!self->cursor.C)													\
+		self->cursor.C = xcb_cursor_load_cursor(self->cursor_ctx, NAME);	\
+	xc = self->cursor.C;													\
+} while(0)
+
 	switch (cursor) {
 	case RTB_MOUSE_CURSOR_DEFAULT:
-		xc = 0;
+		xc = self->cursor.dfault;
 		break;
 
 	case RTB_MOUSE_CURSOR_HIDDEN:
@@ -81,7 +87,7 @@ rtb__platform_set_cursor(struct rtb_window *rwin, struct rtb_mouse *mouse,
 		break;
 
 	case RTB_MOUSE_CURSOR_COPY:
-		xc = xcb_cursor_load_cursor(self->cursor_ctx, "copy");
+		USE_CURSOR(copy, "copy");
 		break;
 
 	default:

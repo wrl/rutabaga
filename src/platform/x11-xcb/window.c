@@ -613,6 +613,9 @@ window_impl_open(struct rutabaga *rtb,
 		goto err_cursor_ctx;
 	}
 
+	self->cursor.dfault = xcb_cursor_load_cursor(self->cursor_ctx, "arrow");
+	self->cursor.copy = 0;
+
 	/**
 	 * gl configuration
 	 */
