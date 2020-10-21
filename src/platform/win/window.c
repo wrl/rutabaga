@@ -91,6 +91,79 @@ messageboxf(const wchar_t *title, const wchar_t *fmt, ...)
 }
 
 /**
+ * dpi bullshit
+ */
+
+inline static struct rtb_point
+scaling_from_dpi(unsigned dpi)
+{
+	return RTB_MAKE_POINT(96 / (float) dpi, 96 / (float) dpi);
+}
+
+static BOOL
+find_main_monitor(HMONITOR monitor, HDC dc, LPRECT rect, LPARAM out)
+{
+	MONITORINFO info = {};
+
+	info.cbSize = sizeof(info);
+	GetMonitorInfo(monitor, &info);
+
+	if (info.dwFlags & MONITORINFOF_PRIMARY) {
+		*((HMONITOR *) out) = monitor;
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static struct rtb_point
+win_rtb_get_scaling(const struct win_rtb *wrtb, intptr_t window)
+{
+	DPI_AWARENESS awareness;
+	HWND hwnd = (HWND) window;
+
+	if (!wrtb->awareness_from_ctx || !wrtb->get_thread_dpi_ctx)
+		goto unscaled;
+	else {
+		awareness = wrtb->awareness_from_ctx(
+			(hwnd) ? wrtb->get_window_dpi_ctx(hwnd)
+			       : wrtb->get_thread_dpi_ctx());
+	}
+
+	switch (awareness) {
+	case DPI_AWARENESS_SYSTEM_AWARE:
+	case DPI_AWARENESS_PER_MONITOR_AWARE:
+		break;
+
+	default:
+		goto unscaled;
+	}
+
+	if (hwnd && wrtb->get_window_dpi) {
+		return scaling_from_dpi(wrtb->get_window_dpi(hwnd));
+	} else if (wrtb->get_monitor_dpi) {
+		HMONITOR main_monitor = NULL;
+		UINT dpi_x, dpi_y;
+
+		EnumDisplayMonitors(NULL, NULL, &find_main_monitor,
+				(LPARAM) &main_monitor);
+
+		if (!main_monitor)
+			goto unscaled;
+
+		if (wrtb->get_monitor_dpi(
+				main_monitor, MDT_EFFECTIVE_DPI, &dpi_x, &dpi_y) != S_OK)
+			goto unscaled;
+
+		return scaling_from_dpi((dpi_x + dpi_y) / 2);
+	} else if (wrtb->get_system_dpi)
+		return scaling_from_dpi(wrtb->get_system_dpi());
+
+unscaled:
+	return RTB_MAKE_POINT(1.f, 1.f);
+}
+
+/**
  * wndproc
  */
 
@@ -324,10 +397,15 @@ struct rtb_window *
 window_impl_open(struct rutabaga *rtb,
 		const struct rtb_window_open_options *opt)
 {
-	struct win_rtb_window *self = calloc(1, sizeof(*self));
+	struct win_rtb *wrtb = (void *) rtb;
+	struct win_rtb_window *self;
 	wchar_t *wtitle;
 	RECT wrect;
 	int flags;
+
+	self = calloc(1, sizeof(*self));
+	if (!self)
+		return NULL;
 
 	wtitle = utf8_to_utf16_alloc(opt->title);
 	if (!wtitle) {
@@ -346,7 +424,12 @@ window_impl_open(struct rutabaga *rtb,
 		| WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
 		| WS_CLIPSIBLINGS;
 
-	wrect = (RECT) {0, 0, opt->width, opt->height};
+	self->scale = win_rtb_get_scaling(wrtb, opt->parent);
+
+	self->phy_size.w = opt->width  * self->scale.x;
+	self->phy_size.h = opt->height * self->scale.y;
+
+	wrect = (RECT) {0, 0, self->phy_size.w, self->phy_size.h};
 
 	if (opt->parent || opt->flags & RTB_WINDOW_OPEN_AS_IF_PARENTED)
 		flags = WS_CHILD | WS_VISIBLE;
@@ -372,19 +455,15 @@ window_impl_open(struct rutabaga *rtb,
 
 	SetWindowLongPtr(self->hwnd, GWLP_USERDATA, (LONG_PTR) self);
 
-	self->phy_size.w = opt->width;
-	self->phy_size.h = opt->height;
-
-	self->scale = RTB_MAKE_POINT(1.f, 1.f);
 	self->scale_recip.x = 1.f / self->scale.x;
 	self->scale_recip.y = 1.f / self->scale.y;
 
-	/* XXX: hardcode this for now */
-	self->dpi.x = 96;
-	self->dpi.y = 96;
+	self->dpi.x = 96 * self->scale.x;
+	self->dpi.y = 96 * self->scale.y;
 
 	free(wtitle);
 	uv_mutex_init(&self->lock);
+
 	return RTB_WINDOW(self);
 
 err_gl_ctx:
@@ -442,6 +521,31 @@ rtb_window_unlock(struct rtb_window *rwin)
  * rutabaga lifecycle
  */
 
+static void
+resolve_dpi_funcs(struct win_rtb *wrtb)
+{
+	HMODULE user32, shcore;
+
+	user32 = GetModuleHandleA("user32.dll");
+	shcore = GetModuleHandleA("Shcore.dll");
+
+#define GET_USER32_FUNC(DEST, SYM) \
+	wrtb->DEST = (void *) GetProcAddress(user32, SYM);
+
+	GET_USER32_FUNC(get_window_dpi_ctx, "GetWindowDpiAwarenessContext");
+	GET_USER32_FUNC(get_thread_dpi_ctx, "GetThreadDpiAwarenessContext");
+	GET_USER32_FUNC(awareness_from_ctx, "GetAwarenessFromDpiAwarenessContext");
+	GET_USER32_FUNC(get_system_dpi,     "GetDpiForSystem");
+	GET_USER32_FUNC(get_window_dpi,     "GetDpiForWindow");
+
+#undef GET_USER32_FUNC
+
+	if (shcore) {
+		wrtb->get_monitor_dpi =
+			(void *) GetProcAddress(shcore, "GetDpiForMonitor");
+	}
+}
+
 struct rutabaga *
 window_impl_rtb_alloc(void)
 {
@@ -451,6 +555,8 @@ window_impl_rtb_alloc(void)
 	ole = LoadLibrary("ole32.dll");
 	wrtb->ole32 = ole;
 	wrtb->copy_cursor = LoadCursor(ole, MAKEINTRESOURCE(3));
+
+	resolve_dpi_funcs(wrtb);
 
 	return (void *) wrtb;
 }
@@ -470,12 +576,13 @@ window_impl_rtb_free(struct rutabaga *rtb)
  */
 
 struct rtb_point
-rtb_get_scaling(intptr_t parent_window)
+rtb_get_scaling(intptr_t window)
 {
-	// FIXME: DPI or something else? ¯\_(ツ)_/¯
-	return RTB_MAKE_POINT(1.f, 1.f);
-}
+	struct win_rtb wrtb;
+	resolve_dpi_funcs(&wrtb);
 
+	return win_rtb_get_scaling(&wrtb, window);
+}
 
 intptr_t
 rtb_window_get_native_handle(struct rtb_window *rwin)

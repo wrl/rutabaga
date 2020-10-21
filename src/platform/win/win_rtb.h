@@ -31,11 +31,49 @@
 #include <rutabaga/rutabaga.h>
 #include <rutabaga/window.h>
 
+#ifndef _DPI_AWARENESS_CONTEXTS_
+typedef HANDLE DPI_AWARENESS_CONTEXT;
+
+#define DPI_AWARENESS_CONTEXT_UNAWARE              ((DPI_AWARENESS_CONTEXT) -1)
+#define DPI_AWARENESS_CONTEXT_SYSTEM_AWARE         ((DPI_AWARENESS_CONTEXT) -2)
+#define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE    ((DPI_AWARENESS_CONTEXT) -3)
+
+typedef enum DPI_AWARENESS {
+	DPI_AWARENESS_INVALID,
+	DPI_AWARENESS_UNAWARE,
+	DPI_AWARENESS_SYSTEM_AWARE,
+	DPI_AWARENESS_PER_MONITOR_AWARE
+} DPI_AWARENESS;
+#endif
+
+#ifndef DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
+#define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 ((DPI_AWARENESS_CONTEXT) -4)
+#endif
+
+#ifndef DPI_ENUMS_DECLARED
+typedef enum MONITOR_DPI_TYPE {
+	MDT_EFFECTIVE_DPI = 0,
+	MDT_ANGULAR_DPI   = 1,
+	MDT_RAW_DPI       = 2,
+	MDT_DEFAULT       = MDT_EFFECTIVE_DPI
+} MONITOR_DPI_TYPE;
+#endif
+
 struct win_rtb {
 	struct rutabaga rtb;
 
 	HMODULE ole32;
+
 	HCURSOR copy_cursor;
+
+	DPI_AWARENESS_CONTEXT (*get_window_dpi_ctx)(HWND);
+	DPI_AWARENESS_CONTEXT (*get_thread_dpi_ctx)();
+
+	DPI_AWARENESS (*awareness_from_ctx)(DPI_AWARENESS_CONTEXT);
+	UINT (*get_system_dpi)(void);
+	UINT (*get_window_dpi)(HWND);
+	HRESULT (*get_monitor_dpi)
+		(HMONITOR, MONITOR_DPI_TYPE, UINT *dpi_x, UINT *dpi_y);
 };
 
 struct win_rtb_window {
