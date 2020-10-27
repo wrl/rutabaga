@@ -247,6 +247,8 @@ win_event(struct rtb_element *elem, const struct rtb_event *e)
 		if (rtb_handle(elem, e) != -1)
 			return 1;
 
+		break;
+
 	case RTB_MOUSE_ENTER:
 		rtb__platform_set_cursor(self, &self->mouse,
 				self->mouse.current_cursor);
