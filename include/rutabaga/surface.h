@@ -34,8 +34,6 @@
 
 #define RTB_SURFACE(x) RTB_UPCAST(x, rtb_surface)
 
-TAILQ_HEAD(rtb_render_tailq, rtb_element);
-
 typedef enum {
 	RTB_SURFACE_VALID,
 	RTB_SURFACE_INVALID
@@ -51,7 +49,7 @@ struct rtb_surface {
 
 	rtb_surface_state_t surface_state;
 
-	struct rtb_render_tailq render_queue;
+	TAILQ_HEAD(rtb_render_tailq, rtb_element) render_queue;
 	struct rtb_render_context render_ctx;
 
 	struct rtb_phy_size phy_size;

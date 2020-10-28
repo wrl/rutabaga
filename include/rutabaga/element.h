@@ -210,6 +210,8 @@ struct rtb_element_event {
  * and finally rtb_element itself
  */
 
+TAILQ_HEAD(rtb_elem_children, rtb_element);
+
 struct rtb_element {
 	RTB_INHERIT(rtb_type_atom);
 
@@ -226,7 +228,7 @@ struct rtb_element {
 	struct rtb_padding outer_pad;
 	struct rtb_padding inner_pad;
 
-	TAILQ_HEAD(children, rtb_element) children;
+	struct rtb_elem_children children;
 
 	/* private ********************************/
 	rtb_elem_state_t state;

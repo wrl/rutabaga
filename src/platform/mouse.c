@@ -278,29 +278,24 @@ element_underneath_mouse(struct rtb_window *win)
 	return RTB_ELEMENT(win);
 }
 
-static void
-retarget(struct rtb_window *win, struct rtb_point cursor)
+static inline int
+point_in_visible_element(const struct rtb_element *elem, struct rtb_point pt)
 {
-	struct rtb_element *iter, *ret = element_underneath_mouse(win);
+	return RTB_POINT_IN_RECT(pt, *elem) && elem->visibility != RTB_FULLY_OBSCURED;
+}
 
-	while (ret != (struct rtb_element *) win) {
-		if (RTB_POINT_IN_RECT(cursor, *ret)
-				&& ret->visibility != RTB_FULLY_OBSCURED)
-			break;
-
-		ret->mouse_in = 0;
-		dispatch_simple_mouse_event(win, ret, RTB_MOUSE_LEAVE, -1, cursor);
-
-		if (win->mouse.buttons_down)
-			dispatch_drag_leave(win, ret, cursor);
-
-		ret = ret->parent;
-	}
+static struct rtb_element *
+retarget_descend(struct rtb_element *ret, struct rtb_window *win,
+		struct rtb_point cursor)
+{
+	struct rtb_element *iter;
+	int hit = 0;
 
 descend:
-	TAILQ_FOREACH_REVERSE(iter, &ret->children, children, child) {
-		if (RTB_POINT_IN_RECT(cursor, *iter)
-				&& iter->visibility != RTB_FULLY_OBSCURED) {
+	TAILQ_FOREACH_REVERSE(iter, &ret->children, rtb_elem_children, child) {
+		if (point_in_visible_element(iter, cursor)) {
+			hit = 1;
+
 			ret = iter;
 			ret->mouse_in = 1;
 
@@ -312,6 +307,61 @@ descend:
 			goto descend;
 		}
 	}
+
+	if (hit)
+		return ret;
+	return NULL;
+}
+
+static inline void
+mouse_leave_element(struct rtb_window *win, struct rtb_element *elem,
+		struct rtb_point cursor)
+{
+	elem->mouse_in = 0;
+	dispatch_simple_mouse_event(
+			win, elem, RTB_MOUSE_LEAVE, -1, cursor);
+
+	if (win->mouse.buttons_down)
+		dispatch_drag_leave(win, elem, cursor);
+}
+
+static void
+retarget(struct rtb_window *win, struct rtb_point cursor)
+{
+	struct rtb_element *found, *ret = element_underneath_mouse(win);
+
+	while (ret != RTB_ELEMENT(win)) {
+		if (point_in_visible_element(ret, cursor))
+			break;
+
+		mouse_leave_element(win, ret, cursor);
+		ret = ret->parent;
+	}
+
+	if (ret == RTB_ELEMENT(&win->overlay_surface)
+			|| (ret == RTB_ELEMENT(win) && win->mouse_in_overlay)) {
+		win->mouse_in_overlay = 0;
+		ret = RTB_ELEMENT(win);
+	}
+
+	found = NULL;
+
+	if (!win->mouse_in_overlay) {
+		found = retarget_descend(RTB_ELEMENT(&win->overlay_surface), win, cursor);
+
+		if (found) {
+			while (ret != (struct rtb_element *) win) {
+				mouse_leave_element(win, ret, cursor);
+				ret = ret->parent;
+			}
+
+			win->mouse_in_overlay = 1;
+			ret = found;
+		}
+	}
+
+	if (!found && (found = retarget_descend(ret, win, cursor)))
+		ret = found;
 
 	win->mouse.element_underneath = ret;
 }
@@ -430,13 +480,7 @@ rtb__platform_mouse_leave_window(struct rtb_window *win,
 	struct rtb_element *underneath = element_underneath_mouse(win);
 
 	while (underneath) {
-		underneath->mouse_in = 0;
-		dispatch_simple_mouse_event(
-				win, underneath, RTB_MOUSE_LEAVE, -1, pt);
-
-		if (win->mouse.buttons_down)
-			dispatch_drag_leave(win, underneath, pt);
-
+		mouse_leave_element(win, underneath, pt);
 		underneath = underneath->parent;
 	}
 

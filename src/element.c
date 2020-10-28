@@ -636,8 +636,8 @@ rtb_elem_remove_child(struct rtb_element *self, struct rtb_element *child)
 	if (self->state == RTB_STATE_UNATTACHED)
 		return;
 
-	if (self->render_entry.tqe_next && self->render_entry.tqe_prev)
-		TAILQ_REMOVE(&self->surface->render_queue, self, render_entry);
+	if (child->render_entry.tqe_next && child->render_entry.tqe_prev)
+		TAILQ_REMOVE(&child->surface->render_queue, child, render_entry);
 
 	if (child->mouse_in) {
 		if (self->window->mouse.buttons_down) {

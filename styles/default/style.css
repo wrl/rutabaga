@@ -1,9 +1,21 @@
 @namespace rtb "net.illest.rutabaga";
+@namespace test "net.illest.rutabaga.test";
 @namespace "net.illest.rutabaga.widgets";
 
 @font-face {
 	font-family: "Open Sans";
 	src: url("fonts/open_sans/OpenSans-Regular.ttf");
+}
+
+/**
+ * test stuff
+ */
+
+test|overlay {
+	min-width: 200px;
+	min-height: 300px;
+
+	background-color: rgba(#2E2E36, .8);
 }
 
 /**

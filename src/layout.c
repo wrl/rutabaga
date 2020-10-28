@@ -208,7 +208,7 @@ rtb_layout_vpack_bottom(struct rtb_element *elem)
 	xstart = elem->inner_rect.x;
 	position.y = elem->inner_rect.y2 + elem->inner_pad.y;
 
-	TAILQ_FOREACH_REVERSE(iter, &elem->children, children, child) {
+	TAILQ_FOREACH_REVERSE(iter, &elem->children, rtb_elem_children, child) {
 		rtb_elem_request_size(iter, &avail, &child);
 		position.x = xstart + halign(avail.w, child.w, iter->align);
 		position.y -= child.h + elem->inner_pad.y;
@@ -298,7 +298,7 @@ rtb_layout_hpack_right(struct rtb_element *elem)
 	position.x = elem->inner_rect.x2 + elem->inner_pad.x;
 	ystart = elem->inner_rect.y;
 
-	TAILQ_FOREACH_REVERSE(iter, &elem->children, children, child) {
+	TAILQ_FOREACH_REVERSE(iter, &elem->children, rtb_elem_children, child) {
 		rtb_elem_request_size(iter, &avail, &child);
 		position.x -= child.w + elem->inner_pad.x;
 		position.y = ystart + valign(avail.h, child.h, iter->align);
@@ -365,7 +365,7 @@ hdistribute_many(struct rtb_element *elem,
 		xoff += iter->w + pad;
 	}
 
-	iter = TAILQ_LAST(&elem->children, children);
+	iter = TAILQ_LAST(&elem->children, rtb_elem_children);
 	iter->x = elem->inner_rect.x2 - iter->w;
 }
 

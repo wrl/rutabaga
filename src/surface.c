@@ -151,7 +151,7 @@ mark_dirty(struct rtb_element *elem)
 {
 	super.mark_dirty(elem);
 
-	if (elem->surface)
+	if (elem->surface && RTB_ELEMENT(elem->surface) != elem)
 		rtb_elem_mark_dirty(RTB_ELEMENT(elem->surface));
 }
 

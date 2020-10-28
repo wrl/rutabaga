@@ -268,15 +268,61 @@ attached(struct rtb_element *elem,
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.window");
 
+	self->overlay_surface.attached(
+			RTB_ELEMENT(&self->overlay_surface),
+			elem, self);
+
 	rtb_style_resolve_list(self, self->style_list);
 	self->restyle(RTB_ELEMENT(self));
 }
 
 static void
-mark_dirty(struct rtb_element *elem)
+restyle(struct rtb_element *elem)
 {
 	SELF_FROM(elem);
-	self->dirty = 1;
+
+	super.restyle(elem);
+	self->overlay_surface.restyle(RTB_ELEMENT(&self->overlay_surface));
+}
+
+static int
+reflow(struct rtb_element *elem, struct rtb_element *instigator,
+		rtb_ev_direction_t direction)
+{
+	SELF_FROM(elem);
+	int ret;
+
+	ret = super.reflow(elem, instigator, direction);
+
+	rtb_elem_set_size(RTB_ELEMENT(&self->overlay_surface),
+			&self->rect.size);
+	self->overlay_surface.reflow(RTB_ELEMENT(&self->overlay_surface),
+			instigator, direction);
+
+	return ret;
+}
+
+static void
+mark_dirty(struct rtb_element *elem)
+{
+	elem->window->dirty = 1;
+}
+
+/**
+ * overlays
+ */
+
+void
+rtb_window_add_overlay(struct rtb_window *self, struct rtb_element *child,
+		rtb_child_add_loc_t where)
+{
+	rtb_elem_add_child(RTB_ELEMENT(&self->overlay_surface), child, where);
+}
+
+void
+rtb_window_remove_overlay(struct rtb_window *self, struct rtb_element *child)
+{
+	rtb_elem_remove_child(RTB_ELEMENT(&self->overlay_surface), child);
 }
 
 /**
@@ -338,6 +384,10 @@ rtb_window_draw(struct rtb_window *self, int force_redraw)
 
 	rtb_render_push(RTB_ELEMENT(self));
 	self->draw(RTB_ELEMENT(self));
+	rtb_render_pop(RTB_ELEMENT(self));
+
+	rtb_render_push(RTB_ELEMENT(self));
+	self->overlay_surface.draw(RTB_ELEMENT(&self->overlay_surface));
 	rtb_render_pop(RTB_ELEMENT(self));
 
 	self->dirty = 0;
@@ -430,6 +480,8 @@ rtb_window_open(struct rutabaga *r, const struct rtb_window_open_options *opt)
 	self->on_event   = win_event;
 	self->mark_dirty = mark_dirty;
 	self->attached   = attached;
+	self->restyle    = restyle;
+	self->reflow     = reflow;
 
 	self->flags = RTB_ELEM_CLICK_FOCUS;
 
@@ -439,6 +491,16 @@ rtb_window_open(struct rutabaga *r, const struct rtb_window_open_options *opt)
 
 	self->rtb = r;
 	r->win = self;
+
+	rtb_surface_init(&self->overlay_surface);
+	self->overlay_surface.surface = &self->overlay_surface;
+	self->overlay_surface.mark_dirty = mark_dirty;
+
+	self->overlay_surface.outer_pad.x = 0;
+	self->overlay_surface.outer_pad.y = 0;
+
+	self->mouse_in_overlay = 0;
+	self->overlay_surface.layout_cb = rtb_layout_unmanaged;
 
 	self->mouse.current_cursor = RTB_MOUSE_CURSOR_DEFAULT;
 	return self;
@@ -458,6 +520,8 @@ void
 rtb_window_close(struct rtb_window *self)
 {
 	assert(self);
+
+	rtb_surface_fini(&self->overlay_surface);
 
 	glBindVertexArray(0);
 	glDeleteVertexArrays(1, &self->vao);

@@ -98,6 +98,9 @@ struct rtb_window {
 
 	struct rtb_mouse mouse;
 	struct rtb_element *focus;
+
+	int mouse_in_overlay;
+	struct rtb_surface overlay_surface;
 };
 
 /**
@@ -116,6 +119,15 @@ void rtb_window_lock(struct rtb_window *);
 void rtb_window_unlock(struct rtb_window *);
 
 void rtb_window_reinit(struct rtb_window *);
+
+/**
+ * overlays
+ */
+
+void rtb_window_add_overlay(struct rtb_window *, struct rtb_element *,
+		rtb_child_add_loc_t where);
+
+void rtb_window_remove_overlay(struct rtb_window *, struct rtb_element *);
 
 /**
  * opening/closing

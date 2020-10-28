@@ -65,6 +65,7 @@ static rtb_utf8_t *rlabels[] = {
 	"or there"
 };
 
+static struct rtb_element overlay;
 static struct rtb_button *last_button = NULL;
 static struct rtb_text_input *input;
 static struct rtb_spinbox *spinboxes[2];
@@ -381,7 +382,84 @@ init_timer(void)
 	timer = 0.0;
 }
 
-int main(int argc, char **argv)
+/**
+ * overlay stuff
+ */
+
+struct rtb_button overlay_button;
+struct rtb_point drag_start_offset;
+
+static struct rtb_element_implementation overlay_super;
+
+static void
+overlay_attached(struct rtb_element *self,
+		struct rtb_element *parent, struct rtb_window *window)
+{
+	overlay_super.attached(self, parent, window);
+	self->type = rtb_type_ref(window, self->type,
+			"net.illest.rutabaga.test.overlay");
+}
+
+static int
+overlay_on_event(struct rtb_element *elem, const struct rtb_event *e)
+{
+	switch (e->type) {
+	case RTB_DRAG_START: {
+		const struct rtb_drag_event *ev = RTB_EVENT_AS(e, rtb_drag_event);
+		if (ev->target != elem)
+			return 0;
+
+		drag_start_offset.x = ev->cursor.x - elem->x;
+		drag_start_offset.y = ev->cursor.y - elem->y;
+		return 1;
+	}
+
+	case RTB_DRAG_MOTION: {
+		const struct rtb_drag_event *ev = RTB_EVENT_AS(e, rtb_drag_event);
+		if (ev->target != elem)
+			return 0;
+
+		elem->x = ev->cursor.x - drag_start_offset.x;
+		elem->y = ev->cursor.y - drag_start_offset.y;
+		rtb_elem_reflow_leafward(elem);
+		rtb_surface_invalidate(elem->surface);
+		break;
+	}
+
+	default:
+		break;
+	}
+
+	return overlay_super.on_event(elem, e);
+}
+
+static void
+init_overlay(struct rtb_window *win)
+{
+	rtb_elem_init(&overlay);
+	overlay_super = overlay.impl;
+	overlay.attached = overlay_attached;
+	overlay.on_event = overlay_on_event;
+
+	rtb_window_add_overlay(win, &overlay, RTB_ADD_TAIL);
+
+	rtb_button_init(&overlay_button);
+	rtb_button_set_label(&overlay_button, "hello fremds");
+	overlay_button.align = RTB_ALIGN_MIDDLE;
+	rtb_elem_add_child(&overlay, RTB_ELEMENT(&overlay_button), RTB_ADD_TAIL);
+
+	rtb_elem_set_layout(&overlay, rtb_layout_hpack_center);
+
+	overlay.x = 40;
+	overlay.y = 40;
+}
+
+/**
+ * main
+ */
+
+int
+main(int argc, char **argv)
 {
 	struct rutabaga *delicious;
 	struct rtb_window *win;
@@ -419,6 +497,8 @@ int main(int argc, char **argv)
 
 	rtb_register_handler(RTB_ELEMENT(win),
 			RTB_WINDOW_SHOULD_CLOSE, win_will_close, NULL);
+
+	init_overlay(win);
 
 	distribute_demo(RTB_ELEMENT(delicious->win));
 	setup_ui(RTB_ELEMENT(delicious->win));
