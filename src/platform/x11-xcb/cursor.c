@@ -77,7 +77,6 @@ rtb__platform_set_cursor(struct rtb_window *rwin, struct rtb_mouse *mouse,
 	xc = self->cursor.C;													\
 } while(0)
 
-	return;
 	switch (cursor) {
 	case RTB_MOUSE_CURSOR_DEFAULT:
 		xc = self->cursor.dfault;
