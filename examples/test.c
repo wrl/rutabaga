@@ -444,8 +444,12 @@ init_overlay(struct rtb_window *win)
 	rtb_window_add_overlay(win, &overlay, RTB_ADD_TAIL);
 
 	rtb_button_init(&overlay_button);
+
 	rtb_button_set_label(&overlay_button, "hello fremds");
 	overlay_button.align = RTB_ALIGN_MIDDLE;
+
+	overlay_button.label.outer_pad.x = 20;
+	overlay_button.label.outer_pad.y = 8;
 	rtb_elem_add_child(&overlay, RTB_ELEMENT(&overlay_button), RTB_ADD_TAIL);
 
 	rtb_elem_set_layout(&overlay, rtb_layout_hpack_center);
