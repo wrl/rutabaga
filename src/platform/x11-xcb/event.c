@@ -618,7 +618,7 @@ frame_timer_init(struct xrtb_frame_timer *timer)
 {
 	/* FIXME: get FPS from xrandr? or xcomposite? whatever. */
 
-	timer->wait_msec = 15;
+	timer->wait_msec = 10;
 	return 0;
 }
 
