@@ -32,6 +32,8 @@
 
 #include <xcb/xcb.h>
 #include <xcb/xcb_cursor.h>
+#include <xcb/xfixes.h>
+
 #include <xkbcommon/xkbcommon.h>
 
 #include <GL/glx.h>
@@ -57,6 +59,8 @@ struct xcb_rutabaga {
 	Display *dpy;
 	xcb_connection_t *xcb_conn;
 
+	const xcb_query_extension_reply_t *xfixes;
+
 	struct {
 		xcb_atom_t
 			wm_protocols,
@@ -64,7 +68,8 @@ struct xcb_rutabaga {
 			targets,
 			timestamp,
 			utf8_string,
-			clipboard;
+			clipboard,
+			compositor;
 	} atoms;
 
 	struct {

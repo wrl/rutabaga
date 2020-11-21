@@ -413,6 +413,15 @@ handle_selection_request(struct xrtb_window *win, xcb_generic_event_t *_ev)
 	return 0;
 }
 
+static void
+handle_compositor_change(struct xrtb_window *win, xcb_generic_event_t *_ev)
+{
+	xcb_xfixes_selection_notify_event_t *ev = (void *) _ev;
+	int swap_blocks_until_vsync = !ev->owner;
+
+	eglSwapInterval(win->egl_dpy, swap_blocks_until_vsync);
+}
+
 /**
  * ~mystery~ events
  */
@@ -448,6 +457,7 @@ handle_secret_xlib_event(Display *dpy, xcb_generic_event_t *ev)
 static int
 handle_generic_event(struct xrtb_window *win, xcb_generic_event_t *ev)
 {
+	struct xcb_rutabaga *xrtb = win->xrtb;
 	int type = ev->response_type & ~0x80;
 
 	switch (type) {
@@ -536,10 +546,12 @@ handle_generic_event(struct xrtb_window *win, xcb_generic_event_t *ev)
 	 */
 
 	default:
-		if (type == win->xrtb->xkb_event)
+		if (type == xrtb->xkb_event)
 			handle_xkb_event(win, ev);
+		else if (type == (xrtb->xfixes->first_event + XCB_XFIXES_SELECTION_NOTIFY))
+			handle_compositor_change(win, ev);
 		else
-			handle_secret_xlib_event(win->xrtb->dpy, ev);
+			handle_secret_xlib_event(xrtb->dpy, ev);
 		break;
 	}
 

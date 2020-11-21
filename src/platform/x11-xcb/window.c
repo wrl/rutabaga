@@ -277,9 +277,12 @@ window_impl_rtb_alloc(void)
 	INTERN_ATOM(utf8_string, "UTF8_STRING");
 	INTERN_ATOM(clipboard,   "CLIPBOARD");
 
+	INTERN_ATOM(compositor, "_NET_WM_CM_S0");
+
 #undef INTERN_ATOM
 
 	self->empty_cursor = create_empty_cursor(self);
+	self->xfixes = xcb_get_extension_data(self->xcb_conn, &xcb_xfixes_id);
 
 	return (struct rutabaga *) self;
 
@@ -309,6 +312,10 @@ window_impl_rtb_free(struct rutabaga *rtb)
 	free(self->clipboard.buffer);
 	free(self);
 }
+
+/**
+ * egl initialisation
+ */
 
 static XVisualInfo *
 visual_info_from_egl_config(Display *dpy, EGLDisplay egl_dpy, EGLConfig cfg)
@@ -376,7 +383,6 @@ iter_egl_configs(Display *dpy, EGLDisplay egl_dpy,
 	if (found_no_win)
 		ERR("found good EGL config, but can't draw to a window.\n");
 
-	/* XXX: fallback to best non-transparent config */
 	if (found_not_transparent) {
 		ERR("found good EGL config, but it isn't transparent as was requested\n");
 		return not_transparent_fallback;
@@ -418,6 +424,22 @@ find_egl_config(Display *dpy, EGLDisplay egl_dpy, int want_transparent)
 	return found;
 }
 
+static EGLContext
+new_egl_ctx(EGLDisplay egl_dpy, EGLContext cfg)
+{
+	static const EGLint attribs[] = {
+		EGL_CONTEXT_MAJOR_VERSION_KHR, 3,
+		EGL_CONTEXT_MINOR_VERSION_KHR, 2,
+
+		EGL_CONTEXT_OPENGL_PROFILE_MASK_KHR,
+			EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT_KHR,
+
+		EGL_NONE
+	};
+
+	return eglCreateContext(egl_dpy, cfg, EGL_NO_CONTEXT, attribs);
+}
+
 static int
 set_xprop(xcb_connection_t *c, xcb_window_t win,
 		xcb_atom_t prop, const char *value)
@@ -437,6 +459,28 @@ set_xprop(xcb_connection_t *c, xcb_window_t win,
 	}
 
 	return 0;
+}
+
+static void
+set_swap_interval(xcb_connection_t *xcb_conn,
+		xcb_atom_t compositor, EGLDisplay egl_dpy)
+{
+	int swap_blocks_until_vsync = 1;
+
+	if (compositor > 0) {
+		xcb_get_selection_owner_cookie_t req;
+		xcb_get_selection_owner_reply_t *rep;
+
+		req = xcb_get_selection_owner(xcb_conn, compositor);
+		rep = xcb_get_selection_owner_reply(xcb_conn, req, NULL);
+
+		if (rep) {
+			swap_blocks_until_vsync = !rep->owner;
+			free(rep);
+		}
+	}
+
+	eglSwapInterval(egl_dpy, swap_blocks_until_vsync);
 }
 
 /**
@@ -518,22 +562,6 @@ err_connect:
 	return RTB_MAKE_POINT(1.f, 1.f);
 }
 
-static EGLContext
-new_egl_ctx(EGLDisplay egl_dpy, EGLContext cfg)
-{
-	static const EGLint attribs[] = {
-		EGL_CONTEXT_MAJOR_VERSION_KHR, 3,
-		EGL_CONTEXT_MINOR_VERSION_KHR, 2,
-
-		EGL_CONTEXT_OPENGL_PROFILE_MASK_KHR,
-			EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT_KHR,
-
-		EGL_NONE
-	};
-
-	return eglCreateContext(egl_dpy, cfg, EGL_NO_CONTEXT, attribs);
-}
-
 static void
 raise_window(xcb_connection_t *xcb_conn, xcb_window_t window)
 {
@@ -560,12 +588,12 @@ window_impl_open(struct rutabaga *rtb,
 	XVisualInfo *visual;
 
 	uint32_t event_mask =
-		XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_EXPOSURE |
-		XCB_EVENT_MASK_VISIBILITY_CHANGE | XCB_EVENT_MASK_BUTTON_PRESS |
-		XCB_EVENT_MASK_BUTTON_RELEASE | XCB_EVENT_MASK_POINTER_MOTION |
-		XCB_EVENT_MASK_ENTER_WINDOW | XCB_EVENT_MASK_LEAVE_WINDOW |
-		XCB_EVENT_MASK_KEY_PRESS | XCB_EVENT_MASK_KEY_RELEASE |
-		XCB_EVENT_MASK_KEYMAP_STATE;
+		XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_EXPOSURE
+		| XCB_EVENT_MASK_VISIBILITY_CHANGE | XCB_EVENT_MASK_BUTTON_PRESS
+		| XCB_EVENT_MASK_BUTTON_RELEASE | XCB_EVENT_MASK_POINTER_MOTION
+		| XCB_EVENT_MASK_ENTER_WINDOW | XCB_EVENT_MASK_LEAVE_WINDOW
+		| XCB_EVENT_MASK_KEY_PRESS | XCB_EVENT_MASK_KEY_RELEASE
+		| XCB_EVENT_MASK_KEYMAP_STATE;
 	uint32_t value_mask =
 		XCB_CW_BORDER_PIXEL | XCB_CW_BACK_PIXMAP |
 		XCB_CW_BIT_GRAVITY |
@@ -695,7 +723,8 @@ window_impl_open(struct rutabaga *rtb,
 		goto err_egl_make_current;
 	}
 
-	eglSwapInterval(self->egl_dpy, 1);
+	set_swap_interval(xcb_conn, xrtb->atoms.compositor,
+			self->egl_dpy);
 
 	ck_map = xcb_map_window_checked(xcb_conn, self->xcb_win);
 	if ((err = xcb_request_check(xcb_conn, ck_map))) {
@@ -709,6 +738,15 @@ window_impl_open(struct rutabaga *rtb,
 		xcb_icccm_set_wm_protocols(xcb_conn,
 				self->xcb_win, xrtb->atoms.wm_protocols,
 				1, &xrtb->atoms.wm_delete_window);
+
+
+	if (xrtb->atoms.compositor && xrtb->xfixes->present) {
+		xcb_xfixes_select_selection_input(xcb_conn, self->xcb_win,
+			xrtb->atoms.compositor,
+			XCB_XFIXES_SELECTION_EVENT_MASK_SET_SELECTION_OWNER
+			| XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_WINDOW_DESTROY
+			| XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_CLIENT_CLOSE);
+	}
 
 	uv_mutex_init(&self->lock);
 	return RTB_WINDOW(self);
