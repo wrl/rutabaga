@@ -136,6 +136,7 @@ def build(bld):
             'X11-XCB',
             'XCB',
             'XCB-XKB',
+            'XCB-XFIXES',
             'XCB-KEYSYMS',
             'XCB-ICCCM',
             'XCB-CURSOR',
@@ -144,6 +145,7 @@ def build(bld):
             'XKBCOMMON',
             'XKBCOMMON-X11',
 
+            'EGL',
             'COCOA'],
 
         cflags=bld.env['CFLAGS_cshlib'],

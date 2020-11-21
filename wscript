@@ -57,6 +57,7 @@ def pkg_check(conf, pkg):
 
 def check_gl(conf):
     pkg_check(conf, "gl")
+    pkg_check(conf, "egl")
 
 def find_freetype(conf, prefix, static=True, mandatory=True):
     params = {
@@ -92,6 +93,7 @@ def check_x11(conf):
     check("xcb")
     check("xcb-xkb")
     check("xcb-icccm")
+    check("xcb-xfixes")
     check("xcb-cursor")
     check("xkbfile")
     check("xkbcommon")

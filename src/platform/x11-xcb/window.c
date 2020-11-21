@@ -39,10 +39,7 @@
 #include <xcb/xkb.h>
 #include <xcb/xcb_icccm.h>
 
-#define GLX_GLXEXT_PROTOTYPES "yes please"
 #include <rutabaga/opengl.h>
-#include <GL/glx.h>
-#include <GL/glxext.h>
 
 #include <rutabaga/rutabaga.h>
 #include <rutabaga/window.h>
@@ -313,101 +310,112 @@ window_impl_rtb_free(struct rutabaga *rtb)
 	free(self);
 }
 
+static XVisualInfo *
+visual_info_from_egl_config(Display *dpy, EGLDisplay egl_dpy, EGLConfig cfg)
+{
+	XVisualInfo vinfo = {0};
+	EGLint vid;
+	int count;
+
+	eglGetConfigAttrib(egl_dpy, cfg, EGL_NATIVE_VISUAL_ID, &vid);
+	vinfo.visualid = vid;
+
+	return XGetVisualInfo(dpy, VisualIDMask, &vinfo, &count);
+}
+
 static int
-fbconfig_supports_alpha(Display *dpy, GLXFBConfig cfg)
+egl_config_supports_alpha(Display *dpy, EGLDisplay egl_dpy, EGLConfig cfg)
 {
 	XRenderPictFormat *pict_format;
-	XVisualInfo *visual_info;
+	XVisualInfo *vinfo;
 
 	int well_does_it = 1;
 
-	visual_info = glXGetVisualFromFBConfig(dpy, cfg);
-	pict_format = XRenderFindVisualFormat(dpy, visual_info->visual);
+	vinfo = visual_info_from_egl_config(dpy, egl_dpy, cfg);
+	pict_format = XRenderFindVisualFormat(dpy, vinfo->visual);
 
 	if (!pict_format || !pict_format->direct.alphaMask)
 		well_does_it = 0;
 
-	free(visual_info);
+	free(vinfo);
 	return well_does_it;
 }
 
-static GLXFBConfig
-find_reasonable_fb_config(Display *dpy, xcb_connection_t *xcb_conn,
-		GLXFBConfig *cfgs, int ncfgs, int want_transparent)
+static EGLConfig
+iter_egl_configs(Display *dpy, EGLDisplay egl_dpy,
+		EGLConfig *configs, int nconfigs, int want_transparent)
 {
-	struct {
-		struct {
-			int red;
-			int green;
-			int blue;
-		} sizes;
-
-		int double_buffer;
-		int drawable_type;
-		int visual_id;
-		int caveat;
-	} cfg_info;
-
-	int found_db, found_no_win, found_slow, found_no_samples;
+	EGLConfig not_transparent_fallback;
+	int found_no_win, found_not_transparent;
 	int i;
 
-	found_db =
-		found_slow =
-		found_no_win =
-		found_no_samples = 0;
+	found_not_transparent =
+		found_no_win = 0;
 
-	for (i = 0; i < ncfgs; i++) {
-#define GET_ATTRIB(att, dst) \
-		glXGetFBConfigAttrib(dpy, cfgs[i], att, &cfg_info.dst)
+	for (i = 0; i < nconfigs; i++) {
+		EGLConfig cfg = configs[i];
+		EGLint vid, tr;
 
-		GET_ATTRIB(GLX_RED_SIZE,      sizes.red);
-		GET_ATTRIB(GLX_GREEN_SIZE,    sizes.green);
-		GET_ATTRIB(GLX_BLUE_SIZE,     sizes.blue);
-		GET_ATTRIB(GLX_DOUBLEBUFFER,  double_buffer);
-		GET_ATTRIB(GLX_DRAWABLE_TYPE, drawable_type);
-		GET_ATTRIB(GLX_VISUAL_ID,     visual_id);
-		GET_ATTRIB(GLX_CONFIG_CAVEAT, caveat);
-
-#undef GET_ATTRIB
-
-		if (cfg_info.sizes.red   < MIN_COLOR_CHANNEL_BITS ||
-			cfg_info.sizes.green < MIN_COLOR_CHANNEL_BITS ||
-			cfg_info.sizes.blue  < MIN_COLOR_CHANNEL_BITS)
-			continue;
-
-		if (cfg_info.double_buffer != True) {
-			found_db = 1;
-			continue;
-		}
-
-		if (!(cfg_info.drawable_type & (GLX_WINDOW_BIT | GLX_PIXMAP_BIT))
-				|| !cfg_info.visual_id) {
+		eglGetConfigAttrib(egl_dpy, cfg, EGL_NATIVE_VISUAL_ID, &vid);
+		if (!vid)  {
 			found_no_win = 1;
 			continue;
 		}
 
-		if (cfg_info.caveat == GLX_SLOW_CONFIG) {
-			found_slow = 1;
+		eglGetConfigAttrib(egl_dpy, cfg, EGL_TRANSPARENT_TYPE, &tr);
+
+		if (want_transparent && !egl_config_supports_alpha(dpy, egl_dpy, cfg)) {
+			found_not_transparent = 1;
+			not_transparent_fallback = cfg;
 			continue;
 		}
 
-		/* XXX: fallback to best non-transparent config if this fails? */
-		if (want_transparent && !fbconfig_supports_alpha(dpy, cfgs[i]))
-			continue;
-
-		return cfgs[i];
+		return cfg;
 	}
 
-	if (found_db)
-		ERR("found good config, but it's not double buffered.\n");
-
 	if (found_no_win)
-		ERR("found good config, but can't draw to a window.\n");
+		ERR("found good EGL config, but can't draw to a window.\n");
 
-	if (found_slow)
-		ERR("found good config, but it's slow.\n");
+	/* XXX: fallback to best non-transparent config */
+	if (found_not_transparent) {
+		ERR("found good EGL config, but it isn't transparent as was requested\n");
+		return not_transparent_fallback;
+	}
 
-	return NULL; /* lol */
+	return NULL;
+}
+
+static EGLConfig
+find_egl_config(Display *dpy, EGLDisplay egl_dpy, int want_transparent)
+{
+	static const EGLint attribs[] = {
+		EGL_RED_SIZE,   MIN_COLOR_CHANNEL_BITS,
+		EGL_GREEN_SIZE, MIN_COLOR_CHANNEL_BITS,
+		EGL_BLUE_SIZE,  MIN_COLOR_CHANNEL_BITS,
+
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+
+		EGL_CONFIG_CAVEAT, EGL_NONE,
+
+		EGL_NONE
+	};
+
+	EGLConfig *configs, found;
+	int nconfigs;
+
+	eglChooseConfig(egl_dpy, attribs, NULL, 0, &nconfigs);
+	if (!nconfigs) {
+		return NULL;
+	}
+
+	configs = calloc(nconfigs, sizeof(*configs));
+
+	eglChooseConfig(egl_dpy, attribs, configs, nconfigs, &nconfigs);
+	found = iter_egl_configs(dpy, egl_dpy, configs,nconfigs, want_transparent);
+	free(configs);
+
+	return found;
 }
 
 static int
@@ -510,39 +518,20 @@ err_connect:
 	return RTB_MAKE_POINT(1.f, 1.f);
 }
 
-static GLXContext
-new_gl_context(Display *dpy, GLXFBConfig fb_config)
+static EGLContext
+new_egl_ctx(EGLDisplay egl_dpy, EGLContext cfg)
 {
-	PFNGLXCREATECONTEXTATTRIBSARBPROC create_context_attribs;
-	GLXContext ctx;
-	int attribs[] = {
-		GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
-		GLX_CONTEXT_MINOR_VERSION_ARB, 2,
-		GLX_CONTEXT_PROFILE_MASK_ARB,  GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
-		0
+	static const EGLint attribs[] = {
+		EGL_CONTEXT_MAJOR_VERSION_KHR, 3,
+		EGL_CONTEXT_MINOR_VERSION_KHR, 2,
+
+		EGL_CONTEXT_OPENGL_PROFILE_MASK_KHR,
+			EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT_KHR,
+
+		EGL_NONE
 	};
 
-	create_context_attribs =
-		(void *) glXGetProcAddress((GLubyte *) "glXCreateContextAttribsARB");
-
-	ctx = create_context_attribs(dpy, fb_config, 0, True, attribs);
-	if (!ctx)
-		ctx = glXCreateNewContext(dpy, fb_config, GLX_RGBA_TYPE, 0, True);
-
-	return ctx;
-}
-
-static void
-set_swap_interval(Display *dpy, GLXDrawable drawable)
-{
-	PFNGLXSWAPINTERVALEXTPROC swap_interval;
-
-	swap_interval = (void *) glXGetProcAddress((GLubyte *) "glXSwapIntervalEXT");
-
-	if (!swap_interval)
-		return;
-
-	swap_interval(dpy, drawable, 1);
+	return eglCreateContext(egl_dpy, cfg, EGL_NO_CONTEXT, attribs);
 }
 
 static void
@@ -567,10 +556,8 @@ window_impl_open(struct rutabaga *rtb,
 	xcb_connection_t *xcb_conn;
 
 	int default_screen;
-
-	GLXFBConfig *fb_configs, fb_config;
+	EGLConfig egl_config;
 	XVisualInfo *visual;
-	int nfb_configs;
 
 	uint32_t event_mask =
 		XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_EXPOSURE |
@@ -617,30 +604,35 @@ window_impl_open(struct rutabaga *rtb,
 	self->cursor.copy = 0;
 
 	/**
-	 * gl configuration
+	 * egl configuration
 	 */
 
-	fb_configs = glXGetFBConfigs(dpy, default_screen, &nfb_configs);
-	if (!fb_configs || !nfb_configs) {
-		ERR("no GL configurations, bailing out\n");
-		goto err_gl_config;
+	self->egl_dpy = eglGetDisplay(dpy);
+	if (!self->egl_dpy) {
+		ERR("couldn't open EGL display connection");
+		goto err_egl_dpy;
 	}
 
-	fb_config = find_reasonable_fb_config(dpy, xcb_conn, fb_configs,
-			nfb_configs, 0);
-
-	if (!fb_config) {
-		ERR("no reasonable GL configurations, bailing out\n");
-		goto err_gl_config;
+	if (eglInitialize(self->egl_dpy, NULL, NULL) != EGL_TRUE) {
+		ERR("eglInitialize failed: %d\n", eglGetError());
+		goto err_egl_init;
 	}
 
-	visual = glXGetVisualFromFBConfig(dpy, fb_config);
-
-	self->gl_ctx = new_gl_context(dpy, fb_config);
-	if (!self->gl_ctx) {
-		ERR("couldn't create GLX context\n");
-		goto err_gl_ctx;
+	egl_config = find_egl_config(dpy, self->egl_dpy, 0);
+	if (!egl_config) {
+		ERR("couldn't find a reasonable EGL config\n");
+		goto err_egl_config;
 	}
+
+	eglBindAPI(EGL_OPENGL_API);
+
+	self->egl_ctx = new_egl_ctx(self->egl_dpy, egl_config);
+	if (!self->egl_ctx) {
+		ERR("couldn't create EGL context: %d\n", eglGetError());
+		goto err_egl_ctx;
+	}
+
+	visual = visual_info_from_egl_config(dpy, self->egl_dpy, egl_config);
 
 	/**
 	 * window setup
@@ -687,24 +679,23 @@ window_impl_open(struct rutabaga *rtb,
 		goto err_xcb_win;
 	}
 
-	self->gl_win = glXCreateWindow(dpy, fb_config, self->xcb_win, 0);
-	if (!self->gl_win) {
-		ERR("couldn't create GL window\n");
-		goto err_gl_win;
+	self->egl_surface = eglCreateWindowSurface(self->egl_dpy, egl_config,
+			self->xcb_win, NULL);
+	if (!self->egl_surface) {
+		ERR("couldn't create EGL window surface: %d\n", eglGetError());
+		goto err_egl_surface;
 	}
 
 	if (set_xprop(xcb_conn, self->xcb_win, XCB_ATOM_WM_NAME, opt->title))
 		set_xprop(xcb_conn, self->xcb_win, XCB_ATOM_WM_NAME, "");
 
-	self->gl_draw = self->gl_win;
-
-	if (!glXMakeContextCurrent(
-				dpy, self->gl_draw, self->gl_draw, self->gl_ctx)) {
-		ERR("couldn't activate GLX context\n");
-		goto err_gl_make_current;
+	if (eglMakeCurrent(self->egl_dpy, self->egl_surface, self->egl_surface,
+				self->egl_ctx) != EGL_TRUE) {
+		ERR("couldn't activate EGL surface: %d\n", eglGetError());
+		goto err_egl_make_current;
 	}
 
-	set_swap_interval(dpy, self->gl_draw);
+	eglSwapInterval(self->egl_dpy, 1);
 
 	ck_map = xcb_map_window_checked(xcb_conn, self->xcb_win);
 	if ((err = xcb_request_check(xcb_conn, ck_map))) {
@@ -719,22 +710,22 @@ window_impl_open(struct rutabaga *rtb,
 				self->xcb_win, xrtb->atoms.wm_protocols,
 				1, &xrtb->atoms.wm_delete_window);
 
-	free(fb_configs);
-
 	uv_mutex_init(&self->lock);
 	return RTB_WINDOW(self);
 
 err_win_map:
-err_gl_make_current:
-err_gl_win:
+err_egl_make_current:
+err_egl_surface:
 	xcb_destroy_window(xcb_conn, self->xcb_win);
 
 err_xcb_win:
-	glXDestroyContext(dpy, self->gl_ctx);
+	eglDestroyContext(self->egl_dpy, self->egl_surface);
 
-err_gl_ctx:
-err_gl_config:
-	free(fb_configs);
+err_egl_ctx:
+err_egl_config:
+err_egl_init:
+	eglTerminate(self->egl_dpy);
+err_egl_dpy:
 err_cursor_ctx:
 err_screen:
 	free(self);
@@ -748,10 +739,14 @@ window_impl_close(struct rtb_window *rwin)
 {
 	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
 
-	glXMakeContextCurrent(self->xrtb->dpy, None, None, NULL);
-	glXDestroyWindow(self->xrtb->dpy, self->gl_win);
+	eglBindAPI(EGL_OPENGL_API);
+
+	eglMakeCurrent(self->egl_dpy,
+		EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+	eglDestroyContext(self->egl_dpy, self->egl_ctx);
+	eglTerminate(self->egl_dpy);
+
 	xcb_destroy_window(self->xrtb->xcb_conn, self->xcb_win);
-	glXDestroyContext(self->xrtb->dpy, self->gl_ctx);
 
 	uv_mutex_unlock(&self->lock);
 	uv_mutex_destroy(&self->lock);
@@ -768,8 +763,10 @@ rtb_window_lock(struct rtb_window *rwin)
 
 	uv_mutex_lock(&self->lock);
 	XLockDisplay(self->xrtb->dpy);
-	glXMakeContextCurrent(
-				self->xrtb->dpy, self->gl_draw, self->gl_draw, self->gl_ctx);
+
+	eglBindAPI(EGL_OPENGL_API);
+	eglMakeCurrent(self->egl_dpy,
+		self->egl_surface, self->egl_surface, self->egl_ctx);
 }
 
 void
@@ -777,7 +774,9 @@ rtb_window_unlock(struct rtb_window *rwin)
 {
 	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
 
-	glXMakeContextCurrent(self->xrtb->dpy, None, None, NULL);
+	eglMakeCurrent(self->egl_dpy,
+		EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+
 	XUnlockDisplay(self->xrtb->dpy);
 	uv_mutex_unlock(&self->lock);
 }

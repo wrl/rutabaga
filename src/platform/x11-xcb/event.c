@@ -607,7 +607,7 @@ frame_cb(uv_timer_t *_handle)
 	drain_xcb_event_queue(xwin->xrtb->xcb_conn, win);
 
 	if (rtb_window_draw(win, 0))
-		glXSwapBuffers(xwin->xrtb->dpy, xwin->gl_draw);
+		eglSwapBuffers(xwin->egl_dpy, xwin->egl_surface);
 
 	drain_xcb_event_queue(xwin->xrtb->xcb_conn, win);
 	rtb_window_unlock(win);

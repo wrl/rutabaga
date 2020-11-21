@@ -35,6 +35,8 @@
 #include <xkbcommon/xkbcommon.h>
 
 #include <GL/glx.h>
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
 
 #define ERR(...) fprintf(stderr, "rutabaga XCB: " __VA_ARGS__)
 
@@ -110,9 +112,9 @@ struct xrtb_window {
 		xcb_cursor_t copy;
 	} cursor;
 
-	GLXDrawable gl_draw;
-	GLXContext gl_ctx;
-	GLXWindow gl_win;
+	EGLDisplay egl_dpy;
+	EGLContext egl_ctx;
+	EGLSurface egl_surface;
 
 	uint16_t numlock_mask;
 	uint16_t capslock_mask;
