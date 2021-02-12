@@ -60,6 +60,9 @@ attached(struct rtb_element *elem,
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.label");
 
+	if (self->cls)
+		self->type = rtb_type_ref(window, self->type, self->cls);
+
 	self->tobj = rtb_text_object_new(&window->font_manager);
 }
 
@@ -92,13 +95,16 @@ static void
 restyle(struct rtb_element *elem)
 {
 	const struct rtb_style_property_definition *prop;
+	struct rtb_element *get_style_from;
 	struct rtb_font *font;
 
 	SELF_FROM(elem);
 
 	super.restyle(elem);
 
-	prop = rtb_style_query_prop_in_tree(self->parent,
+	get_style_from = self->cls ? elem : self->parent;
+
+	prop = rtb_style_query_prop_in_tree(get_style_from,
 			"font", RTB_STYLE_PROP_FONT, 0);
 
 	assert(prop);
@@ -114,7 +120,7 @@ restyle(struct rtb_element *elem)
 				RTB_DIRECTION_ROOTWARD);
 	}
 
-	prop = rtb_style_query_prop_in_tree(self->parent,
+	prop = rtb_style_query_prop_in_tree(get_style_from,
 			"color", RTB_STYLE_PROP_COLOR, 1);
 	self->color = &prop->color;
 }
@@ -167,6 +173,7 @@ rtb_label_init(struct rtb_label *self)
 	self->font = NULL;
 
 	self->line_height_multiplier = 1.f;
+	self->cls = NULL;
 
 	return 0;
 }

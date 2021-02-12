@@ -35,6 +35,7 @@
 struct rtb_label {
 	RTB_INHERIT(rtb_element);
 	float line_height_multiplier;
+	const char *cls;
 
 	/* private ********************************/
 	rtb_utf8_t *text;
