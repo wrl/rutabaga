@@ -62,6 +62,7 @@ struct rtb_value_element {
 	float min;
 	float max;
 	float granularity;
+	float delta_mult;
 
 	/* read-only ******************************/
 	float value;

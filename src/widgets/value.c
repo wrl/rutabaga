@@ -158,6 +158,7 @@ handle_drag(struct rtb_value_element *self, const struct rtb_drag_event *e)
 		return 1;
 	}
 
+	mult *= self->delta_mult;
 	new_value += -e->delta.y * mult;
 
 	rtb__value_element_set_normalised_value(self, new_value, 0);
@@ -211,6 +212,8 @@ handle_mouse_wheel(struct rtb_value_element *self,
 	else
 		mult = DELTA_VALUE_STEP_COARSE;
 
+	mult *= self->delta_mult;
+
 	new_value = self->normalised_value + (e->wheel.delta * mult);
 
 	/* FIXME: how should mousewheel input during an active mouse drag edit be
@@ -232,6 +235,8 @@ handle_key(struct rtb_value_element *self, const struct rtb_key_event *e)
 		step = DELTA_VALUE_STEP_COARSE * 2;
 	else
 		step = DELTA_VALUE_STEP_COARSE;
+
+	step *= self->delta_mult;
 
 	switch (e->keysym) {
 	case RTB_KEY_UP:
@@ -440,6 +445,7 @@ rtb_value_element_init(struct rtb_value_element *self)
 
 	self->ve_state = RTB_VALUE_STATE_AT_REST;
 
+	self->delta_mult = 1.f;
 	self->min = 0.f;
 	self->max = 1.f;
 
