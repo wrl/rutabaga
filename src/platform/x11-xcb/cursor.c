@@ -51,7 +51,7 @@ rtb_mouse_pointer_warp(struct rtb_window *rwin, struct rtb_point pt)
 
 	phy = rtb_point_to_phy(rwin, pt);
 
-	if (self->xrtb->running_in_xwayland || (pt.x == m->x && pt.y == m->y))
+	if (pt.x == m->x && pt.y == m->y)
 		return;
 
 	xcb_warp_pointer(self->xrtb->xcb_conn, XCB_NONE, self->xcb_win,
