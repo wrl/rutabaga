@@ -88,6 +88,8 @@ struct rtb_window {
 	struct rtb_point scale;
 	struct rtb_point scale_recip;
 
+	float x_fractional_correction;
+
 	struct rutabaga *rtb;
 
 	GLuint vao;

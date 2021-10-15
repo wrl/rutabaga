@@ -25,6 +25,7 @@
  */
 
 #include <assert.h>
+#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -455,6 +456,14 @@ rtb_window_open(struct rutabaga *r, const struct rtb_window_open_options *opt)
 
 	if (RTB_SUBCLASS(RTB_SURFACE(self), rtb_surface_init, &super))
 		goto err_surface_init;
+
+	// for some reason, shifting a surface horizontally by a tiny amount
+	// greatly improves the rendering of text when using a fractional scaling
+	if (fabsf(self->scale.x - roundf(self->scale.x)) < 0.0001) {
+		self->x_fractional_correction = 0.0;
+	} else {
+		self->x_fractional_correction = 0.01;
+	}
 
 	self->w = opt->width  * self->scale_recip.x;
 	self->h = opt->height * self->scale_recip.y;

@@ -88,7 +88,9 @@ reflow(struct rtb_element *elem, struct rtb_element *instigator,
 	}
 
 	mat4_set_orthographic(&self->render_ctx.projection,
-			self->x,
+			// for some reason, shifting a surface horizontally by a tiny amount
+			// greatly improves the rendering of text when using a fractional scaling
+			self->x + self->window->x_fractional_correction,
 			self->x + self->w,
 			self->y + self->h,
 			self->y,
