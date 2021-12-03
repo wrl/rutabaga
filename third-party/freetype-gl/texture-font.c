@@ -56,6 +56,16 @@ const struct {
 } FT_Errors[] =
 #include FT_ERRORS_H
 
+static float convert_F26Dot6_to_float(FT_F26Dot6 value)
+{
+  return ((float)value) / 64.0;
+}
+
+static FT_F26Dot6 convert_float_to_F26Dot6(float value)
+{
+  return (FT_F26Dot6) (value * 64.0);
+}
+
 static int
 texture_font_load_face(texture_font_t *self, float size,
 		FT_Library *library, FT_Face *face)
@@ -107,10 +117,19 @@ texture_font_load_face(texture_font_t *self, float size,
 		return 0;
 	}
 
-    /* Set char size */
-    error = FT_Set_Char_Size(*face,
-            (int)(size * HRES), 0,
-            self->atlas->dpi.x * HRES, self->atlas->dpi.y);
+	/* Set char size */
+	/* See page 24 of “Higher Quality 2D Text Rendering”:
+	 * http://jcgt.org/published/0002/01/04/
+	 * “To render high-quality text, Shemarev [2007] recommends using only
+	 *  vertical hinting and completely discarding the horizontal hints.
+	 *  Hinting is the responsibility of the rasterization engine (FreeType in
+	 *  our case) which provides no option to specifically discard horizontal
+	 *  hinting. In the case of the FreeType library, we can nonetheless trick
+	 *  the engine by specifying an oversized horizontal DPI (100 times the
+	 *  vertical) while specifying a transformation matrix that scale down the
+	 *  glyph as shown in Listing 1.”
+	 * That horizontal DPI factor is HRES here. */
+	error = FT_Set_Char_Size(*face, convert_float_to_F26Dot6(size), 0, self->atlas->dpi.x * HRES, self->atlas->dpi.y);
 
 	if(error) {
 		fprintf(stderr, "FT_Error (line %d, code 0x%02x) : %s\n",
@@ -144,8 +163,8 @@ static int
 texture_font_get_hires_face(texture_font_t *self,
 		FT_Library *library, FT_Face *face)
 {
-	return texture_font_get_face_with_size(self,
-			self->size * 100.f, library, face);
+	return texture_font_get_face_with_size(
+			self, self->size, library, face);
 }
 
 // ------------------------------------------------------ texture_glyph_new ---
@@ -235,13 +254,17 @@ texture_font_generate_kerning(texture_font_t *self)
         {
             prev_glyph = *(texture_glyph_t **) vector_get( self->glyphs, j );
             prev_index = FT_Get_Char_Index( face, prev_glyph->charcode );
+            // FT_KERNING_UNFITTED returns FT_F26Dot6 values.
             FT_Get_Kerning( face, prev_index, glyph_index, FT_KERNING_UNFITTED, &kerning );
             // printf("%c(%d)-%c(%d): %ld\n",
             //       prev_glyph->charcode, prev_glyph->charcode,
             //       glyph_index, glyph_index, kerning.x);
             if( kerning.x )
             {
-                kerning_t k = {prev_glyph->charcode, kerning.x / (float)(HRESf*HRESf)};
+                kerning_t k = {
+                  prev_glyph->charcode,
+                  convert_F26Dot6_to_float(kerning.x) / HRESf
+                };
                 vector_push_back( glyph->kerning, &k );
             }
         }
@@ -301,9 +324,9 @@ texture_font_init(texture_font_t *self)
 		self->underline_thickness = 1.0;
 
 	metrics = face->size->metrics;
-	self->ascender = (metrics.ascender >> 6) / 100.0;
-	self->descender = (metrics.descender >> 6) / 100.0;
-	self->height = (metrics.height >> 6) / 100.0;
+	self->ascender  = metrics.ascender  >> 6;
+	self->descender = metrics.descender >> 6;
+	self->height    = metrics.height    >> 6;
 	self->linegap = self->height - self->ascender + self->descender;
 
 	FT_Done_Face(face);
@@ -469,6 +492,18 @@ texture_font_load_glyphs( texture_font_t * self,
                 FT_Library_SetLcdFilterWeights( library, self->lcd_weights );
             }
         }
+        else if (HRES == 1)
+        {
+            /* “FT_LOAD_TARGET_LIGHT
+             *  A lighter hinting algorithm for gray-level modes. Many generated
+             *  glyphs are fuzzier but better resemble their original shape.
+             *  This is achieved by snapping glyphs to the pixel grid
+             *  only vertically (Y-axis), as is done by FreeType's new CFF engine
+             *  or Microsoft's ClearType font renderer.”
+             * https://www.freetype.org/freetype2/docs/reference/ft2-base_interface.html#ft_load_target_xxx
+             */
+            flags |= FT_LOAD_TARGET_LIGHT;
+        }
 
         error = FT_Load_Glyph( face, glyph_index, flags );
         if( error )
@@ -620,8 +655,8 @@ texture_font_load_glyphs( texture_font_t * self,
         // Discard hinting to get advance
         FT_Load_Glyph( face, glyph_index, FT_LOAD_RENDER | FT_LOAD_NO_HINTING);
         slot = face->glyph;
-        glyph->advance_x = slot->advance.x / HRESf;
-        glyph->advance_y = slot->advance.y / HRESf;
+        glyph->advance_x = convert_F26Dot6_to_float(slot->advance.x);
+        glyph->advance_y = convert_F26Dot6_to_float(slot->advance.y);
 
         vector_push_back( self->glyphs, &glyph );
 
