@@ -498,22 +498,6 @@ window_impl_open(struct rutabaga *rtb,
 
 		[view initWithFrame:NSMakeRect(0, 0, opt->width, opt->height)];
 
-		phy_size = [view
-			convertSizeToBacking:NSMakeSize(opt->width, opt->height)];
-
-		self->phy_size.w = phy_size.width;
-		self->phy_size.h = phy_size.height;
-
-		self->scale = RTB_MAKE_POINT(
-				phy_size.width / (float) opt->width,
-				phy_size.height / (float) opt->height);
-
-		self->scale_recip.x = 1.f / self->scale.x;
-		self->scale_recip.y = 1.f / self->scale.y;
-
-		self->dpi.x = 96 * self->scale.x;
-		self->dpi.y = 96 * self->scale.y;
-
 		[gl_ctx makeCurrentContext];
 
 		if (opt->parent || opt->flags & RTB_WINDOW_OPEN_AS_IF_PARENTED) {
@@ -543,6 +527,22 @@ window_impl_open(struct rutabaga *rtb,
 
 			[NSApp activateIgnoringOtherApps:YES];
 		}
+
+		phy_size = [view
+			convertSizeToBacking:NSMakeSize(opt->width, opt->height)];
+
+		self->phy_size.w = phy_size.width;
+		self->phy_size.h = phy_size.height;
+
+		self->scale = RTB_MAKE_POINT(
+				phy_size.width / (float) opt->width,
+				phy_size.height / (float) opt->height);
+
+		self->scale_recip.x = 1.f / self->scale.x;
+		self->scale_recip.y = 1.f / self->scale.y;
+
+		self->dpi.x = 96 * self->scale.x;
+		self->dpi.y = 96 * self->scale.y;
 
 		view->rtb_win = self;
 	}
