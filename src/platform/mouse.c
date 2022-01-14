@@ -203,6 +203,8 @@ mouse_up(struct rtb_window *window, struct rtb_element *target,
 	struct rtb_size drag_delta;
 	uint64_t now;
 
+	/* are we releasing the mouse on the same element that we pressed the mouse
+	 * down on? */
 	if (rtb_elem_is_in_tree(b->target, target)) {
 		double_click_interval = rtb_mouse_double_click_interval(window);
 		now = uv_hrtime();
@@ -210,21 +212,26 @@ mouse_up(struct rtb_window *window, struct rtb_element *target,
 		time_in_click = now - b->last_mouse_down;
 		time_between_clicks = now - b->last_click;
 
-		if (time_between_clicks < double_click_interval)
-			b->click_count++;
-		else
-			b->click_count = 0;
+		/* only do double (+ triple, + more) click updating if this click
+		 * wasn't a drag. */
+		if (b->state != RTB_MOUSE_BUTTON_STATE_DRAG) {
+			if (time_between_clicks < double_click_interval)
+				b->click_count++;
+			else
+				b->click_count = 0;
 
-		/* this is so that a click which takes a long time to complete (for
-		 * example, one in which where was hesitation or dragging between the
-		 * mousedown and mouseup) doesn't count toward number of clicks.
-		 *
-		 * mostly just an aesthetic concern. feels better this way. otherwise
-		 * you can take a long time with a click and then immediately follow it
-		 * up with a short click and it counts as a double click. feels weird
-		 * and wrong. */
-		if (time_in_click < double_click_interval)
-			b->last_click = now;
+			/* this is so that a click which takes a long time to complete (for
+			 * example, one in which where was hesitation or dragging between the
+			 * mousedown and mouseup) doesn't count toward number of clicks.
+			 *
+			 * mostly just an aesthetic concern. feels better this way. otherwise
+			 * you can take a long time with a click and then immediately follow it
+			 * up with a short click and it counts as a double click. feels weird
+			 * and wrong. */
+			if (time_in_click < double_click_interval)
+				b->last_click = now;
+		} else
+			b->click_count = 0;
 
 		dispatch_click_event(window, target, button, b->state, cursor);
 	} else if (b->state == RTB_MOUSE_BUTTON_STATE_DRAG) {
