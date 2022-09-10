@@ -52,7 +52,11 @@ struct rtb_element;
 typedef enum {
 	RTB_ELEM_NO_FOCUS           = 0,
 	RTB_ELEM_CLICK_FOCUS        = 0x01,
-	RTB_ELEM_TAB_FOCUS          = 0x02
+	RTB_ELEM_TAB_FOCUS          = 0x02,
+
+	// element active state should stay constant even if the mouse is outside
+	// of the bounds during a drag
+	RTB_ELEM_ACTIVE_DURING_DRAG = 0x04,
 } rtb_elem_flags_t;
 
 typedef enum {

@@ -449,6 +449,8 @@ rtb_value_element_init(struct rtb_value_element *self)
 	self->min = 0.f;
 	self->max = 1.f;
 
+	self->flags |= RTB_ELEM_ACTIVE_DURING_DRAG;
+
 	return 0;
 }
 

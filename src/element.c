@@ -95,6 +95,13 @@ static void
 transition_mouse_leave(struct rtb_element *self,
 		const struct rtb_mouse_event *ev)
 {
+	struct rtb_mouse *m = &self->window->mouse;
+
+	if (m->buttons_down & RTB_MOUSE_BUTTON1_MASK
+			&& m->button[RTB_MOUSE_BUTTON1].target == self
+			&& self->flags & RTB_ELEM_ACTIVE_DURING_DRAG)
+		return;
+
 	if (FOCUSED_P(self))
 		change_state(self, RTB_STATE_FOCUS);
 	else
@@ -120,8 +127,10 @@ transition_mouse_up(struct rtb_element *self,
 {
 	if (self->mouse_in)
 		transition_mouse_enter(self, ev);
+	else if (FOCUSED_P(self))
+		change_state(self, RTB_STATE_FOCUS);
 	else
-		transition_mouse_leave(self, ev);
+		change_state(self, RTB_STATE_NORMAL);
 }
 
 static void
