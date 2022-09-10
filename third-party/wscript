@@ -46,6 +46,7 @@ def build_uv(ctx):
 
 			extra_cflags += [
 				'-Wno-address-of-packed-member',
+				'-Wno-dangling-pointer',
 				'-Wno-cast-function-type'
             ]
 
