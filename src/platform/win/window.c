@@ -97,7 +97,7 @@ messageboxf(const wchar_t *title, const wchar_t *fmt, ...)
 inline static struct rtb_point
 scaling_from_dpi(unsigned dpi)
 {
-	return RTB_MAKE_POINT(96 / (float) dpi, 96 / (float) dpi);
+	return RTB_MAKE_POINT(dpi / 96.f, dpi / 96.f);
 }
 
 static BOOL
@@ -525,6 +525,9 @@ static void
 resolve_dpi_funcs(struct win_rtb *wrtb)
 {
 	HMODULE user32, shcore;
+
+	LoadLibraryA("user32.dll");
+	LoadLibraryA("Shcore.dll");
 
 	user32 = GetModuleHandleA("user32.dll");
 	shcore = GetModuleHandleA("Shcore.dll");
