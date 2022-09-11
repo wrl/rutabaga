@@ -496,6 +496,9 @@ rtb_window_open(struct rutabaga *r, const struct rtb_window_open_options *opt)
 	self->overlay_surface.surface = &self->overlay_surface;
 	self->overlay_surface.mark_dirty = mark_dirty;
 
+	self->outer_pad.x = 0;
+	self->outer_pad.y = 0;
+
 	self->overlay_surface.outer_pad.x = 0;
 	self->overlay_surface.outer_pad.y = 0;
 
