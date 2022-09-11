@@ -105,7 +105,7 @@ rtb_text_object_update(struct rtb_text_object *self,
 
 	font = rfont->txfont;
 	self->font = rfont;
-	scale_x_recip = win->scale.x;
+	scale_x_recip = 1.f / scale.x;
 
 	vertex_buffer_clear(self->vertices);
 
@@ -191,9 +191,28 @@ rtb_text_object_update(struct rtb_text_object *self,
 
 	vertex_buffer_upload(self->vertices);
 	self->h = line_height * lines;
-	self->w = roundf((x > max_w) ? x : max_w);
+	self->w = ceilf((x > max_w) ? x : max_w) + 1;
 
 	return 0;
+}
+
+/**
+ * when the window has a non-integer scaling factor, sometimes our
+ * starting X coord will be in-between physical pixels when we
+ * un-project it. this function aligns the X coord to phy pixels.
+ *
+ * note: doesn't work 100% of the time but pretty close to it.
+ */
+static float
+x_correction(const struct rtb_window *window, float x)
+{
+	float pixel, subpixel, correction;
+
+	subpixel   = modff(x * window->scale_recip.x, &pixel);
+	subpixel  *= window->scale.x;
+	correction = ceilf(subpixel) - subpixel;
+
+	return floorf(correction * 1000.f) / 1000.f;
 }
 
 void
@@ -207,6 +226,8 @@ rtb_text_object_render(struct rtb_text_object *self,
 
 	if (!vertex_buffer_size(self->vertices))
 		return;
+
+	x += x_correction(ctx->window, x);
 
 	fm = self->fm;
 	shader = &fm->shader;

@@ -405,8 +405,8 @@ rtb_window_reinit(struct rtb_window *self)
 
 	self->finished_initialising = 0;
 
-	self->w = self->phy_size.w * self->scale_recip.x;
-	self->h = self->phy_size.h * self->scale_recip.y;
+	self->w = ceilf(self->phy_size.w / self->scale.x);
+	self->h = ceilf(self->phy_size.h / self->scale.y);
 
 	self->x = self->y = 0.f;
 
@@ -456,8 +456,8 @@ rtb_window_open(struct rutabaga *r, const struct rtb_window_open_options *opt)
 	if (RTB_SUBCLASS(RTB_SURFACE(self), rtb_surface_init, &super))
 		goto err_surface_init;
 
-	self->w = opt->width  * self->scale_recip.x;
-	self->h = opt->height * self->scale_recip.y;
+	self->w = ceilf(opt->width  * self->scale_recip.x);
+	self->h = ceilf(opt->height * self->scale_recip.y);
 
 	self->surface = RTB_SURFACE(self);
 

@@ -47,7 +47,8 @@ draw(struct rtb_element *elem)
 	SELF_FROM(elem);
 	struct rtb_render_context *ctx = rtb_render_get_context(elem);
 
-	rtb_text_object_render(self->tobj, ctx, self->x, self->y, self->color);
+	rtb_text_object_render(self->tobj, ctx,
+		self->x, self->y, self->color);
 }
 
 static void
