@@ -49,13 +49,23 @@ rtb_mouse_pointer_warp(struct rtb_window *rwin, struct rtb_point pt)
 	struct rtb_mouse *m = &rwin->mouse;
 	struct rtb_phy_point phy;
 
+	xcb_generic_error_t *err;
+	xcb_void_cookie_t cookie;
+
 	phy = rtb_point_to_phy(rwin, pt);
 
 	if (pt.x == m->x && pt.y == m->y)
 		return;
 
-	xcb_warp_pointer(self->xrtb->xcb_conn, XCB_NONE, self->xcb_win,
-			0, 0, 0, 0, phy.x, phy.y);
+	cookie = xcb_warp_pointer_checked(self->xrtb->xcb_conn, XCB_NONE,
+			self->xcb_win, 0, 0, 0, 0, phy.x, phy.y);
+
+	if ((err = xcb_request_check(self->xrtb->xcb_conn, cookie))) {
+		free(err);
+
+		/* don't adjust internal position if the warp failed */
+		return;
+	}
 
 	/* since xorg sends us a motion notify, we have to fix the previous
 	 * cursor position so that dragging still works as expected. */
