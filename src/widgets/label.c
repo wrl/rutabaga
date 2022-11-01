@@ -135,8 +135,12 @@ rtb_label_set_text(struct rtb_label *self, const rtb_utf8_t *text)
 {
 	struct rtb_size old_size;
 
-	if (self->text)
+	if (self->text) {
+		if (!strcmp(self->text, text))
+			return;
+
 		free(self->text);
+	}
 
 	self->text = strdup(text);
 
