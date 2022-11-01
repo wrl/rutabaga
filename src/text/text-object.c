@@ -103,7 +103,7 @@ rtb_text_object_update(struct rtb_text_object *self,
 	if (!rfont || !text)
 		return -1;
 
-	font = rfont->txfont;
+	font = rfont->txfont->txfont;
 	self->font = rfont;
 	scale_x_recip = 1.f / scale.x;
 

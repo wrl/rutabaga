@@ -36,11 +36,27 @@
 #define RTB_FONT(x) RTB_UPCAST(x, rtb_font)
 #define RTB_FONT_AS(x, type) RTB_DOWNCAST(x, type, rtb_font)
 
+typedef enum {
+	RTB_FONT_EMBEDDED = 0,
+	RTB_FONT_EXTERNAL = 1
+} rtb_font_loaded_from_t;
+
+struct rtb_texture_font {
+	texture_font_t *txfont;
+	int refcount;
+
+	rtb_font_loaded_from_t loaded_from;
+	union {
+		const void *base;
+		char *path;
+	} location;
+};
+
 struct rtb_font {
 	int size;
 	float lcd_gamma;
 
-	texture_font_t *txfont;
+	struct rtb_texture_font *txfont;
 	struct rtb_font_manager *fm;
 
 	TAILQ_ENTRY(rtb_font) manager_entry;

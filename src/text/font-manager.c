@@ -60,42 +60,101 @@ static const rtb_utf32_t default_cache[] = {
 };
 
 static int
-init_font(struct rtb_font *font, const rtb_utf32_t *cache)
+init_txfont(struct rtb_texture_font *txfont, const rtb_utf32_t *cache)
 {
 	if (0)
-		memcpy(font->txfont->lcd_weights, lcd_weights, sizeof(lcd_weights));
+		memcpy(txfont->txfont->lcd_weights, lcd_weights, sizeof(lcd_weights));
 
-	texture_font_load_glyphs(font->txfont, cache ? cache : default_cache);
+	texture_font_load_glyphs(txfont->txfont, cache ? cache : default_cache);
+
+	txfont->refcount = 1;
 	return 0;
+}
+
+/**
+ * txfont refcounting
+ */
+
+static int
+rtb_texture_font_unref(struct rtb_texture_font *f)
+{
+	unsigned rc = --f->refcount;
+
+	if (!rc) {
+		if (f->loaded_from == RTB_FONT_EXTERNAL)
+			free(f->location.path);
+
+		texture_font_delete(f->txfont);
+		free(f);
+	}
+
+	return rc;
 }
 
 /**
  * emebedded font
  */
 
+static struct rtb_texture_font *
+find_duplicate_embedded_txfont(const struct rtb_font_manager *fm,
+		int pt_size, const void *base)
+{
+	struct rtb_font *font;
+
+	TAILQ_FOREACH(font, &fm->managed_fonts, manager_entry) {
+		if (font->size == pt_size
+			&& font->txfont->loaded_from == RTB_FONT_EMBEDDED
+			&& font->txfont->location.base == base)
+			return font->txfont;
+	}
+
+	return NULL;
+}
+
 int
 rtb_font_manager_load_embedded_font(struct rtb_font_manager *fm,
 		struct rtb_font *font, int pt_size, const void *base, size_t size)
 {
-	font->txfont =
-		texture_font_new_from_memory(fm->atlas, pt_size, base, size);
+	struct rtb_texture_font *txfont;
 
-	if (!font->txfont)
-		return -1;
+	font->size   = pt_size;
+	font->fm     = fm;
 
-	font->size = pt_size;
-	font->fm   = fm;
+	if ((txfont = find_duplicate_embedded_txfont(fm, pt_size, base))) {
+		txfont->refcount++;
+	} else {
+		txfont = calloc(1, sizeof(*txfont));
+		if (!txfont)
+			goto err_calloc;
 
-	init_font(font, fm->cache_glyphs);
+		txfont->txfont = texture_font_new_from_memory(
+				fm->atlas, pt_size, base, size);
+
+		if (!txfont->txfont)
+			goto err_txfont_new;
+
+		init_txfont(txfont, fm->cache_glyphs);
+
+		txfont->loaded_from   = RTB_FONT_EMBEDDED;
+		txfont->location.base = base;
+	}
+
+	font->txfont = txfont;
+
 	TAILQ_INSERT_TAIL(&fm->managed_fonts, font, manager_entry);
 	return 0;
+
+err_txfont_new:
+	free(txfont);
+err_calloc:
+	return -1;
 }
 
 void
 rtb_font_manager_free_embedded_font(struct rtb_font *font)
 {
 	TAILQ_REMOVE(&font->fm->managed_fonts, font, manager_entry);
-	texture_font_delete(font->txfont);
+	rtb_texture_font_unref(font->txfont);
 
 	font->manager_entry.tqe_next = NULL;
 	font->manager_entry.tqe_prev = NULL;
@@ -105,29 +164,65 @@ rtb_font_manager_free_embedded_font(struct rtb_font *font)
  * external font
  */
 
+static struct rtb_texture_font *
+find_duplicate_external_txfont(const struct rtb_font_manager *fm,
+		int pt_size, const char *path)
+{
+	struct rtb_font *font;
+
+	TAILQ_FOREACH(font, &fm->managed_fonts, manager_entry) {
+		if (font->size == pt_size
+			&& font->txfont->loaded_from == RTB_FONT_EXTERNAL
+			&& !strcmp(font->txfont->location.path, path))
+			return font->txfont;
+	}
+
+	return NULL;
+}
+
 int
 rtb_font_manager_load_external_font(struct rtb_font_manager *fm,
 		struct rtb_external_font *font, int pt_size, const char *path)
 {
-	font->txfont = texture_font_new_from_file(fm->atlas, pt_size, path);
-	if (!font->txfont) {
-		ERR("couldn't load font \"%s\"\n", path);
-		return -1;
-	}
+	struct rtb_texture_font *txfont;
 
-	font->path = strdup(path);
 	font->size = pt_size;
 	font->fm   = fm;
 
-	init_font(RTB_FONT(font), fm->cache_glyphs);
+	if ((txfont = find_duplicate_external_txfont(fm, pt_size, path))) {
+		txfont->refcount++;
+	} else {
+		txfont = calloc(1, sizeof(*txfont));
+		if (!txfont)
+			goto err_calloc;
+
+		txfont->txfont = texture_font_new_from_file(
+				fm->atlas, pt_size, path);
+
+		if (!txfont->txfont)
+			goto err_txfont_new;
+
+		init_txfont(txfont, fm->cache_glyphs);
+
+		txfont->loaded_from   = RTB_FONT_EXTERNAL;
+		txfont->location.path = strdup(path);
+	}
+
+	font->txfont = txfont;
 	return 0;
+
+err_txfont_new:
+	ERR("couldn't load font \"%s\"\n", path);
+	free(txfont);
+err_calloc:
+	return -1;
 }
 
 void
 rtb_font_manager_free_external_font(struct rtb_external_font *font)
 {
 	free(font->path);
-	texture_font_delete(font->txfont);
+	rtb_texture_font_unref(font->txfont);
 }
 
 int
@@ -170,8 +265,7 @@ rtb_font_manager_fini(struct rtb_font_manager *fm)
 	struct rtb_font *font;
 
 	TAILQ_FOREACH(font, &fm->managed_fonts, manager_entry)
-		/* FIXME: free path of external font? */
-		texture_font_delete(font->txfont);
+		rtb_texture_font_unref(font->txfont);
 
 	texture_atlas_delete(fm->atlas);
 
