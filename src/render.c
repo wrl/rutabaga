@@ -201,7 +201,9 @@ rtb_render_reset(struct rtb_element *elem, const struct rtb_shader *shader)
 			scale.x * elem->w,
 			scale.y * elem->h);
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFuncSeparate(
+		GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
+		GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void
