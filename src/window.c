@@ -386,14 +386,14 @@ rtb_window_draw(struct rtb_window *self, int force_redraw)
 	self->draw(RTB_ELEMENT(self));
 	rtb_render_pop(RTB_ELEMENT(self));
 
+	ev.type = RTB_FRAME_END;
+	rtb_dispatch_raw(RTB_ELEMENT(self), RTB_EVENT(&ev));
+
 	rtb_render_push(RTB_ELEMENT(self));
 	self->overlay_surface.draw(RTB_ELEMENT(&self->overlay_surface));
 	rtb_render_pop(RTB_ELEMENT(self));
 
 	self->dirty = 0;
-
-	ev.type = RTB_FRAME_END;
-	rtb_dispatch_raw(RTB_ELEMENT(self), RTB_EVENT(&ev));
 
 	return 1;
 }
