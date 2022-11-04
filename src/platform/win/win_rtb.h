@@ -89,6 +89,8 @@ struct win_rtb_window {
 
 	int capture_depth;
 	int in_size_move;
+
+	int closing;
 };
 
 LRESULT win_rtb_handle_message(struct win_rtb_window *,

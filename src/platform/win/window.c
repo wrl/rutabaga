@@ -407,6 +407,8 @@ window_impl_open(struct rutabaga *rtb,
 	if (!self)
 		return NULL;
 
+	self->closing = 0;
+
 	wtitle = utf8_to_utf16_alloc(opt->title);
 	if (!wtitle) {
 		messageboxf(wtitle, L"couldn't allocate memory");
@@ -481,6 +483,8 @@ void
 window_impl_close(struct rtb_window *rwin)
 {
 	struct win_rtb_window *self = RTB_WINDOW_AS(rwin, win_rtb_window);
+
+	self->closing = 1;
 
 	wglMakeCurrent(NULL, NULL);
 	wglDeleteContext(self->gl_ctx);

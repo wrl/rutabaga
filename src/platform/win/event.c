@@ -205,6 +205,9 @@ LRESULT
 win_rtb_handle_message(struct win_rtb_window *self,
 		UINT message, WPARAM wparam, LPARAM lparam)
 {
+	if (self->closing)
+		return DefWindowProcW(self->hwnd, message, wparam, lparam);
+
 	switch (message) {
 	/**
 	 * lifecycle
