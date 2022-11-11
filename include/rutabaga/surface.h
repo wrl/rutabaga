@@ -52,6 +52,9 @@ struct rtb_surface {
 	TAILQ_HEAD(rtb_render_tailq, rtb_element) render_queue;
 	struct rtb_render_context render_ctx;
 
+	int in_redraw;
+	struct rtb_render_tailq next_frame_render_queue;
+
 	struct rtb_phy_size phy_size;
 	mat4 phy_projection;
 };

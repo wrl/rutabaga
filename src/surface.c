@@ -218,6 +218,8 @@ rtb_surface_draw_children(struct rtb_surface *self)
 
 	self->render_ctx.window = self->window;
 
+	self->in_redraw = 1;
+
 	/* we have slightly different ways of handling this redraw depending
 	 * on what the state of the surface is. */
 	switch (self->surface_state) {
@@ -260,6 +262,16 @@ rtb_surface_draw_children(struct rtb_surface *self)
 		break;
 	}
 
+	self->in_redraw = 0;
+
+	// if any elements requested a redraw *from* their draw func, they'll
+	// end up in this queue, so we'll move them to the main queue for
+	// next frame.
+	while ((iter = TAILQ_FIRST(&self->next_frame_render_queue))) {
+		TAILQ_REMOVE(&self->next_frame_render_queue, iter, render_entry);
+		TAILQ_INSERT_TAIL(&self->render_queue, iter, render_entry);
+	}
+
 	glBindFramebuffer(GL_FRAMEBUFFER, bound_fb);
 	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 }
@@ -285,6 +297,9 @@ rtb_surface_init(struct rtb_surface *self)
 	self->impl.child_attached = child_attached;
 
 	TAILQ_INIT(&self->render_queue);
+
+	self->in_redraw = 0;
+	TAILQ_INIT(&self->next_frame_render_queue);
 
 	glGenTextures(1, &self->texture);
 	glGenFramebuffers(1, &self->fbo);

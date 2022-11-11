@@ -415,7 +415,12 @@ mark_dirty(struct rtb_element *self)
 			|| self->render_entry.tqe_next || self->render_entry.tqe_prev)
 		return;
 
-	TAILQ_INSERT_TAIL(&surface->render_queue, self, render_entry);
+	if (surface->in_redraw)
+		TAILQ_INSERT_TAIL(&surface->next_frame_render_queue,
+				self, render_entry);
+	else
+		TAILQ_INSERT_TAIL(&surface->render_queue, self, render_entry);
+
 	rtb_elem_mark_dirty(RTB_ELEMENT(surface));
 }
 
