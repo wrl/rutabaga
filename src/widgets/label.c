@@ -65,6 +65,7 @@ attached(struct rtb_element *elem,
 		self->type = rtb_type_ref(window, self->type, self->cls);
 
 	self->tobj = rtb_text_object_new(&window->font_manager);
+	self->font = NULL;
 }
 
 static void
@@ -72,6 +73,8 @@ detached(struct rtb_element *elem,
 		struct rtb_element *parent, struct rtb_window *window)
 {
 	SELF_FROM(elem);
+
+	super.detached(elem, parent, window);
 
 	rtb_text_object_free(self->tobj);
 	self->tobj = NULL;
