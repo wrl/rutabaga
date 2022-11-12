@@ -317,6 +317,9 @@ rtb_window_add_overlay(struct rtb_window *self, struct rtb_element *child,
 		rtb_child_add_loc_t where)
 {
 	rtb_elem_add_child(RTB_ELEMENT(&self->overlay_surface), child, where);
+
+	rtb_surface_invalidate(&self->overlay_surface);
+	rtb__platform_mouse_motion(self, self->mouse.previous);
 }
 
 void
