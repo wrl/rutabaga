@@ -635,6 +635,8 @@ rtb_elem_add_child(struct rtb_element *self, struct rtb_element *child,
 	if (self->state != RTB_STATE_UNATTACHED) {
 		self->child_attached(self, child);
 
+		rtb_style_resolve_list(self->window, self->window->style_list);
+
 		if (self->window->state != RTB_STATE_UNATTACHED)
 			self->restyle(self);
 

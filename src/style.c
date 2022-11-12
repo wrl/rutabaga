@@ -169,7 +169,7 @@ style_resolve(struct rtb_window *window, struct rtb_style *style)
 	if (!style->resolved_type)
 		return -1;
 
-	style->inherit_from = inherits_from(style->resolved_type, style);
+	style->inherit_from = NULL;
 
 	for (state = 0; state < RTB_DRAW_STATE_COUNT; state++) {
 		if (load_assets(window, style->properties[state]) < 0)
@@ -289,13 +289,17 @@ rtb_style_resolve_list(struct rtb_window *win, struct rtb_style *style_list)
 	for (i = 0; style_list[i].for_type; i++) {
 		s = &style_list[i];
 
+		if (s->resolved_type)
+			continue;
+
 		if (style_resolve(win, s))
 			unresolved_styles++;
 	}
 
 	for (i = 0; style_list[i].for_type; i++) {
 		s = &style_list[i];
-		if (!s->resolved_type)
+
+		if (!s->resolved_type || s->inherit_from)
 			continue;
 
 		s->inherit_from = inherits_from(s->resolved_type, style_list);
