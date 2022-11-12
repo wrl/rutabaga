@@ -375,8 +375,8 @@ detached(struct rtb_element *self,
 	self->parent = NULL;
 	self->window = NULL;
 
-	rtb_type_unref(self->type);
 	self->type = NULL;
+	self->style = NULL;
 
 	TAILQ_FOREACH(iter, &self->children, child)
 		self->child_detached(self, iter);
