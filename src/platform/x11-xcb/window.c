@@ -515,14 +515,25 @@ get_scaling(int dpi_x, int dpi_y)
 	const char *env_factor;
 	char *end;
 
-	if ((env_factor = getenv("RTB_SCALE"))) {
-		float factor;
+	const char *env_variables_to_try[] = {
+		"RTB_SCALE",
+		"GDK_DPI_SCALE",
+		"GDK_SCALE",
+		"QT_SCALE_FACTOR"
+	};
 
-		factor = strtod(env_factor, &end);
-		if (*end != '\0')
-			goto unscaled;
+	for (unsigned i = 0; i < ARRAY_LENGTH(env_variables_to_try); i++) {
+		const char *var = env_variables_to_try[i];
 
-		return RTB_MAKE_POINT(factor, factor);
+		if ((env_factor = getenv(var))) {
+			float factor;
+
+			factor = strtod(env_factor, &end);
+			if (*end != '\0' || factor <= 0.f)
+				continue;
+
+			return RTB_MAKE_POINT(factor, factor);
+		}
 	}
 
 	if (dpi_x != 96 || dpi_y != 96) {
@@ -534,7 +545,6 @@ get_scaling(int dpi_x, int dpi_y)
 		return factor;
 	}
 
-unscaled:
 	return RTB_MAKE_POINT(1.f, 1.f);
 }
 
