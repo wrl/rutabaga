@@ -318,6 +318,9 @@ rtb_window_add_overlay(struct rtb_window *self, struct rtb_element *child,
 {
 	rtb_elem_add_child(RTB_ELEMENT(&self->overlay_surface), child, where);
 
+	if (self->state == RTB_STATE_UNATTACHED)
+		return;
+
 	rtb_surface_invalidate(&self->overlay_surface);
 	rtb__platform_mouse_motion(self, self->mouse.previous);
 }
@@ -326,6 +329,9 @@ void
 rtb_window_remove_overlay(struct rtb_window *self, struct rtb_element *child)
 {
 	rtb_elem_remove_child(RTB_ELEMENT(&self->overlay_surface), child);
+
+	if (self->state == RTB_STATE_UNATTACHED)
+		return;
 
 	rtb_surface_invalidate(&self->overlay_surface);
 	rtb__platform_mouse_motion(self, self->mouse.previous);
