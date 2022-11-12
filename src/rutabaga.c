@@ -64,6 +64,8 @@ rtb_new(void)
 void
 rtb_free(struct rutabaga *self)
 {
+	rtb_free_all_types(self);
+
 	uv_loop_close(&self->event_loop);
 	window_impl_rtb_free(self);
 }

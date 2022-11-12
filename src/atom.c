@@ -233,3 +233,15 @@ rtb_type_unref(struct rtb_type_atom_descriptor *type)
 
 	return type->ref_count;
 }
+
+void
+rtb_free_all_types(struct rutabaga *rtb)
+{
+	struct rtb_atom_descriptor *rad;
+
+	while ((rad = NEDTRIE_MIN(rtb_atom_dict, &rtb->atoms.type))) {
+		struct rtb_type_atom_descriptor *d = (void *) rad;
+		NEDTRIE_REMOVE(rtb_atom_dict, &rtb->atoms.type, rad);
+		free(d);
+	}
+}

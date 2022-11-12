@@ -75,3 +75,6 @@ int rtb_is_type(struct rtb_type_atom_descriptor *desc,
 struct rtb_type_atom_descriptor *rtb_type_ref(struct rtb_window *win,
 		struct rtb_type_atom_descriptor *super, const char *type_name);
 int rtb_type_unref(struct rtb_type_atom_descriptor *type);
+
+struct rutabaga;
+void rtb_free_all_types(struct rutabaga *);
