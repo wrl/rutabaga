@@ -326,6 +326,9 @@ void
 rtb_window_remove_overlay(struct rtb_window *self, struct rtb_element *child)
 {
 	rtb_elem_remove_child(RTB_ELEMENT(&self->overlay_surface), child);
+
+	rtb_surface_invalidate(&self->overlay_surface);
+	rtb__platform_mouse_motion(self, self->mouse.previous);
 }
 
 /**

@@ -203,9 +203,16 @@ mouse_up(struct rtb_window *window, struct rtb_element *target,
 	struct rtb_size drag_delta;
 	uint64_t now;
 
+	rtb_mouse_button_state_t b_state = b->state;
+	struct rtb_element *b_target = b->target;
+
+	b->state  = RTB_MOUSE_BUTTON_STATE_UP;
+	b->target = NULL;
+	mouse->buttons_down &= ~(1 << button);
+
 	/* are we releasing the mouse on the same element that we pressed the mouse
 	 * down on? */
-	if (rtb_elem_is_in_tree(b->target, target)) {
+	if (rtb_elem_is_in_tree(b_target, target)) {
 		double_click_interval = rtb_mouse_double_click_interval(window);
 		now = uv_hrtime();
 
@@ -214,7 +221,7 @@ mouse_up(struct rtb_window *window, struct rtb_element *target,
 
 		/* only do double (+ triple, + more) click updating if this click
 		 * wasn't a drag. */
-		if (b->state != RTB_MOUSE_BUTTON_STATE_DRAG) {
+		if (b_state != RTB_MOUSE_BUTTON_STATE_DRAG) {
 			if (time_between_clicks < double_click_interval)
 				b->click_count++;
 			else
@@ -233,18 +240,14 @@ mouse_up(struct rtb_window *window, struct rtb_element *target,
 		} else
 			b->click_count = 0;
 
-		dispatch_click_event(window, target, button, b->state, cursor);
-	} else if (b->state == RTB_MOUSE_BUTTON_STATE_DRAG) {
+		dispatch_click_event(window, target, button, b_state, cursor);
+	} else if (b_state == RTB_MOUSE_BUTTON_STATE_DRAG) {
 		drag_delta.w = cursor.x - mouse->previous.x;
 		drag_delta.h = cursor.y - mouse->previous.y;
 
 		dispatch_drag_event(window, RTB_DRAG_DROP, target, button, cursor,
 				drag_delta);
 	}
-
-	b->state  = RTB_MOUSE_BUTTON_STATE_UP;
-	b->target = NULL;
-	mouse->buttons_down &= ~(1 << button);
 }
 
 static void
