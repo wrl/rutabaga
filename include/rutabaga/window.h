@@ -79,6 +79,9 @@ struct rtb_window {
 
 	/* private ********************************/
 	int finished_initialising;
+	int need_reconfigure;
+	int dpi_changed;
+	int dirty;
 
 	struct {
 		int x;
@@ -92,8 +95,6 @@ struct rtb_window {
 
 	GLuint vao;
 
-	int need_reconfigure;
-	int dirty;
 	uv_mutex_t lock;
 
 	struct rtb_mouse mouse;
@@ -119,6 +120,7 @@ void rtb_window_lock(struct rtb_window *);
 void rtb_window_unlock(struct rtb_window *);
 
 void rtb_window_reinit(struct rtb_window *);
+void rtb_window_set_scale(struct rtb_window *, struct rtb_point new_scale);
 
 /**
  * overlays

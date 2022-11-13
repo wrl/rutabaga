@@ -66,8 +66,6 @@ init_txfont(struct rtb_texture_font *txfont, const rtb_utf32_t *cache)
 		memcpy(txfont->txfont->lcd_weights, lcd_weights, sizeof(lcd_weights));
 
 	texture_font_load_glyphs(txfont->txfont, cache ? cache : default_cache);
-
-	txfont->refcount = 1;
 	return 0;
 }
 
@@ -104,7 +102,7 @@ find_duplicate_embedded_txfont(const struct rtb_font_manager *fm,
 	TAILQ_FOREACH(font, &fm->managed_fonts, manager_entry) {
 		if (font->size == pt_size
 			&& font->txfont->loaded_from == RTB_FONT_EMBEDDED
-			&& font->txfont->location.base == base)
+			&& font->txfont->location.mem.base == base)
 			return font->txfont;
 	}
 
@@ -134,9 +132,11 @@ rtb_font_manager_load_embedded_font(struct rtb_font_manager *fm,
 			goto err_txfont_new;
 
 		init_txfont(txfont, fm->cache_glyphs);
+		txfont->refcount = 1;
 
-		txfont->loaded_from   = RTB_FONT_EMBEDDED;
-		txfont->location.base = base;
+		txfont->loaded_from       = RTB_FONT_EMBEDDED;
+		txfont->location.mem.base = base;
+		txfont->location.mem.size = size;
 	}
 
 	font->txfont = txfont;
@@ -203,6 +203,7 @@ rtb_font_manager_load_external_font(struct rtb_font_manager *fm,
 			goto err_txfont_new;
 
 		init_txfont(txfont, fm->cache_glyphs);
+		txfont->refcount = 1;
 
 		txfont->loaded_from   = RTB_FONT_EXTERNAL;
 		txfont->location.path = strdup(path);
@@ -223,6 +224,26 @@ rtb_font_manager_free_external_font(struct rtb_external_font *font)
 {
 	free(font->path);
 	rtb_texture_font_unref(font->txfont);
+}
+
+void
+rtb_font_manager_set_dpi(struct rtb_font_manager *fm, int dpi_x, int dpi_y)
+{
+	struct rtb_font *f;
+
+	texture_atlas_clear(fm->atlas);
+
+	fm->atlas->dpi.x = dpi_x;
+	fm->atlas->dpi.y = dpi_y;
+
+	TAILQ_FOREACH(f, &fm->managed_fonts, manager_entry) {
+		texture_font_delete(f->txfont->txfont);
+		f->txfont->txfont = texture_font_new_from_memory(
+			fm->atlas, f->size,
+			f->txfont->location.mem.base, f->txfont->location.mem.size);
+
+		init_txfont(f->txfont, fm->cache_glyphs);
+	}
 }
 
 int

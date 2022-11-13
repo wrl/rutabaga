@@ -95,6 +95,22 @@ size(struct rtb_element *elem,
 	}
 }
 
+static int
+reflow(struct rtb_element *elem, struct rtb_element *instigator,
+		rtb_ev_direction_t direction)
+{
+	SELF_FROM(elem);
+
+	if (!super.reflow(elem, instigator, direction))
+		return 0;
+
+	if (elem->window && elem->window->dpi_changed)
+		rtb_text_object_update(self->tobj, self->font, self->window,
+				self->text, self->line_height_multiplier);
+
+	return 1;
+}
+
 static void
 restyle(struct rtb_element *elem)
 {
@@ -175,6 +191,7 @@ rtb_label_init(struct rtb_label *self)
 	self->impl.detached = detached;
 	self->impl.size_cb  = size;
 	self->impl.restyle  = restyle;
+	self->impl.reflow   = reflow;
 
 	self->text = NULL;
 	self->tobj = NULL;

@@ -431,6 +431,24 @@ rtb_window_reinit(struct rtb_window *self)
 	rtb_elem_trigger_reflow(elem, elem, RTB_DIRECTION_LEAFWARD);
 }
 
+void
+rtb_window_set_scale(struct rtb_window *self, struct rtb_point new_scale)
+{
+	self->scale = new_scale;
+
+	self->scale_recip.x = 1.f / new_scale.x;
+	self->scale_recip.y = 1.f / new_scale.y;
+
+	self->dpi.x = 96 * new_scale.x;
+	self->dpi.y = 96 * new_scale.y;
+
+	rtb_font_manager_set_dpi(&self->font_manager, self->dpi.x, self->dpi.y);
+
+	self->dpi_changed = 1;
+	rtb_window_reinit(self);
+	self->dpi_changed = 0;
+}
+
 static int
 init_gl(void)
 {
@@ -517,6 +535,7 @@ rtb_window_open(struct rutabaga *r, const struct rtb_window_open_options *opt)
 	self->mouse_in_overlay = 0;
 	self->overlay_surface.layout_cb = rtb_layout_unmanaged;
 
+	self->dpi_changed = 0;
 	self->mouse.current_cursor = RTB_MOUSE_CURSOR_DEFAULT;
 	return self;
 

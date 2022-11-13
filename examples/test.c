@@ -343,9 +343,21 @@ handle_mouse_wheel(struct rtb_element *victim,
 		const struct rtb_event *_e, void *ctx)
 {
 	const struct rtb_mouse_event *ev = RTB_EVENT_AS(_e, rtb_mouse_event);
+	struct rtb_window *win = victim->window;
 
-	printf(" :: got mouse wheel, [%f, %f] delta %f\n",
-			ev->cursor.x, ev->cursor.y, ev->wheel.delta);
+	struct rtb_point new_scale = win->scale;
+
+	new_scale.x += ev->wheel.delta * .05f;
+	new_scale.y += ev->wheel.delta * .05f;
+
+	new_scale.x = roundf(new_scale.x * 100.f) / 100.f;
+	new_scale.y = roundf(new_scale.y * 100.f) / 100.f;
+
+	printf(" :: adjusting scale from [%f, %f] to [%f, %f]\n",
+			win->scale.x, win->scale.y,
+			new_scale.x, new_scale.y);
+
+	rtb_window_set_scale(win, new_scale);
 
 	return 1;
 }
