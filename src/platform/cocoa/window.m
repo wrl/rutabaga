@@ -165,6 +165,38 @@ reinit_tracking_area(RutabagaOpenGLView *self, NSTrackingArea *tracking_area)
 	[super viewWillMoveToWindow:newWindow];
 }
 
+- (void) viewDidChangeBackingProperties
+{
+	NSSize phy_size, size;
+	struct rtb_point new_scale;
+
+	[super viewDidChangeBackingProperties];
+
+	if (!rtb_win)
+		return;
+
+	size = [self frame].size;
+	phy_size = [self convertSizeToBacking:size];
+
+	new_scale = RTB_MAKE_POINT(
+		phy_size.width / size.width,
+		phy_size.height / size.height);
+
+	if (new_scale.x == rtb_win->scale.x
+			&& new_scale.y == rtb_win->scale.y
+			&& rtb_win->phy_size.w == phy_size.width
+			&& rtb_win->phy_size.h == phy_size.height)
+		return;
+
+	LOCK;
+	rtb_win->phy_size.w = phy_size.width;
+	rtb_win->phy_size.h = phy_size.height;
+
+	[rtb_win->gl_ctx update];
+	rtb_window_set_scale(RTB_WINDOW(rtb_win), new_scale);
+	UNLOCK;
+}
+
 - (void) updateTrackingAreas
 {
 	reinit_tracking_area(self, tracking_area);
@@ -529,7 +561,7 @@ window_impl_open(struct rutabaga *rtb,
 		}
 
 		phy_size = [view
-			convertSizeToBacking:NSMakeSize(opt->width, opt->height)];
+			convertSizeToBacking:[view frame].size];
 
 		self->phy_size.w = phy_size.width;
 		self->phy_size.h = phy_size.height;
