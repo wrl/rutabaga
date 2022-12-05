@@ -64,20 +64,15 @@ attached(struct rtb_element *elem,
 	if (self->cls)
 		self->type = rtb_type_ref(window, self->type, self->cls);
 
-	self->tobj = rtb_text_object_new(&window->font_manager);
+	if (self->tobj && self->tobj->fm != &window->font_manager) {
+		rtb_text_object_free(self->tobj);
+		self->tobj = NULL;
+	}
+
+	if (!self->tobj)
+		self->tobj = rtb_text_object_new(&window->font_manager);
+
 	self->font = NULL;
-}
-
-static void
-detached(struct rtb_element *elem,
-		struct rtb_element *parent, struct rtb_window *window)
-{
-	SELF_FROM(elem);
-
-	super.detached(elem, parent, window);
-
-	rtb_text_object_free(self->tobj);
-	self->tobj = NULL;
 }
 
 static void
@@ -188,7 +183,6 @@ rtb_label_init(struct rtb_label *self)
 	self->impl = super;
 	self->impl.draw     = draw;
 	self->impl.attached = attached;
-	self->impl.detached = detached;
 	self->impl.size_cb  = size;
 	self->impl.restyle  = restyle;
 	self->impl.reflow   = reflow;
