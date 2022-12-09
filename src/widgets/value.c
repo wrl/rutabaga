@@ -138,7 +138,7 @@ handle_drag(struct rtb_value_element *self, const struct rtb_drag_event *e)
 
 	new_value = self->normalised_value;
 
-	if ((e->start_mod_keys & (RTB_KEY_MOD_CTRL | RTB_KEY_MOD_ALT)))
+	if (e->start_mod_keys & self->deny_drag_start_mod_mask)
 		return 1;
 
 	switch (e->button) {
@@ -175,7 +175,7 @@ handle_mouse_down(struct rtb_value_element *self,
 		const struct rtb_mouse_event *e)
 {
 	if (e->button != RTB_MOUSE_BUTTON1 ||
-			(e->mod_keys & (RTB_KEY_MOD_CTRL | RTB_KEY_MOD_ALT)))
+			e->mod_keys & self->deny_drag_start_mod_mask)
 		return 0;
 
 	rtb_mouse_set_cursor(self->window, &self->window->mouse,
@@ -268,7 +268,7 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 
 	switch (e->type) {
 	case RTB_DRAG_START:
-		if ((drag_event->mod_keys & (RTB_KEY_MOD_CTRL | RTB_KEY_MOD_ALT))
+		if (drag_event->mod_keys & self->deny_drag_start_mod_mask
 				|| drag_event->button != RTB_MOUSE_BUTTON1) {
 			rtb_mouse_unset_cursor(self->window, &self->window->mouse);
 			change_state(self, RTB_VALUE_STATE_DRAG_EDIT, 0);
@@ -298,7 +298,7 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 	case RTB_DRAG_DROP:
 		if (rtb_elem_is_in_tree(RTB_ELEMENT(self), drag_event->target)
 				&& !(drag_event->start_mod_keys &
-						(RTB_KEY_MOD_CTRL | RTB_KEY_MOD_ALT))) {
+						self->deny_drag_start_mod_mask)) {
 			rtb_mouse_pointer_warp(self->window, drag_event->start);
 		}
 
@@ -444,6 +444,7 @@ rtb_value_element_init(struct rtb_value_element *self)
 	self->normalised_value = -1.f;
 
 	self->ve_state = RTB_VALUE_STATE_AT_REST;
+	self->deny_drag_start_mod_mask = RTB_KEY_MOD_CTRL | RTB_KEY_MOD_ALT;
 
 	self->delta_mult = 1.f;
 	self->min = 0.f;

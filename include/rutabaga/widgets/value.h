@@ -64,6 +64,8 @@ struct rtb_value_element {
 	float granularity;
 	float delta_mult;
 
+	unsigned deny_drag_start_mod_mask;
+
 	/* read-only ******************************/
 	float value;
 
