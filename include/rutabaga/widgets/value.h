@@ -34,7 +34,8 @@
 
 typedef enum {
 	RTB_VALUE_CHANGE = 1,
-	RTB_VALUE_STATE_CHANGE
+	RTB_VALUE_STATE_CHANGE,
+	RTB_VALUE_DELTA
 } rtb_value_event_type_t;
 
 struct rtb_value_change_event {
@@ -45,6 +46,11 @@ struct rtb_value_change_event {
 struct rtb_value_state_event {
 	RTB_INHERIT(rtb_event);
 	int being_edited;
+};
+
+struct rtb_value_delta_event {
+	RTB_INHERIT(rtb_event);
+	float delta;
 };
 
 typedef enum {

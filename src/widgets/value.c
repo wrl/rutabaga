@@ -64,6 +64,18 @@ dispatch_value_change_event(struct rtb_value_element *self, int synthetic)
 	return rtb_elem_deliver_event(RTB_ELEMENT(self), RTB_EVENT(&event));
 }
 
+static int
+dispatch_value_delta_event(struct rtb_value_element *self, rtb_ev_source_t source, float delta)
+{
+	struct rtb_value_delta_event event = {
+		.type   = RTB_VALUE_DELTA,
+		.source = source,
+		.delta  = delta
+	};
+
+	return rtb_elem_deliver_event(RTB_ELEMENT(self), RTB_EVENT(&event));
+}
+
 /**
  * lightweight state machine
  */
@@ -130,13 +142,10 @@ change_state(struct rtb_value_element *self,
 static int
 handle_drag(struct rtb_value_element *self, const struct rtb_drag_event *e)
 {
-	float new_value;
 	float mult;
 
 	if (!rtb_elem_is_in_tree(RTB_ELEMENT(self), e->target))
 		return 0;
-
-	new_value = self->normalised_value;
 
 	if (e->start_mod_keys & self->deny_drag_start_mod_mask)
 		return 1;
@@ -158,10 +167,8 @@ handle_drag(struct rtb_value_element *self, const struct rtb_drag_event *e)
 		return 1;
 	}
 
-	mult *= self->delta_mult;
-	new_value += -e->delta.y * mult;
-
-	rtb__value_element_set_normalised_value(self, new_value, 0);
+	mult *= -e->delta.y * self->delta_mult;
+	dispatch_value_delta_event(self, e->source, mult);
 
 	if (fabsf(e->cursor.x - e->start.x) > 1.f ||
 			fabsf(e->cursor.y - e->start.y) > 1.f)
@@ -205,7 +212,7 @@ static int
 handle_mouse_wheel(struct rtb_value_element *self,
 		const struct rtb_mouse_event *e)
 {
-	float new_value, mult;
+	float mult;
 
 	if (e->mod_keys & RTB_KEY_MOD_SHIFT)
 		mult = DELTA_VALUE_STEP_FINE;
@@ -214,13 +221,11 @@ handle_mouse_wheel(struct rtb_value_element *self,
 
 	mult *= self->delta_mult;
 
-	new_value = self->normalised_value + (e->wheel.delta * mult);
-
 	/* FIXME: how should mousewheel input during an active mouse drag edit be
 	 * handled? currently it is allowed, but should we discard it? */
 
 	change_state(self, RTB_VALUE_STATE_WHEEL_EDIT, 1);
-	rtb__value_element_set_normalised_value(self, new_value, 0);
+	dispatch_value_delta_event(self, e->source, e->wheel.delta * mult);
 	return 1;
 }
 
@@ -253,10 +258,18 @@ handle_key(struct rtb_value_element *self, const struct rtb_key_event *e)
 	}
 
 	change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 1);
-	rtb__value_element_set_normalised_value(self,
-			self->normalised_value + step, 0);
+	dispatch_value_delta_event(self, e->source, step);
 	change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 0);
 
+	return 1;
+}
+
+static int
+handle_delta(struct rtb_value_element *self, const struct rtb_value_delta_event *e)
+{
+	rtb__value_element_set_normalised_value(self,
+			self->normalised_value + e->delta,
+			e->source == RTB_EVENT_SYNTHETIC);
 	return 1;
 }
 
@@ -319,6 +332,9 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 		if (self->ve_state == RTB_VALUE_STATE_WHEEL_EDIT)
 			change_state(self, RTB_VALUE_STATE_WHEEL_EDIT, 0);
 		return 1;
+
+	case RTB_VALUE_DELTA:
+		return handle_delta(self, RTB_EVENT_AS(e, rtb_value_delta_event));
 
 	default:
 		return super.on_event(elem, e);
