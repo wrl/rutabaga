@@ -32,56 +32,32 @@
 #include <rutabaga/event.h>
 #include <rutabaga/element.h>
 
-static const struct rtb_event_handler *
-find_handler_for(struct rtb_element *elem, rtb_ev_type_t type)
-{
-	struct rtb_event_handler *handlers;
-	int i, size;
-
-	handlers = elem->handlers.data;
-	size = elem->handlers.size;
-
-	for (i = 0; i < size; i++)
-		if (handlers[i].type == type)
-			return &handlers[i];
-
-	return NULL;
-}
-
-static int
-replace_handler(struct rtb_element *elem, struct rtb_event_handler *with)
-{
-	struct rtb_event_handler *handlers;
-	int i, size;
-
-	handlers = elem->handlers.data;
-	size = elem->handlers.size;
-
-	for (i = 0; i < size; i++) {
-		/* if there's already a handler defined for this event type,
-		 * replace it. */
-		if (handlers[i].type == with->type) {
-			handlers[i] = *with;
-			return 1;
-		}
-	}
-
-	return 0;
-}
-
-/**
- * public API
- */
 
 int
-rtb_handle(struct rtb_element *target, const struct rtb_event *event)
+rtb_handle(struct rtb_element *target, const struct rtb_event *ev)
 {
-	const struct rtb_event_handler *h;
+	const struct rtb_event_handler *handlers, *h;
+	unsigned i, size, num_handlers, ret;
 
-	if (!(h = find_handler_for(target, event->type)))
+	num_handlers = 0;
+	ret = 0;
+
+	handlers = target->handlers.data;
+	size     = target->handlers.size;
+
+	for (i = 0; i < size; i++) {
+		h = &handlers[i];
+
+		if (h->type != ev->type)
+			continue;
+
+		num_handlers++;
+		ret = h->callback.cb(target, ev, h->callback.ctx) || ret;
+	}
+
+	if (!num_handlers)
 		return -1;
-
-	return h->callback.cb(target, event, h->callback.ctx);
+	return ret;
 }
 
 struct rtb_element *
@@ -118,9 +94,7 @@ rtb_register_handler(struct rtb_element *target, rtb_ev_type_t type,
 	assert(target);
 	assert(cb);
 
-	if (!replace_handler(target, &handler))
-		VECTOR_PUSH_BACK(&target->handlers, &handler);
-
+	VECTOR_PUSH_BACK(&target->handlers, &handler);
 	return 0;
 }
 
