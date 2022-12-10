@@ -196,16 +196,16 @@ static int
 handle_mouse_click(struct rtb_value_element *self,
 		const struct rtb_mouse_event *e)
 {
+	struct rtb_value_delta_event reset_ev = {
+		.type   = RTB_VALUE_RESET,
+		.source = e->source,
+	};
+
 	if (e->button != RTB_MOUSE_BUTTON1 || !e->click_number
 			|| e->button_state == RTB_MOUSE_BUTTON_STATE_DRAG)
 		return 0;
 
-	change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 1);
-	rtb__value_element_set_value_uncooked(self,
-			self->origin, 0);
-	change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 0);
-
-	return 1;
+	return rtb_elem_deliver_event(RTB_ELEMENT(self), RTB_EVENT(&reset_ev));
 }
 
 static int
@@ -274,6 +274,17 @@ handle_delta(struct rtb_value_element *self, const struct rtb_value_delta_event 
 }
 
 static int
+handle_reset(struct rtb_value_element *self, const struct rtb_event *e)
+{
+	change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 1);
+	rtb__value_element_set_value_uncooked(self, self->origin,
+			e->source == RTB_EVENT_SYNTHETIC);
+	change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 0);
+
+	return 1;
+}
+
+static int
 on_event(struct rtb_element *elem, const struct rtb_event *e)
 {
 	const struct rtb_drag_event *drag_event = RTB_EVENT_AS(e, rtb_drag_event);
@@ -335,6 +346,9 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 
 	case RTB_VALUE_DELTA:
 		return handle_delta(self, RTB_EVENT_AS(e, rtb_value_delta_event));
+
+	case RTB_VALUE_RESET:
+		return handle_reset(self, e);
 
 	default:
 		return super.on_event(elem, e);

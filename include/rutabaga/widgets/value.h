@@ -35,7 +35,9 @@
 typedef enum {
 	RTB_VALUE_CHANGE = 1,
 	RTB_VALUE_STATE_CHANGE,
-	RTB_VALUE_DELTA
+
+	RTB_VALUE_DELTA,
+	RTB_VALUE_RESET
 } rtb_value_event_type_t;
 
 struct rtb_value_change_event {
