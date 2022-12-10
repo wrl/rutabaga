@@ -105,12 +105,14 @@ rtb_dispatch_simple(struct rtb_element *target, rtb_ev_type_t type)
 
 int
 rtb_register_handler(struct rtb_element *target, rtb_ev_type_t type,
-		rtb_event_cb_t cb, void *user_arg)
+		rtb_event_cb_t cb, void *ctx)
 {
 	struct rtb_event_handler handler = {
-		.type         = type,
-		.callback.cb  = cb,
-		.callback.ctx = user_arg
+		.type     = type,
+		.callback = {
+			.cb   = cb,
+			.ctx  = ctx
+		}
 	};
 
 	assert(target);
@@ -123,7 +125,8 @@ rtb_register_handler(struct rtb_element *target, rtb_ev_type_t type,
 }
 
 void
-rtb_unregister_handler(struct rtb_element *target, rtb_ev_type_t type)
+rtb_unregister_handler(struct rtb_element *target, rtb_ev_type_t type,
+		rtb_event_cb_t cb, void *ctx)
 {
 	const struct rtb_event_handler *handlers;
 	int i, size;
@@ -134,7 +137,10 @@ rtb_unregister_handler(struct rtb_element *target, rtb_ev_type_t type)
 	size = target->handlers.size;
 
 	for (i = 0; i < size; i++) {
-		if (handlers[i].type == type) {
+		const struct rtb_event_handler *h = &handlers[i];
+
+		if (h->type == type && h->callback.cb == cb
+				&& h->callback.ctx == ctx) {
 			VECTOR_ERASE(&target->handlers, i);
 			return;
 		}

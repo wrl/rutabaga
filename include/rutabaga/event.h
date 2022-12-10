@@ -141,9 +141,9 @@ struct rtb_element *rtb_dispatch_simple(struct rtb_element *target,
 		rtb_ev_type_t type);
 
 int rtb_register_handler(struct rtb_element *on_elem,
-		rtb_ev_type_t for_type, rtb_event_cb_t handler, void *context);
+		rtb_ev_type_t for_type, rtb_event_cb_t handler, void *ctx);
 void rtb_unregister_handler(struct rtb_element *on_elem,
-		rtb_ev_type_t for_type);
+		rtb_ev_type_t for_type, rtb_event_cb_t handler, void *ctx);
 
 void rtb_event_loop_init(struct rutabaga *);
 void rtb_event_loop_run(struct rutabaga *);
