@@ -394,12 +394,16 @@ static void
 child_detached(struct rtb_element *self, struct rtb_element *child)
 {
 	child->detached(child, self, self->window);
+	child->surface = NULL;
 }
 
 static void
 mark_dirty(struct rtb_element *self)
 {
 	struct rtb_surface *surface = self->surface;
+
+	if (!surface)
+		return;
 
 	for (; self != RTB_ELEMENT(surface); self = self->parent) {
 		if (self->visibility == RTB_FULLY_OBSCURED)
