@@ -54,12 +54,12 @@ static struct rtb_element_implementation super;
 
 static int
 dispatch_value_change_event(struct rtb_value_element *self,
-		const struct rtb_event *derived_from)
+		const struct rtb_event *derive_from)
 {
 	struct rtb_value_change_event event = {
 		.type         = RTB_VALUE_CHANGE,
-		.source       = rtb_event_derived_source(derived_from),
-		.derived_from = derived_from,
+		.source       = rtb_event_derived_source(derive_from),
+		.derived_from = derive_from,
 		.value        = self->value
 	};
 
@@ -67,12 +67,14 @@ dispatch_value_change_event(struct rtb_value_element *self,
 }
 
 static int
-dispatch_value_delta_event(struct rtb_value_element *self, rtb_ev_source_t source, float delta)
+dispatch_value_delta_event(struct rtb_value_element *self,
+		const struct rtb_event *derive_from, float delta)
 {
 	struct rtb_value_delta_event event = {
-		.type   = RTB_VALUE_DELTA,
-		.source = source,
-		.delta  = delta
+		.type         = RTB_VALUE_DELTA,
+		.source       = rtb_event_derived_source(derive_from),
+		.derived_from = derive_from,
+		.delta        = delta
 	};
 
 	return rtb_elem_deliver_event(RTB_ELEMENT(self), RTB_EVENT(&event));
@@ -172,7 +174,7 @@ handle_drag(struct rtb_value_element *self, const struct rtb_drag_event *e)
 	}
 
 	mult *= -e->delta.y * self->delta_mult;
-	dispatch_value_delta_event(self, e->source, mult);
+	dispatch_value_delta_event(self, RTB_EVENT(e), mult);
 
 	if (fabsf(e->cursor.x - e->start.x) > 1.f ||
 			fabsf(e->cursor.y - e->start.y) > 1.f)
@@ -201,8 +203,9 @@ handle_mouse_click(struct rtb_value_element *self,
 		const struct rtb_mouse_event *e)
 {
 	struct rtb_value_delta_event reset_ev = {
-		.type   = RTB_VALUE_RESET,
-		.source = e->source,
+		.type         = RTB_VALUE_RESET,
+		.source       = rtb_event_derived_source(RTB_EVENT(e)),
+		.derived_from = RTB_EVENT(e),
 	};
 
 	if (e->button != RTB_MOUSE_BUTTON1 || !e->click_number
@@ -229,7 +232,7 @@ handle_mouse_wheel(struct rtb_value_element *self,
 	 * handled? currently it is allowed, but should we discard it? */
 
 	change_state(self, RTB_EVENT(e), RTB_VALUE_STATE_WHEEL_EDIT, 1);
-	dispatch_value_delta_event(self, e->source, e->wheel.delta * mult);
+	dispatch_value_delta_event(self, RTB_EVENT(e), e->wheel.delta * mult);
 	return 1;
 }
 
@@ -262,7 +265,7 @@ handle_key(struct rtb_value_element *self, const struct rtb_key_event *e)
 	}
 
 	change_state(self, RTB_EVENT(e), RTB_VALUE_STATE_DISCRETE_EDIT, 1);
-	dispatch_value_delta_event(self, e->source, step);
+	dispatch_value_delta_event(self, RTB_EVENT(e), step);
 	change_state(self, RTB_EVENT(e), RTB_VALUE_STATE_DISCRETE_EDIT, 0);
 
 	return 1;

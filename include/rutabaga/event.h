@@ -131,7 +131,8 @@ rtb_event_is_from_user(const struct rtb_event *e)
 static inline rtb_ev_source_t
 rtb_event_derived_source(const struct rtb_event *e)
 {
-	if (e && e->source & RTB_EVENT_SOURCE_USER_MASK)
+	if (e && (e->source == RTB_EVENT_SOURCE_USER_DIRECT
+	            || e->source == RTB_EVENT_SOURCE_USER_DERIVED))
 		return RTB_EVENT_SOURCE_USER_DERIVED;
 
 	return RTB_EVENT_SOURCE_NON_USER;
