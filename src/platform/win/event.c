@@ -85,6 +85,7 @@ handle_close(struct win_rtb_window *self)
 {
 	struct rtb_window_event rev = {
 		.type   = RTB_WINDOW_SHOULD_CLOSE,
+		.source = RTB_EVENT_SOURCE_USER_DIRECT,
 		.window = RTB_WINDOW(self)
 	};
 

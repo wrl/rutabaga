@@ -50,7 +50,7 @@ static struct rtb_element_implementation super;
  */
 
 static void
-set_value_hook(struct rtb_element *elem, int synthetic)
+set_value_hook(struct rtb_element *elem, const struct rtb_event *derive_from)
 {
 	SELF_FROM(elem);
 	char buf[32];
@@ -69,7 +69,7 @@ attached(struct rtb_element *elem,
 	self->type = rtb_type_ref(window, self->type,
 			"net.illest.rutabaga.widgets.spinbox");
 
-	set_value_hook(elem, 1);
+	set_value_hook(elem, NULL);
 }
 
 /**

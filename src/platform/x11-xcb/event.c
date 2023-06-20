@@ -185,7 +185,11 @@ static void
 dispatch_key_event(struct xrtb_window *win,
 		const xcb_key_press_event_t *ev, rtb_ev_type_t type)
 {
-	struct rtb_key_event rtb_ev = {.type = type};
+	struct rtb_key_event rtb_ev = {
+		.type = type,
+		.source = RTB_EVENT_SOURCE_USER_DIRECT
+	};
+
 	xcb_keysym_t sym;
 
 	sym = xkb_state_key_get_one_sym(win->xrtb->xkb_state, ev->detail);
@@ -287,6 +291,7 @@ handle_client_message(struct xrtb_window *xwin, xcb_generic_event_t *_ev)
 	CAST_EVENT_TO(xcb_client_message_event_t);
 	struct rtb_window_event rev = {
 		.type   = RTB_WINDOW_SHOULD_CLOSE,
+		.source = RTB_EVENT_SOURCE_USER_DIRECT,
 		.window = RTB_WINDOW(xwin)
 	};
 

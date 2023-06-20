@@ -65,6 +65,7 @@ event_location_to_view(NSView *view, NSEvent *e)
 {
 	struct rtb_window_event ev = {
 		.type = RTB_WINDOW_SHOULD_CLOSE,
+		.source = RTB_EVENT_SOURCE_USER_DIRECT,
 		.window = RTB_WINDOW(rtb_win)
 	};
 
@@ -374,6 +375,7 @@ app_kit_button_to_rtb_button(const NSEvent *e)
 	if (rtb_win && [self retainCount] == 1) {
 		struct rtb_window_event ev = {
 			.type = RTB_WINDOW_WILL_CLOSE,
+			.source = RTB_EVENT_SOURCE_NON_USER,
 			.window = RTB_WINDOW(rtb_win)
 		};
 

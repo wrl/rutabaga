@@ -53,12 +53,14 @@ static struct rtb_element_implementation super;
  */
 
 static int
-dispatch_value_change_event(struct rtb_value_element *self, int synthetic)
+dispatch_value_change_event(struct rtb_value_element *self,
+		const struct rtb_event *derived_from)
 {
 	struct rtb_value_change_event event = {
-		.type   = RTB_VALUE_CHANGE,
-		.source = synthetic ? RTB_EVENT_SYNTHETIC : RTB_EVENT_GENUINE,
-		.value  = self->value
+		.type         = RTB_VALUE_CHANGE,
+		.source       = rtb_event_derived_source(derived_from),
+		.derived_from = derived_from,
+		.value        = self->value
 	};
 
 	return rtb_elem_deliver_event(RTB_ELEMENT(self), RTB_EVENT(&event));
@@ -82,12 +84,14 @@ dispatch_value_delta_event(struct rtb_value_element *self, rtb_ev_source_t sourc
 
 int
 change_state(struct rtb_value_element *self,
+		const struct rtb_event *derive_from,
 		rtb_value_element_state_t new_state, int active)
 {
 	rtb_value_element_state_t old_state;
 	struct rtb_value_state_event event = {
-		.type   = RTB_VALUE_STATE_CHANGE,
-		.source = RTB_EVENT_GENUINE,
+		.type         = RTB_VALUE_STATE_CHANGE,
+		.source       = rtb_event_derived_source(derive_from),
+		.derived_from = derive_from,
 		.being_edited = active
 	};
 
@@ -188,7 +192,7 @@ handle_mouse_down(struct rtb_value_element *self,
 	rtb_mouse_set_cursor(self->window, &self->window->mouse,
 			RTB_MOUSE_CURSOR_HIDDEN);
 
-	change_state(self, RTB_VALUE_STATE_DRAG_EDIT, 1);
+	change_state(self, RTB_EVENT(e), RTB_VALUE_STATE_DRAG_EDIT, 1);
 	return 1;
 }
 
@@ -224,7 +228,7 @@ handle_mouse_wheel(struct rtb_value_element *self,
 	/* FIXME: how should mousewheel input during an active mouse drag edit be
 	 * handled? currently it is allowed, but should we discard it? */
 
-	change_state(self, RTB_VALUE_STATE_WHEEL_EDIT, 1);
+	change_state(self, RTB_EVENT(e), RTB_VALUE_STATE_WHEEL_EDIT, 1);
 	dispatch_value_delta_event(self, e->source, e->wheel.delta * mult);
 	return 1;
 }
@@ -257,9 +261,9 @@ handle_key(struct rtb_value_element *self, const struct rtb_key_event *e)
 		return 0;
 	}
 
-	change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 1);
+	change_state(self, RTB_EVENT(e), RTB_VALUE_STATE_DISCRETE_EDIT, 1);
 	dispatch_value_delta_event(self, e->source, step);
-	change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 0);
+	change_state(self, RTB_EVENT(e), RTB_VALUE_STATE_DISCRETE_EDIT, 0);
 
 	return 1;
 }
@@ -267,19 +271,17 @@ handle_key(struct rtb_value_element *self, const struct rtb_key_event *e)
 static int
 handle_delta(struct rtb_value_element *self, const struct rtb_value_delta_event *e)
 {
-	rtb__value_element_set_normalised_value(self,
-			self->normalised_value + e->delta,
-			e->source == RTB_EVENT_SYNTHETIC);
+	rtb__value_element_set_normalised_value(self, RTB_EVENT(e),
+			self->normalised_value + e->delta);
 	return 1;
 }
 
 static int
 handle_reset(struct rtb_value_element *self, const struct rtb_event *e)
 {
-	change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 1);
-	rtb__value_element_set_value_uncooked(self, self->origin,
-			e->source == RTB_EVENT_SYNTHETIC);
-	change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 0);
+	change_state(self, e, RTB_VALUE_STATE_DISCRETE_EDIT, 1);
+	rtb__value_element_set_value_uncooked(self, e, self->origin);
+	change_state(self, e, RTB_VALUE_STATE_DISCRETE_EDIT, 0);
 
 	return 1;
 }
@@ -295,7 +297,7 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 		if (drag_event->mod_keys & self->deny_drag_start_mod_mask
 				|| drag_event->button != RTB_MOUSE_BUTTON1) {
 			rtb_mouse_unset_cursor(self->window, &self->window->mouse);
-			change_state(self, RTB_VALUE_STATE_DRAG_EDIT, 0);
+			change_state(self, e, RTB_VALUE_STATE_DRAG_EDIT, 0);
 			return 0;
 		}
 
@@ -334,14 +336,14 @@ on_event(struct rtb_element *elem, const struct rtb_event *e)
 
 		if (rtb_elem_is_in_tree(RTB_ELEMENT(self), drag_event->target)) {
 			rtb_mouse_unset_cursor(self->window, &self->window->mouse);
-			change_state(self, RTB_VALUE_STATE_DRAG_EDIT, 0);
+			change_state(self, e, RTB_VALUE_STATE_DRAG_EDIT, 0);
 		}
 
 		return 1;
 
 	case RTB_MOUSE_LEAVE:
 		if (self->ve_state == RTB_VALUE_STATE_WHEEL_EDIT)
-			change_state(self, RTB_VALUE_STATE_WHEEL_EDIT, 0);
+			change_state(self, e, RTB_VALUE_STATE_WHEEL_EDIT, 0);
 		return 1;
 
 	case RTB_VALUE_DELTA:
@@ -370,13 +372,13 @@ attached(struct rtb_element *elem,
 
 	super.attached(elem, parent, window);
 
-	rtb__value_element_set_value_uncooked(self,
-		(self->normalised_value == -1.f) ? self->origin : self->value, 1);
+	rtb__value_element_set_value_uncooked(self, NULL,
+		(self->normalised_value == -1.f) ? self->origin : self->value);
 
 	if (self->normalised_value == -1.f)
-		rtb__value_element_set_value_uncooked(self, self->origin, 1);
+		rtb__value_element_set_value_uncooked(self, NULL, self->origin);
 	else
-		rtb__value_element_set_value_uncooked(self, self->value, 1);
+		rtb__value_element_set_value_uncooked(self, NULL, self->value);
 }
 
 /**
@@ -385,7 +387,7 @@ attached(struct rtb_element *elem,
 
 void
 rtb__value_element_set_normalised_value(struct rtb_value_element *self,
-		float new_normalised_value, int synthetic)
+		const struct rtb_event *derive_from, float new_normalised_value)
 {
 	float new_value;
 
@@ -405,19 +407,20 @@ rtb__value_element_set_normalised_value(struct rtb_value_element *self,
 	self->value = new_value;
 
 	if (self->set_value_hook)
-		self->set_value_hook(RTB_ELEMENT(self), synthetic);
+		self->set_value_hook(RTB_ELEMENT(self), derive_from);
 
 	if (self->state != RTB_STATE_UNATTACHED)
-		dispatch_value_change_event(self, synthetic);
+		dispatch_value_change_event(self, derive_from);
 }
 
 void
 rtb__value_element_set_value_uncooked(struct rtb_value_element *self,
-		float new_value, int synthetic)
+		const struct rtb_event *derive_from,
+		float new_value)
 {
 	float range = self->max - self->min;
-	rtb__value_element_set_normalised_value(self,
-			(new_value - self->min) / range, synthetic);
+	rtb__value_element_set_normalised_value(self, derive_from,
+			(new_value - self->min) / range);
 }
 
 
@@ -427,31 +430,27 @@ rtb__value_element_set_value_uncooked(struct rtb_value_element *self,
 
 void
 rtb_value_element_set_normalised_value(struct rtb_value_element *self,
-		float new_value, rtb_ev_source_t source)
+		const struct rtb_event *derive_from, float new_value)
 {
-	int synthetic = (source == RTB_EVENT_SYNTHETIC) ? 1 : 0;
-
-	if (synthetic) {
-		rtb__value_element_set_normalised_value(self, new_value, synthetic);
+	if (!rtb_event_is_from_user(derive_from)) {
+		rtb__value_element_set_normalised_value(self, derive_from, new_value);
 	} else {
-		change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 1);
-		rtb__value_element_set_normalised_value(self, new_value, synthetic);
-		change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 0);
+		change_state(self, derive_from, RTB_VALUE_STATE_DISCRETE_EDIT, 1);
+		rtb__value_element_set_normalised_value(self, derive_from, new_value);
+		change_state(self, derive_from, RTB_VALUE_STATE_DISCRETE_EDIT, 0);
 	}
 }
 
 void
-rtb_value_element_set_value(struct rtb_value_element *self, float new_value,
-		rtb_ev_source_t source)
+rtb_value_element_set_value(struct rtb_value_element *self,
+		const struct rtb_event *derive_from, float new_value)
 {
-	int synthetic = (source == RTB_EVENT_SYNTHETIC) ? 1 : 0;
-
-	if (synthetic) {
-		rtb__value_element_set_value_uncooked(self, new_value, synthetic);
+	if (!rtb_event_is_from_user(derive_from)) {
+		rtb__value_element_set_value_uncooked(self, derive_from, new_value);
 	} else {
-		change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 1);
-		rtb__value_element_set_value_uncooked(self, new_value, synthetic);
-		change_state(self, RTB_VALUE_STATE_DISCRETE_EDIT, 0);
+		change_state(self, derive_from, RTB_VALUE_STATE_DISCRETE_EDIT, 1);
+		rtb__value_element_set_value_uncooked(self, derive_from, new_value);
+		change_state(self, derive_from, RTB_VALUE_STATE_DISCRETE_EDIT, 0);
 	}
 }
 

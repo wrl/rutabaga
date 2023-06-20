@@ -223,8 +223,10 @@ win_event(struct rtb_element *elem, const struct rtb_event *e)
 	case RTB_WINDOW_SHOULD_CLOSE:
 		if (rtb_handle(elem, e) < 1) {
 			struct rtb_window_event wc_ev = {
-				.type = RTB_WINDOW_WILL_CLOSE,
-				.window = self,
+				.type         = RTB_WINDOW_WILL_CLOSE,
+				.source       = rtb_event_derived_source(e),
+				.derived_from = e,
+				.window       = self,
 			};
 
 			rtb_dispatch_raw(RTB_ELEMENT(self), RTB_EVENT(&wc_ev));
@@ -371,7 +373,7 @@ rtb_window_draw(struct rtb_window *self, int force_redraw)
 		return 0;
 
 	ev.type = RTB_FRAME_START;
-	ev.source = RTB_EVENT_GENUINE;
+	ev.source = RTB_EVENT_SOURCE_NON_USER;
 	ev.window = self;
 	rtb_dispatch_raw(RTB_ELEMENT(self), RTB_EVENT(&ev));
 

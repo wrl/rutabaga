@@ -93,21 +93,49 @@ typedef enum {
 	RTB_DIRECTION_ROOTWARD
 } rtb_ev_direction_t;
 
-/* take, for example, a mouse click event. if the click actually
- * originated from a mouse click, this would be RTB_EVENT_GENUINE.
- * if it originated from, say, a key press (i.e. when a button is
- * focused and the user presses <space> or <enter>), the event would
- * be marked RTB_EVENT_SYNTHETIC.  */
+/**
+ * RTB_EVENT_SOURCE_USER_DIRECT:
+ *     low level mouse events, keyboard events, etc. anything that has arrived
+ *     directly from user interaction.
+ *
+ * RTB_EVENT_SOURCE_USER_DERIVED:
+ *     higher-level events synthesised from direct events. e.g. a button click
+ *     event or a value change that comes from a mouse move.
+ *
+ * RTB_EVENT_SOURCE_NON_USER:
+ *     events which did not come from user interaction. for example, frame
+ *     start/end events.
+ */
 
 typedef enum {
-	RTB_EVENT_GENUINE    = 0,
-	RTB_EVENT_SYNTHETIC  = 1
+	RTB_EVENT_SOURCE_USER_DIRECT  = 0,
+	RTB_EVENT_SOURCE_USER_DERIVED = 1,
+	RTB_EVENT_SOURCE_NON_USER     = 2,
+
+	RTB_EVENT_SOURCE_USER_MASK     = 0x01,
+	RTB_EVENT_SOURCE_NON_USER_MASK = 0x2,
 } rtb_ev_source_t;
 
 struct rtb_event {
 	rtb_ev_type_t type;
 	rtb_ev_source_t source;
+	const struct rtb_event *derived_from;
 };
+
+static inline int
+rtb_event_is_from_user(const struct rtb_event *e)
+{
+	return e && (e->source & RTB_EVENT_SOURCE_USER_MASK);
+}
+
+static inline rtb_ev_source_t
+rtb_event_derived_source(const struct rtb_event *e)
+{
+	if (e && e->source & RTB_EVENT_SOURCE_USER_MASK)
+		return RTB_EVENT_SOURCE_USER_DERIVED;
+
+	return RTB_EVENT_SOURCE_NON_USER;
+}
 
 /**
  * handling

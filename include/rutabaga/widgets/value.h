@@ -81,7 +81,8 @@ struct rtb_value_element {
 	rtb_value_element_state_t ve_state;
 	float normalised_value;
 
-	void (*set_value_hook)(struct rtb_element *, int synthetic);
+	void (*set_value_hook)(struct rtb_element *,
+		const struct rtb_event *derived_from_event);
 };
 
 /**
@@ -90,21 +91,21 @@ struct rtb_value_element {
 
 void
 rtb__value_element_set_normalised_value(struct rtb_value_element *,
-		float new_normalised_value, int synthetic);
+		const struct rtb_event *derive_from, float new_normalised_value);
 
 void
 rtb__value_element_set_value_uncooked(struct rtb_value_element *self,
-		float new_value, int synthetic);
+		const struct rtb_event *derive_from, float new_value);
 
 /**
  * public
  */
 
 void rtb_value_element_set_normalised_value(struct rtb_value_element *,
-		float new_value, rtb_ev_source_t source);
+		const struct rtb_event *derive_from, float new_value);
 
 void rtb_value_element_set_value(struct rtb_value_element *,
-		float new_value, rtb_ev_source_t source);
+		const struct rtb_event *derive_from, float new_value);
 
 int rtb_value_element_init(struct rtb_value_element *);
 void rtb_value_element_fini(struct rtb_value_element *);

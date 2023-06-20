@@ -65,7 +65,8 @@ handle_key_press(struct rtb_button *self, const struct rtb_key_event *e)
 {
 	struct rtb_button_event event = {
 		.type   = RTB_BUTTON_CLICK,
-		.source = RTB_EVENT_SYNTHETIC
+		.source = RTB_EVENT_SOURCE_USER_DERIVED,
+		.derived_from = RTB_EVENT(e)
 	};
 
 	if ((e->keysym == RTB_KEY_NORMAL && e->character == ' ')

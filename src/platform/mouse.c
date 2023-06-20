@@ -44,6 +44,7 @@ dispatch_drag_event(struct rtb_window *window, rtb_ev_type_t type,
 	struct rtb_mouse_button *b = &window->mouse.button[button];
 	struct rtb_drag_event ev = {
 		.type = type,
+		.source = RTB_EVENT_SOURCE_USER_DIRECT,
 		.window = window,
 
 		.mod_keys = rtb_get_modkeys(window),
@@ -79,6 +80,7 @@ dispatch_drag_enter(struct rtb_window *window,
 
 	struct rtb_drag_event ev = {
 		.type = RTB_DRAG_ENTER,
+		.source = RTB_EVENT_SOURCE_USER_DIRECT,
 		.window = window,
 
 		.mod_keys = rtb_get_modkeys(window),
@@ -111,6 +113,7 @@ dispatch_drag_leave(struct rtb_window *window,
 
 	struct rtb_drag_event ev = {
 		.type = RTB_DRAG_LEAVE,
+		.source = RTB_EVENT_SOURCE_USER_DIRECT,
 		.window = window,
 
 		.mod_keys = rtb_get_modkeys(window),
@@ -141,6 +144,8 @@ dispatch_click_event(struct rtb_window *window,
 {
 	struct rtb_mouse_event ev = {
 		.type = RTB_MOUSE_CLICK,
+		.source = RTB_EVENT_SOURCE_USER_DIRECT,
+
 		.window = window,
 		.target = target,
 
@@ -164,6 +169,8 @@ dispatch_simple_mouse_event(struct rtb_window *window,
 {
 	struct rtb_mouse_event ev = {
 		.type = type,
+		.source = RTB_EVENT_SOURCE_USER_DIRECT,
+
 		.window = window,
 		.target = target,
 
@@ -453,7 +460,9 @@ rtb__platform_mouse_wheel(struct rtb_window *win, struct rtb_point pt,
 	struct rtb_element *target = element_underneath_mouse(win);
 
 	struct rtb_mouse_event ev = {
-		.type = RTB_MOUSE_WHEEL,
+		.type   = RTB_MOUSE_WHEEL,
+		.source = RTB_EVENT_SOURCE_USER_DIRECT,
+
 		.window = win,
 		.target = target,
 
