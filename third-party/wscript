@@ -32,7 +32,7 @@ def build_uv(ctx):
 
 			'-fno-strict-aliasing']
 
-		from_gyp['libraries'] = [re.sub('\.lib$', '', x)
+		from_gyp['libraries'] = [re.sub(r'\.lib$', '', x)
 				for x in from_gyp['libraries']]
 
 	elif ctx.env.DEST_OS == 'darwin':
