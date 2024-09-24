@@ -121,7 +121,7 @@ handle_mouse_button_press(struct xrtb_window *win,
 		goto dont_handle;
 	}
 
-	rtb__platform_mouse_press(rwin, button, rtb_phy_to_point(rwin, 
+	rtb__platform_mouse_press(rwin, button, rtb_phy_to_point(rwin,
 				RTB_MAKE_PHY_POINT(ev->event_x, ev->event_y)));
 
 dont_handle:
