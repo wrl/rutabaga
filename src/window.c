@@ -407,7 +407,7 @@ rtb_window_draw(struct rtb_window *self, int force_redraw)
 	self->overlay_surface.draw(RTB_ELEMENT(&self->overlay_surface));
 	rtb_render_pop(RTB_ELEMENT(self));
 
-	self->dirty = 0;
+	self->dirty = !TAILQ_EMPTY(&self->render_queue);
 
 	return 1;
 }
