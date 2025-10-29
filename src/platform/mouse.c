@@ -214,7 +214,6 @@ mouse_up(struct rtb_window *window, struct rtb_element *target,
 	struct rtb_element *b_target = b->target;
 
 	b->state  = RTB_MOUSE_BUTTON_STATE_UP;
-	b->target = NULL;
 	mouse->buttons_down &= ~(1 << button);
 
 	/* are we releasing the mouse on the same element that we pressed the mouse
@@ -255,6 +254,8 @@ mouse_up(struct rtb_window *window, struct rtb_element *target,
 		dispatch_drag_event(window, RTB_DRAG_DROP, target, button, cursor,
 				drag_delta);
 	}
+
+	b->target = NULL;
 }
 
 static void
