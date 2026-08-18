@@ -70,4 +70,5 @@ def build_uv(ctx):
 		name='LIBUV')
 
 def build(ctx):
-	build_uv(ctx)
+	if ctx.env.DEST_OS != 'linux':
+		build_uv(ctx)

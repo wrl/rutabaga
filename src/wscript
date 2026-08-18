@@ -22,7 +22,7 @@ def glsl2h_task(bld, dest):
 
 def build(bld):
     bld(export_includes='../third-party/glloadgen ../third-party . ..',
-            use='libuv', name='private')
+            name='private')
     bld(export_includes='../include', name='public')
 
     objs = []
@@ -129,8 +129,6 @@ def build(bld):
             'shaders',
             'public',
 
-            'LIBUV',
-
             'GL',
             'FREETYPE2',
             'X11',
@@ -159,3 +157,5 @@ def build(bld):
         for prefix in ('LIB', 'LINKFLAGS'):
             dest, src = ['{}_{}'.format(prefix, x) for x in ('rutabaga', use)]
             bld.env.append_unique(dest, bld.env[src])
+
+    bld.env.append_unique('LIB_rutabaga', ['m'])

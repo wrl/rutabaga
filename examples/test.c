@@ -370,7 +370,7 @@ frame_start(struct rtb_element *elem, const struct rtb_event *e, void *ctx)
 	float now;
 	char buf[32];
 
-	now = uv_hrtime() / 1e+09;
+	now = rtb_nanotime() / 1e+09;
 	timer += (now - last) * speed;
 
 	snprintf(buf, sizeof(buf), "%.2f", timer);
@@ -390,7 +390,7 @@ win_will_close(struct rtb_element *elem, const struct rtb_event *e, void *ctx)
 static void
 init_timer(void)
 {
-	last = uv_hrtime() / 1e+09;
+	last = rtb_nanotime() / 1e+09;
 	timer = 0.0;
 }
 

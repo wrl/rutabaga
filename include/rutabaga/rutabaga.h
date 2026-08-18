@@ -26,7 +26,6 @@
 
 #pragma once
 
-#include <uv.h>
 #include <rutabaga/opengl.h>
 
 #include <rutabaga/defaults.h>
@@ -54,7 +53,6 @@ struct rutabaga {
 	struct rtb_window *win;
 
 	struct wwrl_allocator allocator;
-	uv_loop_t event_loop;
 };
 
 struct rtb_point rtb_get_scaling(intptr_t parent_window);

@@ -29,8 +29,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <uv.h>
-
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrender.h>
 #include <X11/Xlib-xcb.h>

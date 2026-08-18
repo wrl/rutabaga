@@ -26,7 +26,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <uv.h>
 
 #include <rutabaga/rutabaga.h>
 #include <rutabaga/window.h>
@@ -57,7 +56,6 @@ rtb_new(void)
 	memcpy(&self->allocator, &stdlib_allocator,
 			sizeof(self->allocator));
 
-	uv_loop_init(&self->event_loop);
 	return self;
 }
 
@@ -65,8 +63,6 @@ void
 rtb_free(struct rutabaga *self)
 {
 	rtb_free_all_types(self);
-
-	uv_loop_close(&self->event_loop);
 	window_impl_rtb_free(self);
 }
 
