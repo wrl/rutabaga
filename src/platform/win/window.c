@@ -464,7 +464,7 @@ window_impl_open(struct rutabaga *rtb,
 	self->dpi.y = 96 * self->scale.y;
 
 	free(wtitle);
-	uv_mutex_init(&self->lock);
+	rtb_mutex_init(&self->lock);
 
 	return RTB_WINDOW(self);
 
@@ -493,8 +493,8 @@ window_impl_close(struct rtb_window *rwin)
 	DestroyWindow(self->hwnd);
 	free_window_class(self->window_class);
 
-	uv_mutex_unlock(&self->lock);
-	uv_mutex_destroy(&self->lock);
+	rtb_mutex_unlock(&self->lock);
+	rtb_mutex_destroy(&self->lock);
 
 	free(self);
 }
@@ -508,7 +508,7 @@ rtb_window_lock(struct rtb_window *rwin)
 {
 	struct win_rtb_window *self = RTB_WINDOW_AS(rwin, win_rtb_window);
 
-	uv_mutex_lock(&self->lock);
+	rtb_mutex_lock(&self->lock);
 	wglMakeCurrent(self->dc, self->gl_ctx);
 }
 
@@ -518,7 +518,7 @@ rtb_window_unlock(struct rtb_window *rwin)
 	struct win_rtb_window *self = RTB_WINDOW_AS(rwin, win_rtb_window);
 
 	wglMakeCurrent(self->dc, NULL);
-	uv_mutex_unlock(&self->lock);
+	rtb_mutex_unlock(&self->lock);
 }
 
 /**
