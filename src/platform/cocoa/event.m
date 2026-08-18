@@ -25,7 +25,6 @@
  */
 
 #include <unistd.h>
-#include <uv.h>
 
 #include <rutabaga/rutabaga.h>
 #include <rutabaga/window.h>
@@ -54,18 +53,6 @@ frame_timer_callback(CFRunLoopTimerRef timer, void *info)
 }
 
 /**
- * uv shim
- */
-
-static void
-run_uv_callback(CFRunLoopObserverRef observer, CFRunLoopActivity activity,
-		void *info)
-{
-	uv_loop_t *loop = info;
-	uv_run(loop, UV_RUN_NOWAIT);
-}
-
-/**
  * public API
  */
 
@@ -75,17 +62,10 @@ rtb_event_loop_init(struct rutabaga *r)
 	struct rtb_window *win;
 	struct cocoa_rtb_window *cwin;
 	RutabagaOpenGLContext *gl_ctx;
-	CFRunLoopObserverContext obs_ctx = {};
 
 	win    = r->win;
 	cwin   = RTB_WINDOW_AS(win, cocoa_rtb_window);
 	gl_ctx = cwin->gl_ctx;
-
-	obs_ctx.info = &r->event_loop;
-
-	cwin->run_uv_observer = CFRunLoopObserverCreate(
-			kCFAllocatorDefault, kCFRunLoopBeforeSources, 1, 0,
-			run_uv_callback, &obs_ctx);
 
 	cwin->we_are_running_nsapp = 0;
 }
@@ -112,9 +92,6 @@ rtb_event_loop_run(struct rutabaga *r)
 	cwin->frame_timer = CFRunLoopTimerCreate(
 			kCFAllocatorDefault, CFAbsoluteTimeGetCurrent(),
 			FRAME_SECONDS, 0, 0, frame_timer_callback, &timer_ctx);
-
-	CFRunLoopAddObserver([[NSRunLoop mainRunLoop] getCFRunLoop],
-			cwin->run_uv_observer, kCFRunLoopCommonModes);
 
 	CFRunLoopAddTimer([[NSRunLoop mainRunLoop] getCFRunLoop],
 			cwin->frame_timer, kCFRunLoopCommonModes);
@@ -144,9 +121,6 @@ rtb_event_loop_stop(struct rutabaga *r)
 
 	CFRunLoopTimerInvalidate(cwin->frame_timer);
 	CFRelease(cwin->frame_timer);
-
-	CFRunLoopRemoveObserver([[NSRunLoop mainRunLoop] getCFRunLoop],
-			cwin->run_uv_observer, kCFRunLoopCommonModes);
 }
 
 void
@@ -160,12 +134,4 @@ rtb_event_loop_fini(struct rutabaga *r)
 
 	if (cwin->event_loop_running)
 		rtb_event_loop_stop(r);
-
-	CFRunLoopObserverInvalidate(cwin->run_uv_observer);
-	CFRelease(cwin->run_uv_observer);
-
-	/* once to run the event handlers for the last time, and once more
-	 * to run the endgames for all of them. */
-	uv_run(&r->event_loop, UV_RUN_NOWAIT);
-	uv_run(&r->event_loop, UV_RUN_NOWAIT);
 }

@@ -37,7 +37,14 @@ typedef struct {
 static inline int
 rtb_mutex_init(rtb_mutex_t *mutex)
 {
+#if defined(PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP)
 	mutex->inner = (pthread_mutex_t) PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP;
+#elif defined(PTHREAD_ERRORCHECK_MUTEX_INITIALIZER)
+	mutex->inner = (pthread_mutex_t) PTHREAD_ERRORCHECK_MUTEX_INITIALIZER;
+#else
+# error "where is my pthread error check mutex initializer???"
+#endif
+
 	return 0;
 }
 

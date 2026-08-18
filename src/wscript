@@ -41,11 +41,14 @@ def build(bld):
         obj('platform/x11-xcb/cursor.c')
         obj('platform/x11-xcb/clipboard.c')
         obj('platform/posix.c')
+
     elif bld.env.PLATFORM == 'cocoa':
+        obj('platform/cocoa/time.c')
         obj('platform/cocoa/event.m')
         obj('platform/cocoa/window.m')
         obj('platform/cocoa/cursor.m')
         obj('platform/cocoa/clipboard.m')
+
     elif bld.env.PLATFORM == 'win':
         obj('platform/win/time.c')
         obj('platform/win/window.c')
