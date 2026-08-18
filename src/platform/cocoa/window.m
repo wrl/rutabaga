@@ -521,7 +521,7 @@ window_impl_open(struct rutabaga *rtb,
 		return NULL;
 
 	gl_ctx = NULL;
-	uv_mutex_init(&self->lock);
+	rtb_mutex_init(&self->lock);
 
 	@autoreleasepool {
 		self->view = view = [RutabagaOpenGLView alloc];
@@ -584,7 +584,7 @@ window_impl_open(struct rutabaga *rtb,
 	return RTB_WINDOW(self);
 
 err_alloc_nswindow:
-	uv_mutex_destroy(&self->lock);
+	rtb_mutex_destroy(&self->lock);
 	free(self);
 	return NULL;
 }
@@ -609,8 +609,8 @@ window_impl_close(struct rtb_window *rwin)
 	if (self->cocoa_win)
 		[self->cocoa_win release];
 
-	uv_mutex_unlock(&self->lock);
-	uv_mutex_destroy(&self->lock);
+	rtb_mutex_unlock(&self->lock);
+	rtb_mutex_destroy(&self->lock);
 
 	free(self);
 	return;
@@ -641,7 +641,7 @@ rtb_window_lock(struct rtb_window *rwin)
 {
 	struct cocoa_rtb_window *self = RTB_WINDOW_AS(rwin, cocoa_rtb_window);
 
-	uv_mutex_lock(&self->lock);
+	rtb_mutex_lock(&self->lock);
 	[self->gl_ctx makeCurrentContext];
 }
 
@@ -651,7 +651,7 @@ rtb_window_unlock(struct rtb_window *rwin)
 	struct cocoa_rtb_window *self = RTB_WINDOW_AS(rwin, cocoa_rtb_window);
 
 	[NSOpenGLContext clearCurrentContext];
-	uv_mutex_unlock(&self->lock);
+	rtb_mutex_unlock(&self->lock);
 }
 
 /**

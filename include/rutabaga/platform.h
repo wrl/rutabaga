@@ -26,7 +26,11 @@
 
 #pragma once
 
-#include <rutabaga/platform/posix.h>
+#if defined(_WIN32)
+# include <rutabaga/platform/win32.h>
+#else
+# include <rutabaga/platform/posix.h>
+#endif
 
 #include <rutabaga/types.h>
 #include <rutabaga/geometry.h>
