@@ -74,7 +74,6 @@ struct cocoa_rtb_window {
 	RutabagaOpenGLContext *gl_ctx;
 
  	CFRunLoopTimerRef frame_timer;
-	CFRunLoopObserverRef run_uv_observer;
 
 	volatile int event_loop_running;
 	int we_are_running_nsapp;
