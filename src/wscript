@@ -40,6 +40,7 @@ def build(bld):
         obj('platform/x11-xcb/keyboard.c')
         obj('platform/x11-xcb/cursor.c')
         obj('platform/x11-xcb/clipboard.c')
+        obj('platform/posix.c')
     elif bld.env.PLATFORM == 'cocoa':
         obj('platform/cocoa/event.m')
         obj('platform/cocoa/window.m')

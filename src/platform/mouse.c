@@ -197,7 +197,7 @@ mouse_down(struct rtb_window *window, struct rtb_element *target,
 	b->state  = RTB_MOUSE_BUTTON_STATE_DOWN;
 	b->target = target;
 	mouse->buttons_down |= 1 << button;
-	b->last_mouse_down = uv_hrtime();
+	b->last_mouse_down = rtb_nanotime();
 }
 
 static void
@@ -221,7 +221,7 @@ mouse_up(struct rtb_window *window, struct rtb_element *target,
 	 * down on? */
 	if (rtb_elem_is_in_tree(b_target, target)) {
 		double_click_interval = rtb_mouse_double_click_interval(window);
-		now = uv_hrtime();
+		now = rtb_nanotime();
 
 		time_in_click = now - b->last_mouse_down;
 		time_between_clicks = now - b->last_click;

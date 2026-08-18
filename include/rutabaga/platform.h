@@ -55,6 +55,8 @@ void rtb__platform_mouse_leave_window(struct rtb_window *, struct rtb_point);
  * from rutabaga, to platform
  ******************************/
 
+uint64_t rtb_nanotime(void);
+
 /**
  * should return the number of nanoseconds inside of which two clicks
  * will be considered a double-click.
