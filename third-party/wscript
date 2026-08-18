@@ -47,7 +47,8 @@ def build_uv(ctx):
 			extra_cflags += [
 				'-Wno-address-of-packed-member',
 				'-Wno-dangling-pointer',
-				'-Wno-cast-function-type'
+				'-Wno-cast-function-type',
+				'-Wno-discarded-qualifiers'
             ]
 
 	ctx.env.append_unique('LINKFLAGS_UV_FLAGS', from_gyp['ldflags'])
