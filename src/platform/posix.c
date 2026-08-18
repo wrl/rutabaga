@@ -25,8 +25,13 @@
  */
 
 #include <time.h>
+#include <pthread.h>
 
 #include <rutabaga/platform.h>
+
+/**
+ * utils
+ */
 
 uint64_t
 rtb_nanotime(void)

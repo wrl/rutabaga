@@ -758,7 +758,7 @@ window_impl_open(struct rutabaga *rtb,
 			| XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_CLIENT_CLOSE);
 	}
 
-	uv_mutex_init(&self->lock);
+	rtb_mutex_init(&self->lock);
 	return RTB_WINDOW(self);
 
 err_win_map:
@@ -796,8 +796,8 @@ window_impl_close(struct rtb_window *rwin)
 
 	xcb_destroy_window(self->xrtb->xcb_conn, self->xcb_win);
 
-	uv_mutex_unlock(&self->lock);
-	uv_mutex_destroy(&self->lock);
+	rtb_mutex_unlock(&self->lock);
+	rtb_mutex_destroy(&self->lock);
 
 	xcb_cursor_context_free(self->cursor_ctx);
 
@@ -809,7 +809,7 @@ rtb_window_lock(struct rtb_window *rwin)
 {
 	struct xrtb_window *self = RTB_WINDOW_AS(rwin, xrtb_window);
 
-	uv_mutex_lock(&self->lock);
+	rtb_mutex_lock(&self->lock);
 	XLockDisplay(self->xrtb->dpy);
 
 	eglBindAPI(EGL_OPENGL_API);
@@ -826,7 +826,7 @@ rtb_window_unlock(struct rtb_window *rwin)
 		EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 
 	XUnlockDisplay(self->xrtb->dpy);
-	uv_mutex_unlock(&self->lock);
+	rtb_mutex_unlock(&self->lock);
 }
 
 intptr_t

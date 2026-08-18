@@ -26,8 +26,7 @@
 
 #pragma once
 
-#include <uv.h>
-
+#include <rutabaga/platform.h>
 #include <rutabaga/types.h>
 #include <rutabaga/element.h>
 #include <rutabaga/shader.h>
@@ -95,7 +94,7 @@ struct rtb_window {
 
 	GLuint vao;
 
-	uv_mutex_t lock;
+	rtb_mutex_t lock;
 
 	struct rtb_mouse mouse;
 	struct rtb_element *focus;

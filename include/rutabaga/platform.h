@@ -26,6 +26,8 @@
 
 #pragma once
 
+#include <rutabaga/platform/posix.h>
+
 #include <rutabaga/types.h>
 #include <rutabaga/geometry.h>
 #include <rutabaga/window.h>
