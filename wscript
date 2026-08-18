@@ -106,12 +106,6 @@ def check_jack(conf):
     else:
         pkg_check(conf, "jack")
 
-def check_submodules(conf):
-    if not conf.path.find_resource('third-party/libuv/uv.gyp'):
-        raise conf.errors.ConfigurationError(
-                "Submodules aren't initialized!\n"
-                "Make sure you've done `git submodule init && git submodule update`.")
-
 #
 # waf stuff
 #
@@ -130,8 +124,6 @@ def options(opt):
 
 def configure(conf):
     separator()
-
-    check_submodules(conf)
 
     conf.load("compiler_c")
     conf.load("gnu_dirs")
@@ -206,7 +198,6 @@ def configure(conf):
 
 def build(bld):
     bld.recurse("styles")
-    bld.recurse("third-party")
     bld.recurse("src")
 
     if bld.env.BUILD_EXAMPLES:

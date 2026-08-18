@@ -26,12 +26,10 @@
 
 #include <rutabaga/rutabaga.h>
 #include <rutabaga/event.h>
-#include "rtb_private/window_impl.h"
 
 void
 rtb_event_loop_init(struct rutabaga *r)
 {
-	r->event_loop = uv_loop_new();
 }
 
 void
@@ -47,9 +45,4 @@ rtb_event_loop_stop(struct rutabaga *r)
 void
 rtb_event_loop_fini(struct rutabaga *r)
 {
-	uv_loop_t *rtb_loop;
-
-	rtb_loop = r->event_loop;
-	r->event_loop = NULL;
-	uv_loop_delete(rtb_loop);
 }
