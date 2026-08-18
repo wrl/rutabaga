@@ -26,8 +26,6 @@
 
 #include <windows.h>
 
-#include <uv.h>
-
 #include <rutabaga/rutabaga.h>
 #include <rutabaga/window.h>
 

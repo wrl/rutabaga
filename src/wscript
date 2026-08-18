@@ -47,6 +47,7 @@ def build(bld):
         obj('platform/cocoa/cursor.m')
         obj('platform/cocoa/clipboard.m')
     elif bld.env.PLATFORM == 'win':
+        obj('platform/win/time.c')
         obj('platform/win/window.c')
         obj('platform/win/event.c')
         obj('platform/win/cursor.c')

@@ -70,5 +70,5 @@ def build_uv(ctx):
 		name='LIBUV')
 
 def build(ctx):
-	if ctx.env.DEST_OS != 'linux':
+	if ctx.env.DEST_OS not in ['linux', 'win32']:
 		build_uv(ctx)

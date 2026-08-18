@@ -24,7 +24,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <uv.h>
 #include <windows.h>
 #include <windowsx.h>
 #include <winsock2.h>
@@ -99,7 +98,6 @@ handle_timer(struct win_rtb_window *self, int timer_id)
 {
 	switch (timer_id) {
 	case WIN_RTB_FRAME_TIMER:
-		uv_run(&self->rtb->event_loop, UV_RUN_NOWAIT);
 		draw_frame(self, 0);
 		break;
 
@@ -323,7 +321,7 @@ run_application_event_loop(struct rutabaga *r)
 void
 rtb_event_loop_init(struct rutabaga *r)
 {
-	uv_run(&r->event_loop, UV_RUN_NOWAIT);
+    ((void) r);
 }
 
 void
@@ -357,10 +355,7 @@ rtb_event_loop_stop(struct rutabaga *r)
 void
 rtb_event_loop_fini(struct rutabaga *r)
 {
-	/* once to run the event handlers for the last time, and once more
-	 * to run the endgames for all of them. */
-	uv_run(&r->event_loop, UV_RUN_NOWAIT);
-	uv_run(&r->event_loop, UV_RUN_NOWAIT);
+    ((void) r);
 }
 
 rtb_modkey_t
