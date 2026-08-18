@@ -28,8 +28,6 @@
 #include <rutabaga/window.h>
 #include <rutabaga/keyboard.h>
 
-#include <uv.h>
-
 #include <xcb/xcb.h>
 #include <xcb/xcb_cursor.h>
 #include <xcb/xfixes.h>
@@ -41,17 +39,6 @@
 #include <EGL/eglext.h>
 
 #define ERR(...) fprintf(stderr, "rutabaga XCB: " __VA_ARGS__)
-
-struct xrtb_frame_timer {
-	RTB_INHERIT(uv_timer_s);
-	struct xrtb_window *xwin;
-	unsigned int wait_msec;
-};
-
-struct xrtb_uv_poll {
-	RTB_INHERIT(uv_poll_s);
-	struct xcb_rutabaga *xrtb;
-};
 
 struct xcb_rutabaga {
 	struct rutabaga rtb;
@@ -91,8 +78,7 @@ struct xcb_rutabaga {
 
 	xcb_cursor_t empty_cursor;
 
-	struct xrtb_uv_poll xcb_poll;
-	struct xrtb_frame_timer frame_timer;
+	unsigned event_loop_running;
 
 	struct {
 		xcb_connection_t *conn;

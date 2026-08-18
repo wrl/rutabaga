@@ -29,8 +29,9 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <time.h>
 #include <math.h>
+#include <poll.h>
+#include <time.h>
 
 #include <xcb/xcb.h>
 #include <xcb/xkb.h>
@@ -39,8 +40,6 @@
 #include <X11/Xlib.h>
 #include <X11/Xlib-xcb.h>
 #include <X11/Xlibint.h>
-
-#include <uv.h>
 
 #include <rutabaga/rutabaga.h>
 #include <rutabaga/window.h>
@@ -121,7 +120,7 @@ handle_mouse_button_press(struct xrtb_window *win,
 		goto dont_handle;
 	}
 
-	rtb__platform_mouse_press(rwin, button, rtb_phy_to_point(rwin, 
+	rtb__platform_mouse_press(rwin, button, rtb_phy_to_point(rwin,
 				RTB_MAKE_PHY_POINT(ev->event_x, ev->event_y)));
 
 dont_handle:
@@ -594,31 +593,9 @@ drain_xcb_event_queue(xcb_connection_t *conn, struct rtb_window *win)
  */
 
 static void
-xcb_poll_cb(uv_poll_t *_handle, int status, int events)
+frame_cb(struct rtb_window *win)
 {
-	struct xrtb_uv_poll *handle;
-	struct xcb_rutabaga *xrtb;
-	struct rtb_window *win;
-
-	handle = RTB_DOWNCAST(_handle, xrtb_uv_poll, uv_poll_s);
-	xrtb = handle->xrtb;
-	win = ((struct rutabaga *) xrtb)->win;
-
-	rtb_window_lock(win);
-	drain_xcb_event_queue(xrtb->xcb_conn, win);
-	rtb_window_unlock(win);
-}
-
-static void
-frame_cb(uv_timer_t *_handle)
-{
-	struct xrtb_frame_timer *timer;
-	struct xrtb_window *xwin;
-	struct rtb_window *win;
-
-	timer = RTB_DOWNCAST(_handle, xrtb_frame_timer, uv_timer_s);
-	xwin = timer->xwin;
-	win = RTB_WINDOW(xwin);
+	struct xrtb_window *xwin = (void*) win;
 
 	rtb_window_lock(win);
 	drain_xcb_event_queue(xwin->xrtb->xcb_conn, win);
@@ -630,54 +607,63 @@ frame_cb(uv_timer_t *_handle)
 	rtb_window_unlock(win);
 }
 
-static int
-frame_timer_init(struct xrtb_frame_timer *timer)
-{
-	/* FIXME: get FPS from xrandr? or xcomposite? whatever. */
-
-	timer->wait_msec = 10;
-	return 0;
-}
-
 void
 rtb_event_loop_init(struct rutabaga *r)
 {
 	struct xcb_rutabaga *xrtb = (void *) r;
-	struct xrtb_window *xwin = (void *) r->win;
-
-	xrtb->xcb_poll.xrtb = xrtb;
-	uv_poll_init(&r->event_loop, RTB_UPCAST(&xrtb->xcb_poll, uv_poll_s),
-			xcb_get_file_descriptor(xrtb->xcb_conn));
-
-	xrtb->frame_timer.xwin = xwin;
-	frame_timer_init(&xrtb->frame_timer);
-	uv_timer_init(&r->event_loop, RTB_UPCAST(&xrtb->frame_timer, uv_timer_s));
-
-	uv_poll_start(RTB_UPCAST(&xrtb->xcb_poll, uv_poll_s), UV_READABLE,
-			xcb_poll_cb);
-	uv_timer_start(RTB_UPCAST(&xrtb->frame_timer, uv_timer_s),
-			frame_cb, 0, xrtb->frame_timer.wait_msec);
+	xrtb->event_loop_running = 0;
 }
+
+const unsigned FRAME_TIMER_NS = 10 * ((uint64_t) 1e6);
 
 void
 rtb_event_loop_run(struct rutabaga *r)
 {
-	uv_run(&r->event_loop, UV_RUN_DEFAULT);
+	struct xcb_rutabaga *xrtb = (void *) r;
+	uint64_t next_frame;
+
+	struct pollfd fds[1] = {};
+	fds[0].fd = xcb_get_file_descriptor(xrtb->xcb_conn);
+	fds[0].events = POLLIN;
+
+	xrtb->event_loop_running = 1;
+	next_frame = rtb_nanotime() + FRAME_TIMER_NS;
+
+	while (xrtb->event_loop_running) {
+		int until_frame_ms = (next_frame - rtb_nanotime()) / 1000000;
+		int timeout = until_frame_ms > 1 ? until_frame_ms : 1;
+
+		if (poll(fds, ARRAY_LENGTH(fds), timeout) < 0) {
+			// TODO: error, report somewhere. or retry?
+			return;
+		}
+
+		uint64_t now = rtb_nanotime();
+		if (now >= next_frame) {
+			frame_cb(r->win);
+			next_frame = now + FRAME_TIMER_NS;
+		}
+
+		if (fds[0].revents & POLLIN) {
+			rtb_window_lock(r->win);
+			drain_xcb_event_queue(xrtb->xcb_conn, r->win);
+			rtb_window_unlock(r->win);
+		}
+	}
 }
 
 void
 rtb_event_loop_stop(struct rutabaga *r)
 {
-	uv_stop(&r->event_loop);
+	struct xcb_rutabaga *xrtb = (void *) r;
+
+	// TODO: interrupt the event loop somehow? not sure if we need to
+	// considering we're waking up for every frame.
+	xrtb->event_loop_running = 0;
 }
 
 void
 rtb_event_loop_fini(struct rutabaga *r)
 {
-	struct xcb_rutabaga *xrtb = (void *) r;
-
-	uv_close((void *) RTB_UPCAST(&xrtb->frame_timer, uv_timer_s), NULL);
-	uv_close((void *) RTB_UPCAST(&xrtb->xcb_poll, uv_poll_s), NULL);
-
-	uv_run(&r->event_loop, UV_RUN_NOWAIT);
+	((void) r);
 }
